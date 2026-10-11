@@ -2,32 +2,36 @@ Attribute VB_Name = "modProductionRunScaleActions"
 Option Explicit
 Option Private Module
 
-' Handle the released-run path; the worksheet branch retains its existing owner.
+' Observe both Scale branches without substituting a successful owner result.
 Public Function Execute(ByVal owner As frmProduction, ByVal context As String, _
                         ByVal operatorBook As Workbook, ByRef loading As Boolean, ByRef busy As Boolean, _
                         ByVal scaleText As String, ByRef report As String) As Boolean
-    Dim action As cProductionWorksheetAction, priorLoading As Boolean, loaded As Boolean
+    Dim action As cProductionWorksheetAction, priorLoading As Boolean, loaded As Boolean, designs As Boolean
     Dim scalePercent As Double, number As Long, source As String, description As String
     Execute = True
     If loading Or busy Then Exit Function
     loaded = modProductionReusableRun.ReusableRunIsLoaded()
-    If Not loaded Then
-        If Not (modConfig.GetBool("DesignsEnabled", False) Or modConfig.GetBool("FF_DesignsEnabled", False)) Then
-            Execute = False
-            Exit Function
-        End If
-    End If
+    designs = modConfig.GetBool("DesignsEnabled", False) Or modConfig.GetBool("FF_DesignsEnabled", False)
     On Error GoTo Failed
     priorLoading = loading: busy = True
     Set action = New cProductionWorksheetAction
     If Not action.Begin("PRODUCTION_RUN_SCALE", context, operatorBook, report) Then GoTo Done
     If Not action.CanContinue(report) Then GoTo Done
     action.OutcomeCode = "REJECTED"
-    If Not loaded Then
+    If Not loaded And designs Then
         report = "Load a released recipe before applying scale."
         GoTo Done
     End If
+    If Not loaded And owner.SelectedRunRecipeText(0) = "" Then
+        report = "Select a recipe, enter Batch scale %, then click Apply Scale."
+        GoTo Done
+    End If
     If Not owner.TryParseBatchScalePercent(scaleText, scalePercent, report) Then GoTo Done
+    If Not loaded Then
+        action.OutcomeCode = "FAILED": report = ""
+        owner.ApplyWorksheetRunScale scalePercent, report, action
+        GoTo Done
+    End If
     If Not modProductionReusableRun.ApplyReusableRunScale(scalePercent, report) Then GoTo Done
     action.OutcomeCode = "FAILED"
     If Not action.CanContinue(report) Then GoTo Done

@@ -1674,12 +1674,12 @@ Private Function ToBase36RecipeId(ByVal value As Long) As String
 End Function
 
 ' ===== System 3: Recipe Chooser =====
-Public Sub LoadRecipeChooser(ByVal recipeId As String)
+Public Function LoadRecipeChooser(ByVal recipeId As String) As Boolean
     On Error GoTo ErrHandler
-    If Trim$(recipeId) = "" Then Exit Sub
+    If Trim$(recipeId) = "" Then Exit Function
 
     Dim wsProd As Worksheet: Set wsProd = SheetExists(SHEET_PRODUCTION)
-    If wsProd Is Nothing Then Exit Sub
+    If wsProd Is Nothing Then Exit Function
     Dim syncReport As String
     Dim stagingWb As Workbook
     Dim wsRec As Worksheet
@@ -1706,7 +1706,7 @@ Public Sub LoadRecipeChooser(ByVal recipeId As String)
                              "Import Legacy Recipes, then release the imported version."
             End If
             MsgBox syncReport, vbExclamation, "Production Designs"
-            Exit Sub
+            Exit Function
         End If
         Set wsRec = WorkbookSheetExists(stagingWb, "Recipes")
     Else
@@ -1777,16 +1777,16 @@ Public Sub LoadRecipeChooser(ByVal recipeId As String)
     RenderPaletteKeepCheckboxes wsProd
     ApplyProductionOutputTemplates recipeId, wsProd
     RenderOutputRowCheckboxes wsProd
-
+    LoadRecipeChooser = True
 CleanExit:
     On Error Resume Next
     If Not stagingWb Is Nothing Then stagingWb.Close SaveChanges:=False
     On Error GoTo 0
-    Exit Sub
+    Exit Function
 ErrHandler:
     MsgBox "Load Recipe Chooser failed: " & Err.description, vbCritical
     Resume CleanExit
-End Sub
+End Function
 
 Private Function FindListObjectByNameOrHeaders(ws As Worksheet, tableName As String, headers As Variant) As ListObject
     Dim lo As ListObject

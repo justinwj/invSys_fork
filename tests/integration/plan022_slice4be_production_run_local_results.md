@@ -6,12 +6,74 @@ docs commit `9dc7cbc`. Earlier references below to pending approval retain their
 historical meaning. Scoped RUN-SCALE-01 and RUN-UI-01 evidence follows; remaining
 Scale coverage and broader acceptance are still required.
 
+## Designs-disabled Scale refusals and caught owner failure, 2026-10-11
+
+Unpromoted `deploy/validation-run-scale-disabled-01` records the existing worksheet
+branch under D18. `LoadRecipeChooser` now returns a Boolean owner-completion fact;
+Scale uses it without inferring success from displayed text or a quiet return.
+Existing messages and partial local effects remain. Successful worksheet reload,
+D14 rebuild preservation, independent worksheet guidance and broader acceptance
+remain open. This checkpoint changes no approved workflow or catalog definition.
+
+Focused RED111/49 becomes GREEN160/160 in identical check order, retaining47 shared
+checks. Seven cases cover no selection, invalid/boundary scales, missing captured
+Production sheets with/without an active decoy, and an exception caught inside the
+real worksheet owner. The last case retains subsequent local scaling but records
+FAILED/Error/Unknown, without asserting rollback. Both Designs flags are disabled
+through actual Admin Settings handlers; all seven use the actual Scale handler.
+Custom values/formulas, exact seeded identity, saved authority, prior records,
+other-warehouse activity and saved operator bytes are preserved.
+
+RED controller `production-run-local-controller/1d67609521a04a44805c453e37a35aba`,
+worker `slice4be-production-run-scale-disabled/b9541c4eaca640f991475a98dba75e98`:
+UTC21:57:20.688--21:59:00.690. GREEN controller
+`production-run-local-controller/8f0cbc85ea6447f6b0d8f41e90c78326`, worker
+`slice4be-production-run-scale-disabled/1caa74e3c04c4aac99dd32e4aa31977e`:
+UTC22:00:13.322--22:02:22.166. Each has five instrumented compiles, preserved
+settings/packages, normal unassisted closure and zero delayed Excel failures.
+The earlier six-case RED103/42 is retained at controller
+`cbc5d9c7cd064f73aa6a5c3d996caa38`; it was extended before implementation.
+The reviewed GREEN refusal capture shows the complete existing message; long
+recipe descriptions still clip. Agent image review is not human acceptance.
+
+Build `run-scale-disabled-build-01/verification.json` records five cold compiles,
+three changed Production components and310 unchanged components; frozen Scale01
+and settings are preserved. Static `run-scale-disabled-static-01/ratchet-verification.json`
+records320 components/6342 procedures/138754 lines: net9 fewer lines, form13 fewer,
+dynamic calls9/45 and192 duplicate candidates unchanged,28 caps without growth,
+three valid schemas and456 parsed scripts. Enabled-Designs regression218 passes
+in exact prior order at controller `aa9be1966895427b9b01fa8ddb43ca88`, worker
+`slice4be-production-run-worksheet-scale/3c97100a1be8413d98ea94bba8f2f1a4`,
+UTC22:02:47.890--22:04:56.923, with five compiles and clean preserved closure.
+Loaded-run/binding503 also passes in exact prior order: controller
+`f3f5aeb968184c8d8f136d5c23b093c4`, worker
+`slice4be-production-run-local/7d8b4bfdfa2243c8ab0256100d10621a`,
+UTC22:04:58.137--22:12:38.125, with five compiles, native captured-workbook closure
+refusals, preservation, unassisted closure and zero delayed Excel errors.
+Smoke86/86 qualifies at
+`run-scale-disabled-regression/smoke-506e6c26062244cd85f6c8659caa8058`,
+UTC22:12:39.556--22:12:59.733. Layout at
+`run-scale-disabled-regression/layout-409af5ce78fa4d9fbdddb30aec26d96c`,
+UTC22:24:30.925--22:24:53.111, retains18 requested size/page pairs, six maximized
+pages and five native transitions, with six directly reviewed readable images,
+preserved settings/packages, unassisted closure and zero delayed Excel failures.
+Minimum/default requests produce two identical image pairs at the same actual
+size. Individual original-size review and hashes establish that their apparent
+black interiors in the combined preview are not blank saved PNGs.
+
+The ordinary chain remains blocked by native faults: two runs ended at chain5/1,
+first at the two-batch form action (live35/1), then at projection rebuild
+(live32/1); warehouse15/15 passed in both. Neither is acceptance evidence.
+The tested dismissal-owner correction is tooling-only and did not repair the
+native failure. See [localization](plan022_slice4be_native_localization_results.md).
+
 ## RUN-SCALE-01 approved load-first boundary, 2026-10-11
 
 Unpromoted `deploy/validation-run-scale-01` implements the approved Designs-enabled
 refusal and records loaded-run Scale through the existing captured action boundary.
-The worksheet branch with Designs disabled is unchanged; its recording and owner
-failure proof remain open. This is not comprehensive Scale or 4be-A acceptance.
+At this earlier checkpoint the worksheet branch with Designs disabled was unchanged;
+the newer scoped proof above supersedes that recording status. This is not
+comprehensive Scale or 4be-A acceptance.
 
 Focused packaged RED is134 PASS/84 FAIL/218 on UI01; GREEN is218/218 in exact
 RED check order. Nine unloaded cases retain local quantities, exact `System_Key`,
@@ -127,10 +189,13 @@ both delayed Excel audits are clean. This does not establish a native repair.
 
 Layout controller `layout-99d3aad682d94c3f940c741e6280f10e` passes18 requested
 size/page pairs, six maximized pages and five native transitions in prior order,
-with preservation and clean delayed closure. Direct review rejects both default
-images because their client areas are black; four other captures are readable.
-`capture-review.json` rejects those images. A fresh isolated run, without runtime
-or harness changes, qualifies the same geometry and six readable captures:
+with preservation and clean delayed closure. The initial combined preview led to
+rejection of both default images. Individual original-size reinspection on
+2026-10-11 and exact hash comparison with their readable minimum-size counterparts
+correct that finding: both saved images are readable. The original rejection
+receipt is retained with `capture-review-amendment.json`; no capture-code fix was
+needed. A subsequent isolated run, without runtime or harness changes, also
+qualifies the same geometry and six readable captures:
 `layout-2719992976a04cba9cf8d9576aa75718`, UTC21:48:38.673--21:48:55.837.
 All six images were directly reviewed; this is empty-form layout evidence,
 not human acceptance or a claimed repair of the earlier capture failure.

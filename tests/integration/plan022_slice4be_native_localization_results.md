@@ -7,7 +7,64 @@ D13 and Plan022. Earlier localization below uses frozen General02, runtime
 a clean ordinary chain and full reusable regression there; neither establishes
 a native repair. No 4be-A completion is claimed.
 
-## Current configuration-call interruption
+## Current chain interruption and dismissal ownership
+
+On 2026-10-11, the ordinary Designs-disabled Scale candidate chain stopped at
+`mProduction.ProductionFormTwoBatchActionReportForTest` with COM0x800706BE.
+Application1000 at22:15:00.304Z records `ntdll.dll/c0000028`; Application1001
+followed. Warehouse checks passed15/15, live-role35/1 and chain5/1; later stages
+were not reached. The macro exercises allocation/check-in/completion, not Scale;
+that does not exclude a candidate interaction or establish the native cause.
+Controller `run-scale-disabled-regression/chain-4873fe873a1e4ea687996c4e3b3a453c`
+retains sanitized failure, crash-reporter parent lineage and preservation receipts.
+The recovery instance was closed after normal native close was requested. The
+user confirmed answering/closing its Document Recovery prompt around15:18PDT.
+Its selected retention option is unverified; closure is not automatic cleanup.
+No COM reattachment or forced termination occurred. This run is not acceptance.
+
+Separate actual-helper testing reproduced a tooling defect: when the supplied
+process is absent, `Start-ExcelEnterDismissal` falls back to the title
+`Microsoft Excel` and sends Enter to another process. The native sentinel test
+`Test-LiveRoleDismissalOwner.ps1` first proves owned input works, then checks
+that an absent owner cannot affect the other process. RED1/1 at
+`live-role-dismissal-owner/369df1c807f34da69b481af598221ace` becomes GREEN2/2 at
+`live-role-dismissal-owner/56cde10cd0fe49c8a75eaa2452cd648a`. Both use the actual
+helper extracted from source, start no Excel and close the sentinel normally.
+The helper now pins process creation time, stops when that owner disappears,
+checks button/foreground ownership and removes the title fallback. This fixes
+the reproduced input-scope defect; it neither explains the native crash nor
+attributes the user-confirmed recovery closure to automation. XLAMs are unchanged.
+
+One ordinary retry with that fix failed at a different boundary: projection
+rebuild's `modProcessor.RunBatchReportForAutomation`, COM0x800706BE, with
+`ntdll.dll/c0000028` at22:27:30.697Z. Controller
+`run-scale-disabled-regression/chain-a781e3b11648461d9c60e2c2cd8ebd96` records
+warehouse15/15, live32/1 and chain5/1, UTC22:25:02.419--22:28:05.627. Its recovery
+process was identified as the crash reporter's child and closed after a normal
+native close request; no recovery prompt was observed in the subsequent scan.
+Closure was assisted, without COM reattachment or force. Packages, settings and
+tracked reports were restored. This reproduces the earlier projection-call
+signature and rules out treating the dismissal guard as a native repair. Do not
+repeat ordinary chains until further localization provides a reason.
+
+Regenerated maintenance evidence `run-scale-disabled-static-02` retains320
+components,6342 procedures,138754 VBA lines,9/45 dynamic calls,192 duplicate
+candidates and28 unchanged oversized caps. Three schemas validate and457
+PowerShell scripts parse, including the new native ownership test.
+
+Metadata-only native observation then reproduces the projection-call failure:
+`run-scale-disabled-native/661781ea19534d0586008701647e063b`, controller
+`run-scale-disabled-regression/chain-f908a084668740c494aef06c6b6cb840`.
+At22:32:27.640Z an unmapped first-chance C0000005 precedes C0000028 by about100ms.
+The latter first/second-chance stacks each contain32 bounded module/offset frames,
+including VBE7 and OLEAUT32. The observer exited normally; business calls and VBA
+were unchanged. Recovery closure was assisted by a normal native close request,
+with no prompt observed afterward. No COM reattachment or force was used.
+This identifies exception order, not a root cause. The existing stack filter
+omits first-chance C0000005; its capture requires a calibrated test before the
+next observation. The observed chain is failed diagnostic evidence, not acceptance.
+
+## Earlier configuration-call interruption
 
 Two ordinary Scale-candidate runs failed before the intended cases at
 `TestD5Commands.SaveDirect`, returning COM0x80020009. The first failed during

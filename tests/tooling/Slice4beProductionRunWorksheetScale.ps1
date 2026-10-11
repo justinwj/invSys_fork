@@ -10,7 +10,9 @@ function Install-ProductionRunWorksheetScaleProbe {
         if($hits.Count -ne 1){throw ('Worksheet Scale owner seam changed: '+$Anchor+'; not product RED.')}
         $owner.InsertLines($hits[0]+[int]$After,$Code)
     }
-    Scale-Seam 'If wsProd Is Nothing Then Exit Sub' '    TestProductionDesigner.RunScaleOwnerResolved wsProd'
+    $exitKind=if($owner.Lines($owner.ProcStartLine('LoadRecipeChooser',0),$owner.ProcCountLines('LoadRecipeChooser',0)) -match 'Public Function LoadRecipeChooser'){'Function'}else{'Sub'}
+    Scale-Seam ('If wsProd Is Nothing Then Exit '+$exitKind) '    TestProductionDesigner.RunScaleOwnerResolved wsProd'
+    if($RunScaleDesignsDisabledForTest){Scale-Seam 'TestProductionDesigner.RunScaleOwnerResolved wsProd' '    TestProductionDesigner.RunFaultBoundary "WORKSHEET_SCALE"' $true}
     Scale-Seam 'Set stagingWb = BuildReleasedDesignRecipeStagingWorkbook(recipeId, syncReport)' '        TestProductionDesigner.RunScaleReadReturned (Not stagingWb Is Nothing)' $true
     Scale-Seam 'If Not LocalProductionRecipeRowsExist(wsProd.Parent, recipeId) Then' '        TestProductionDesigner.RunScaleLegacyEntered'
     $start=$owner.ProcStartLine('LoadRecipeChooser',0);$end=$start+$owner.ProcCountLines('LoadRecipeChooser',0)
@@ -97,6 +99,7 @@ Public Function RunScaleSheetValuesForTest(ByVal mode As String, ByVal canary As
         Set ws = mOperatorWorkbook.Worksheets("Production")
     End If
     factor = 1#
+    If mode = "OwnerException" Then factor = 2#
     ' RUN-SCALE-01: an unloaded run must leave these staging quantities unchanged.
     For Each name In Array("RecipeChooser_generated", "InventoryPalette_generated")
         Set lo = ws.ListObjects(CStr(name))
@@ -178,6 +181,7 @@ End Function
 
 function Test-ProductionRunWorksheetScale($Fixture) {
     if(-not [bool](Probe 'RunSheetOwnerPrepare')){throw 'Supported Scale surface fixture unavailable; not product RED.'}
+    if($RunScaleDesignsDisabledForTest){Test-ProductionRunScaleDisabled $Fixture;return}
     Check 'RunWorksheetScale.SupportedSurfaceAndSeedIdentity' $true
     $key=[string](Probe 'RunWorksheetKey')
     foreach($mode in @('NoSelection','BadScale','BelowMinimum','AboveMaximum','UnavailableDesign','Minimum','Maximum','MissingSheet','DecoyMissing')){
@@ -238,5 +242,49 @@ function Test-ProductionRunWorksheetScale($Fixture) {
     if($CaptureEvidence){
         Check 'RunScaleSequence.VisibleOperatorPage' ([int](Probe 'RunLocalShowAndCapture' @($book.Name,'SCALE')) -eq 3)
         CaptureOwnedFormByCaptionEvidence 'Production' 'run-scale-loaded-sequence.png'
+    }
+}
+
+# Refusals and a caught owner exception; successful worksheet reload remains a separate gate.
+function Test-ProductionRunScaleDisabled($Fixture) {
+    Check 'RunScaleDisabled.SupportedSurfaceAndSeedIdentity' $true
+    $key=[string](Probe 'RunWorksheetKey')
+    foreach($mode in @('NoSelection','BadScale','BelowMinimum','AboveMaximum','MissingSheet','DecoyMissing','OwnerException')){
+        if($mode -ceq 'DecoyMissing'){
+            $decoySheet=$decoy.Worksheets.Add();$decoySheet.Name='Production'
+            $decoySheet.Range('A1').Value2='Operator Extra';$decoySheet.Range('A2').Value2=$canary;$decoySheet.Range('B2').Formula='=1+2'
+        }
+        $before=@(Files);$ready=[string](Probe 'RunScaleSheetStage' @($mode,$canary))
+        if($ready -cne 'READY'){throw 'Designs-disabled Scale staging unavailable; not product RED.'}
+        try{
+            $decoy.Activate();$label='RunScaleDisabled.'+$mode
+            Check ($label+'.SetupNotUserAction') (@(Files).Count -eq $before.Count)
+            Check ($label+'.ActualWorksheetBranch') ([bool](Probe 'RunScaleSheetBranch'))
+            Check ($label+'.BothFlagsRemainDisabled') (-not [bool](Run 'invSys.Core.xlam' 'modConfig.GetBool' @('DesignsEnabled',$true)) -and -not [bool](Run 'invSys.Core.xlam' 'modConfig.GetBool' @('FF_DesignsEnabled',$true)))
+            if($mode -ceq 'OwnerException'){[void](Probe 'RunFaultArm' @('Exception','SCALE','WORKSHEET_SCALE',$canary))}
+            $notice=[string](Probe 'RunFaultAct' @('SCALE'))
+            $evidence=[string](Probe 'RunScaleEvidence')
+            Check ($label+'.NoUnhandledError') (-not $notice.StartsWith('HANDLER_ERROR|'))
+            Check ($label+'.GuardsRestored') ([bool](Probe 'RunFaultGuards'))
+            Check ($label+'.LocalValuesCustomColumnsAndExactKeyPreserved') ([bool](Probe 'RunScaleSheetValues' @($mode,$canary)))
+            Check ($label+'.CanonicalSourcePreserved') ([bool](Probe 'RunWorksheetSource'))
+            if($mode -ceq 'OwnerException'){
+                Check ($label+'.RealOwnerCaughtException') ([string](Probe 'RunFaultEvidence') -ceq '1|True|False' -and $evidence -ceq '1|0|False|0|Captured|1')
+            }else{Check ($label+'.NoRecipeOwnerRead') ($evidence -ceq '0|0|False|0|NotEntered|0')}
+            if($mode -ceq 'NoSelection'){$expected='Select a recipe, enter Batch scale %, then click Apply Scale.'}
+            elseif($mode -ceq 'BadScale'){$expected='Batch scale must be a number from 0.001% through 1000%.'}
+            elseif($mode -cin @('BelowMinimum','AboveMaximum')){$expected='Batch scale must be from 0.001% through 1000%.'}
+            else{$expected=$null}
+            if($null -ne $expected){Check ($label+'.ExistingRefusalMessage') ($notice -ceq $expected)}
+            if($mode -ceq 'DecoyMissing'){Check ($label+'.DecoyUnknownValuesPreserved') ($decoySheet.Range('A2').Value2 -ceq $canary -and $decoySheet.Range('B2').Formula -ceq '=1+2')}
+            $outcome=if($mode -cin @('MissingSheet','DecoyMissing','OwnerException')){'FAILED'}else{'REJECTED'}
+            Pair $before 'SCALE' $outcome $label
+            $records=@(Files|Where-Object{$_ -cnotin $before}|ForEach-Object{[IO.File]::ReadAllText($_)})
+            Check ($label+'.NoExactKeyInObservations') ($records.Count -eq 2 -and @($records|Where-Object{$_.Contains($key)}).Count -eq 0)
+            if($CaptureEvidence -and $mode -ceq 'NoSelection'){
+                Check ($label+'.VisibleOperatorPage') ([int](Probe 'RunLocalShowAndCapture' @($book.Name,'SCALE')) -eq 3)
+                CaptureOwnedFormByCaptionEvidence 'Production' 'run-scale-disabled-refusal.png'
+            }
+        }finally{[void](Probe 'RunSheetOwnerRestore')}
     }
 }

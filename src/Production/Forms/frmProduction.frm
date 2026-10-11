@@ -3962,38 +3962,30 @@ Private Sub LoadSelectedRecipeIntoBuilder()
     ShowStatus "Loaded recipe into builder: " & NzStr(mLstBuilderRecipes.List(idx, 1))
 End Sub
 
-Private Sub LoadSelectedRecipeIntoLoader()
+Public Sub ApplyWorksheetRunScale(ByVal scalePercent As Double, ByRef scaleReport As String, ByVal action As cProductionWorksheetAction)
     Dim idx As Long
     Dim prepared As Variant
-    Dim scalePercent As Double
-    Dim scaleReport As String
+    Dim loaded As Boolean
 
     idx = mLstLoaderRecipes.ListIndex
-    If idx < 0 Then
-        ShowStatus "Select a recipe first."
-        Exit Sub
-    End If
-    If Not TryParseBatchScalePercent( _
-            NzStr(mTxtBatchScalePercent.Text), scalePercent, scaleReport) Then
-        ShowStatus scaleReport
-        Exit Sub
-    End If
+    If Not action.CanContinue(scaleReport) Then Exit Sub
     If Not mRunTreeCollapsed Is Nothing Then mRunTreeCollapsed.RemoveAll
     If Not modProductionRunBinding.BindWorksheetOwner(mOperatorWorkbook) Then Exit Sub
-    mProduction.LoadRecipeChooser NzStr(mLstLoaderRecipes.List(idx, 0))
-    If Not ApplyBatchScaleToRunList(scalePercent, scaleReport) Then
-        ShowStatus scaleReport
-        Exit Sub
-    End If
+    loaded = mProduction.LoadRecipeChooser(NzStr(mLstLoaderRecipes.List(idx, 0)))
+    If Not action.CanContinue(scaleReport) Then Exit Sub
+    If Not ApplyBatchScaleToRunList(scalePercent, scaleReport) Then Exit Sub
     prepared = mProduction.PrepareProductionOutputForCurrentRecipe()
+    If Not action.CanContinue(scaleReport) Then Exit Sub
     RefreshLoaderState
     RefreshManagerState
     If CBool(prepared) Then
-        ShowStatus "Loaded recipe at " & FormatRunNumber(scalePercent) & _
+        scaleReport = "Loaded recipe at " & FormatRunNumber(scalePercent) & _
             "% and prepared output rows: " & NzStr(mLstLoaderRecipes.List(idx, 1))
     Else
-        ShowStatus "Loaded recipe, but no output rows were prepared: " & NzStr(mLstLoaderRecipes.List(idx, 1))
+        scaleReport = "Loaded recipe, but no output rows were prepared: " & NzStr(mLstLoaderRecipes.List(idx, 1))
     End If
+    If Not action.CanContinue(scaleReport) Then Exit Sub
+    If loaded Then action.OutcomeCode = "STAGED"
 End Sub
 
 Private Sub PrepareProductionOutput()
@@ -5249,11 +5241,6 @@ Private Sub mBtnApplyBatchScale_Click()
         If scaleReport <> "" Then ShowStatus scaleReport
         Exit Sub
     End If
-    If mLstLoaderRecipes.ListIndex < 0 Then
-        ShowStatus "Select a recipe, enter Batch scale %, then click Apply Scale."
-        Exit Sub
-    End If
-    LoadSelectedRecipeIntoLoader
 End Sub
 
 Public Function TryParseBatchScalePercent(ByVal valueText As String, _

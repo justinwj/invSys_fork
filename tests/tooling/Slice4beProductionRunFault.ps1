@@ -126,10 +126,17 @@ function Test-ProductionRunFault($Fixture,$Other,[switch]$YieldOnly,[switch]$Sto
         if($WorksheetScaleOnly){
             [void](Run 'invSys.Admin.xlam' 'TestD5Commands.OpenSettings')
             try{
-                $enabled=[bool](Run 'invSys.Admin.xlam' 'TestD5Commands.SaveSettings' @('DesignsEnabled','True'))
-                if(-not $enabled -or -not [bool](Run 'invSys.Core.xlam' 'modConfig.GetBool' @('DesignsEnabled',$false))){throw 'Admin-enabled Designs fixture unavailable; not product RED.'}
+                if($RunScaleDesignsDisabledForTest){
+                    foreach($key in @('DesignsEnabled','FF_DesignsEnabled')){
+                        $saved=[bool](Run 'invSys.Admin.xlam' 'TestD5Commands.SaveSettings' @($key,'False'))
+                        if(-not $saved -or [bool](Run 'invSys.Core.xlam' 'modConfig.GetBool' @($key,$true))){throw 'Admin-disabled Designs fixture unavailable; not product RED.'}
+                    }
+                }else{
+                    $enabled=[bool](Run 'invSys.Admin.xlam' 'TestD5Commands.SaveSettings' @('DesignsEnabled','True'))
+                    if(-not $enabled -or -not [bool](Run 'invSys.Core.xlam' 'modConfig.GetBool' @('DesignsEnabled',$false))){throw 'Admin-enabled Designs fixture unavailable; not product RED.'}
+                }
             }finally{[void](Run 'invSys.Admin.xlam' 'TestD5Commands.CloseSettings')}
-            Check 'RunWorksheetScale.DesignsEnabledByAdminHandler' $true
+            if($RunScaleDesignsDisabledForTest){Check 'RunScaleDisabled.BothFlagsDisabledByAdminHandler' $true}else{Check 'RunWorksheetScale.DesignsEnabledByAdminHandler' $true}
         }
         if($StockOnly){
             $ready=[string](Run 'invSys.Core.xlam' 'TestShippingCatalog.StockPrepareForTest' @($Fixture.Warehouse))

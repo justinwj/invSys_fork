@@ -189,8 +189,13 @@ function Start-ExcelEnterDismissal {
         [int]$ExcelProcessId = 0
     )
 
+    $ownerStartTicks = 0L
+    if ($ExcelProcessId -gt 0) {
+        try { $ownerStartTicks = (Get-Process -Id $ExcelProcessId -ErrorAction Stop).StartTime.ToUniversalTime().Ticks } catch {}
+    }
     Start-Job -ScriptBlock {
-        param($durationSeconds, $excelProcessId)
+        param($durationSeconds, $excelProcessId, $ownerStartTicks)
+        if ($ownerStartTicks -eq 0) { return }
         $shell = $null
         try {
             Add-Type -AssemblyName UIAutomationClient
@@ -200,6 +205,10 @@ using System;
 using System.Runtime.InteropServices;
 public static class InvSysLiveValidationDialog {
     [DllImport("user32.dll")]
+    public static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll")]
+    public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+    [DllImport("user32.dll")]
     public static extern IntPtr SendMessage(
         IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam);
 }
@@ -208,9 +217,13 @@ public static class InvSysLiveValidationDialog {
             $stopAt = (Get-Date).AddSeconds($durationSeconds)
             while ((Get-Date) -lt $stopAt) {
                 Start-Sleep -Milliseconds 400
+                try {
+                    $excelProcess = Get-Process -Id $excelProcessId -ErrorAction Stop
+                    if ($excelProcess.StartTime.ToUniversalTime().Ticks -ne $ownerStartTicks) { break }
+                }
+                catch { break }
                 if ($excelProcessId -gt 0) {
                     try {
-                        $excelProcess = Get-Process -Id $excelProcessId -ErrorAction Stop
                         $root = [System.Windows.Automation.AutomationElement]::FromHandle(
                             [intptr]$excelProcess.MainWindowHandle
                         )
@@ -225,7 +238,9 @@ public static class InvSysLiveValidationDialog {
                             )
                             foreach ($okButton in $okButtons) {
                                 $buttonHandle = [intptr]$okButton.Current.NativeWindowHandle
-                                if ($buttonHandle -ne [intptr]::Zero) {
+                                [uint32]$buttonProcessId = 0
+                                [void][InvSysLiveValidationDialog]::GetWindowThreadProcessId($buttonHandle, [ref]$buttonProcessId)
+                                if ($buttonHandle -ne [intptr]::Zero -and $buttonProcessId -eq $excelProcessId -and -not $excelProcess.HasExited) {
                                     [void][InvSysLiveValidationDialog]::SendMessage(
                                         $buttonHandle, 0x00F5, [intptr]::Zero, [intptr]::Zero
                                     )
@@ -240,15 +255,19 @@ public static class InvSysLiveValidationDialog {
                     if ($excelProcessId -gt 0) {
                         $activated = [bool]$shell.AppActivate([int]$excelProcessId)
                     }
-                    if (-not $activated) {
-                        $activated = [bool]$shell.AppActivate("Microsoft Excel")
-                    }
                 }
                 catch {
                     $activated = $false
                 }
                 if ($activated) {
-                    try { $shell.SendKeys("~") } catch {}
+                    try {
+                        [uint32]$foregroundProcessId = 0
+                        [void][InvSysLiveValidationDialog]::GetWindowThreadProcessId(
+                            [InvSysLiveValidationDialog]::GetForegroundWindow(), [ref]$foregroundProcessId)
+                        if ($foregroundProcessId -eq $excelProcessId -and -not $excelProcess.HasExited) {
+                            $shell.SendKeys("~")
+                        }
+                    } catch {}
                 }
             }
         }
@@ -257,7 +276,7 @@ public static class InvSysLiveValidationDialog {
                 try { [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($shell) } catch {}
             }
         }
-    } -ArgumentList $Seconds, $ExcelProcessId
+    } -ArgumentList $Seconds, $ExcelProcessId, $ownerStartTicks
 }
 
 function Invoke-WorkbookMacroWithDismiss {
