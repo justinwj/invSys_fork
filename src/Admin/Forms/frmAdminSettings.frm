@@ -59,6 +59,7 @@ Private Sub UserForm_Initialize()
 End Sub
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+    If CloseMode = vbFormControlMenu Then modAdminSettingsClose.CloseForm Me, mActivityContext, True
     Set mTracking = Nothing
     Set mDetail = Nothing
     Set mPreference = Nothing
@@ -307,7 +308,7 @@ Private Sub mBtnReset_Click()
 End Sub
 
 Private Sub mBtnClose_Click()
-    Unload Me
+    modAdminSettingsClose.CloseForm Me, mActivityContext
 End Sub
 
 Private Sub mLstCarriers_Click()

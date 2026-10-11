@@ -159,7 +159,7 @@ public static class ProductionCloseWindow {
 }
 
 function Invoke-ProductionCloseWithNotice {
-    param([ValidateSet('Button','Native')][string]$Mode)
+    param([ValidateSet('Button','Native')][string]$Mode,[scriptblock]$CloseForTest)
     # The standard observer only dismisses single-OK informational dialogs owned
     # by this disposable Excel process. Raw dialog text stays in worker memory.
     $ready=Join-Path $runRoot ('close-notice-'+[guid]::NewGuid().ToString('N')+'.ready')
@@ -188,7 +188,8 @@ function Invoke-ProductionCloseWithNotice {
         for($i=0;$i -lt 100 -and -not(Test-Path -LiteralPath $ready);$i++){Start-Sleep -Milliseconds 100}
         if(-not(Test-Path -LiteralPath $ready)){throw 'Notice observer not ready; not product RED.'}
         $dismissed=$true
-        if($Mode -ceq 'Native'){$dismissed=Close-ProductionNativeFixture}
+        if($null -ne $CloseForTest){$dismissed=[bool](& $CloseForTest $Mode)}
+        elseif($Mode -ceq 'Native'){$dismissed=Close-ProductionNativeFixture}
         else{[void](Run 'invSys.Operations.xlam' 'TestProductionDesigner.CloseButtonForTest')}
         [void](Wait-Job $job -Timeout 15)
         $result=Receive-Job $job -ErrorAction Stop

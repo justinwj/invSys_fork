@@ -5,6 +5,10 @@ RUN-UI-01. Architecture v4.11 D18, Plan022 and Controls record both approvals in
 docs commit `9dc7cbc`. Earlier references below to pending approval retain their
 historical meaning. Scoped RUN-SCALE-01 and RUN-UI-01 evidence follows; remaining
 Scale coverage and broader acceptance are still required.
+The user also approved RUN-SCALE-02 on2026-10-11: stop after failed worksheet
+loading, before subsequent scaling/output preparation/refresh, and display
+"Recipe could not be loaded. Scale was not applied." Implementation is pending;
+FAILED retains Unknown data effect and makes no owner-rollback claim.
 
 ## Missing worksheet definition preserves staging, 2026-10-11
 
@@ -13,8 +17,8 @@ after the existing recipe refresh, an unavailable selected definition returns
 False before chooser/palette rebuilding. The actual packaged Scale handler now
 preserves custom columns, values and formulas and records FAILED. It still scales
 prior quantities and displays the existing misleading loaded-recipe status.
-RUN-SCALE-02 proposes changing those subsequent effects and wording; approval is
-pending. This guard does not implement that proposal or prove successful reload.
+RUN-SCALE-02 is now approved to change those subsequent effects and wording.
+This candidate does not implement that decision or prove successful reload.
 
 Focused RED54/7 becomes GREEN61/61 in identical order, retaining48 shared checks.
 The real released selection has no matching worksheet definition before/after

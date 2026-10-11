@@ -114,6 +114,7 @@ param(
     [switch]$CheckOperationsTrackingSettings,
     [switch]$CheckAdminSettingsClose,
     [switch]$AdminSettingsCloseOnly,
+    [switch]$CheckAdminSettingsCloseActivity,
     [switch]$CheckViewerRefreshFailure,
     [switch]$CheckViewerEventDetail,
     [switch]$DetailScrollLockDiagnostic,
@@ -419,6 +420,7 @@ if($NativeResizeCaptureDiagnostic -and ($Phase -cne 'RED' -or -not $CheckReceivi
     throw 'Native capture diagnosis requires the visible RED replay gate without close tracing.'
 }
 if($AdminSettingsCloseOnly) { $CheckAdminSettingsClose = $true }
+if($CheckAdminSettingsCloseActivity -and (-not $AdminSettingsCloseOnly -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Close observations require the isolated compiled visible Admin close gate.'}
 if($ViewerPublicationOnly) {
     if($Phase -ne 'RED'){throw 'Publication-only diagnosis is not acceptance GREEN.'}
     $CheckViewerPublication = $true
@@ -678,6 +680,7 @@ if($CheckGuideTransfer){
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-guide-transfer/'+[guid]::NewGuid().ToString('N'))
     Write-Output ('Guide transfer evidence: '+$reportRoot)
 }
+if($CheckAdminSettingsCloseActivity){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-close/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin Close evidence: '+$reportRoot)}
 New-Item -ItemType Directory -Path $runRoot,$reportRoot -Force | Out-Null
 $inputDeploy=$deploy
 if($ViewerStartupPackageStateForTest -ne 'OriginalReadOnly'){
@@ -1322,6 +1325,12 @@ End Function
     if($CheckAdminSettingsClose){
         . (Join-Path $PSScriptRoot 'Slice4beAdminSettingsClose.ps1')
         Install-AdminSettingsDefaultCloseProbe $testModule $formCode
+        if($CheckAdminSettingsCloseActivity){
+            . (Join-Path $PSScriptRoot 'Slice4beActivityAssertions.ps1')
+            . (Join-Path $PSScriptRoot 'Slice4beProductionCloseProbe.ps1')
+            . (Join-Path $PSScriptRoot 'Slice4beAdminCloseActivity.ps1')
+            Install-AdminCloseActivityProbe $testModule
+        }
     }
     if($TraceSettingsOpenForTest) {
         . (Join-Path $PSScriptRoot 'Slice4beSettingsOpenTrace.ps1')
@@ -1813,6 +1822,7 @@ End Function
     if($CheckAdminSettingsClose) {
         $step='real Admin Settings close and reopen'
         Test-AdminSettingsDefaultClose $a
+        if($CheckAdminSettingsCloseActivity){Test-AdminCloseActivity $a $b}
     }
     if($CheckViewerRefreshFailure) {
         $step='packaged Viewer refresh failure'

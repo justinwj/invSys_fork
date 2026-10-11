@@ -7,13 +7,35 @@ and remaining verification, not a new contract or a percentage estimate.
 ## Current 4be-A completion audit
 
 This replaces the stale catalog20/current-candidate labels in the historical
-checkpoints below. Current candidate runtime catalog is31; General Settings
+checkpoints below. Current Close candidate runtime catalog is32; General Settings
 GREEN871 uses unchanged `deploy/validation-general-settings-02`. The frozen transfer
 candidate is `deploy/validation-guide-transfer-notice-01`; the preceding Print candidate
 is `deploy/validation-print-recorded-01`, code checkpoint `89674af1`.
 Do not equate control registration, a scoped GREEN or a diagnostic with full acceptance.
 
-Current Production candidate: `deploy/validation-run-scale-disabled-01`, catalog31.
+Current Production-only candidate: `deploy/validation-run-scale-empty-recipe-01`, catalog31.
+The missing-definition D14 guard passes RED54/7 to GREEN61, retained disabled160
+and smoke86, with five cold/instrumented compiles, preservation, normal closure,
+zero delayed Excel failures and unchanged static ratchets. It stops staging
+rebuild and preserves custom fields; subsequent scaling and misleading loaded
+wording remain. RUN-SCALE-02 was approved2026-10-11; implementation is pending. Successful
+worksheet reload/general rebuild preservation and native-chain acceptance remain
+open. Exact receipts: [Run results](plan022_slice4be_production_run_local_results.md).
+
+Current independent Close candidate: `validation-admin-close-02`, catalog32/145
+controls. [Admin Close](plan022_slice4be_admin_close_results.md) passes actual-handler
+RED34/19 to GREEN53, retaining discard/reopen and internal cleanup exclusion.
+Disabled tracking, stale/signed-out context and same-session permission loss cannot
+trap dismissal. Five cold/instrumented compiles, static ratchets, Production Close232
+and clean preserved closure pass. Final02 smoke86 also passes; initial01
+Settings202 retains its candidate scope.
+Final02 ordinary chain32/live48/warehouse15 passes with clean delayed shutdown;
+the prior intermittent native fault remains unresolved.
+Extended GREEN70 covers user-off, older-policy and storage notices; independent
+guide and broader acceptance remain open.
+No full Close acceptance is implied; RUN-SCALE-02 has separate explicit approval.
+
+Prior Production candidate: `deploy/validation-run-scale-disabled-01`, catalog31.
 Designs-disabled refusal/caught-owner-failure recording is RED111/49 to GREEN160,
 with five cold/instrumented compiles, preservation, clean delayed closure, static
 ratchets and retained enabled-Designs218. Existing partial effects/messages remain;
@@ -98,7 +120,7 @@ lifecycle; retain the transfer499 checkpoint at its frozen candidate.
 | Required outcome | Verified evidence / remaining action |
 | --- | --- |
 | Approved shared A/B contract | D18-REPLAY-01 was approved2026-10-04. Preserve the A finish line and early B0 requirement; broader replay/results management belongs to B. RUN-SCALE-01/RUN-UI-01 were explicitly approved2026-10-11 and have scoped implementation/proof above; broader acceptance remains open. |
-| Comprehensive Operations/Admin recording | Catalog31 declares144 IDs; nine General controls now have GREEN871, retaining647 and adding224 independent recording/guide checks. Recorded transfer GREEN499 retains all79 observation checks and adds420 recording/comparison checks at its frozen candidate. The source audit below identifies remaining gaps; registration alone is insufficient. |
+| Comprehensive Operations/Admin recording | Catalog32 declares145 IDs, adding scoped Admin Close53 to the prior144; nine General controls now have GREEN871, retaining647 and adding224 independent recording/guide checks. Recorded transfer GREEN499 retains all79 observation checks and adds420 recording/comparison checks at its frozen candidate. The source audit below identifies remaining gaps; registration alone is insufficient. |
 | Per-action/per-user Admin policy | [Policy evidence](plan022_slice4be_user_tracking_policy_results.md) reaches104/104; General02 refresh retains all104, five compiles, four reviewed captures, preservation and clean delayed closure. Historical/version, rights and required-audit evidence retain their documented scope. |
 | Viewer and configurable Detail | [Multiline](plan022_slice4be_multiline_results.md) has88/88 with14 reviewed images and separate98-check captured Viewer regression; [overflow](plan022_slice4be_detail_overflow_results.md) has50/50. Preserve their exact candidate/source scope and reconcile later changed dependencies; human acceptance is separate. |
 | Versioned guide authoring/transfer | [Guide transfer](plan022_slice4be_guide_transfer_results.md) retains policy/storage RED423/1 -> GREEN429, transfer71 and native-edit58. Test-only GREEN499 proves20 actual recordings/evaluations and independent successful/incomplete/denied guide comparisons for Export and Import. Five instrumented compiles,12 reviewed captures, preservation, normal closure, delayed zero Excel failures and unchanged static ratchets pass. Runtime/packages are unchanged; broader acceptance remains open. |
