@@ -13,6 +13,16 @@ candidate is `deploy/validation-guide-transfer-notice-01`; the preceding Print c
 is `deploy/validation-print-recorded-01`, code checkpoint `89674af1`.
 Do not equate control registration, a scoped GREEN or a diagnostic with full acceptance.
 
+Current Production correction candidate: `deploy/validation-run-ui-01`, catalog31.
+Approved RUN-UI-01 reaches RED272/4→GREEN276 with four reviewed failure-message
+captures, five cold/instrumented compiles and preserved identity/custom columns/
+authority. Only the form's wording call and existing allocation module change;
+310 packaged components are unchanged. Static caps/dynamic/duplicate metrics pass.
+Smoke86 and ordinary chain32/live48/warehouse15 pass in prior order with normal
+closure, preservation and zero delayed native errors. This current clean run
+does not establish the cause of earlier intermittent failures. RUN-SCALE-01 remains
+approved and unimplemented. Exact receipts: [Run results](plan022_slice4be_production_run_local_results.md).
+
 Verified group: [General Settings](plan022_slice4be_general_settings_results.md)
 under catalog31: full GREEN871 retains all647 ordered policy/permission checks
 and adds224 recording/guide assertions. Nine independent positive conclusions and
@@ -59,7 +69,7 @@ lifecycle; retain the transfer499 checkpoint at its frozen candidate.
 | Versioned guide authoring/transfer | [Guide transfer](plan022_slice4be_guide_transfer_results.md) retains policy/storage RED423/1 -> GREEN429, transfer71 and native-edit58. Test-only GREEN499 proves20 actual recordings/evaluations and independent successful/incomplete/denied guide comparisons for Export and Import. Five instrumented compiles,12 reviewed captures, preservation, normal closure, delayed zero Excel failures and unchanged static ratchets pass. Runtime/packages are unchanged; broader acceptance remains open. |
 | How-To/Diagnostic/Compare and preferences | [Print comparison](plan022_slice4be_production_print_results.md) passes full320 with five reviewed captures and normal closure; its earlier view-session failure remains unexplained. Existing presentation/restart evidence remains scoped. Reconcile visible Operations and Admin comparisons, incomplete evidence and restart/isolation proof. |
 | Early B0 Receiving proof | [Receiving replay](plan022_slice4be_receiving_replay_results.md) passes121/121 on unchanged General02, retaining117 and adding four capture-settling checks. Five compiles, preservation and clean delayed closure pass. Native maximize/restore and intact restored captures are verified; the earlier clipped transition images remain recorded. Observation accounting, broader gates and human acceptance remain open. |
-| Final D13 and preservation gates | General02 retains871, UOM228 and smoke86, with refreshed Settings202/user-policy104, five compiles, static/layout evidence and a clean traced32/live48/warehouse15 chain after harness cleanup. The ordinary chain still has an earlier Receiving14/1 automation failure; its subsequent untraced31-check control passes without proving the cause. Retain historical native failures and final ordinary-chain, visible/restart/binding requirements. Preserve System_Key, unknown columns, captured binding, launcher reuse and headless authority. |
+| Final D13 and preservation gates | UI01 now has ordinary chain32/live48/warehouse15 and smoke86 in prior order, preserved packages/settings/reports, normal closure and zero delayed native errors. Retain earlier failures without declaring their cause repaired. General02 retains871, UOM228, Settings202/user-policy104/observations548 and B0 native121 at their exact scope. Reconcile changed dependencies and remaining visible/binding/coverage evidence; preserve System_Key, unknown columns, launcher reuse and headless authority. |
 
 An untraced BeforeProjection/Setup Chain control passes31/31 with clean lifecycle
 and preservation. It retains the ordered prefix, leaves17 checks unreached and

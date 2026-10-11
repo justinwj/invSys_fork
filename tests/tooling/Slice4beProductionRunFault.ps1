@@ -99,7 +99,7 @@ function Test-ProductionRunFault($Fixture,$Other,[switch]$YieldOnly,[switch]$Sto
         $first=@($rows|Where-Object OutcomeCode -CEQ 'REQUESTED');$last=@($rows|Where-Object OutcomeCode -CEQ $Outcome)
         $pair=$rows.Count -eq 2 -and $first.Count -eq 1 -and $last.Count -eq 1
         $context=$pair;$safe=$pair;$linked=$false;$facts=$false;$terminal=$false
-        foreach($row in $rows){$context=$context -and $row.ControlId -ceq ('PRODUCTION_RUN_'+$Action) -and $row.OwnerId -ceq 'PRODUCTION_RUN_LOCAL' -and $row.UserId -ceq 'config-producer' -and $row.WarehouseId -ceq $Fixture.Warehouse -and $row.CatalogVersion -eq 24;$safe=$safe -and @($row.SourceEventRefs).Count -eq 0}
+        foreach($row in $rows){$context=$context -and $row.ControlId -ceq ('PRODUCTION_RUN_'+$Action) -and $row.OwnerId -ceq 'PRODUCTION_RUN_LOCAL' -and $row.UserId -ceq 'config-producer' -and $row.WarehouseId -ceq $Fixture.Warehouse -and $row.CatalogVersion -eq 31;$safe=$safe -and @($row.SourceEventRefs).Count -eq 0}
         foreach($wire in $raw){foreach($value in @($canary,$Fixture.Secret,(CredentialHash $Fixture.Secret),$Fixture.Root,'Injected Run owner interruption','HANDLER_ERROR','mBtn','RUN-KEY-','RUN-LOCATION','DEMO-RAW-BLACK-TEA')){
             $encoded=ConvertTo-Json -InputObject $value -Compress
             if($wire.Contains($value) -or $wire.Contains($encoded.Substring(1,$encoded.Length-2))){$safe=$false}

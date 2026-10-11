@@ -130,8 +130,9 @@ Public Function RunWorksheetResultForTest(ByVal mode As String) As Boolean
     Dim ws As Worksheet, qty As Double, pct As Double, row As Long, key As String, values As Variant
     Dim splitBox As MSForms.TextBox, qtyBox As MSForms.TextBox
     If mode = "MissingTable" Or mode = "MissingQuantity" Then
-        ' RUN-UI-01 is pending approval: this presentation assertion is proposed.
-        RunWorksheetResultForTest = (InStr(1, mTxtStatus.Text, "allocation updated", vbTextCompare) = 0)
+        ' RUN-UI-01 approved 2026-10-11: assert the exact operator failure message.
+        RunWorksheetResultForTest = (StrComp(mTxtStatus.Text, _
+            "Allocation could not finish: the required local staging table or columns are unavailable.", vbBinaryCompare) = 0)
         Exit Function
     End If
     Set ws = mOperatorWorkbook.Worksheets("Production")
@@ -234,6 +235,11 @@ function Test-ProductionRunWorksheet($Fixture) {
             Pair $before $action $outcome $label
             $records=@(Files|Where-Object{$_ -cnotin $before}|ForEach-Object{[IO.File]::ReadAllText($_)})
             Check ($label+'.NoExactKeyInObservations') ($records.Count -eq 2 -and @($records|Where-Object{$_.Contains($key)}).Count -eq 0)
+            if($CaptureEvidence -and $mode.StartsWith('Missing')){
+                $page=[int](Probe 'RunLocalShowAndCapture' @($book.Name,$action))
+                Check ($label+'.VisibleOperatorPage') ($page -eq $(if($action -ceq 'TREE_ALLOCATE'){4}else{3}))
+                CaptureOwnedFormByCaptionEvidence 'Production' ('run-ui-'+$action.ToLowerInvariant()+'-'+$mode.ToLowerInvariant()+'.png')
+            }
         }
     }
 }

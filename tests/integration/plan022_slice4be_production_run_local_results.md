@@ -3,7 +3,54 @@
 Current decision update,2026-10-11: the user explicitly approved RUN-SCALE-01 and
 RUN-UI-01. Architecture v4.11 D18, Plan022 and Controls record both approvals in
 docs commit `9dc7cbc`. Earlier references below to pending approval retain their
-historical meaning. Implementation and packaged acceptance are still required.
+historical meaning. RUN-UI-01 evidence follows; RUN-SCALE-01 implementation and
+broader acceptance remain required.
+
+## RUN-UI-01 approved wording, 2026-10-11
+
+Unpromoted `deploy/validation-run-ui-01` replaces the misleading allocation-success
+message with the exact approved failure text when the worksheet owner cannot stage
+the allocation. The existing FAILED fact and partial effects remain unchanged;
+there is no repair or rollback. Success wording and reusable allocation are unchanged.
+`frmProduction` delegates wording to its existing allocation action module.
+
+`Test-Slice4beProductionRunLocal.ps1 -WorksheetOnly` calls the actual List/Tree
+Apply handlers with an Admin-seeded entity. RED on General02 is272 PASS/4 FAIL;
+GREEN on UI01 is276/276. All272 historical check identities retain relative order;
+four visible-page checks are added. The four formerly proposed assertions now
+require the exact approved text. The current-catalog assertion is updated24→31;
+historical catalog definitions remain intact. Quantity/percent/zero/refusal cases,
+exact identity, custom columns/formula, immutable observations, redaction, terminal
+classification and source/operator/settings/package preservation pass.
+
+RED controller `production-run-local-controller/e1872156efbb4535840900340779eff2`,
+worker `slice4be-production-run-worksheet/d8f1a830d72846fb8e390e9050a60e98`:
+UTC19:58:44.106--20:00:42.171. GREEN controller
+`production-run-local-controller/1ac0bda0b62a4b259a3ddd7ed2e7b63f`, worker
+`slice4be-production-run-worksheet/a4aca290c2f74501b23327a457b27f94`:
+UTC20:02:07.569--20:04:12.133. Both have five instrumented compiles, unassisted
+closure and zero delayed Excel events through12 seconds after closure. Controller
+qualified receipts pin results/retention. Four GREEN captures show the complete
+failure message; existing Tree header overlap and clipped long row values remain
+separate layout limitations. Agent image review is not human acceptance.
+
+`run-ui-build-01/verification.json` records five cold compiles and exactly two
+changed packaged components (form/allocation module), with310 unchanged. The
+General02 packages and local settings are preserved; delayed native audit is clean.
+`run-ui-static-01/ratchet-verification.json` records319 components,6341 procedures,
+138720 lines: one necessary wording helper/eight lines added, no form growth,
+unchanged dynamic9/45,192 duplicate candidates and all28 size caps. Three schemas
+and456 PowerShell parses pass. Smoke86/86 is clean at
+`run-ui-regression/smoke-9e9c8b22f6e74878831a82136b16c9a4`, including restart,
+unassisted closure, preservation and delayed zero Excel events.
+The ordinary full chain now passes32/32, live-role48/48 and Create Warehouse15/15
+in exact prior order on UI01. Controller
+`run-ui-regression/chain-ffb39bcfa3bc4582aaed19ff4b51bc96/verification.json`:
+UTC20:06:31.303--20:12:23.927, zero Excel events through20:12:35.927. Normal
+unassisted closure, package/settings/tracked-report preservation and restart pass.
+This qualifies the current run; it does not identify or repair the prior
+intermittent native/automation failures. RUN-SCALE-01 remains approved but
+unimplemented; broader4be-A and human acceptance remain open.
 
 ## Independent List and Tree Apply Action Paths
 

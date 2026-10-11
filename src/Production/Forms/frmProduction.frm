@@ -5009,7 +5009,7 @@ Public Sub ApplySelectedRunPaletteSplit(ByVal action As cProductionWorksheetActi
     BuildRunTreeFromPaletteList
     SetRunAllocationVisualState splitTextBox, qtyTextBox, newTotalPct
     If staged Then action.OutcomeCode = "STAGED" Else action.OutcomeCode = "FAILED"
-    ShowStatus "Acceptable inventory allocation updated. Ingredient is " & FormatRunNumber(newTotalPct) & "% filled."
+    ShowStatus modProductionRunAllocateActions.WorksheetResult(staged, FormatRunNumber(newTotalPct))
 End Sub
 
 Public Function TryParseNonNegativeRunNumber(ByVal numberText As String, ByRef numberValue As Double, ByVal labelText As String) As Boolean

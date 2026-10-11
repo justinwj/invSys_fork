@@ -39,7 +39,7 @@ try{
     if($FaultOnly){$extra=@('-RunLocalFaultOnly')}
     if($YieldOnly){$extra=@('-RunLocalYieldOnly')}
     if($StockOnly){$extra=@('-RunLocalStockOnly')}
-    if($WorksheetOnly){$extra=@('-RunLocalWorksheetOnly')}
+    if($WorksheetOnly){$extra=@('-RunLocalWorksheetOnly','-CaptureEvidence')}
     if($WorksheetOwnerOnly){$extra=@('-RunLocalWorksheetOwnerOnly')}
     if($WorksheetScaleOnly){$extra=@('-RunLocalWorksheetScaleOnly')}
     if($ClearPathsOnly){$extra=@('-RunClearPathsOnly','-CaptureEvidence')}

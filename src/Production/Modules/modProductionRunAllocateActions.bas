@@ -53,6 +53,14 @@ Failed:
     Resume Done
 End Function
 
+Public Function WorksheetResult(ByVal staged As Boolean, ByVal percentText As String) As String
+    If staged Then
+        WorksheetResult = "Acceptable inventory allocation updated. Ingredient is " & percentText & "% filled."
+    Else
+        WorksheetResult = "Allocation could not finish: the required local staging table or columns are unavailable."
+    End If
+End Function
+
 Public Sub ApplyReusable(ByVal owner As frmProduction, ByVal action As cProductionWorksheetAction, _
                          ByVal palette As MSForms.ListBox, ByVal splitBox As MSForms.TextBox, _
                          ByVal qtyBox As MSForms.TextBox, ByVal runLocation As String)
