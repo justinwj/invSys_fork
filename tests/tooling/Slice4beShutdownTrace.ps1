@@ -1,8 +1,34 @@
+# Redact the diagnostic's explicitly read generated trigger fields before output.
+# The report tail can contain identifiers and errors: never retain or serialize it.
+function Convert-ProjectionOutcomeDiagnostic([string]$Report,[string]$Status,[string]$ErrorCode,[int]$BeforeLog,[int]$AfterLog,[int]$BeforeApplied,[int]$AfterApplied,[int]$TriggerMatches,[bool]$ExactIdentity) {
+    $match=[regex]::Match($Report,'\AProcessed=([0-9]{1,9}); Report=Applied=([0-9]{1,9}); SkipDup=([0-9]{1,9}); Poison=([0-9]{1,9})(?:;|\z)')
+    $counts=@($null,$null,$null,$null)
+    if($match.Success){for($i=0;$i -lt 4;$i++){$counts[$i]=[int]$match.Groups[$i+1].Value}}
+    $safeStatus='OTHER';$safeError='OTHER'
+    if($Status -ceq ''){$safeStatus='EMPTY'}elseif($Status -cin @('NEW','PROCESSED','SKIP_DUP','POISON')){$safeStatus=$Status}
+    if($ErrorCode -ceq ''){$safeError='NONE'}elseif($ErrorCode -cin @('AUTH_DENIED','INVALID_EVENT','INVALID_EVENT_TYPE','DESIGNS_WORKBOOK_NOT_FOUND','UNKNOWN_APPLY_STATUS')){$safeError=$ErrorCode}
+    return [pscustomobject]@{ReportRecognized=$match.Success;Processed=$counts[0];Applied=$counts[1];SkipDup=$counts[2];Poison=$counts[3];Status=$safeStatus;ErrorClass=$safeError;LogDelta=$AfterLog-$BeforeLog;AppliedDelta=$AfterApplied-$BeforeApplied;TriggerMatches=$TriggerMatches;ExactIdentity=$ExactIdentity}
+}
+
 # Diagnostic metadata only. Never pass workbook values, macro arguments or errors.
 function Add-ShutdownPhase([string]$Phase,[string]$Marker='',[bool]$Passed=$false) {
     if($Phase -cnotmatch '^(Restart\.(Before|After)|Stage\.(Before|After)|Macro\.Before|Check|Workbook\.(BeforeClose|AfterClose|BeforeRelease|AfterRelease)|Excel\.(BeforeQuit|AfterQuitAttempt|BeforeRelease|AfterRelease))$'){throw 'Unknown shutdown phase.'}
     if($Marker -cnotmatch '^[A-Za-z0-9_.-]{0,128}$'){throw 'Invalid shutdown marker.'}
-    [pscustomobject]@{UTC=[DateTimeOffset]::UtcNow.ToString('o');Phase=$Phase;Marker=$Marker;Passed=$Passed}|ConvertTo-Json -Compress|Add-Content -LiteralPath (Join-Path $ReportRoot 'phases.jsonl')
+    $line=[pscustomobject]@{UTC=[DateTimeOffset]::UtcNow.ToString('o');Phase=$Phase;Marker=$Marker;Passed=$Passed}|ConvertTo-Json -Compress
+    $bytes=[Text.UTF8Encoding]::new($false).GetBytes($line+[Environment]::NewLine)
+    for($attempt=0;$attempt -lt 100;$attempt++){
+        $stream=$null
+        try{
+            # Permit readers, serialize writers, and keep each JSON line whole.
+            $stream=[IO.FileStream]::new((Join-Path $ReportRoot 'phases.jsonl'),[IO.FileMode]::Append,[IO.FileAccess]::Write,[IO.FileShare]::Read)
+            $stream.Write($bytes,0,$bytes.Length)
+            return
+        }catch [IO.IOException]{
+            $code=$_.Exception.HResult -band 0xffff
+            if($code -notin @(32,33) -or $attempt -eq 99){throw}
+            Start-Sleep -Milliseconds 10
+        }finally{if($null -ne $stream){$stream.Dispose()}}
+    }
 }
 
 function Add-ShutdownTraceToFunction([string]$Name,[string]$Text) {

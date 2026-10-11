@@ -1708,8 +1708,18 @@ try {
     Write-Output "PHASE6_LIVE_PROJECTION_DELETE_BEGIN"
     try { $wsSkuBalance.Unprotect() } catch {}
     try { $wsLocationBalance.Unprotect() } catch {}
-    if ($null -ne $loSkuBalance) { $loSkuBalance.Delete() }
-    if ($null -ne $loLocationBalance) { $loLocationBalance.Delete() }
+    # These deleted test projections must not retain COM wrappers while the
+    # packaged processor recreates tables with the same names.
+    if ($null -ne $loSkuBalance) {
+        $loSkuBalance.Delete()
+        Release-ComObject $loSkuBalance
+        $loSkuBalance = $null
+    }
+    if ($null -ne $loLocationBalance) {
+        $loLocationBalance.Delete()
+        Release-ComObject $loLocationBalance
+        $loLocationBalance = $null
+    }
     $wbInventoryRuntime.Save()
     Write-Output "PHASE6_LIVE_PROJECTION_DELETE_END"
     $projectionDeleteOk = ($null -eq (Get-ListObjectSafe -Worksheet $wsSkuBalance -TableName "tblSkuBalance")) `

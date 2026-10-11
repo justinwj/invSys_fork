@@ -133,6 +133,47 @@ try {
     if(-not $resolvedFixture.StartsWith($allowed,[StringComparison]::OrdinalIgnoreCase)){throw 'Synthetic cleanup outside its allowed root.'}
     Remove-Item -LiteralPath $resolvedFixture -Recurse -Force
 }
+$outcomeCommand=Get-Command Convert-ProjectionOutcomeDiagnostic -ErrorAction SilentlyContinue
+Check 'ProjectionOutcomeDiagnosticAvailable' ($null -ne $outcomeCommand)
+if($null -ne $outcomeCommand){
+    $sample=Convert-ProjectionOutcomeDiagnostic ('Processed=0; Report=Applied=0; SkipDup=0; Poison=1; RunId='+$payload+'; LastPoison='+$payload) 'POISON' 'AUTH_DENIED' 6 6 6 6 0 $false
+    Check 'ProjectionOutcomeCounts' ($sample.Processed -eq 0 -and $sample.Applied -eq 0 -and $sample.SkipDup -eq 0 -and $sample.Poison -eq 1 -and $sample.ReportRecognized)
+    Check 'ProjectionOutcomeClassification' ($sample.Status -ceq 'POISON' -and $sample.ErrorClass -ceq 'AUTH_DENIED' -and $sample.LogDelta -eq 0 -and $sample.AppliedDelta -eq 0 -and $sample.TriggerMatches -eq 0 -and -not $sample.ExactIdentity)
+    $unknown=Convert-ProjectionOutcomeDiagnostic $payload $payload $payload 6 7 6 7 1 $true
+    Check 'ProjectionUnknownValuesRedacted' ($unknown.Status -ceq 'OTHER' -and $unknown.ErrorClass -ceq 'OTHER' -and -not $unknown.ReportRecognized -and $null -eq $unknown.Processed)
+    $malformed=Convert-ProjectionOutcomeDiagnostic 'Processed=1; Report=Applied=1; SkipDup=0; Poison=0secret' '' '' 0 1 0 1 1 $true
+    Check 'ProjectionMalformedCountsNotInferred' (-not $malformed.ReportRecognized)
+    $serialized=@($sample,$unknown,$malformed)|ConvertTo-Json -Depth 4
+    Check 'ProjectionPayloadNeverSerialized' (-not $serialized.Contains($payload) -and -not $serialized.Contains('RunId') -and -not $serialized.Contains('LastPoison'))
+    Check 'ProjectionDiagnosticFixedShape' (($sample.PSObject.Properties.Name -join '|') -ceq 'ReportRecognized|Processed|Applied|SkipDup|Poison|Status|ErrorClass|LogDelta|AppliedDelta|TriggerMatches|ExactIdentity')
+}
+$controlTree=[Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'Test-Slice4beShutdownControl.ps1'),[ref]$tokens,[ref]$errors)
+$cleanup=$controlTree.Find({param($n)$n -is [Management.Automation.Language.ForEachStatementAst] -and $n.Variable.VariablePath.UserPath -ceq 'localReference'},$true)
+if($null -eq $cleanup){throw 'Projection cleanup loop unavailable.'}
+$released=@(& {
+    param($text)
+    $inbox='caller-owned-sentinel';$releasedReferences=[Collections.Generic.List[string]]::new()
+    function Release-ComObject($value){if($null -ne $value){$releasedReferences.Add([string]$value)}}
+    & {param($text) $sku='local-owned-sentinel';. ([scriptblock]::Create($text))} $text
+    $releasedReferences.ToArray()
+} $cleanup.Extent.Text)
+Check 'ProjectionCleanupPreservesCallerReferences' ($released -cnotcontains 'caller-owned-sentinel')
+Check 'ProjectionCleanupReleasesAcquiredReference' ($released -ccontains 'local-owned-sentinel')
+Add-Type @'
+using System.IO;using System.Threading;using System.Threading.Tasks;
+public static class TraceSharingControl {
+ public static Task HoldThenRelease(string path) {
+  var stream=new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.Read);
+  return Task.Run(()=>{Thread.Sleep(150);stream.Dispose();});
+ }
+}
+'@
+$held=[TraceSharingControl]::HoldThenRelease((Join-Path $ReportRoot 'phases.jsonl'))
+$appendSucceeded=$false
+try{Add-ShutdownPhase 'Stage.Before' 'Contention.Check';$appendSucceeded=$true}catch{}finally{$held.Wait()}
+Check 'TraceSurvivesBriefReaderContention' $appendSucceeded
+$written=@(Get-Content (Join-Path $ReportRoot 'phases.jsonl')|ForEach-Object{$_|ConvertFrom-Json}|Where-Object Marker -CEQ 'Contention.Check')
+Check 'TraceContentionAppendsExactlyOnce' ($written.Count -eq 1)
 $checks|ConvertTo-Json|Set-Content (Join-Path $ReportRoot checks.json)
 $failed=@($checks|Where-Object{-not $_.Passed}).Count
 [pscustomobject]@{ReportRoot=$ReportRoot;Passed=$checks.Count-$failed;Failed=$failed;ExcelCreated=$false}|ConvertTo-Json

@@ -35,6 +35,17 @@ live fault is localized to the processor call after projection deletion. A fresh
 copied-fixture replay has3 PASS/3 FAIL plus delayed matching-owner combase/c0000005
 after worker exit. The unsaved VBA-traced Chain control passes35/35 with clean
 closure; this does not establish a native repair.
+Later replay6/6 and read-only lock evidence support an active lease as the earlier
+business failure explanation. Tooling74 protects redaction, local cleanup and trace
+contention; releasing diagnostic-local
+references corrects its shutdown gate with6/6, preservation and zero delayed events.
+The full-chain native failures remain open; runtime/packages are unchanged.
+Deleted-table release in a disposable traced chain passes32/live48/warehouse15
+with clean delayed closure. The regular validator now includes that cleanup and
+retains all143 business calls, but its untraced run fails earlier at Receiving
+ConfirmWrites (14 PASS/1 FAIL, HRESULT0x80020009), requiring assisted child closure.
+No corresponding Application crash event is found. Final diagnostic6/6, tooling74
+and static ratchets pass; ordinary-chain acceptance remains open.
 Fresh same-candidate UOM228 protects the corrected native capture helper and retains
 all prior ordered checks with clean
 lifecycle; retain the transfer499 checkpoint at its frozen candidate.
@@ -50,8 +61,8 @@ lifecycle; retain the transfer499 checkpoint at its frozen candidate.
 | Early B0 Receiving proof | [Receiving replay](plan022_slice4be_receiving_replay_results.md) passes103/103 on the current Print candidate, retaining101 and adding two displayed-result checks. Eleven reviewed captures cover editor/setup, fresh applied proof, stopped verification and minimum/default/larger layouts. Observation accounting, native maximize/restore, broader gates and human acceptance remain open. |
 | Final D13 and preservation gates | General02 retains871 and UOM228, with fresh clean smoke86, five compiles and static/layout evidence. Chain32/live48/warehouse15 passes functionally but its native Excel audit fails (combase.dll/c0000005). Late-stage diagnostics are clean; the traced full chain instead hits an earlier live-role native failure. Retain both failures and extend the trace before another full-chain attempt. Retain prior Print/Check In evidence at its original scope. Reconcile all current GREENs and visible/restart/binding coverage against the final artifact; retain System_Key, unknown columns, captured binding, launcher reuse and headless authority. |
 
-Next: add redacted outcome diagnostics to classify the fresh replay's three
-business failures, retaining the trace and both native failure records;
+Next: isolate the earlier Receiving ConfirmWrites automation failure with the
+untraced BeforeProjection/Setup Chain control and explicit frozen package pins;
 then continue the Operations/Admin observation gaps below and reconcile final
 live-role, Release1, restart/binding and visible acceptance evidence. Transfer
 maintenance-denial, terminal/interruption and recorded/evaluated comparisons now

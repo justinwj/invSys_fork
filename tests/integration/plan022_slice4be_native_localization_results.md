@@ -139,7 +139,97 @@ Receipt: `projection-live-control/b362597a0dce4ffe8c9c652c83a5e4a5/qualified-ver
 This control changes VBE preparation and instrumentation; its success does not
 explain or repair either native failure.
 
-Next add redacted processor counts, trigger status/error classification and
-authority deltas to the fresh control to distinguish its business failures from
-delayed teardown. Preserve both native failures and all original checks; no
-unchanged full-chain retry or collection-based runtime repair is justified.
+## Fresh replay outcome and diagnostic reference cleanup
+
+The diagnostic now emits only processor counts, allowlisted status/error classes,
+authority deltas and identity booleans. Raw report tails, identifiers and error
+messages are excluded. Pure tooling expands63 to **70/70** with redaction and
+malformed-input checks; the initial missing-helper check was63/1, not product RED.
+An exception-path guard first fails71/1, then passes72/72 after restricting cleanup
+lookup to local variables: caller-owned references cannot be released accidentally.
+
+The unchanged six replay checks pass on the same copied source fixture at
+18:08:29--18:12:14Z. One event applies with exact identity, one log/applied increment,
+processed status and no duplicate on replay. Excel remains210 seconds after Quit,
+then exits with its worker; delayed audit18:12:43Z has zero events. The controller
+still fails its explicit exit-before-worker gate. All13 source files, settings
+and five packages are preserved. No assisted closure is needed.
+
+Read-only inspection of the original generated fixture and earlier failed copy
+finds the same HELD inventory lock, active with44.105 seconds remaining at the
+earlier failed replay and expired before the passing replay. This supports the
+three-minute lock lease as the explanation for the three failures; the earlier raw processor
+report was not captured, so it is not retrospective proof of its exact return.
+Inspection uses fresh Excel with events/macros disabled, no refresh or save,
+unchanged hashes and a clean delayed closure audit. No lock was reset or bypassed.
+
+An experimental diagnostic releases only its locally acquired table/worksheet
+references before closing the inbox. It retains6/6 and Excel exits while the worker
+remains alive, with zero delayed events and full preservation. The same cleanup is
+then applied to `Test-Slice4beShutdownControl.ps1`; the actual tool repeats6/6 and
+the same clean lifecycle. This corrects the diagnostic's reference lifetime. It
+does not repair the separate live processor crash or identify the original
+untraced full-chain combase owner. Runtime and frozen packages remain unchanged.
+
+Exact ignored receipts:
+
+- Pure tooling: `shutdown-trace-contract/c4b7c574a09e4c3e8645c400dcfdeb02/checks.json`.
+- Before cleanup: `native-projection-replay03-control/qualified-verification.json`; `slice4be-shutdown-control/27eca37b39c74994be7b4cb3c7140ed8/projection-outcome.json`.
+- Read-only lock state: `native-projection-lock-read-01/lock-state.json`, `preservation.json`, `verification.json`.
+- Experimental cleanup: `native-projection-release-control-01/instrumentation.json`, `qualified-verification.json`.
+- Corrected diagnostic: `native-projection-replay04-control/qualified-verification.json`; `slice4be-shutdown-control/d8f932dce8564b648303e0f1f397e2bf/`.
+
+The first full-chain deleted-table-release experiment stops before projection at
+a trace append sharing violation (chain5/1; no fresh live gate credited). Excel
+closes normally with preservation and zero native events. It does not test the
+release hypothesis. A real file-contention test reproduces72/2; bounded retries
+for Win32 sharing/lock violations32/33 produce **74/74**, preserving all72 checks.
+Other write failures still throw. Writers serialize complete metadata-only lines;
+there is no runtime change or product RED.
+Final static evidence at `general-native-outcome-static-03/ratchet-verification.json`
+retains all metrics/28 caps; three schemas and455 PowerShell scripts validate.
+`native-outcome-tooling-verification.json` verifies all63 prior pure checks remain
+the exact ordered prefix of74 GREEN checks.
+
+Receipts: `general-native-release01-regression/chain-dac91b5d5fbf4b0fbbb3184952fee31a/native-verification.json`;
+`shutdown-trace-contract/64eef894a1024311baf1dc66deeca5f9/checks.json` (caller-scope RED),
+`shutdown-trace-contract/9d0573aff77e4e6fa1ef13a6ed1eb46f/checks.json` (scope GREEN),
+`shutdown-trace-contract/470463514dc4417da44f48977f0b923d/checks.json` (contention RED),
+`shutdown-trace-contract/60beb25ad6224670b65aa3661400764b/checks.json` (74 GREEN).
+
+## Deleted-table cleanup and ordinary-chain limit
+
+The corrected experimental chain runs18:19:30--18:25:12Z and passes **32/32,
+live48/48, warehouse15/15**, retaining every original ordered check. The processor
+returns after deletion and all three rebuild/authority assertions pass. All six
+owned Excel instances close without assistance; delayed audit has zero Excel
+failure events. Two instances had remained after Quit until worker teardown, so
+this is not proof of prompt per-procedure shutdown. Settings, reports and packages
+are preserved. Receipt: `general-native-release02-regression/chain-0d52431b24aa4140809a0cff9a43b203/native-verification.json`
+and `qualified-counts.json`; trace `general-chain-native-release-02/`.
+
+The regular live validator now releases and clears its two deleted table wrappers
+immediately after Delete. All143 business calls retain exact order and text
+(`live-validator-cleanup-source-verification.json`); runtime/packages are unchanged.
+Pure checks remain74/74. The ordinary untraced chain then fails **before this
+cleanup is reached**, at Receiving ConfirmWrites: chain5 PASS/1 FAIL,
+live14 PASS/1 FAIL, warehouse15/15;27 chain and34 live checks are unreached.
+The reported macro is `modTS_Received.RunReceivingConfirmWritesFormActionForTest`,
+HRESULT `0x80020009`. No corresponding Application1000/1001/1002 Excel event is
+found through12 seconds after closure. Its child Excel process requires native
+CloseMainWindow; no COM reattachment or recovery-file deletion occurs. The child's
+precise role is unproved. This is an unresolved automation failure, not a proven
+native crash or evidence about the unreached projection change.
+
+Ordinary-chain receipt: `general-native-release-final-regression/chain-5d34bc36c71c43dab886cd1bc2d35212/qualified-verification.json`,
+`qualified-counts.json` and `assisted-close.json`. Final corrected diagnostic
+replay retains6/6, closes while its worker lives and preserves all13 source files,
+settings and packages with zero delayed events: `native-projection-replay05-control/qualified-verification.json`.
+Final source pure checks: `shutdown-trace-contract/621b3b12a7da4d23a5593064bcc4b8aa/checks.json`.
+Final static: `general-native-outcome-static-04/ratchet-verification.json`, with
+unchanged metrics/28 caps, three valid schemas and455 parsed PowerShell scripts.
+
+Next isolate the Receiving callback through the existing untraced `BeforeProjection`
+control with `Setup Chain` and explicit General02 package pins; preserve the14/1
+failure and distinguish form construction, handler and unload if it reproduces.
+No universal native repair, ordinary-chain acceptance or 4be-A completion is claimed.

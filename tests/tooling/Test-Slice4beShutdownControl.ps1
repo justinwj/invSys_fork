@@ -179,9 +179,21 @@ public static class ShutdownControlOwner {
                 }
                 Add-Result 'ProjectionRecovery.ExactIdentity' ($matches -eq 1 -and $exact -and [string](Get-TableValue $inbox $eventRow 'System_Key') -ceq $systemKey) 'Exact trigger EventID and System_Key retained.'
                 Add-Result 'ProjectionRecovery.Processed' ([string](Get-TableValue $inbox $eventRow 'Status') -ceq 'PROCESSED') 'Exact trigger reaches processed status.'
+                # Generated copied fixture only. Read status/code, never ErrorMessage;
+                # serialize fixed classifications and counts, never the raw report.
+                Write-Json 'projection-outcome.json' (Convert-ProjectionOutcomeDiagnostic $report ([string](Get-TableValue $inbox $eventRow 'Status')) ([string](Get-TableValue $inbox $eventRow 'ErrorCode')) $beforeLog $afterLog $beforeApplied $afterApplied $matches $exact)
                 $replay=[string](Run-WorkbookMacro -Excel $Application -WorkbookName $Packages['invSys.Core.xlam'].Name -MacroName 'modProcessor.RunBatchReportForAutomation' -Arguments @($Warehouse,500))
                 Add-Result 'ProjectionRecovery.Replay' ($replay -match '^Processed=0;' -and (Get-TableRowCount $log) -eq $afterLog -and (Get-TableRowCount $applied) -eq $afterApplied) 'Replay creates no duplicate authority records.'
             } finally {
+                # Release only references acquired by this diagnostic. Retaining
+                # deleted projection/table RCWs can outlive Quit and the worker.
+                # Inventory, Application and Packages are owned by the caller.
+                foreach($localReference in @('inbox','sku','location','applied','log','loSkuBalance','loLocationBalance','wsSkuBalance','wsLocationBalance')){
+                    $localValue=Get-Variable -Scope Local -Name $localReference -ValueOnly -ErrorAction SilentlyContinue
+                    Release-ComObject $localValue
+                    Set-Variable -Scope Local -Name $localReference -Value $null
+                }
+                Write-Json 'projection-local-release.json' ([pscustomobject]@{UTC=[DateTimeOffset]::UtcNow.ToString('o');LocalReferencesOnly=$true;BusinessAssertionsUnchanged=$true})
                 try{$inboxBook.Close($false)}catch{}
                 Release-ComObject $inboxBook
             }
