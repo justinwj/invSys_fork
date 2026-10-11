@@ -4,6 +4,8 @@ param(
     [ValidateSet('Empty','Packages','TablesCollected','Restart','RestartCollected','RestartConfigured','RestartSnapshot','RestartRefreshed','RestartCustomHeader','RestartHeaders','RestartRead','RestartProjectionReplay')][string]$Case='Empty',
     [string]$RepoRoot='.',
     [string]$DeployRoot='deploy/validation-settings-diagnostic',
+    [string]$FixtureReceipt='',
+    [string]$PackagePinReceipt='',
     [switch]$Worker,
     [string]$ReportRoot='',
     [ValidateRange(180,300)][int]$ObservationSeconds=210
@@ -16,6 +18,7 @@ function Write-Json([string]$Name,[object]$Value){ConvertTo-Json -InputObject $V
 function Release-Com([object]$Value){if($null -ne $Value){[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($Value)}}
 if($Worker){
     if(-not (Test-Path -LiteralPath $ReportRoot -PathType Container)){throw 'Controller report root required.'}
+    . (Join-Path $PSScriptRoot 'Slice4beShutdownTrace.ps1')
     Add-Type @'
 using System;using System.Runtime.InteropServices;
 public static class ShutdownControlOwner {
@@ -28,6 +31,7 @@ public static class ShutdownControlOwner {
         if($Case -ceq 'RestartProjectionReplay'){
             $receipt=Join-Path $repo 'reports/runtime/settings-diagnostic-header-release-chain-phase6_live_role_workflow_results.md'
         }
+        if($FixtureReceipt){$receipt=(Resolve-Path -LiteralPath $FixtureReceipt).Path}
         $body=Get-Content -LiteralPath $receipt -Raw
         $match=[regex]::Match($body,'(?m)^- Runtime root override:\s*(.+?)\s*$')
         if(-not $match.Success){throw 'Generated live fixture reference unavailable.'}
@@ -47,6 +51,11 @@ public static class ShutdownControlOwner {
         foreach($definition in $functions){
             $text=$definition.Extent.Text
             if($definition.Name -ceq 'Invoke-RestartReconciliation'){
+                if($FixtureReceipt){
+                    $configAnchor='$configWorkbook = $localExcel.Workbooks.Open($configPath)'
+                    if([regex]::Matches($text,[regex]::Escape($configAnchor)).Count -ne 1){throw 'Clone configuration anchor differs.'}
+                    $text=$text.Replace($configAnchor,($configAnchor+"`r`n"+'        Initialize-ShutdownClonePaths $configWorkbook $source $clone'))
+                }
                 if($Case -ceq 'RestartProjectionReplay'){
                     # Retain the actual restart loader and cleanup; replace only its
                     # reconciliation assertions with a narrow failed-fixture replay.
@@ -93,6 +102,7 @@ public static class ShutdownControlOwner {
                 }
                 Write-Json 'instrumentation.json' ([pscustomobject]@{HarnessHash=(Get-FileHash -LiteralPath $harnessPath).Hash;CreatedAnchors=1;QuitAnchors=1;OriginalAssertionsUnchanged=($Case -cin @('Restart','RestartCollected'));DiagnosticPhaseCut=($Case -cnotin @('Restart','RestartCollected'))})
             }
+            $text=Add-ShutdownTraceToFunction $definition.Name $text
             . ([scriptblock]::Create($text))
         }
         function Save-RestartControlOwner([object]$Application){
@@ -178,7 +188,9 @@ public static class ShutdownControlOwner {
         }
         $deployPath=$deploy;$results=[Collections.Generic.List[object]]::new()
         try {
+            Add-ShutdownPhase 'Restart.Before'
             Invoke-RestartReconciliation -LiveResultText ('- Runtime root override: '+$clone)
+            Add-ShutdownPhase 'Restart.After'
             Write-Json 'restart-checks.json' @($results|Select-Object Check,Passed)
             $failed=@($results|Where-Object {-not $_.Passed}).Count -gt 0
             if($Case -cne 'Restart'){
@@ -255,7 +267,9 @@ if($ReportRoot){throw 'Controller creates a unique report root.'}
 $ReportRoot=Join-Path $repo ('reports/runtime/slice4be-shutdown-control/'+[guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $ReportRoot|Out-Null
 $start=[DateTimeOffset]::UtcNow
-$packagePins=Get-Content (Join-Path $repo 'reports/runtime/settings-diagnostic-package-pins.json') -Raw|ConvertFrom-Json
+$pinPath=if($PackagePinReceipt){(Resolve-Path -LiteralPath $PackagePinReceipt).Path}else{Join-Path $repo 'reports/runtime/settings-diagnostic-package-pins.json'}
+$packagePins=Get-Content -LiteralPath $pinPath -Raw|ConvertFrom-Json
+if(@($packagePins).Count -ne 5 -or @($packagePins|Where-Object {$_.Package -cnotmatch '^invSys\.(Core|Operations|Admin|Inventory\.Domain|Designs\.Domain)\.xlam$' -or $_.Hash -notmatch '^[A-Fa-f0-9]{64}$'}).Count -or @($packagePins.Package|Select-Object -Unique).Count -ne 5){throw 'Five exact package pins required.'}
 foreach($pin in $packagePins){if((Get-FileHash -LiteralPath (Join-Path $deploy $pin.Package)).Hash -cne $pin.Hash){throw 'Frozen candidate differs.'}}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
 $settings=Get-InvSysTestSettingsSnapshot
@@ -264,6 +278,7 @@ $child=$null
 try {
 Write-Json 'start.json' ([pscustomobject]@{UTC=$start.ToString('o');Case=$Case;ObservationSeconds=$ObservationSeconds;DiagnosticOnly=$true;SourceHash=(Get-FileHash -LiteralPath $PSCommandPath).Hash})
 $arguments=@('-NoProfile','-ExecutionPolicy','Bypass','-File',('"'+$PSCommandPath+'"'),'-Worker','-Case',$Case,'-RepoRoot',('"'+$repo+'"'),'-DeployRoot',('"'+$DeployRoot+'"'),'-ReportRoot',('"'+$ReportRoot+'"'),'-ObservationSeconds',$ObservationSeconds)
+if($FixtureReceipt){$arguments+=@('-FixtureReceipt',('"'+(Resolve-Path -LiteralPath $FixtureReceipt).Path+'"'))}
 $child=Start-Process -FilePath powershell.exe -ArgumentList $arguments -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $ReportRoot 'worker.stdout.log') -RedirectStandardError (Join-Path $ReportRoot 'worker.stderr.log')
 $null=$child.Handle
 Write-Output ('Report: '+$ReportRoot)

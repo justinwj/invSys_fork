@@ -316,7 +316,11 @@ and catalog behavior; this exception grants no architectural permission.
 
 ## Next action
 
-Retain871, smoke86 and same-candidate UOM228. Instrument exact owned-process and
-phase boundaries for the chain restart/evidence shutdown failure before changing
-runtime or claiming a clean chain. Remaining Settings regressions, Operations/Admin
-observation gaps and final acceptance remain open; local storage is unchanged.
+Retain871, smoke86 and same-candidate UOM228. The
+[native localization record](plan022_slice4be_native_localization_results.md)
+now captures process/phase diagnostics: corrected isolated late stages15 and
+collected restart12 are clean, but the original combase fault remains unresolved.
+The traced full chain failed earlier in live-role projection recovery with a
+different native fault; instrument that child before another full-chain attempt.
+Remaining Settings regressions, Operations/Admin observation gaps and final
+acceptance remain open; local storage and runtime are unchanged.

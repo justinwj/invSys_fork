@@ -25,6 +25,12 @@ RDP/tscon is not declared repaired. Remaining Settings regressions stay open.
 Fresh same-candidate smoke86 is clean. The chain retains32/live48/warehouse15,
 but its native audit records an Excel combase.dll/c0000005 crash after live-role
 completion. The exact failing call remains unknown; no clean chain is claimed.
+The [native localization record](plan022_slice4be_native_localization_results.md)
+adds process/phase tracing: isolated late stages15 and collected restart12 are
+clean after correcting cloned configuration paths, with source-fixture preservation.
+A traced full chain instead failed earlier during live-role projection recovery
+with ntdll.dll/c0000028 and assisted recovery closure. Neither fault is repaired;
+56 pure tooling checks protect tracing and partial-report scope.
 Fresh same-candidate UOM228 protects the corrected native capture helper and retains
 all prior ordered checks with clean
 lifecycle; retain the transfer499 checkpoint at its frozen candidate.
@@ -38,9 +44,10 @@ lifecycle; retain the transfer499 checkpoint at its frozen candidate.
 | Versioned guide authoring/transfer | [Guide transfer](plan022_slice4be_guide_transfer_results.md) retains policy/storage RED423/1 -> GREEN429, transfer71 and native-edit58. Test-only GREEN499 proves20 actual recordings/evaluations and independent successful/incomplete/denied guide comparisons for Export and Import. Five instrumented compiles,12 reviewed captures, preservation, normal closure, delayed zero Excel failures and unchanged static ratchets pass. Runtime/packages are unchanged; broader acceptance remains open. |
 | How-To/Diagnostic/Compare and preferences | [Print comparison](plan022_slice4be_production_print_results.md) passes full320 with five reviewed captures and normal closure; its earlier view-session failure remains unexplained. Existing presentation/restart evidence remains scoped. Reconcile visible Operations and Admin comparisons, incomplete evidence and restart/isolation proof. |
 | Early B0 Receiving proof | [Receiving replay](plan022_slice4be_receiving_replay_results.md) passes103/103 on the current Print candidate, retaining101 and adding two displayed-result checks. Eleven reviewed captures cover editor/setup, fresh applied proof, stopped verification and minimum/default/larger layouts. Observation accounting, native maximize/restore, broader gates and human acceptance remain open. |
-| Final D13 and preservation gates | General02 retains871 and UOM228, with fresh clean smoke86, five compiles and static/layout evidence. Fresh chain32/live48/warehouse15 passes functionally but its native Excel audit fails (combase.dll/c0000005); instrument its later restart/evidence interval. Retain prior Print/Check In evidence at its original scope. Reconcile all current GREENs and visible/restart/binding coverage against the final artifact; retain System_Key, unknown columns, captured binding, launcher reuse and headless authority. |
+| Final D13 and preservation gates | General02 retains871 and UOM228, with fresh clean smoke86, five compiles and static/layout evidence. Chain32/live48/warehouse15 passes functionally but its native Excel audit fails (combase.dll/c0000005). Late-stage diagnostics are clean; the traced full chain instead hits an earlier live-role native failure. Retain both failures and extend the trace before another full-chain attempt. Retain prior Print/Check In evidence at its original scope. Reconcile all current GREENs and visible/restart/binding coverage against the final artifact; retain System_Key, unknown columns, captured binding, launcher reuse and headless authority. |
 
-Next: localize the chain's native failure with owned-process/phase evidence,
+Next: extend owned-process/phase tracing to the live child's projection
+deletion/rebuild boundary, retaining the later trace and both native failure records;
 then continue the Operations/Admin observation gaps below and reconcile final
 live-role, Release1, restart/binding and visible acceptance evidence. Transfer
 maintenance-denial, terminal/interruption and recorded/evaluated comparisons now
