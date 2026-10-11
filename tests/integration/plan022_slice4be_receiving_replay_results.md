@@ -1,17 +1,59 @@
 # Slice 4be-A / early B0: Receiving replay
 
 Last verified: 2026-10-11 UTC. D18-REPLAY-01 is approved. Unchanged General02
-passes **117/117**, retaining all103 prior checks and adding14 native resize
-checks. **Native visible acceptance remains open:** both immediate restore
-captures clip left-edge content, although measured bounds restore exactly and
-a later runner capture is normal. Cause is unproved; do not infer a runtime fix
-or a desktop-access failure. The preceding frozen
+passes **121/121**, retaining all117 prior checks and adding four capture-settling
+checks. Both restored forms now have intact reviewed images. The capture helper
+waits for three identical frames at matching bounds before publishing; it retains
+the initial image and refuses to publish if15 samples do not settle. No runtime,
+layout, desktop-binding or contract change. Earlier rejected images remain evidence.
+The preceding frozen
 `validation-print-recorded-01` passes **103/103**, retaining all101 prior checks
 and adding two display-to-saved-result checks. Eleven captures are directly
 reviewed: profile editing, exact Training setup, successful fresh applied proof,
 stopped-run verification, and minimum/default/larger editor/runner layouts.
 Observation coverage, broader acceptance and human review remain open; this is
 not B0 or4be-A acceptance. Earlier receipts retain their original scope.
+
+## Settled native capture checkpoint, 2026-10-11 UTC
+
+The same native maximize/restore gate passes121/121. Every prior117 check retains
+relative order, including fresh exact Receiving effects and interruption/binding
+guards. All four captures settle after three later samples; all initial hashes
+differ from the final frames. Four published images were directly reviewed:
+restored left edges and controls are intact. Runner maximize was reviewed at
+reduced display scale, so this is not an original-size text-legibility claim.
+Five compiles, preservation, unassisted closure and zero delayed Excel failures
+pass. Static runtime metrics/caps remain unchanged;456 PowerShell files parse.
+
+Controller `receiving-replay-controller/65c71c71ad6541a68c7c240f5d42c732` contains
+qualified verification, ordered retention and image-hash receipts. Worker
+`slice4be-receiving-replay/5f4ea8eba030422b96301ecb415c8a2b` contains `green.json`,
+`b0-native-capture-settling.jsonl`, native state and images.
+UTC19:47:53.411--19:58:15.702; delayed audit through19:58:27.702.
+The command matches the native checkpoint below. Reuse
+`b0-native-resize-static-01/ratchet-verification.json` for unchanged runtime;
+`b0-native-settled-parse.json` records the current tooling parse. No error5 observed.
+Observation accounting, broader gates and human acceptance remain open.
+
+## Capture diagnostic, 2026-10-11 UTC
+
+The unchanged capture helper reproduced a clipped initial restored image followed
+by intact later images at identical bounds. RED diagnostic reports50 PASS/3 FAIL
+over53 checks; the runner is unreached after the editor diagnostic fails. Two
+failures overstate the defect: later whole-image hashes differ by40 pixels at the
+outer right edge, outside the visible form. Later samples1/2/3/5 and the image
+after the existing repaint have the same hash. This supports a transient capture
+problem; it does not establish a product defect, a desktop-binding fix or a
+universal cause. Five compiles, preservation, normal closure and zero delayed
+Excel events pass. Three diagnostic images were directly reviewed.
+
+Command: the Receiving replay runner with General02, `-Phase RED -CaptureEvidence
+-NativeResizeCaptureDiagnostic`. Controller
+`receiving-replay-controller/618368ac43c7442392687cd631d739ea` contains the qualified
+receipt and image review; worker
+`slice4be-receiving-replay/80eeae15bbbf4e5b9bc2d86876408521` contains
+`diagnostic-native-resize-red.json` and `b0-native-capture-series.jsonl`.
+UTC19:42:14.803--19:45:27.541; delayed audit through19:45:39.541.
 
 ## Native resize checkpoint, 2026-10-11 UTC
 

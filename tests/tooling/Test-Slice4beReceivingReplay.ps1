@@ -1,7 +1,8 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-warehouse-purpose-02',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$TraceReceivingRunCloseForTest,[switch]$CaptureEvidence)
+param([string]$DeployRoot='deploy/validation-warehouse-purpose-02',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$TraceReceivingRunCloseForTest,[switch]$CaptureEvidence,[switch]$NativeResizeCaptureDiagnostic)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before isolated Receiving replay validation.'}
+if($NativeResizeCaptureDiagnostic -and ($Phase -cne 'RED' -or -not $CaptureEvidence -or $TraceReceivingRunCloseForTest)){throw 'Native capture diagnosis requires RED, visible evidence and no close tracing.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
 $settings=Get-InvSysTestSettingsSnapshot
 $root=Join-Path 'reports/runtime/receiving-replay-controller' ([guid]::NewGuid().ToString('N'))
@@ -16,6 +17,7 @@ try {
     $ErrorActionPreference='Continue'
     $extra=@();if($TraceReceivingRunCloseForTest){$extra+='-TraceReceivingRunCloseForTest'}
     if($CaptureEvidence){$extra+='-CaptureEvidence'}
+    if($NativeResizeCaptureDiagnostic){$extra+='-NativeResizeCaptureDiagnostic'}
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1') -DeployRoot $DeployRoot -Phase $Phase -CheckReceivingReplay -GuideDraftOnly -CheckGuideExpectation -CheckViewerPublishedRead -ViewerStartupPackageStateForTest SavedCopies -CompileEvaluationProbesForTest -WaitForExcelReadyForTest -ExcelReadyReadLimitForTest 40 @extra *> (Join-Path $root 'worker.log')
     $code=$LASTEXITCODE
     $ErrorActionPreference='Stop'
@@ -23,7 +25,7 @@ try {
     Wait-RecordingCleanup -Creator $null -Worker $null
     $restored=Restore-InvSysTestSettingsSnapshot $settings
     $same=@($pins|Where-Object {(Get-FileHash -LiteralPath $_.File).Hash -cne $_.Hash}).Count -eq 0
-    [pscustomobject]@{Phase=$Phase;CloseDiagnostic=[bool]$TraceReceivingRunCloseForTest;StartUTC=$start.ToString('o');EndUTC=[DateTimeOffset]::UtcNow.ToString('o');ExitCode=$code;SettingsRestored=$restored;PackagesPreserved=$same;ExcelClosed=(@(Get-Process EXCEL -ErrorAction SilentlyContinue).Count -eq 0);B0Accepted=$false;ReleaseAccepted=$false}|ConvertTo-Json|Set-Content (Join-Path $root 'closure.json')
+    [pscustomobject]@{Phase=$Phase;CloseDiagnostic=[bool]$TraceReceivingRunCloseForTest;NativeCaptureDiagnostic=[bool]$NativeResizeCaptureDiagnostic;StartUTC=$start.ToString('o');EndUTC=[DateTimeOffset]::UtcNow.ToString('o');ExitCode=$code;SettingsRestored=$restored;PackagesPreserved=$same;ExcelClosed=(@(Get-Process EXCEL -ErrorAction SilentlyContinue).Count -eq 0);B0Accepted=$false;ReleaseAccepted=$false}|ConvertTo-Json|Set-Content (Join-Path $root 'closure.json')
     if(-not $restored -or -not $same){throw 'Replay test preservation failed.'}
 }
 Get-Content (Join-Path $root 'worker.log') -Tail 10

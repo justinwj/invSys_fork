@@ -1,5 +1,10 @@
 # Slice4be Production Run local observations
 
+Current decision update,2026-10-11: the user explicitly approved RUN-SCALE-01 and
+RUN-UI-01. Architecture v4.11 D18, Plan022 and Controls record both approvals in
+docs commit `9dc7cbc`. Earlier references below to pending approval retain their
+historical meaning. Implementation and packaged acceptance are still required.
+
 ## Independent List and Tree Apply Action Paths
 
 The unchanged, unpromoted allocate01 candidate passes **104/104** packaged path

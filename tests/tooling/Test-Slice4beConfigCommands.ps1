@@ -162,6 +162,7 @@ param(
     [switch]$CheckRecordingRestart,
     [switch]$CheckRecordingOperations,
     [switch]$CheckReceivingReplay,
+    [switch]$NativeResizeCaptureDiagnostic,
     [switch]$CheckRecordingEvaluation,
     [switch]$CheckEvaluationContracts,
     [switch]$CheckExpectationCompatibility,
@@ -407,6 +408,9 @@ if($TraceSettingsOpenForTest -and ($Phase -ne 'RED' -or -not $CheckTrackingSetti
 }
 if($TraceReceivingRunCloseForTest -and ($Phase -ne 'RED' -or -not $CheckReceivingReplay)) {
     throw 'Receiving close tracing requires RED and the replay checks; it is not acceptance GREEN.'
+}
+if($NativeResizeCaptureDiagnostic -and ($Phase -cne 'RED' -or -not $CheckReceivingReplay -or -not $CaptureEvidence -or $TraceReceivingRunCloseForTest)){
+    throw 'Native capture diagnosis requires the visible RED replay gate without close tracing.'
 }
 if($AdminSettingsCloseOnly) { $CheckAdminSettingsClose = $true }
 if($ViewerPublicationOnly) {
@@ -2247,6 +2251,7 @@ finally {
         }
     }
     $reportName=$Phase.ToLowerInvariant()+'.json'
+    if($NativeResizeCaptureDiagnostic){$reportName='diagnostic-native-resize-'+$reportName}
     if($RunCompletePreparationDiagnostic){$reportName='diagnostic-preparation-'+$reportName}
     if($TraceReceivingRunCloseForTest){$reportName='diagnostic-receiving-close-'+$reportName}
     if($SettingsSafetyOnly){$reportName='diagnostic-settings-safety-'+$reportName}
