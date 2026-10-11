@@ -74,6 +74,7 @@ param(
     [switch]$RunLocalWorksheetScaleOnly,
     [switch]$RunClearPathsOnly,
     [switch]$RunLoadPathsOnly,
+    [switch]$RunLoadScalePathsForTest,
     [switch]$RunRefreshPathsOnly,
     [switch]$RunAllocatePathsOnly,
     [switch]$CheckProductionAssignmentSafety,
@@ -345,6 +346,7 @@ if($RunLocalWorksheetOnly -and (-not $CheckProductionRunLocal -or $RunLocalClose
 if($RunLocalWorksheetOwnerOnly -and (-not $CheckProductionRunLocal -or $RunLocalClosedDiagnostic -or $RunLocalContractOnly -or $RunLocalPolicyOnly -or $RunLocalFaultOnly -or $RunLocalYieldOnly -or $RunLocalStockOnly -or $RunLocalWorksheetOnly)){throw 'Run worksheet owner checks require their separate actual-handler gate.'}
 if($RunLocalWorksheetScaleOnly -and (-not $CheckProductionRunLocal -or $RunLocalClosedDiagnostic -or $RunLocalContractOnly -or $RunLocalPolicyOnly -or $RunLocalFaultOnly -or $RunLocalYieldOnly -or $RunLocalStockOnly -or $RunLocalWorksheetOnly -or $RunLocalWorksheetOwnerOnly)){throw 'Worksheet Scale requires its separate actual-handler gate.'}
 if($RunClearPathsOnly -and (-not $CheckProductionRunLocal -or -not $CaptureEvidence -or $RunLocalClosedDiagnostic -or $RunLocalContractOnly -or $RunLocalPolicyOnly -or $RunLocalFaultOnly -or $RunLocalYieldOnly -or $RunLocalStockOnly -or $RunLocalWorksheetOnly -or $RunLocalWorksheetOwnerOnly -or $RunLocalWorksheetScaleOnly)){throw 'Clear paths require a separate actual-handler gate and visible evidence.'}
+if($RunLoadScalePathsForTest -and -not $RunLoadPathsOnly){throw 'Load/Scale paths require the shared Load path fixture.'}
 if($RunLoadPathsOnly -and (-not $CheckProductionRunLocal -or -not $CaptureEvidence -or $RunClearPathsOnly -or $RunLocalClosedDiagnostic -or $RunLocalContractOnly -or $RunLocalPolicyOnly -or $RunLocalFaultOnly -or $RunLocalYieldOnly -or $RunLocalStockOnly -or $RunLocalWorksheetOnly -or $RunLocalWorksheetOwnerOnly -or $RunLocalWorksheetScaleOnly)){throw 'Load paths require a separate actual-handler gate and visible evidence.'}
 if($RunAllocatePathsOnly -and (-not $CheckProductionRunLocal -or -not $CaptureEvidence -or @($RunRefreshPathsOnly,$RunClearPathsOnly,$RunLoadPathsOnly,$RunLocalRefillDiagnostic,$RunLocalClosedDiagnostic,$RunLocalContractOnly,$RunLocalPolicyOnly,$RunLocalFaultOnly,$RunLocalYieldOnly,$RunLocalStockOnly,$RunLocalWorksheetOnly,$RunLocalWorksheetOwnerOnly,$RunLocalWorksheetScaleOnly|Where-Object{$_}).Count)){throw 'Apply paths require a separate actual-handler gate and visible evidence.'}
 if($RunRefreshPathsOnly -and (-not $CheckProductionRunLocal -or -not $CaptureEvidence -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunLocalClosedDiagnostic -or $RunLocalContractOnly -or $RunLocalPolicyOnly -or $RunLocalFaultOnly -or $RunLocalYieldOnly -or $RunLocalStockOnly -or $RunLocalWorksheetOnly -or $RunLocalWorksheetOwnerOnly -or $RunLocalWorksheetScaleOnly)){throw 'Refresh paths require a separate actual-handler gate and visible evidence.'}
@@ -633,6 +635,7 @@ if($CheckProductionDesignerActivity){
     if($RunLocalWorksheetOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-run-worksheet/'+[guid]::NewGuid().ToString('N'))}
     if($RunClearPathsOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-run-clear-paths/'+[guid]::NewGuid().ToString('N'))}
     if($RunLoadPathsOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-run-load-paths/'+[guid]::NewGuid().ToString('N'))}
+    if($RunLoadScalePathsForTest){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-run-load-scale-paths/'+[guid]::NewGuid().ToString('N'))}
     if($RunCheckInPathsOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-check-in-paths-'+$RunCheckInPathMode.ToLowerInvariant()+'/'+[guid]::NewGuid().ToString('N'))}
     if($RunAllocatePathsOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-run-allocate-paths/'+[guid]::NewGuid().ToString('N'))}
     if($RunRefreshPathsOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-run-refresh-paths/'+[guid]::NewGuid().ToString('N'))}
@@ -2084,7 +2087,7 @@ End Function
             }
             elseif($RunLoadPathsOnly){
                 . (Join-Path $PSScriptRoot 'Slice4beProductionInstructionPaths.ps1')
-                Test-ProductionInstructionPaths $a -RunLoad
+                Test-ProductionInstructionPaths $a -RunLoad -IncludeScale:$RunLoadScalePathsForTest
             }
             elseif($RunClearPathsOnly){
                 . (Join-Path $PSScriptRoot 'Slice4beProductionInstructionPaths.ps1')

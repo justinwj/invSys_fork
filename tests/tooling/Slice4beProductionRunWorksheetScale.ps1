@@ -23,6 +23,16 @@ function Install-ProductionRunWorksheetScaleProbe {
         }
     }
     if($notices -ne 4){throw 'Worksheet Scale notification boundaries changed; not product RED.'}
+    foreach($entry in @(
+        @('modProductionReusableRun','LoadReleasedReusableRecipe','jsonText = modOperationsPrimitiveBridge.GetRecipeGraph(recipeId, recipeVersion)','Recipe'),
+        @('modProductionRunDefinitionLoad','LoadNodeProcessDefinitions','modProductionReusableRun.RunRecordText(node, "ProcessId"), modProductionReusableRun.RunRecordText(node, "ProcessVersion"))','Process')
+    )){
+        $module=$project.VBComponents.Item($entry[0]).CodeModule
+        $start=$module.ProcStartLine($entry[1],0);$end=$start+$module.ProcCountLines($entry[1],0)
+        $hits=@(for($line=$start;$line -lt $end;$line++){if($module.Lines($line,1).Trim() -ieq $entry[2]){$line}})
+        if($hits.Count -ne 1){throw 'Released Scale read observer seam changed; not product RED.'}
+        $module.InsertLines($hits[0]+1,('    TestProductionDesigner.RunScaleReleasedRead "'+$entry[3]+'", (Len(jsonText) > 0)'))
+    }
     $form=$project.VBComponents.Item('frmProduction').CodeModule
     $form.AddFromString(@'
 Public Function RunScaleSheetStageForTest(ByVal mode As String, ByVal canary As String) As String
@@ -45,6 +55,7 @@ Public Function RunScaleSheetStageForTest(ByVal mode As String, ByVal canary As 
         Case "AboveMaximum": mTxtBatchScalePercent.Text = "1001"
         Case "Minimum": mTxtBatchScalePercent.Text = "0.001"
         Case "Maximum": mTxtBatchScalePercent.Text = "1000"
+        Case "LoadThenScale": mTxtBatchScalePercent.Text = "100"
     End Select
     Set ws = mOperatorWorkbook.Worksheets("Production")
     phase = "Staging"
@@ -86,11 +97,7 @@ Public Function RunScaleSheetValuesForTest(ByVal mode As String, ByVal canary As
         Set ws = mOperatorWorkbook.Worksheets("Production")
     End If
     factor = 1#
-    Select Case mode
-        Case "UnavailableDesign": factor = 2#
-        Case "Minimum": factor = 0.00001
-        Case "Maximum": factor = 10#
-    End Select
+    ' RUN-SCALE-01: an unloaded run must leave these staging quantities unchanged.
     For Each name In Array("RecipeChooser_generated", "InventoryPalette_generated")
         Set lo = ws.ListObjects(CStr(name))
         If lo.ListColumns("Operator Extra").DataBodyRange.Cells(1, 1).Value2 <> canary Or _
@@ -109,16 +116,32 @@ End Function
 Public Function RunScaleSheetBranchForTest() As Boolean
     RunScaleSheetBranchForTest = Not modProductionReusableRun.ReusableRunIsLoaded() And mPages.Value = 3
 End Function
+Public Sub RunScaleInputForTest(ByVal value As String)
+    mTxtBatchScalePercent.Text = value
+End Sub
 '@)
     $adapter=$project.VBComponents.Item('TestProductionDesigner').CodeModule
     $adapter.InsertLines(1,@'
 Private mScaleLoadCalls As Long, mScaleReadCalls As Long, mScaleReadOK As Boolean, mScaleLegacyCalls As Long
 Private mScaleOwnerTarget As String
+Private mScaleRecipeReads As Long, mScaleProcessReads As Long
 '@)
     $adapter.AddFromString(@'
 Public Sub RunScaleReset()
     mScaleLoadCalls = 0: mScaleReadCalls = 0: mScaleReadOK = False: mScaleLegacyCalls = 0
     mScaleOwnerTarget = "NotEntered"
+    mScaleRecipeReads = 0: mScaleProcessReads = 0
+End Sub
+Public Sub RunScaleReleasedRead(ByVal kind As String, ByVal available As Boolean)
+    If Not available Then Exit Sub
+    If kind = "Recipe" Then mScaleRecipeReads = mScaleRecipeReads + 1
+    If kind = "Process" Then mScaleProcessReads = mScaleProcessReads + 1
+End Sub
+Public Function RunScaleReleasedReads() As String
+    RunScaleReleasedReads = CStr(mScaleRecipeReads) & "|" & CStr(mScaleProcessReads)
+End Function
+Public Sub RunScaleInput(ByVal value As String)
+    mForm.RunScaleInputForTest value
 End Sub
 Public Sub RunScaleOwnerResolved(ByVal ws As Worksheet)
     mScaleLoadCalls = mScaleLoadCalls + 1
@@ -174,25 +197,46 @@ function Test-ProductionRunWorksheetScale($Fixture) {
             $notice=[string](Probe 'RunFaultAct' @('SCALE'))
             $evidence=([string](Probe 'RunScaleEvidence')).Split('|')
             if($evidence.Count -ne 6){throw 'Worksheet Scale owner evidence unavailable.'}
-            $refused=$mode -cin @('NoSelection','BadScale','BelowMinimum','AboveMaximum')
             $missing=$mode -cin @('MissingSheet','DecoyMissing')
             Check ($label+'.NoUnhandledError') (-not $notice.StartsWith('HANDLER_ERROR|'))
             Check ($label+'.GuardsRestoredWithoutAdapterReset') ([bool](Probe 'RunFaultGuards'))
             Check ($label+'.CurrentWorksheetValuesAndUnknownColumns') ([bool](Probe 'RunScaleSheetValues' @($mode,$canary)))
             Check ($label+'.CanonicalSourcePreserved') ([bool](Probe 'RunWorksheetSource'))
             Check ($label+'.NoLegacyFallback') ([int]$evidence[3] -eq 0)
-            if($refused){
-                Check ($label+'.RefusalBeforeOwner') ([int]$evidence[0] -eq 0 -and [int]$evidence[1] -eq 0 -and [int]$evidence[5] -eq 0)
-            }elseif($missing){
+            Check ($label+'.ApprovedLoadFirstMessage') ($notice -ceq 'Load a released recipe before applying scale.')
+            Check ($label+'.RefusalBeforeOwner') ([int]$evidence[0] -eq 0 -and [int]$evidence[1] -eq 0 -and [int]$evidence[5] -eq 0)
+            if($missing){
                 Write-Output ('Run Scale '+$mode+' resolved target: '+$evidence[4])
                 Check ($label+'.NoOtherWorkbookOwnerEntry') ($evidence[4] -cin @('NotEntered','Unavailable'))
-            }else{
-                Check ($label+'.RealReleasedDesignReadUnavailable') ([int]$evidence[0] -eq 1 -and [int]$evidence[1] -eq 1 -and $evidence[2] -ceq 'False' -and $evidence[4] -ceq 'Captured' -and [int]$evidence[5] -eq 1)
             }
             if($mode -ceq 'DecoyMissing'){Check ($label+'.DecoyUnknownValuesPreserved') ($decoySheet.Range('A2').Value2 -ceq $canary -and $decoySheet.Range('B2').Formula -ceq '=1+2')}
-            Pair $before 'SCALE' $(if($refused){'REJECTED'}else{'FAILED'}) $label
+            Pair $before 'SCALE' 'REJECTED' $label
             $records=@(Files|Where-Object{$_ -cnotin $before}|ForEach-Object{[IO.File]::ReadAllText($_)})
             Check ($label+'.NoExactKeyInObservations') ($records.Count -eq 2 -and @($records|Where-Object{$_.Contains($key)}).Count -eq 0)
+            if($CaptureEvidence -and $mode -ceq 'UnavailableDesign'){
+                Check ($label+'.VisibleOperatorPage') ([int](Probe 'RunLocalShowAndCapture' @($book.Name,'SCALE')) -eq 3)
+                CaptureOwnedFormByCaptionEvidence 'Production' 'run-scale-load-first.png'
+            }
         }finally{[void](Probe 'RunSheetOwnerRestore')}
+    }
+    $before=@(Files)
+    if([string](Probe 'RunScaleSheetStage' @('LoadThenScale',$canary)) -cne 'READY'){throw 'Released Load/Scale sequence fixture unavailable; not product RED.'}
+    Check 'RunScaleSequence.SetupNotUserAction' (@(Files).Count -eq $before.Count)
+    $decoy.Activate();$notice=[string](Probe 'RunFaultAct' @('LOAD'))
+    Check 'RunScaleSequence.ActualLoadStagesReleasedRun' (-not $notice.StartsWith('HANDLER_ERROR|') -and [bool](Probe 'RunLocalPreserved' @('LOAD','Normal')))
+    Pair $before 'LOAD' 'STAGED' 'RunScaleSequence.Load'
+    $reads=([string](Probe 'RunScaleReleasedReads')).Split('|')
+    Check 'RunScaleSequence.ActualReleasedRecipeAndProcessReads' ($reads.Count -eq 2 -and [int]$reads[0] -eq 1 -and [int]$reads[1] -gt 0)
+    $before=@(Files);[void](Probe 'RunScaleInput' @('200'))
+    Check 'RunScaleSequence.InputIsNotAnExtraAction' (@(Files).Count -eq $before.Count)
+    $notice=[string](Probe 'RunFaultAct' @('SCALE'))
+    Check 'RunScaleSequence.ActualScaleRetainsLoadedRunSemantics' (-not $notice.StartsWith('HANDLER_ERROR|') -and [bool](Probe 'RunLocalPreserved' @('SCALE','Normal')))
+    Pair $before 'SCALE' 'STAGED' 'RunScaleSequence.Scale'
+    Check 'RunScaleSequence.NoWorksheetOrLegacyOwnerRead' ([string](Probe 'RunScaleEvidence') -ceq '0|0|False|0|NotEntered|0')
+    Check 'RunScaleSequence.CustomColumnsAndExactKeyPreserved' ([bool](Probe 'RunScaleSheetValues' @('LoadThenScale',$canary)))
+    Check 'RunScaleSequence.CanonicalSourcePreserved' ([bool](Probe 'RunWorksheetSource'))
+    if($CaptureEvidence){
+        Check 'RunScaleSequence.VisibleOperatorPage' ([int](Probe 'RunLocalShowAndCapture' @($book.Name,'SCALE')) -eq 3)
+        CaptureOwnedFormByCaptionEvidence 'Production' 'run-scale-loaded-sequence.png'
     }
 }

@@ -1,9 +1,49 @@
 # Slice 4be-A native-failure localization
 
 Last verified: 2026-10-11 UTC. Diagnostic tooling only, under Architecture v4.11
-D13 and Plan022. Runtime remains `6f583238`, catalog31, with the five frozen
-`deploy/validation-general-settings-02` packages unchanged. No contract amendment,
-runtime repair, clean full-chain gate or 4be-A completion is claimed.
+D13 and Plan022. Earlier localization below uses frozen General02, runtime
+`6f583238`, catalog31. UI01 subsequently has a clean ordinary chain recorded in
+[Run results](plan022_slice4be_production_run_local_results.md). Scale01 also has
+a clean ordinary chain and full reusable regression there; neither establishes
+a native repair. No 4be-A completion is claimed.
+
+## Current configuration-call interruption
+
+Two ordinary Scale-candidate runs failed before the intended cases at
+`TestD5Commands.SaveDirect`, returning COM0x80020009. The first failed during
+read non-mutation checks (36 PASS/1 failure); the second during an unauthenticated
+command (17 PASS/1 failure). In both, saved first-call evidence and native process
+metadata establish that the new Excel window was a child of the original test
+Excel instance. No matching Application1000/1001/1002 event was observed through
+the respective delayed audit. This is not evidence of desktop lockout or a fixed
+native cause. Desktop diagnostics have no error5 through the observed interval.
+
+Controllers `production-run-local-controller/b4cffe4866e846b09234231d6eb27449` and
+`production-run-local-controller/515a44f9db434068a8dc2d119713a440` retain failure,
+closure and audit receipts. Workers are respectively
+`slice4be-production-run-worksheet-scale/2b38cef5a3984dc88a27875e35719494` and
+`slice4be-production-run-policy/8083fcde06f64ec8bf01c281bbaaf2f5`.
+Both required normal assisted closure of the test child, with recovery files kept
+for later viewing. No COM reattachment or forced termination was used; packages
+and settings were preserved. Neither run is acceptance evidence.
+
+The existing metadata-only native observer passed43 calibration checks at
+`native-exception-calibration/ada39190cc6c46929a5b46cb40733117`, covering ordinary
+handling, detach, stack bounds and redaction. It is attached to a fresh Policy
+diagnostic in controller `production-run-local-controller/a55e2dba44b749499d1a8a6add98f610`.
+Worker `slice4be-production-run-policy/698639e52db349aaacee7b9bee0bdb26` passes
+218/218 in prior order, UTC20:56:03.978--21:02:09.403. The observer exits normally,
+records one first-chance000006BA and no second-chance exceptions, and the delayed
+Application audit is clean through21:02:21.403. Settings and packages are preserved.
+The restart was not reproduced. Observation changes timing: this cannot establish
+a repair or replace the ordinary acceptance gate. The exact failing native
+boundary remains unresolved. Runtime source is unchanged by this investigation;
+RUN-SCALE-01's approved runtime changes are recorded separately. A subsequent
+ordinary Policy run passes218/218 with unassisted closure and zero delayed Excel
+events: controller `production-run-local-controller/60b028cc94bd4c9c916980d56f23b847`,
+UTC21:02:20.844--21:07:46.477; audit through21:07:58.477. This qualifies the scoped
+policy gate, not a repair. The user also confirmed they did not open the earlier
+unexpected Excel window, consistent with the saved test-process lineage.
 
 ## Findings
 

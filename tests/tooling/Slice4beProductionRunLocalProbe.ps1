@@ -290,6 +290,18 @@ End Function
     $entry=@(for($line=$start;$line -lt $end;$line++){if($owner.Lines($line,1).Trim() -ceq 'If Not mLoaded Then'){$line}})
     if($entry.Count -ne 1){throw 'Allocation invocation diagnostic anchor changed; not product RED.'}
     $owner.InsertLines($entry[0],'    TestProductionDesigner.RunRefillOwnerEntered')
+    if($RunLoadScalePathsForTest){
+        $form.AddFromString(@'
+Public Sub RunPathScaleInputForTest()
+    mTxtBatchScalePercent.Text = "200"
+End Sub
+'@)
+        $adapter.AddFromString(@'
+Public Sub RunPathScaleInput()
+    mForm.RunPathScaleInputForTest
+End Sub
+'@)
+    }
     $adapter.InsertLines(1,'Private mRunRefillOwnerCalls As Long')
     $adapter.AddFromString(@'
 Public Sub RunRefillOwnerEntered()

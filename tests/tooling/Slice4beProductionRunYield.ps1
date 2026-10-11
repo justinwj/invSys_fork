@@ -46,8 +46,11 @@ function Install-ProductionRunYieldProbe {
     $form=$project.VBComponents.Item('frmProduction').CodeModule
     # Change the editor before the actual Save/Release fixture, never a loaded definition.
     $start=$form.ProcStartLine('DesignerReleasedProcessForTest',0);$end=$start+$form.ProcCountLines('DesignerReleasedProcessForTest',0)
-    $hits=@(for($line=$start;$line -lt $end;$line++){if($form.Lines($line,1).Trim() -ceq 'mLstProcessRequirements.List(0, 5) = "lbs"'){$line}})
+    # VBE can recase identifiers; retain the exact indices and UOM string literal.
+    $anchor='^(?i:mLstProcessRequirements\.List)\(0, 5\) = "lbs"$'
+    $hits=@(for($line=$start;$line -lt $end;$line++){if($form.Lines($line,1).Trim() -cmatch $anchor){$line}})
     if($hits.Count -ne 1){throw 'Released differing-UOM fixture anchor changed; not product RED.'}
+    [pscustomobject]@{UniqueAnchor=$true;IdentifierCaseChanged=($form.Lines($hits[0],1).Trim() -cne 'mLstProcessRequirements.List(0, 5) = "lbs"');ExactOriginalUomLiteral=$true;EditedBeforeActualSaveRelease=$true}|ConvertTo-Json|Set-Content (Join-Path $reportRoot 'differing-uom-fixture-anchor.json')
     $form.ReplaceLine($hits[0],'    mLstProcessRequirements.List(0, 5) = "lb"')
     AfterRead $form 'DesignReadListForTest' 'DesignReadListForTest = modOperationsPrimitiveBridge.ListProcesses(' 'ListProcesses' 'IsArray(DesignReadListForTest)'
     AfterRead $form 'DesignReadListForTest' 'DesignReadListForTest = modOperationsPrimitiveBridge.ListRecipes(' 'ListRecipes' 'IsArray(DesignReadListForTest)'

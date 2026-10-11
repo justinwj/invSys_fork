@@ -3,8 +3,146 @@
 Current decision update,2026-10-11: the user explicitly approved RUN-SCALE-01 and
 RUN-UI-01. Architecture v4.11 D18, Plan022 and Controls record both approvals in
 docs commit `9dc7cbc`. Earlier references below to pending approval retain their
-historical meaning. RUN-UI-01 evidence follows; RUN-SCALE-01 implementation and
-broader acceptance remain required.
+historical meaning. Scoped RUN-SCALE-01 and RUN-UI-01 evidence follows; remaining
+Scale coverage and broader acceptance are still required.
+
+## RUN-SCALE-01 approved load-first boundary, 2026-10-11
+
+Unpromoted `deploy/validation-run-scale-01` implements the approved Designs-enabled
+refusal and records loaded-run Scale through the existing captured action boundary.
+The worksheet branch with Designs disabled is unchanged; its recording and owner
+failure proof remain open. This is not comprehensive Scale or 4be-A acceptance.
+
+Focused packaged RED is134 PASS/84 FAIL/218 on UI01; GREEN is218/218 in exact
+RED check order. Nine unloaded cases retain local quantities, exact `System_Key`,
+custom columns and formulas, refuse before worksheet/legacy reads and record the
+approved REJECTED pair. An actual Load Recipe then Apply Scale sequence reads
+released Recipe/Process authority and reaches STAGED with existing reset behavior.
+Three older Design/BOM-read expectations are explicitly superseded by the approved
+load-first contract; they are not claimed as retained regressions.
+
+RED controller `production-run-local-controller/f215785b33f84c0788eb4b4334b1fbc4`,
+worker `slice4be-production-run-worksheet-scale/477d9f6b6e7645b59494d06d15433e8a`:
+UTC20:15:27.099--20:17:08.109. GREEN controller
+`production-run-local-controller/5fa78f814d3d4e6b853489015a8b1845`, worker
+`slice4be-production-run-worksheet-scale/2c079ee061ac4ae7a6a8d48c76a70922`:
+UTC20:26:40.060--20:28:49.141. Both have five instrumented compiles, preservation,
+unassisted closure and zero Excel events through12 seconds after closure. Qualified
+receipts pin the results. Both GREEN images show the complete status message;
+long row labels still clip. Agent image review is not human acceptance.
+
+An intervening run is36 PASS/1 harness failure before any Scale case:
+controller `production-run-local-controller/b4cffe4866e846b09234231d6eb27449`,
+worker `slice4be-production-run-worksheet-scale/2b38cef5a3984dc88a27875e35719494`.
+`TestD5Commands.SaveDirect` returned0x80020009. A remaining Excel window required
+normal assisted closure; the recovery prompt was answered to retain recovered
+files. No COM reattachment or force termination was used. Settings and packages
+were preserved, and the delayed Application audit found zero Excel events.
+The cause remains unresolved; this attempt is not acceptance evidence.
+
+Build receipt `run-scale-build-01/verification.json` records five cold compiles,
+one changed packaged form, one added typed action module and311 unchanged prior
+components. Frozen UI01 packages and settings are preserved. Static receipt
+`run-scale-static-01/ratchet-verification.json` records320 components,6342
+procedures,138763 lines: one action procedure/net43 feature lines added; the form
+shrinks seven lines. Dynamic calls9/45 and192 duplicate candidates are unchanged,
+all28 oversized caps do not grow, three schemas and456 PowerShell parses pass.
+The loaded-run regression now passes503/503, retaining all445 prior passes and
+improving all58 Scale failures in exact prior order. Controller
+`production-run-local-controller/806ac713e2194f77896bf4528eab0c48`, worker
+`slice4be-production-run-local/0d3838a093df45f3a5ea98093a1728f4`:
+UTC20:29:00.929--20:36:38.676. Five compiles, preservation, native closed-workbook
+handler refusals, unassisted closure and zero Excel events through20:36:50.676
+pass. The scoped final regressions below also qualify. The Run baseline's
+current-record catalog assertion is updated24 to31; historical definitions are unchanged.
+
+Fault/nesting passes245/245 in prior order, retaining232 passes and resolving13
+Scale failures. Controller `production-run-local-controller/45f622ed6a694b81a5624e7b849fb507`,
+worker `slice4be-production-run-fault/9cf97a164ef34c2b96b3686eac35917e`:
+UTC20:36:45.577--20:39:27.994. Five compiles, preservation, unassisted closure and
+zero Excel events through20:39:39.994 pass.
+
+The first interruption run stopped before product cases: controller
+`production-run-local-controller/f2adb53f48544ac0a06bc3fde977695c`, worker
+`slice4be-production-run-yield/479c411b913248e3824502e91a38050b`,1 PASS/1 fixture
+failure. VBE recased the requirement-list identifier, breaking the case-sensitive
+adapter anchor. The correction tolerates identifier casing only, retaining exact
+indices and the original `"lbs"` literal, before actual Process Save/Release.
+The next run's `differing-uom-fixture-anchor.json` confirms that precise cause.
+No runtime or loaded definition changed; this fixture failure is not behavioral RED.
+
+Corrected interruption proof passes236/236 in exact prior order, retaining232
+passes and resolving the four Scale failures. Controller
+`production-run-local-controller/e4a81360ef074a3fb7860201a64bdea5`, worker
+`slice4be-production-run-yield/b5a3f78dad974426bfb2975a6d966613`:
+UTC20:41:28.695--20:45:35.538. Five compiles, preservation, unassisted closure and
+zero Excel events through20:45:47.538 pass. Real successful read returns precede
+sign-out; no later observed reads or owner/projection mutations occur, guards
+restore, refusal is visible and only the original attempt remains recorded.
+
+Policy first reaches217 PASS/1 fixture failure in controller
+`production-run-local-controller/1dc0477c50774e7289313679900832dd`, worker
+`slice4be-production-run-policy/4a8faf87d47f4aea8b50115c12ea534e`.
+All five prior Scale failures pass. The version23 fixture incorrectly retained
+later non-Run controls from catalog31, which the unchanged strict reader rejects.
+The corrected fixture uses the actual118 historical control IDs and removes26
+future IDs; assertions remain intact. A subsequent ordinary run fails before
+policy cases at the configuration macro, then an observed diagnostic passes218.
+These interruptions and the diagnostic's limits are recorded in the
+[native localization report](plan022_slice4be_native_localization_results.md).
+The subsequent ordinary run passes218/218 in exact prior order, retaining213
+passes and resolving five Scale failures: controller
+`production-run-local-controller/60b028cc94bd4c9c916980d56f23b847`, worker
+`slice4be-production-run-policy/cfd217ce0f8d49bba1f0a39fcc54bad8`,
+UTC21:02:20.844--21:07:46.477. Five compiles, preservation, unassisted closure and
+zero Excel events through21:07:58.477 pass. No runtime policy relaxation or
+native repair is claimed.
+
+Independent Load/Scale guidance passes RED53/1 on frozen UI01 to GREEN104/104
+on Scale01, retaining all54 RED check identities in order and adding50 downstream
+checks. The sole RED is the missing Scale pair after its successful local owner
+action. Two separate recordings use actual Load and Scale handlers, with only
+the scale textbox changed between them. Publication, Event Detail, guide authoring
+and reader-only comparison match the exact two observed actions with no extras.
+CommandCompleted concludes; SourceEventsApplied remains incomplete. All three
+presentations preserve provenance and saved authority. No replay is claimed here.
+
+RED controller `production-run-local-controller/0196d4d86d9e41b092916185a7b13a93`,
+worker `slice4be-production-run-load-scale-paths/d09ebe24ff98465cae6bad9170b7ed8f`:
+UTC21:07:53.667--21:09:50.401. GREEN controller
+`production-run-local-controller/629414c109e04aec88b05d64e56c8f55`, worker
+`slice4be-production-run-load-scale-paths/7395ec3ff8d34a0a93adf275a4cd80a7`:
+UTC21:10:09.156--21:17:00.306. Both have five compiles, preservation, normal
+unassisted closure and zero Excel events through12 seconds after closure.
+Six GREEN captures are directly reviewed: status, Event Detail, three views and
+scrolled conclusion. The two steps and matched conclusion are readable; existing
+long Production labels clip. Agent review is not human acceptance.
+
+Scale01 smoke86 and ordinary chain32/live-role48/Create Warehouse15 pass in
+exact prior order. Controllers under `reports/runtime/run-scale-regression/`:
+`smoke-f06188ecaf9046caa22760879526d12a`, UTC21:17:29.173--21:17:48.925;
+`chain-8a167230d56249af957816cde52975bb`, UTC21:17:50.092--21:23:24.198.
+Settings, packages and tracked reports are preserved; closure is unassisted and
+both delayed Excel audits are clean. This does not establish a native repair.
+
+Layout controller `layout-99d3aad682d94c3f940c741e6280f10e` passes18 requested
+size/page pairs, six maximized pages and five native transitions in prior order,
+with preservation and clean delayed closure. Direct review rejects both default
+images because their client areas are black; four other captures are readable.
+`capture-review.json` rejects those images. A fresh isolated run, without runtime
+or harness changes, qualifies the same geometry and six readable captures:
+`layout-2719992976a04cba9cf8d9576aa75718`, UTC21:48:38.673--21:48:55.837.
+All six images were directly reviewed; this is empty-form layout evidence,
+not human acceptance or a claimed repair of the earlier capture failure.
+
+Full reusable controller `reusablefull-948537d56c9841d4a10de99eb61763b2`,
+UTC21:24:10.693--21:48:24.568, passes two aggregates with the exact prior171
+Boolean observations in order. Both restart and final Excel exits are unassisted,
+with zero reference-release failures or forced termination. Candidate pins,
+settings and delayed Excel audit are clean. The long run advanced through actual
+two-batch, branching/convergence, worksheet round-trip and clean-restart stages;
+read-only window inspection found no blocking dialog. No native repair is claimed.
+Designs-disabled Scale recording, broader coverage and human acceptance remain open.
 
 ## RUN-UI-01 approved wording, 2026-10-11
 
@@ -49,8 +187,9 @@ in exact prior order on UI01. Controller
 UTC20:06:31.303--20:12:23.927, zero Excel events through20:12:35.927. Normal
 unassisted closure, package/settings/tracked-report preservation and restart pass.
 This qualifies the current run; it does not identify or repair the prior
-intermittent native/automation failures. RUN-SCALE-01 remains approved but
-unimplemented; broader4be-A and human acceptance remain open.
+intermittent native/automation failures. At this UI01 checkpoint, RUN-SCALE-01
+was approved but unimplemented; its later evidence is above. Broader4be-A and
+human acceptance remain open.
 
 ## Independent List and Tree Apply Action Paths
 

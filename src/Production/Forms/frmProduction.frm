@@ -5241,19 +5241,12 @@ Private Sub BindOperatorWorkbookForRun()
 End Sub
 
 Private Sub mBtnApplyBatchScale_Click()
-    Dim scalePercent As Double
     Dim scaleReport As String
 
     If Not modProductionRunBinding.RequireCurrentContext(Me, mActivityContext, mOperatorWorkbook) Then Exit Sub
-    If modProductionReusableRun.ReusableRunIsLoaded() Then
-        If Not TryParseBatchScalePercent(mTxtBatchScalePercent.Text, scalePercent, scaleReport) Then
-            ShowStatus scaleReport
-            Exit Sub
-        End If
-        If modProductionReusableRun.ApplyReusableRunScale(scalePercent, scaleReport) Then
-            RefreshReusableRunControls False
-        End If
-        ShowStatus scaleReport
+    If modProductionRunScaleActions.Execute(Me, mActivityContext, mOperatorWorkbook, _
+        mLoading, mDesignerActionInProgress, mTxtBatchScalePercent.Text, scaleReport) Then
+        If scaleReport <> "" Then ShowStatus scaleReport
         Exit Sub
     End If
     If mLstLoaderRecipes.ListIndex < 0 Then

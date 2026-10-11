@@ -97,11 +97,16 @@ function Test-ProductionRunPolicy($Fixture,$Other) {
                     if(-not [bool](Run 'invSys.Core.xlam' 'TestShippingCatalog.RunPresentationPolicy' @($false))){throw 'Navigation policy fixture unavailable.'}
                 }
                 if($mode -ceq 'Older'){
+                    $historicalIds=@(([string](Run 'invSys.Core.xlam' 'TestShippingCatalog.Ids' @(23))).Split("`n")|Where-Object{$_ -ne ''})
+                    if('PRODUCTION_CLOSE' -cnotin $historicalIds -or @($historicalIds|Where-Object{$_ -like 'PRODUCTION_RUN_*'}).Count){throw 'Historical catalog fixture unavailable; not product RED.'}
                     $cfg=$excel.Workbooks.Open($Fixture.Config,0,$false)
                     try{
                         (Table $cfg 'tblEventTrackingPolicies').ListColumns.Item('CatalogVersion').DataBodyRange.Value2=23.0
                         $controls=Table $cfg 'tblEventTrackingControls'
-                        for($i=$controls.ListRows.Count;$i -ge 1;$i--){if(([string]$controls.ListRows.Item($i).Range.Cells.Item(1,$controls.ListColumns.Item('ControlId').Index).Value2).StartsWith('PRODUCTION_RUN_')){$controls.ListRows.Item($i).Delete()}}
+                        $priorCount=$controls.ListRows.Count
+                        for($i=$controls.ListRows.Count;$i -ge 1;$i--){if([string]$controls.ListRows.Item($i).Range.Cells.Item(1,$controls.ListColumns.Item('ControlId').Index).Value2 -cnotin $historicalIds){$controls.ListRows.Item($i).Delete()}}
+                        if($controls.ListRows.Count -ne $historicalIds.Count){throw 'Historical control set incomplete; not product RED.'}
+                        [pscustomobject]@{CatalogVersion=23;HistoricalControls=$historicalIds.Count;FutureControlsRemoved=$priorCount-$controls.ListRows.Count;RuntimePolicyReaderUnchanged=$true}|ConvertTo-Json|Set-Content (Join-Path $reportRoot 'historical-policy-fixture.json')
                         $cfg.Save()
                     }finally{$cfg.Close($false)}
                 }
