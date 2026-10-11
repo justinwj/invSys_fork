@@ -1,9 +1,11 @@
 # Slice 4be-A General Settings observations
 
 Architecture v4.11 D18 catalog31 refines comprehensive recording for nine existing
-General Settings controls. The unchanged catalog31 candidate now passes **647/647**,
-retaining all191 ordered initial checks and adding456 policy/storage/permission
-checks. Independent guide conclusions, affected regressions and acceptance remain open.
+General Settings controls. The unchanged catalog31 candidate now passes **871/871**,
+retaining all647 ordered checks and adding224 recording/guide checks. Independent
+successful, interrupted and denied recordings produce distinct saved conclusions.
+Packaged smoke86 is clean; the functional chain32/live48/warehouse15 passes but
+its native Excel audit fails. Broader 4be-A coverage and human acceptance remain open.
 
 ## Contract and protecting test
 
@@ -207,6 +209,93 @@ awareness and restores the caller context on success/refusal. It changes no
 Windows setting, question-matching rule, choice dispatch or product code.
 The fresh packaged228 regression above protects the helper's UOM behavior.
 
+## Independent recording and guide proof (2026-10-11 UTC)
+
+Full `-Phase GREEN -Recorded` gate: **871/871**, UTC
+**06:43:09.8709013--07:09:23.1295430** on frozen, unpromoted
+`deploy/validation-general-settings-02`. Ignored receipts under `reports/runtime/`:
+
+- Controller: `general-settings-controller/299e07fa5be8411b95c031b886fd6281`;
+  `verification.json` proves all647 prior ordered identities plus224 new checks.
+- Worker: `slice4be-general-settings/bf73fb8f41cc491190ced12e1967ec54`;
+  `green.json` and `visible-review.json` record checks and14 directly reviewed images.
+- Static: `general-settings-recorded-static-03/ratchet-verification.json`.
+
+Actual packaged handlers create four recordings (guide source, independent
+successful run, session-interrupted run and permission-denied run). Each of the
+nine controls has an independent positive conclusion. A separately authored
+nine-step guide is then evaluated against the three observed runs by a reader
+without guide-maintenance permission:
+
+| Observed run | Saved result | Matched / missing / failed steps |
+| --- | --- | --- |
+| Successful | Concluded / COMMAND_COMPLETED | 9 / 0 / 0 |
+| Interrupted after Reload | Incomplete / CAPTURE_INCOMPLETE | 1 / 8 / 0 |
+| Maintenance denied | Failed / REQUIRED_OUTCOME_MISMATCH | 4 / 0 / 5 |
+
+Matches bind exact observed ActivityIds and authored StepIds; the four allowed
+selections survive command denial. Guide-source success cannot supply observed
+evidence. Exact guide/journal/publication identity, multiline instructions,
+saved-result captions, all three presentation choices and nine current-layout
+checks pass. Carrier/connection completion does not assert Domain application.
+Views/evaluations preserve source journals, prior activity, captured host,
+warehouse authority, other warehouse and local settings.
+
+Five instrumented compiles pass. Fourteen captures show General Settings, native
+Reset, tracking/storage/permission feedback and guide comparisons with matched,
+missing or outcome-mismatch detail. Conclusion captures are scrolled excerpts;
+they do not all include the state heading. Exact captions and saved EvaluationIds
+are additionally verified through the actual displayed controls. Direct agent
+review is not human acceptance. Excel exits unassisted; settings and all five
+frozen packages are preserved, with zero delayed Application failures.
+
+The preceding focused diagnostic had **250 PASS / 2 FAIL**, controller
+`general-settings-controller/380c32b98afb496a9478cb269f9b6dbf`, worker
+`slice4be-general-settings/565ebba5e4ae4cf386268132ba3db748`, UTC
+**06:29:43.2691685--06:42:41.8149779**. Both failures were incorrect test expectations
+that incomplete/denied results have zero matches. D18 retains actual successful
+steps despite an incomplete/failed overall conclusion. Corrected tests require
+the exact9/1/4 matches and missing/failed counts above, preserving all209 earlier
+recording/guide assertions and adding15 checks. This is not product RED or a
+contract change. The diagnostic also preserves settings/packages and closes
+normally with zero delayed Excel failures.
+
+Only test files changed: `Slice4beGeneralSettingsGuidePaths.ps1` strengthens
+matching, displayed-result and layout assertions; `Slice4beGuideDraft.ps1` adds
+a locked-text viewport selector for evidence capture. Runtime checkpoint remains
+`6f583238`. Static metrics remain319 components /6340 procedures /138712 lines,
+9 literal /45 unresolved dynamic calls,192 duplicate groups and28 unchanged
+oversized caps; three schemas validate and452 PowerShell scripts parse.
+
+The KVM preflight verified actual8-pixel cursor movement and restoration. This
+supports this session's input access, not a general repair of RDP/tscon behavior.
+Keep the immediate native error5 stop rule.
+
+## Same-candidate regressions (2026-10-11 UTC)
+
+All runs use the five unchanged General02 packages. Receipts below are under
+ignored `reports/runtime/general-recorded-regression/`.
+
+| Gate | Result | Receipt |
+| --- | --- | --- |
+| Packaged smoke | 86/86; exact prior order, both unassisted exits and zero delayed Excel failures | `smoke-74b9f60f6cd041f790390c5ba02eb058/verification.json` |
+| Ordered Release1 chain | 32/32, live-role48/48, Create Warehouse15/15; exact prior order, **native gate failed** | `chain-d09373c0a47a4468b269a2e9f887eff0/qualified-verification.json` |
+
+Smoke UTC **07:09:58.1636832--07:10:18.3328882**; chain UTC
+**07:10:37.6563438--07:16:15.4849853**. Both preserve packages/local settings and
+restore the tracked generated reports byte-for-byte. No Excel remains running.
+
+The chain's delayed audit records one Excel `combase.dll` / `c0000005` fault at
+**07:13:28.6313471Z** (00:13:28 PDT), followed by WER. The affected process starts
+at **07:13:08.8520898Z**, after the live-role report at07:13:04Z. This narrows the
+failure to the later restart/evidence interval; it does not identify the exact
+call or establish a product cause. See `delayed-audit-failure.json` and
+`native-timing.json` in the chain receipt directory. The ordinary verifier rejects
+this run; `qualified-verification.json` explicitly records `NativeGatePassed=false`.
+This is not desktop Win32 error5 or behavioral RED. Prior Boxing/activity records
+contain this same native fault class; neither those records nor passing business
+assertions establish a repair. No unchanged chain retry was used to erase it.
+
 ## Reviewed maintenance exception
 
 `general-settings-green-static-02/ratchet-verification.json` records319 components,
@@ -227,6 +316,7 @@ and catalog behavior; this exception grants no architectural permission.
 
 ## Next action
 
-Retain647 and UOM228 while adding independent recorded conclusions,
-remaining Settings regressions and final
-acceptance evidence. Do not change local storage to repair missing observations.
+Retain871, smoke86 and same-candidate UOM228. Instrument exact owned-process and
+phase boundaries for the chain restart/evidence shutdown failure before changing
+runtime or claiming a clean chain. Remaining Settings regressions, Operations/Admin
+observation gaps and final acceptance remain open; local storage is unchanged.

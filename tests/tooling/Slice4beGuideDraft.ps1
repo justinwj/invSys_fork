@@ -78,6 +78,14 @@ NextFitControl:
             control.SelLength = 0
             owner.Repaint: DoEvents
             GuideDraftControlForTest = "DELIVERED"
+        Case "ViewportText"
+            If TypeName(control) <> "TextBox" Then GuideDraftControlForTest = "NOT TEXT": Exit Function
+            If Not control.Locked Or Not control.Visible Or Not owner.Visible Then GuideDraftControlForTest = "UNAVAILABLE": Exit Function
+            index = InStr(1, CStr(control.Value), value, vbBinaryCompare)
+            If Len(value) = 0 Or index = 0 Then GuideDraftControlForTest = "TEXT UNAVAILABLE": Exit Function
+            control.SetFocus: control.SelStart = index - 1: control.SelLength = Len(value)
+            owner.Repaint: DoEvents
+            GuideDraftControlForTest = "DELIVERED"
         Case "Values"
             For index = 0 To control.ListCount - 1
                 labels = labels & CStr(control.List(index, 0)) & vbLf

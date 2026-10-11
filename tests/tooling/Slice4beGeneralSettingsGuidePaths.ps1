@@ -65,7 +65,18 @@ function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps) {
             Pass ($kind+'.ExactGuideAndObservedJournal') ($result.JournalRecordId -ceq $journal.RecordId -and $result.JournalSha256 -ceq $journal.ContentSha256 -and $result.Guide.ContentSha256 -ceq $guide.ContentSha256 -and $result.Guide.Version -eq $guide.Version)
             Pass ($kind+'.ExactPublication') ($result.Publication.PublicationId -ceq $publication.PublicationId -and $result.Publication.ContentSha256 -ceq $publication.ContentSha256 -and $result.Publication.WarehouseId -ceq $Fixture.Warehouse)
             Pass ($kind+'.NoDomainApplicationClaim') (@($result.TerminalSources).Count -eq 0 -and $result.ExpectedConclusion.TerminalKind -ceq 'CommandCompleted')
-            Pass ($kind+'.OnlyObservedRunCanMatch') (@($result.Matches).Count -eq $(if($run.Success){9}else{0}) -and @($result.Matches|Where-Object {$_.ActivityId -cnotin @($run.Records.ActivityId)}).Count -eq 0)
+            # Incomplete/failed conclusions retain the actions actually completed.
+            # Interruption follows Reload; denial still permits four selections.
+            $ordinals=@(if($run.Success){1..9}elseif($run.Incomplete){1}else{2,3,6,8})
+            $exactMatches=@($result.Matches).Count -eq $ordinals.Count
+            foreach($ordinal in $ordinals){
+                $expected=@($run.Records|Where-Object {$_.Ordinal -eq $ordinal -and $_.OutcomeCode -ceq $Steps[$ordinal-1][2]})
+                $matches=@($result.Matches|Where-Object Ordinal -EQ $ordinal)
+                $exactMatches=$exactMatches -and $expected.Count -eq 1 -and $matches.Count -eq 1
+                if($expected.Count -eq 1 -and $matches.Count -eq 1){$exactMatches=$exactMatches -and $matches[0].ActivityId -ceq $expected[0].ActivityId -and $matches[0].StepId -ceq $guide.ExpectedConclusion.Steps[$ordinal-1].StepId}
+            }
+            Pass ($kind+'.OnlyObservedRunCanMatch') $exactMatches
+            Pass ($kind+'.ExactUnmatchedSteps') (@($result.MissingSteps).Count -eq $(if($run.Incomplete){8}else{0}) -and @($result.FailedSteps).Count -eq $(if(-not $run.Success -and -not $run.Incomplete){5}else{0}) -and @($result.UnavailableSteps).Count -eq 0)
             $pins=BoundPins $journalRoot
             Delivered (BoundControl 'btnViewActionPath' 'Click' '' 'frmActionPaths')
             $pair=View 'lblActionPathPair' 'Label';$how=View 'txtActionPathHowTo' 'Text';$diagnostic=View 'txtActionPathDiagnostic' 'Text'
@@ -73,13 +84,16 @@ function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps) {
             $noBorrowing=$diagnostic.Contains($result.EvaluationId) -and $diagnostic.Contains($run.Records[0].ActivityId)
             foreach($id in @($source.Records.ActivityId|Select-Object -Unique)){$noBorrowing=$noBorrowing -and -not $diagnostic.Contains($id)}
             Pass ($kind+'.DiagnosticCannotBorrowGuideSourceSuccess') $noBorrowing
+            $caption=if($run.Incomplete){'Incomplete evidence'}elseif($run.Success){'Conclusion observed. Command completed; Domain application not asserted'}else{'Failed'}
+            Pass ($kind+'.DisplayedSavedConclusion') ($diagnostic.Contains($caption+"`r`nSaved diagnostic result: "+$result.EvaluationId))
             foreach($method in @('How-To','Diagnostic','Compare both')){
                 Delivered (View 'cboActionPathView' 'Write' $method)
                 Pass ($kind+'.View.'+$method) ((View 'cboActionPathView' 'Selected') -ceq $method -and ((View 'txtActionPathHowTo' 'State') -split '\|')[0] -ceq $(if($method -ceq 'Diagnostic'){'False'}else{'True'}) -and ((View 'txtActionPathDiagnostic' 'State') -split '\|')[0] -ceq $(if($method -ceq 'How-To'){'False'}else{'True'}))
                 Pass ($kind+'.SameEvidence.'+$method) ((View 'lblActionPathPair' 'Label') -ceq $pair -and (View 'txtActionPathHowTo' 'Text') -ceq $how -and (View 'txtActionPathDiagnostic' 'Text') -ceq $diagnostic)
+                Pass ($kind+'.Layout.'+$method) ((BoundControl '' 'Fit' 'Current' 'frmActionPathView') -ceq 'True')
                 if($kind -ceq 'Observed' -or $method -ceq 'Compare both'){CaptureOwnedFormByCaptionEvidence 'Action Path view' ('general-guide-'+$kind.ToLowerInvariant()+'-'+$method.Replace(' ','-').ToLowerInvariant()+'.png')}
             }
-            Delivered (View 'txtActionPathDiagnostic' 'ViewportBottom')
+            Delivered (View 'txtActionPathDiagnostic' 'ViewportText' ($caption+"`r`nSaved diagnostic result: "+$result.EvaluationId))
             CaptureOwnedFormByCaptionEvidence 'Action Path view' ('general-guide-'+$kind.ToLowerInvariant()+'-conclusion.png')
             Pass ($kind+'.ViewsPreserveTrainingEvidence') (BoundSame $pins (BoundPins $journalRoot))
             Delivered (View 'btnCloseActionPathView' 'Click')
