@@ -21,7 +21,7 @@ with exact9/1/4 observed matches. Five instrumented compiles, nine layout checks
 14 reviewed captures, preservation and clean delayed closure pass; runtime/static
 metrics are unchanged and452 scripts parse. The preceding250/2 diagnostic exposed
 two incorrect test expectations, not product RED. KVM input works for this run;
-RDP/tscon is not declared repaired. Remaining Settings regressions stay open.
+RDP/tscon is not declared repaired. Settings regressions are refreshed below.
 Fresh same-candidate smoke86 is clean. The chain retains32/live48/warehouse15,
 but its native audit records an Excel combase.dll/c0000005 crash after live-role
 completion. The exact failing call remains unknown; no clean chain is claimed.
@@ -67,8 +67,12 @@ does not explain the ordinary chain's earlier14/1 failure.
 Settings202 and user-policy104 now pass in exact prior order on General02, with
 five compiles each, preservation and zero delayed errors. Four user-policy captures
 were reviewed. Only a stale catalog27/131 test expectation changed to31/144;
-runtime is unchanged. Next complete Settings action-recording regression, then
-the Operations/Admin observation gaps below and reconcile final
+runtime is unchanged. Settings action recording now passes548/548, retaining
+535 prior ordered checks plus13 newer-control exclusions, five compiles, eight
+reviewed captures, preservation and clean delayed closure. Its first509/39 run
+exposed only a stale catalog27 assertion; updating it to31 changes no runtime.
+Next address B0 native maximize/restore and the Operations/Admin observation
+gaps below, then reconcile final
 live-role, Release1, restart/binding and visible acceptance evidence. Transfer
 maintenance-denial, terminal/interruption and recorded/evaluated comparisons now
 have scoped GREEN499 proof; reuse it. Neither this audit
@@ -86,7 +90,7 @@ Shipping7, Boxing2 and Viewer4. These are registration counts, not coverage scor
 | --- | --- |
 | Production | The existing census still accounts for68 constructed buttons on six pages,14 unconstructed legacy buttons and34 non-button handlers. `PRODUCTION_RUN_SCALE` is registered, but `mBtnApplyBatchScale_Click` has no activity boundary; RUN-SCALE-01 remains pending. The non-button audit has only two registered Assignment selections; distinguish remaining deliberate selections from excluded text/programmatic events. Deliberate tab changes and launcher coverage also remain open. Do not call all28 remaining handlers required new events. |
 | Shipping/Boxing | Catalog29 includes the seven shipment mutation commands and Make/Unbox. Refresh, history/export, form lifecycle, Box Designer commands, deliberate tabs/selections and other reachable controls in the source map still need individual coverage/exclusion evidence. The old catalog7 map is historical discovery, not current registration status. |
-| Admin | The prior28 IDs cover Settings Save Value, three UOM commands, Tracking12, Detail8 and personal preference4. Nine General controls now have catalog31 GREEN871 including policy/storage, permission-loss and independent guide proof; remaining Settings regressions stay open. Navigation/lifecycle and eligible warehouse/user/processor/publication/maintenance commands also need actual-handler coverage. Pre-sign-in and nonexistent-target exclusions remain mandatory. Canonical audit alone does not prove shared user-activity capture. |
+| Admin | The prior28 IDs cover Settings Save Value, three UOM commands, Tracking12, Detail8 and personal preference4. Nine General controls have catalog31 GREEN871 including policy/storage, permission-loss and independent guide proof; Settings202/user-policy104/observations548 are refreshed. Navigation/lifecycle and eligible warehouse/user/processor/publication/maintenance commands still need actual-handler coverage. Pre-sign-in and nonexistent-target exclusions remain mandatory. Canonical audit alone does not prove shared user-activity capture. |
 | Replay setup/editor/runner | `frmActionPathLibrary` Configure execution/Run How-To and the new `frmActionPathExecution`/`frmActionPathRun` controls have no registered observation IDs. D18-REPLAY-01 boundary5 explicitly prevents inferring observation exclusion from replay exclusion. Review each owner/result; retain the older explicit authoring/evaluation exclusions only where applicable. Actual replayed Receiving actions already have fresh activity proof. |
 | Guide transfer | Catalog30 observation RED45/34 -> GREEN79 and policy429 are retained. Recorded GREEN499 now proves maintenance revocation, terminal/interruption, explicit evaluation and independent guide comparisons through actual handlers. Broader transfer/A acceptance stays open. |
 
@@ -95,6 +99,16 @@ Evidence: current source plus ignored `production-tracking-source-census.json`,
 `reports/runtime/`. The maintained Production coverage audit and controls catalog
 retain per-control details. No new ControlIds, owner outcomes or exclusions are
 approved by this inventory; reconcile them with D18 before implementation.
+
+### Settings continuation audit (2026-10-11)
+
+Source review confirms seven unobserved entries: `modAdmin.Open_Settings`,
+`frmAdminSettings.mBtnClose_Click`, two `mpSettings` pages and three
+`mpEventTracking` sections. The two MultiPage fields have no event bindings.
+Existing observation probes change pages programmatically and correctly require
+no extra clicks. A navigation test must deliver deliberate input, independently
+verify the selected page and then check its observation; fixture setup is not RED.
+This census defines no new ControlIds, outcomes or architectural contract.
 
 ## Historical checkpoints (candidate-specific)
 

@@ -339,6 +339,26 @@ under that same regression root (202 GREEN); and
 plus `capture-review.json` (104 GREEN). Existing unchanged-runtime static04 metrics
 remain applicable; the changed PowerShell assertion parses. No XLAM was rebuilt.
 
+The Settings action-recording gate now passes **548/548** on General02, retaining
+all535 prior identities in relative order and adding13 older-policy exclusions.
+All548 current-candidate identities retain exact order. Five compiles, eight
+reviewed captures, package/settings preservation, unassisted closure and zero
+delayed Excel failures pass. Recording, policy-change interruption, cancellation,
+optional tracking failure and captured-context guards remain protected. The
+images distinguish saved results from failed optional tracking; General grid
+clipping remains, and no human or new long-value acceptance is claimed.
+
+Its first run has509 PASS/39 FAIL, exclusively the owner-fact assertion still
+expecting catalog27. Read-only fixture metadata confirms catalog31; changing
+only that expectation to31 makes all548 pass. This is test maintenance, not
+product RED. Controllers under `general-native-release-final-regression/`:
+`settingsactivity-d01990de6fca49dab5bd9b604f53324a` (first),
+`settingsactivity-66ec306cc12f4c0d853d677b1d243a3e` (corrected), with
+`qualified-verification.json`, `result-pointer.json` and corrected
+`capture-review.json`. Workers under `slice4be-settings-activity/`:
+`abaa948c4ab3469089e27ec5de741722` and `faa511d912e040eaa78db9f099cdf9a8`.
+Corrected UTC19:12:00.093--19:25:36.606; delayed audit through19:25:48.606.
+
 ## Next action
 
 Retain871, smoke86 and same-candidate UOM228. The
@@ -346,5 +366,5 @@ Retain871, smoke86 and same-candidate UOM228. The
 now records cleanup diagnostics and a clean traced32/live48/warehouse15 chain;
 the ordinary chain fails earlier at Receiving14/1. An untraced31-check control
 passes without explaining that known intermittent automation failure.
-Continue Settings action-recording regression and Operations/Admin observation
-gaps; ordinary-chain and final acceptance remain open. Runtime is unchanged.
+Continue Operations/Admin observation gaps and B0 native maximize/restore proof;
+ordinary-chain and final acceptance remain open. Runtime is unchanged.
