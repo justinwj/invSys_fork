@@ -194,7 +194,8 @@ function Get-TrackingPolicyVersion($Fixture) {
 function Test-Slice4beTrackingPolicy($Fixture,$Other) {
     $request=Get-TrackingPolicyRequest
     $model=$request|ConvertFrom-Json
-    $loaded=($model.SchemaVersion -eq 2 -and $model.CatalogVersion -eq 27 -and $model.Controls.Count -eq 131 -and @($model.Users).Count -eq 0)
+    # Architecture v4.11 D18 catalog31 includes the nine General Settings controls.
+    $loaded=($model.SchemaVersion -eq 2 -and $model.CatalogVersion -eq 31 -and $model.Controls.Count -eq 144 -and @($model.Users).Count -eq 0)
     Check 'TrackingPolicy.EditorLoaded' $loaded
     if(-not $loaded){throw 'Tracking policy editor fixture did not load.'}
     Check 'TrackingPolicy.BuiltInDefaults' (-not $model.ViewerActionPathCaptureEnabled -and $model.AdminViewerEventLoggingEnabled -and $model.DefaultView -ceq 'How-To' -and

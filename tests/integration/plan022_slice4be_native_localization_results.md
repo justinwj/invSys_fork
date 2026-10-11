@@ -229,7 +229,14 @@ Final source pure checks: `shutdown-trace-contract/621b3b12a7da4d23a5593064bcc4b
 Final static: `general-native-outcome-static-04/ratchet-verification.json`, with
 unchanged metrics/28 caps, three valid schemas and455 parsed PowerShell scripts.
 
-Next isolate the Receiving callback through the existing untraced `BeforeProjection`
-control with `Setup Chain` and explicit General02 package pins; preserve the14/1
-failure and distinguish form construction, handler and unload if it reproduces.
-No universal native repair, ordinary-chain acceptance or 4be-A completion is claimed.
+The existing untraced `BeforeProjection`/`Setup Chain` control then passes31/31,
+the exact ordered prefix of48, with explicit General02 pins, no VBA instrumentation,
+normal closure, full preservation and zero delayed events. Receiving succeeds;
+17 later live checks remain unexecuted. Receipt:
+`projection-live-control/6fc9ba39362e4332a3c4750018f04d09/qualified-verification.json`.
+The14/1 failure is not reproduced or explained. Continue independent Settings
+regressions and observation coverage; retain ordinary-chain validation as an open
+final gate. No universal native repair or 4be-A completion is claimed.
+This same14/1 Receiving macro/HRESULT pattern is already documented in
+`plan022_slice4be_settings_editor_activity_results.md`; do not treat it as a new
+failure class or infer its cause from a subsequent successful run.

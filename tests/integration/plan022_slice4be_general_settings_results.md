@@ -314,13 +314,37 @@ already consolidated. Retain both groups, prohibit automatic deletion, and
 require review for any further increase. Packaged191 protects their dispatch
 and catalog behavior; this exception grants no architectural permission.
 
+## Current-candidate Settings regressions (2026-10-11 UTC)
+
+The shared Settings gate passes **202/202**, retaining all202 prior check identities
+in order on unchanged General02. Policy, detail, preferences, Operations Settings,
+Admin close/reopen and shared config/UOM guards pass. Five instrumented compiles,
+unassisted preference restart, release of10 completed-host references, package/
+settings preservation and delayed zero Excel errors pass. No new captures were
+requested in this gate. Its first27/2 attempt stopped at a stale catalog27/131
+fixture assertion; updating that assertion to approved catalog31/144 is test
+maintenance, not product RED or a runtime change.
+
+The separate user-policy regression passes **104/104** in exact prior order on
+General02, with five compiles, preservation, normal closure and zero delayed
+errors. Four captures were directly reviewed: General, tracking, saved disabled-
+user policy and successful General save. Controls/status are readable; long
+General paths remain clipped in the list. This is scoped agent review, not human
+acceptance or new long/multiline acceptance.
+
+Ignored receipts: `general-native-release-final-regression/settings-93cbdee37fc2489fb8fdb1e0e7e7c748/result-pointer.json`
+(stale expectation); `settings-584a11cd6da5471f95fc2eb0b1052cb0/qualified-verification.json`
+under that same regression root (202 GREEN); and
+`user-tracking-policy-controller/56b0ae3f20ce4ddc9275dc84bdd02305/qualified-verification.json`
+plus `capture-review.json` (104 GREEN). Existing unchanged-runtime static04 metrics
+remain applicable; the changed PowerShell assertion parses. No XLAM was rebuilt.
+
 ## Next action
 
 Retain871, smoke86 and same-candidate UOM228. The
 [native localization record](plan022_slice4be_native_localization_results.md)
-now captures process/phase diagnostics: corrected isolated late stages15 and
-collected restart12 are clean, but the original combase fault remains unresolved.
-The traced full chain failed earlier in live-role projection recovery with a
-different native fault; instrument that child before another full-chain attempt.
-Remaining Settings regressions, Operations/Admin observation gaps and final
-acceptance remain open; local storage and runtime are unchanged.
+now records cleanup diagnostics and a clean traced32/live48/warehouse15 chain;
+the ordinary chain fails earlier at Receiving14/1. An untraced31-check control
+passes without explaining that known intermittent automation failure.
+Continue Settings action-recording regression and Operations/Admin observation
+gaps; ordinary-chain and final acceptance remain open. Runtime is unchanged.
