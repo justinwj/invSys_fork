@@ -82,11 +82,64 @@ process identities and recovery images are not committed.
 
 ## Remaining diagnostic boundary
 
-No native failing API or repaired cause is established. Keep the original fault
-and the earlier live-role fault separate. Before another full-chain attempt,
-add owned-process and before/after markers to the live child's projection
-deletion/rebuild calls, retaining the late-stage trace. A full-chain retry must
-preserve all original checks and qualify native failures independently of counts.
-Do not convert the collection control into a runtime fix without a protecting
-reproduction. Retain General871, smoke86 and UOM228 at their documented scope;
-broader Settings, Operations/Admin and final visible acceptance remain open.
+The continuation below supersedes the earlier untraced-owner limitation. No native
+failing API or repaired cause is established. Retain General871, smoke86 and UOM228
+at their documented scope; broader Settings, Operations/Admin and final visible
+acceptance remain open.
+
+## Live process and delayed teardown localization (2026-10-11 UTC)
+
+The test generator now records the live child's exact process identity and
+before/after markers for all51 original projection-recovery statements. Tooling
+checks pass **63/63**, retaining the previous56 and verifying unchanged live calls,
+unchanged statements, paired boundaries, metadata-only mapping and single
+instrumentation. The duplicate-instrumentation guard was first observed failing
+(62 PASS/1 FAIL), then corrected; this is tooling evidence, not product RED.
+
+The unchanged General02 full chain runs **17:53:49.1682882--17:56:47.0073936Z**.
+It repeats **chain5 PASS/1 FAIL, live32 PASS/1 FAIL, warehouse15/15**. Reached original
+checks retain their order;27 chain and16 live checks are unreached. At
+**17:55:27.5805077Z**, Application1000 identifies the exact `LiveRole.excel` owner
+with **ntdll.dll/c0000028**. Markers1--30 returned; marker31 entered
+`modProcessor.RunBatchReportForAutomation` and never returned. Projection deletion,
+inbox-trigger save and context restoration had completed. This identifies the
+packaged call, not the failing statement inside VBA. It agrees with the earlier
+projection-boundary evidence at older candidates; it is not a new failure class.
+Later restart/evidence stages are not reached. Recovery closure is assisted,
+with recovered files retained. Settings, reports and all frozen packages are preserved.
+
+The existing `RestartProjectionReplay` control then copies this failed generated
+fixture, rebinds cloned paths and runs the original six checks in fresh Excel.
+It records **3 PASS/3 FAIL**: missing-projection setup, rebuilt tables and duplicate-free
+replay pass; one-event application, exact identity and processed status fail.
+Those failed checks are unresolved and invalidate a successful replay claim.
+The processor returns at17:57:45.4441165Z. Quit returns at17:57:46.3996515Z with zero
+open workbooks, but Excel remains throughout210 seconds of observation despite
+the existing collection control. The worker exits at18:01:19.6987236Z; the same
+owned Excel process faults **167.9 ms later**, at18:01:19.8666213Z, with
+**combase.dll/c0000005**. This reproduces the original signature after worker exit;
+it does not retrospectively identify the original chain's untraced owner or prove
+a native root cause. Recovery closure is assisted and retains files. All13 source
+fixture files/hashes, local settings and frozen packages are preserved.
+
+Exact ignored receipts:
+
+- Pure tooling: `shutdown-trace-contract/2dec1d366c87463fbe9950a41d93d9c0/checks.json`.
+- Full chain: `general-native-traced02-regression/chain-eb5a47f750314d7a8ec45d9e9697bfe6/native-verification.json` and `qualified-counts.json`.
+- Call map: `general-chain-native-trace-02/localization.json`, `projection-map.json`, `owners.jsonl` and `phases.jsonl`; recovery images retain the selected keep-files option.
+- Fresh control: `slice4be-shutdown-control/7e4818bed2eb4401ac148500852f4aa5/`; `native-projection-replay02-control/qualified-verification.json` and `fixture-verification.json`.
+- Static: `general-native-live-trace-static-01/ratchet-verification.json`; all prior runtime metrics/caps unchanged, three schemas and455 PowerShell parses pass.
+
+The existing unsaved VBA-boundary control then passes **35/35**, retaining the
+original ordered live prefix on the same packages. It uses `Setup Chain`, installs
+37 stage markers and records77 entries across33 distinct stages. Four instrumented
+compiles pass; the processor returns, Excel closes unassisted and the delayed
+audit has zero Application errors. Settings, reports and five packages are preserved.
+Receipt: `projection-live-control/b362597a0dce4ffe8c9c652c83a5e4a5/qualified-verification.json`.
+This control changes VBE preparation and instrumentation; its success does not
+explain or repair either native failure.
+
+Next add redacted processor counts, trigger status/error classification and
+authority deltas to the fresh control to distinguish its business failures from
+delayed teardown. Preserve both native failures and all original checks; no
+unchanged full-chain retry or collection-based runtime repair is justified.

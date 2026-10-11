@@ -28,6 +28,19 @@ foreach($definition in $ast.FindAll({param($n)$n -is [Management.Automation.Lang
             $text=$text.Replace($call,("Add-ShutdownPhase 'Excel.BeforeQuit' '"+$marker+"'; "+$call+"; Add-ShutdownPhase 'Excel.AfterQuitAttempt' '"+$marker+"'"))
         }
     }
+    if($definition.Name -ceq 'New-OrderedLiveValidator'){
+        $anchor='return $orderedPath'
+        if([regex]::Matches($text,[regex]::Escape($anchor)).Count -ne 1){throw 'Live validator return anchor differs.'}
+        $injection=@'
+    $liveSource=Get-Content -LiteralPath $orderedPath -Raw
+    [IO.File]::WriteAllText((Join-Path $ReportRoot 'ordered-live-original.ps1'),$liveSource,[Text.UTF8Encoding]::new($false))
+    $liveSource=Add-LiveProjectionTrace $liveSource $ReportRoot
+    [IO.File]::WriteAllText($orderedPath,$liveSource,[Text.UTF8Encoding]::new($false))
+    [IO.File]::WriteAllText((Join-Path $ReportRoot 'ordered-live-traced.ps1'),$liveSource,[Text.UTF8Encoding]::new($false))
+    return $orderedPath
+'@
+        $text=$text.Replace($anchor,$injection)
+    }
     $changes.Add([pscustomobject]@{Function=$definition.Name;CreationAnchors=$created.Count;Changed=($text -cne $definition.Extent.Text)})
     $source=$source.Replace($definition.Extent.Text,$text)
 }

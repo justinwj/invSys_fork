@@ -72,9 +72,40 @@ try {
     $late=[Management.Automation.Language.Parser]::ParseFile((Join-Path $lateRoot 'chain.ps1'),[ref]$tokens,[ref]$errors)
     Check 'GeneratedPartialParses' ($errors.Count -eq 0)
     function BusinessCalls($Tree){
-        return (@($Tree.FindAll({param($n)$n -is [Management.Automation.Language.CommandAst] -and $n.GetCommandName() -cin @('Run-WorkbookMacro','Add-Result')},$true)|ForEach-Object{$_.Extent.Text}) -join "`n")
+        return (@($Tree.FindAll({param($n)$n -is [Management.Automation.Language.CommandAst] -and $n.GetCommandName() -cin @('Run-WorkbookMacro','Add-Result','Add-ResultRow','Restore-LiveRuntimeContext','Add-ListObjectRow')},$true)|ForEach-Object{$_.Extent.Text}) -join "`n")
     }
     Check 'FullBusinessCallsUnchanged' ((BusinessCalls $ast) -ceq (BusinessCalls $full))
+    $orderedWriter=@($full.FindAll({param($n)$n -is [Management.Automation.Language.FunctionDefinitionAst]},$false)|Where-Object Name -CEQ 'New-OrderedLiveValidator')[0]
+    & {
+        param($Definition,$Destination)
+        $ReportRoot=$Destination;$tempRoot=Join-Path $Destination 'ordered-test'
+        New-Item -ItemType Directory $tempRoot|Out-Null
+        . ([scriptblock]::Create($Definition.Extent.Text))
+        New-OrderedLiveValidator|Out-Null
+    } $orderedWriter $fullRoot
+    $originalLive=[Management.Automation.Language.Parser]::ParseFile((Join-Path $fullRoot 'ordered-live-original.ps1'),[ref]$tokens,[ref]$errors)
+    $tracedLive=[Management.Automation.Language.Parser]::ParseFile((Join-Path $fullRoot 'ordered-live-traced.ps1'),[ref]$tokens,[ref]$errors)
+    Check 'TracedOrderedLiveParses' ($errors.Count -eq 0)
+    Check 'LiveBusinessCallsUnchanged' ((BusinessCalls $originalLive) -ceq (BusinessCalls $tracedLive))
+    function ProjectionStatements($Tree){
+        $body=@($Tree.EndBlock.Statements|Where-Object{$_ -is [Management.Automation.Language.TryStatementAst]})[0].Body
+        $began=$false
+        foreach($statement in $body.Statements){
+            if($statement.Extent.Text -ceq '$currentStep = "Delete and rebuild canonical inventory projections"'){$began=$true}
+            if($statement.Extent.Text -ceq '$currentStep = "Run two consecutive Production batches through form actions"'){break}
+            if($began -and $statement.Extent.Text -notlike 'Add-ShutdownPhase *'){$statement.Extent.Text}
+        }
+    }
+    $projectionStatements=@(ProjectionStatements $originalLive)
+    Check 'EveryProjectionStatementUnchanged' (($projectionStatements -join "`n") -ceq ((ProjectionStatements $tracedLive) -join "`n"))
+    $map=Get-Content (Join-Path $fullRoot 'projection-map.json') -Raw|ConvertFrom-Json
+    Check 'ProjectionMapMetadataOnly' (@($map).Count -eq $projectionStatements.Count -and @($map|Where-Object{($_.PSObject.Properties.Name -join '|') -cne 'Marker|SourceLine|Kind'}).Count -eq 0)
+    $tracedText=Get-Content (Join-Path $fullRoot 'ordered-live-traced.ps1') -Raw
+    Check 'EveryProjectionBoundaryPaired' ([regex]::Matches($tracedText,"Add-ShutdownPhase 'Stage.Before' 'Projection\.[0-9]+'").Count -eq $map.Count -and [regex]::Matches($tracedText,"Add-ShutdownPhase 'Stage.After' 'Projection\.[0-9]+'").Count -eq $map.Count)
+    Check 'LiveOwnerCapturedOnce' ([regex]::Matches($tracedText,"Owner='LiveRole.excel'").Count -eq 1)
+    $refused=$false
+    try{Add-LiveProjectionTrace $tracedText $fullRoot|Out-Null}catch{$refused=$true}
+    Check 'DuplicateLiveTracingRefused' $refused
     foreach($name in @('Invoke-RestartReconciliation','Invoke-RuntimeFivePackageEvidence','Invoke-StaticRetiredPathRatchet')){
         $before=@($definitions|Where-Object Name -CEQ $name)[0]
         $after=@($late.FindAll({param($n)$n -is [Management.Automation.Language.FunctionDefinitionAst]},$false)|Where-Object Name -CEQ $name)[0]

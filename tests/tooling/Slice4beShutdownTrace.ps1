@@ -24,6 +24,50 @@ function Add-ShutdownTraceToFunction([string]$Name,[string]$Text) {
     return $Text
 }
 
+# The ordered live validator owns its Excel instance. Instrument its generated
+# source before dispatch; never attach a second automation client for tracing.
+function Add-LiveProjectionTrace([string]$Source,[string]$TraceRoot) {
+    if($Source.Contains('Add-ShutdownPhase') -or $Source.Contains("Owner='LiveRole.excel'")){throw 'Live validator is already traced.'}
+    $tokens=$null;$errors=$null
+    $ast=[Management.Automation.Language.Parser]::ParseInput($Source,[ref]$tokens,[ref]$errors)
+    if($errors.Count){throw 'Live validator does not parse.'}
+    $main=@($ast.EndBlock.Statements|Where-Object{$_ -is [Management.Automation.Language.TryStatementAst]})
+    if($main.Count -ne 1){throw 'Live main boundary differs.'}
+    $statements=@($main[0].Body.Statements)
+    $begin=@($statements|Where-Object{$_.Extent.Text -ceq '$currentStep = "Delete and rebuild canonical inventory projections"'})
+    $end=@($statements|Where-Object{$_.Extent.Text -ceq '$currentStep = "Run two consecutive Production batches through form actions"'})
+    if($begin.Count -ne 1 -or $end.Count -ne 1 -or $begin[0].Extent.StartOffset -ge $end[0].Extent.StartOffset){throw 'Projection trace boundaries differ.'}
+    $selected=@($statements|Where-Object{$_.Extent.StartOffset -ge $begin[0].Extent.StartOffset -and $_.Extent.StartOffset -lt $end[0].Extent.StartOffset})
+    $map=[Collections.Generic.List[object]]::new()
+    for($index=$selected.Count-1;$index -ge 0;$index--){
+        $statement=$selected[$index];$marker='Projection.'+($index+1).ToString('00')
+        $map.Add([pscustomobject]@{Marker=$marker;SourceLine=$statement.Extent.StartLineNumber;Kind=$statement.GetType().Name})
+        $Source=$Source.Insert($statement.Extent.EndOffset,("`r`n    Add-ShutdownPhase 'Stage.After' '"+$marker+"'"))
+        $Source=$Source.Insert($statement.Extent.StartOffset,("Add-ShutdownPhase 'Stage.Before' '"+$marker+"'`r`n    "))
+    }
+    $setup='$ReportRoot = '''+$TraceRoot.Replace("'","''")+''' '+"`r`n"+'. (Join-Path $repo ''tests/tooling/Slice4beShutdownTrace.ps1'')'
+    $owner=@'
+    [uint32]$traceProcessId=0
+    [void][InvSysLiveValidationWindow]::GetWindowThreadProcessId([IntPtr]$excel.Hwnd,[ref]$traceProcessId)
+    $traceProcess=Get-Process -Id $traceProcessId -ErrorAction Stop
+    [pscustomobject]@{UTC=[DateTimeOffset]::UtcNow.ToString('o');Owner='LiveRole.excel';ProcessId=$traceProcessId;CreatedUTC=$traceProcess.StartTime.ToUniversalTime().ToString('o')}|ConvertTo-Json -Compress|Add-Content -LiteralPath (Join-Path $ReportRoot 'owners.jsonl')
+'@
+    $edits=@(
+        @('$repo = (Resolve-Path $RepoRoot).Path', ('$repo = (Resolve-Path $RepoRoot).Path'+"`r`n"+$setup)),
+        @('$excel = New-Object -ComObject Excel.Application', ('$excel = New-Object -ComObject Excel.Application'+"`r`n"+$owner)),
+        @('$fullMacro = "', ('Add-ShutdownPhase ''Macro.Before'' $MacroName'+"`r`n    "+'$fullMacro = "')),
+        @('$Rows.Add(', ('Add-ShutdownPhase ''Check'' $Check $Passed'+"`r`n    "+'$Rows.Add('))
+    )
+    foreach($edit in $edits){
+        if([regex]::Matches($Source,[regex]::Escape($edit[0])).Count -ne 1){throw 'Live trace anchor drift.'}
+        $Source=$Source.Replace($edit[0],$edit[1])
+    }
+    $null=[Management.Automation.Language.Parser]::ParseInput($Source,[ref]$tokens,[ref]$errors)
+    if($errors.Count){throw 'Traced live validator does not parse.'}
+    $map|Sort-Object Marker|ConvertTo-Json|Set-Content (Join-Path $TraceRoot 'projection-map.json')
+    return $Source
+}
+
 function Convert-ShutdownFixturePath([string]$Value,[string]$SourceRoot,[string]$CloneRoot) {
     if([string]::IsNullOrWhiteSpace($Value)){return $Value}
     $old=[IO.Path]::GetFullPath($SourceRoot).TrimEnd('\')
