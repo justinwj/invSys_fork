@@ -64,6 +64,28 @@ This identifies exception order, not a root cause. The existing stack filter
 omits first-chance C0000005; its capture requires a calibrated test before the
 next observation. The observed chain is failed diagnostic evidence, not acceptance.
 
+The native calibration now raises and handles a software C0000005 without
+invalid memory access or Office. RED46/3 at
+`native-exception-calibration/ee13254f00bf4af78f9180b64098c04c` fails only the
+missing access-violation stacks in Exit/Detach/FaultsOnly modes. After extending
+the stack filter, GREEN49/49 at
+`native-exception-calibration/dc96434e1514453f94c74e3049e3e189` retains all43 prior
+checks in order. Schema, module/offset redaction and32-frame bounds apply to every
+captured stack; exception handling, filter behavior and detach remain intact.
+This is diagnostic tooling evidence, with no XLAM or workflow-contract change.
+
+The next observed run does not reproduce the fatal sequence: native root
+`run-scale-disabled-native/66b9fb8ec2394774bac272632d3fdf4e`, chain controller
+`run-scale-disabled-regression/chain-3ae4127b27bc4b2c95a2731127d57f32`,
+UTC22:34:24.563--22:42:50.757. Chain32, live48 and warehouse15 pass in exact prior
+order, with preserved settings/packages/reports, unassisted closure and zero
+delayed Excel failures. The native observer exits normally with no second-chance
+fault. This is an observed diagnostic pass, not ordinary acceptance or a repair;
+the first-chance access-violation stack was not exercised by Excel in this run.
+Regenerated `run-scale-disabled-native-static-01` retains all preceding runtime
+metrics and28 caps, validates three schemas inside the successful generator, and
+parses457 scripts. Do not duplicate the generator's completed schema validation.
+
 ## Earlier configuration-call interruption
 
 Two ordinary Scale-candidate runs failed before the intended cases at

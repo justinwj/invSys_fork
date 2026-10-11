@@ -114,9 +114,10 @@ public static class NativeExceptionObserver
 
     private static void WriteFaultStack(string root, DebugEvent data)
     {
-        // Only the observed fatal code, second-chance faults and the disposable
-        // calibration exception. No routine first-chance stack surveillance.
-        if (data.FirstChance != 0 && data.ExceptionCode != 0xC0000028 && data.ExceptionCode != 0xE042BEEF) return;
+        // Capture the observed access violation before fatal unwind, second-chance
+        // faults and the calibration exception; omit routine first-chance stacks.
+        if (data.FirstChance != 0 && data.ExceptionCode != 0xC0000005 &&
+            data.ExceptionCode != 0xC0000028 && data.ExceptionCode != 0xE042BEEF) return;
         List<string> frames = new List<string>();
         string state = "Unavailable";
         int error = 0;
@@ -262,6 +263,7 @@ public static class NativeExceptionObserver
     }
 
     // Disposable calibration target; no Office or project data is loaded.
+    [System.Runtime.ExceptionServices.HandleProcessCorruptedStateExceptions]
     private static int Calibrate(string root)
     {
         DateTime deadline = DateTime.UtcNow.AddSeconds(30);
@@ -275,6 +277,10 @@ public static class NativeExceptionObserver
         catch (SEHException) { File.WriteAllText(Path.Combine(root, "handled"), "Handled"); }
         try { RaiseException(5, 0, 0, IntPtr.Zero); }
         catch (SEHException) { File.WriteAllText(Path.Combine(root, "filtered-handled"), "Handled"); }
+        // Raise a handled software exception with the observed native fault code.
+        // No invalid memory access is performed by this disposable fixture.
+        try { RaiseException(0xC0000005, 0, 0, IntPtr.Zero); }
+        catch (AccessViolationException) { File.WriteAllText(Path.Combine(root, "access-handled"), "Handled"); }
         File.WriteAllText(Path.Combine(root, "continued"), "Continued");
         if (File.Exists(Path.Combine(root, "test-detach")))
         {
