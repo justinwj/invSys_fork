@@ -73,6 +73,7 @@ param(
     [switch]$RunLocalWorksheetOwnerOnly,
     [switch]$RunLocalWorksheetScaleOnly,
     [switch]$RunScaleDesignsDisabledForTest,
+    [switch]$RunScaleReloadForTest,
     [switch]$RunClearPathsOnly,
     [switch]$RunLoadPathsOnly,
     [switch]$RunLoadScalePathsForTest,
@@ -348,6 +349,7 @@ if($RunLocalWorksheetOwnerOnly -and (-not $CheckProductionRunLocal -or $RunLocal
 if($RunLocalWorksheetScaleOnly -and (-not $CheckProductionRunLocal -or $RunLocalClosedDiagnostic -or $RunLocalContractOnly -or $RunLocalPolicyOnly -or $RunLocalFaultOnly -or $RunLocalYieldOnly -or $RunLocalStockOnly -or $RunLocalWorksheetOnly -or $RunLocalWorksheetOwnerOnly)){throw 'Worksheet Scale requires its separate actual-handler gate.'}
 if($RunClearPathsOnly -and (-not $CheckProductionRunLocal -or -not $CaptureEvidence -or $RunLocalClosedDiagnostic -or $RunLocalContractOnly -or $RunLocalPolicyOnly -or $RunLocalFaultOnly -or $RunLocalYieldOnly -or $RunLocalStockOnly -or $RunLocalWorksheetOnly -or $RunLocalWorksheetOwnerOnly -or $RunLocalWorksheetScaleOnly)){throw 'Clear paths require a separate actual-handler gate and visible evidence.'}
 if($RunScaleDesignsDisabledForTest -and -not $RunLocalWorksheetScaleOnly){throw 'Designs-disabled Scale requires its isolated worksheet fixture.'}
+if($RunScaleReloadForTest -and -not ($RunScaleDesignsDisabledForTest -and $RunLocalWorksheetScaleOnly)){throw 'Scale reload requires the isolated Designs-disabled worksheet fixture.'}
 if($RunLoadScalePathsForTest -and -not $RunLoadPathsOnly){throw 'Load/Scale paths require the shared Load path fixture.'}
 if($RunLoadPathsOnly -and (-not $CheckProductionRunLocal -or -not $CaptureEvidence -or $RunClearPathsOnly -or $RunLocalClosedDiagnostic -or $RunLocalContractOnly -or $RunLocalPolicyOnly -or $RunLocalFaultOnly -or $RunLocalYieldOnly -or $RunLocalStockOnly -or $RunLocalWorksheetOnly -or $RunLocalWorksheetOwnerOnly -or $RunLocalWorksheetScaleOnly)){throw 'Load paths require a separate actual-handler gate and visible evidence.'}
 if($RunAllocatePathsOnly -and (-not $CheckProductionRunLocal -or -not $CaptureEvidence -or @($RunRefreshPathsOnly,$RunClearPathsOnly,$RunLoadPathsOnly,$RunLocalRefillDiagnostic,$RunLocalClosedDiagnostic,$RunLocalContractOnly,$RunLocalPolicyOnly,$RunLocalFaultOnly,$RunLocalYieldOnly,$RunLocalStockOnly,$RunLocalWorksheetOnly,$RunLocalWorksheetOwnerOnly,$RunLocalWorksheetScaleOnly|Where-Object{$_}).Count)){throw 'Apply paths require a separate actual-handler gate and visible evidence.'}
@@ -634,6 +636,7 @@ if($CheckProductionDesignerActivity){
     if($RunLocalStockOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-run-stock/'+[guid]::NewGuid().ToString('N'))}
     if($RunLocalWorksheetScaleOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-run-worksheet-scale/'+[guid]::NewGuid().ToString('N'))}
     if($RunScaleDesignsDisabledForTest){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-run-scale-disabled/'+[guid]::NewGuid().ToString('N'))}
+    if($RunScaleReloadForTest){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-run-scale-reload/'+[guid]::NewGuid().ToString('N'))}
     if($RunLocalWorksheetOwnerOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-run-worksheet-owner/'+[guid]::NewGuid().ToString('N'))}
     if($RunLocalWorksheetOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-run-worksheet/'+[guid]::NewGuid().ToString('N'))}
     if($RunClearPathsOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-production-run-clear-paths/'+[guid]::NewGuid().ToString('N'))}

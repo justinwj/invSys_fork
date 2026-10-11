@@ -1677,7 +1677,6 @@ End Function
 Public Function LoadRecipeChooser(ByVal recipeId As String) As Boolean
     On Error GoTo ErrHandler
     If Trim$(recipeId) = "" Then Exit Function
-
     Dim wsProd As Worksheet: Set wsProd = SheetExists(SHEET_PRODUCTION)
     If wsProd Is Nothing Then Exit Function
     Dim syncReport As String
@@ -1712,6 +1711,7 @@ Public Function LoadRecipeChooser(ByVal recipeId As String) As Boolean
     Else
         If Not LocalProductionRecipeRowsExist(wsProd.Parent, recipeId) Then
             RefreshProductionRecipesFromRuntime wsProd.Parent, syncReport
+            If Not LocalProductionRecipeRowsExist(wsProd.Parent, recipeId) Then Exit Function
         End If
         Set wsRec = SheetExists("Recipes")
     End If

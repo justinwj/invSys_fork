@@ -6,6 +6,56 @@ docs commit `9dc7cbc`. Earlier references below to pending approval retain their
 historical meaning. Scoped RUN-SCALE-01 and RUN-UI-01 evidence follows; remaining
 Scale coverage and broader acceptance are still required.
 
+## Missing worksheet definition preserves staging, 2026-10-11
+
+Unpromoted `deploy/validation-run-scale-empty-recipe-01` adds one D14 guard:
+after the existing recipe refresh, an unavailable selected definition returns
+False before chooser/palette rebuilding. The actual packaged Scale handler now
+preserves custom columns, values and formulas and records FAILED. It still scales
+prior quantities and displays the existing misleading loaded-recipe status.
+RUN-SCALE-02 proposes changing those subsequent effects and wording; approval is
+pending. This guard does not implement that proposal or prove successful reload.
+
+Focused RED54/7 becomes GREEN61/61 in identical order, retaining48 shared checks.
+The real released selection has no matching worksheet definition before/after
+refresh; no exception or owner result is injected. RED reaches the destructive
+rebuild; GREEN stops before it. The seven RED failures are custom-field preservation
+and six FAILED-pair predicates. Five instrumented compiles, exact seeded identity,
+saved authority/older records/other-warehouse activity/operator bytes and candidate
+packages/settings are preserved. Both runs close normally with zero delayed Excel
+failures. RED controller `96933c7b076d481c9f16bdcba0bcb037`, worker
+`slice4be-production-run-scale-reload/62db63050b024ebcb66d31ceba0e4de8`,
+UTC22:47:51.676--22:49:37.305. GREEN controller
+`3cec570be61d4c5faae5f490dbdb974e`, worker
+`slice4be-production-run-scale-reload/415e075c97ee48f9ae47da73fa4f17e4`,
+UTC22:52:10.534--22:54:04.277. Controllers are under
+`reports/runtime/production-run-local-controller`; their verification receipts
+qualify checks, candidate pins, closure and the delayed native audit.
+
+Build `run-scale-empty-recipe-build-01/verification.json` records five cold
+compiles and Operations cold start: only `mProduction` changes,312 compiled
+components remain unchanged. Static `run-scale-empty-recipe-static-01` retains
+320 components/6342 procedures/138754 lines, dynamic calls9/45,192 duplicate
+candidates and all28 caps; three schemas validate and458 PowerShell files parse.
+The existing Designs-disabled160 checks pass in exact prior order on this
+candidate: controller `31b19428dff048a6b40a4a48136250c2`, worker
+`slice4be-production-run-scale-disabled/cc4b1f85b0cf4d15a693a75b9dcbe3ef`,
+UTC22:56:35.773--22:58:29.907. Five instrumented compiles, preservation and normal
+closure pass with zero delayed Excel failures. One qualification attempt ran
+while the subsequent smoke test held package files open; rehash qualification
+was deferred until Excel closed. This was not a product or test-case failure.
+Smoke86/86 also retains exact prior order, both unassisted shutdowns, settings,
+packages and tracked reports, with zero delayed Excel failures:
+`run-scale-empty-recipe-regression/smoke-a09f90da46a5418888122b5f7da6d914`,
+UTC22:58:56.546--22:59:17.843. No new full-chain or layout run is claimed for
+this candidate; the previous candidate's evidence retains its original scope.
+
+The reviewed `run-scale-missing-definition.png` shows the complete existing
+misleading status and scaled prior values; long descriptions still clip. It is
+evidence of the pending contract problem, not visible acceptance of that failure.
+Successful worksheet rebuild, independent worksheet guidance, native chain
+acceptance and comprehensive Scale/4be-A acceptance remain open.
+
 ## Designs-disabled Scale refusals and caught owner failure, 2026-10-11
 
 Unpromoted `deploy/validation-run-scale-disabled-01` records the existing worksheet

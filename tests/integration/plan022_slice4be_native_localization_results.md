@@ -86,6 +86,17 @@ Regenerated `run-scale-disabled-native-static-01` retains all preceding runtime
 metrics and28 caps, validates three schemas inside the successful generator, and
 parses457 scripts. Do not duplicate the generator's completed schema validation.
 
+One further observation also finishes without the fatal sequence: native root
+`run-scale-disabled-native/15b0e4827ae24216bd41c02baaa02542`, controller
+`run-scale-disabled-regression/chain-cc4100d35a4f4ed480d5aa615dab13f6`,
+UTC22:43:23.870--22:47:15.502. It retains31 chain checks,48 live and15 warehouse
+checks in prior order, with clean unassisted closure and preservation. The final
+static gate is explicitly unexecuted and reported as `StaticNotRun.DiagnosticOnly`;
+exit1 is deliberate and does not represent a product failure. This partial
+diagnostic is not full-chain acceptance. No first access-violation stack was
+captured in these two passing observations; retain the calibrated observer for
+the next reproduction rather than repeating chains until one passes.
+
 ## Earlier configuration-call interruption
 
 Two ordinary Scale-candidate runs failed before the intended cases at

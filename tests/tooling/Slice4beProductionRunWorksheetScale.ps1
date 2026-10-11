@@ -15,6 +15,12 @@ function Install-ProductionRunWorksheetScaleProbe {
     if($RunScaleDesignsDisabledForTest){Scale-Seam 'TestProductionDesigner.RunScaleOwnerResolved wsProd' '    TestProductionDesigner.RunFaultBoundary "WORKSHEET_SCALE"' $true}
     Scale-Seam 'Set stagingWb = BuildReleasedDesignRecipeStagingWorkbook(recipeId, syncReport)' '        TestProductionDesigner.RunScaleReadReturned (Not stagingWb Is Nothing)' $true
     Scale-Seam 'If Not LocalProductionRecipeRowsExist(wsProd.Parent, recipeId) Then' '        TestProductionDesigner.RunScaleLegacyEntered'
+    Scale-Seam 'DeleteRecipeChooserProcessTables wsProd' '    TestProductionDesigner.RunScaleRebuildEntered'
+    $owner.AddFromString(@'
+Public Function RunScaleLocalRecipeExistsForTest(ByVal wb As Workbook, ByVal recipeId As String) As Boolean
+    RunScaleLocalRecipeExistsForTest = LocalProductionRecipeRowsExist(wb, recipeId)
+End Function
+'@)
     $start=$owner.ProcStartLine('LoadRecipeChooser',0);$end=$start+$owner.ProcCountLines('LoadRecipeChooser',0)
     $notices=0
     for($line=$start;$line -lt $end;$line++){
@@ -119,6 +125,20 @@ End Function
 Public Function RunScaleSheetBranchForTest() As Boolean
     RunScaleSheetBranchForTest = Not modProductionReusableRun.ReusableRunIsLoaded() And mPages.Value = 3
 End Function
+Public Function RunScaleCustomValuesForTest(ByVal canary As String) As Boolean
+    On Error GoTo Unavailable
+    Dim lo As ListObject, name As Variant
+    For Each name In Array("RecipeChooser_generated", "InventoryPalette_generated")
+        Set lo = mOperatorWorkbook.Worksheets("Production").ListObjects(CStr(name))
+        If lo.ListColumns("Operator Extra").DataBodyRange.Cells(1, 1).Value2 <> canary Then Exit Function
+        If lo.ListColumns("Operator Formula").DataBodyRange.Cells(1, 1).Formula <> "=1+2" Then Exit Function
+    Next name
+    RunScaleCustomValuesForTest = True
+Unavailable:
+End Function
+Public Function RunScaleLocalRecipeExistsForTest() As Boolean
+    RunScaleLocalRecipeExistsForTest = mProduction.RunScaleLocalRecipeExistsForTest(mOperatorWorkbook, SelectedRunRecipeText(0))
+End Function
 Public Sub RunScaleInputForTest(ByVal value As String)
     mTxtBatchScalePercent.Text = value
 End Sub
@@ -128,12 +148,14 @@ End Sub
 Private mScaleLoadCalls As Long, mScaleReadCalls As Long, mScaleReadOK As Boolean, mScaleLegacyCalls As Long
 Private mScaleOwnerTarget As String
 Private mScaleRecipeReads As Long, mScaleProcessReads As Long
+Private mScaleRebuildCalls As Long
 '@)
     $adapter.AddFromString(@'
 Public Sub RunScaleReset()
     mScaleLoadCalls = 0: mScaleReadCalls = 0: mScaleReadOK = False: mScaleLegacyCalls = 0
     mScaleOwnerTarget = "NotEntered"
     mScaleRecipeReads = 0: mScaleProcessReads = 0
+    mScaleRebuildCalls = 0
 End Sub
 Public Sub RunScaleReleasedRead(ByVal kind As String, ByVal available As Boolean)
     If Not available Then Exit Sub
@@ -164,6 +186,12 @@ End Sub
 Public Sub RunScaleLegacyEntered()
     mScaleLegacyCalls = mScaleLegacyCalls + 1
 End Sub
+Public Sub RunScaleRebuildEntered()
+    mScaleRebuildCalls = mScaleRebuildCalls + 1
+End Sub
+Public Function RunScaleRebuildReached() As Boolean
+    RunScaleRebuildReached = mScaleRebuildCalls = 1
+End Function
 Public Function RunScaleEvidence() As String
     RunScaleEvidence = CStr(mScaleLoadCalls) & "|" & CStr(mScaleReadCalls) & "|" & CStr(mScaleReadOK) & "|" & CStr(mScaleLegacyCalls) & "|" & mScaleOwnerTarget & "|" & CStr(mRunSheetNotices)
 End Function
@@ -175,6 +203,12 @@ Public Function RunScaleSheetValues(ByVal mode As String, ByVal canary As String
 End Function
 Public Function RunScaleSheetBranch() As Boolean
     RunScaleSheetBranch = mForm.RunScaleSheetBranchForTest()
+End Function
+Public Function RunScaleCustomValues(ByVal canary As String) As Boolean
+    RunScaleCustomValues = mForm.RunScaleCustomValuesForTest(canary)
+End Function
+Public Function RunScaleLocalRecipeExists() As Boolean
+    RunScaleLocalRecipeExists = mForm.RunScaleLocalRecipeExistsForTest()
 End Function
 '@)
 }
@@ -247,6 +281,7 @@ function Test-ProductionRunWorksheetScale($Fixture) {
 
 # Refusals and a caught owner exception; successful worksheet reload remains a separate gate.
 function Test-ProductionRunScaleDisabled($Fixture) {
+    if($RunScaleReloadForTest){Test-ProductionRunScaleReload $Fixture;return}
     Check 'RunScaleDisabled.SupportedSurfaceAndSeedIdentity' $true
     $key=[string](Probe 'RunWorksheetKey')
     foreach($mode in @('NoSelection','BadScale','BelowMinimum','AboveMaximum','MissingSheet','DecoyMissing','OwnerException')){
@@ -287,4 +322,29 @@ function Test-ProductionRunScaleDisabled($Fixture) {
             }
         }finally{[void](Probe 'RunSheetOwnerRestore')}
     }
+}
+
+function Test-ProductionRunScaleReload($Fixture) {
+    # Real released selection and generated surfaces; no fabricated legacy identity.
+    $ready=[string](Probe 'RunScaleSheetStage' @('Reload',$canary))
+    if($ready -cne 'READY' -or -not [bool](Probe 'RunScaleCustomValues' @($canary)) -or [bool](Probe 'RunScaleLocalRecipeExists')){throw 'Missing worksheet-definition preservation fixture unavailable; not behavioral RED.'}
+    try {
+        $decoy.Activate()
+        Check 'RunScaleReload.ActualWorksheetBranch' ([bool](Probe 'RunScaleSheetBranch'))
+        Check 'RunScaleReload.BothFlagsDisabled' (-not [bool](Run 'invSys.Core.xlam' 'modConfig.GetBool' @('DesignsEnabled',$true)) -and -not [bool](Run 'invSys.Core.xlam' 'modConfig.GetBool' @('FF_DesignsEnabled',$true)))
+        $before=@(Files)
+        $notice=[string](Probe 'RunFaultAct' @('SCALE'))
+        $evidence=[string](Probe 'RunScaleEvidence')
+        [pscustomobject]@{RebuildReached=[bool](Probe 'RunScaleRebuildReached');LocalRecipeExistsAfter=[bool](Probe 'RunScaleLocalRecipeExists');FaultInjected=$false}|ConvertTo-Json|Set-Content (Join-Path $reportRoot 'scale-reload-boundary.json')
+        Check 'RunScaleReload.NoUnhandledError' (-not $notice.StartsWith('HANDLER_ERROR|'))
+        Check 'RunScaleReload.GuardsRestored' ([bool](Probe 'RunFaultGuards'))
+        Check 'RunScaleReload.RealCapturedOwnerWithoutFaultInjection' ($evidence.StartsWith('1|0|False|1|Captured|') -and [string](Probe 'RunFaultEvidence') -ceq '0|False|False')
+        Check 'RunScaleReload.UnknownColumnsValuesAndFormulasPreserved' ([bool](Probe 'RunScaleCustomValues' @($canary)))
+        Check 'RunScaleReload.CanonicalIdentityAndValuesPreserved' ([bool](Probe 'RunWorksheetSource'))
+        Pair $before 'SCALE' 'FAILED' 'RunScaleReload.MissingWorksheetDefinition'
+        if($CaptureEvidence){
+            if([int](Probe 'RunLocalShowAndCapture' @($book.Name,'SCALE')) -ne 3){throw 'Scale result page unavailable for visible evidence.'}
+            CaptureOwnedFormByCaptionEvidence 'Production' 'run-scale-missing-definition.png'
+        }
+    } finally { [void](Probe 'RunSheetOwnerRestore') }
 }
