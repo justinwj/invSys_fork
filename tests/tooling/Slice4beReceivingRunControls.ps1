@@ -11,6 +11,12 @@ function Test-ReceivingRunControls {
         Check ('ReceivingRun.Layout.'+$size) ($opened -and (RunnerControl '' 'Fit' $size) -ceq 'True')
         if($CaptureEvidence){CaptureOwnedFormByCaptionEvidence 'Run How-To' ('b0-run-'+$size.ToLowerInvariant()+'.png')}
     }
+    if($CaptureEvidence){
+        . (Join-Path $PSScriptRoot 'Slice4beNativeGuideResize.ps1')
+        $nativePins=BoundPins $Fixture.Root
+        Test-B0NativeGuideResize 'frmActionPathRun' 'Run How-To' 'ReceivingRun' 'b0-run-native'
+        Check 'ReceivingRun.NativeResize.PersistedWarehouseFilesPreserved' (BoundSame $nativePins (BoundPins $Fixture.Root))
+    }
     $mode=(RunnerControl 'cboRunMode' 'Write' 'Step through') -ceq 'DELIVERED'
     $started=(RunnerControl 'btnStartRun' 'Click') -ceq 'DELIVERED'
     function LatestControlAttempt {

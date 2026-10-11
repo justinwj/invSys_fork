@@ -59,6 +59,12 @@ function Test-ExecutionProfileSafety($Guide,$Profile,[string]$ProfilePath,$Fixtu
         Check ('ExecutionProfile.Layout.'+$size) ($opened -and (BoundControl '' 'Fit' $size 'frmActionPathExecution') -ceq 'True')
         if($CaptureEvidence){CaptureOwnedFormByCaptionEvidence 'Configure execution' ('b0-profile-'+$size.ToLowerInvariant()+'.png')}
     }
+    if($CaptureEvidence){
+        . (Join-Path $PSScriptRoot 'Slice4beNativeGuideResize.ps1')
+        $nativePins=BoundPins $Fixture.Root
+        Test-B0NativeGuideResize 'frmActionPathExecution' 'Configure execution' 'ExecutionProfile' 'b0-profile-native'
+        Check 'ExecutionProfile.NativeResize.PersistedWarehouseFilesPreserved' (BoundSame $nativePins (BoundPins $Fixture.Root))
+    }
     $otherRoot=Join-Path $Other.Root ('Training/ActionPaths/'+$Other.Warehouse+'/ExecutionProfiles')
     $otherPins=BoundPins $otherRoot
     SelectTarget $Other 'config-admin'

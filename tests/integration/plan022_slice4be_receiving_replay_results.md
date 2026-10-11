@@ -1,12 +1,44 @@
 # Slice 4be-A / early B0: Receiving replay
 
-Last verified: 2026-10-06 UTC. D18-REPLAY-01 is approved. Frozen
+Last verified: 2026-10-11 UTC. D18-REPLAY-01 is approved. Unchanged General02
+passes **117/117**, retaining all103 prior checks and adding14 native resize
+checks. **Native visible acceptance remains open:** both immediate restore
+captures clip left-edge content, although measured bounds restore exactly and
+a later runner capture is normal. Cause is unproved; do not infer a runtime fix
+or a desktop-access failure. The preceding frozen
 `validation-print-recorded-01` passes **103/103**, retaining all101 prior checks
 and adding two display-to-saved-result checks. Eleven captures are directly
 reviewed: profile editing, exact Training setup, successful fresh applied proof,
 stopped-run verification, and minimum/default/larger editor/runner layouts.
 Observation coverage, broader acceptance and human review remain open; this is
 not B0 or4be-A acceptance. Earlier receipts retain their original scope.
+
+## Native resize checkpoint, 2026-10-11 UTC
+
+The new test uses actual owned Configure execution and Run How-To windows:
+native maximize/restore requests, independent window-state checks and the
+existing read-only current-layout probe. All14 additions pass, including exact
+restored bounds and byte-for-byte preservation of persisted warehouse files.
+Five instrumented compiles, unchanged package/settings hashes, normal closure
+and zero delayed Excel failures pass. No runtime or contract changed, and no
+product RED is claimed. A report label was clarified after the run: this helper
+does not request DPI changes; caller DPI state was not measured.
+
+Six captures were reviewed. The two immediate restore images are rejected for
+visible acceptance; pre-cycle and later runner images show intact left edges.
+Next compare immediate and later same-state frames through the existing capture
+helper before changing runtime, timing or desktop bindings. Stable final pixels
+must be established independently of a successful API return or layout model.
+
+Command: `Test-Slice4beReceivingReplay.ps1 -DeployRoot deploy/validation-general-settings-02 -Phase GREEN -CaptureEvidence`.
+Ignored controller `receiving-replay-controller/e59a42cbceba480fa240f4a56e9ff7c1`
+contains `qualified-verification.json`, `result-pointer.json`, `capture-review.json`.
+Worker `slice4be-receiving-replay/da249e01b3c6490e8ca2d33b6acf2cfc` contains
+`green.json`, `b0-native-resize.jsonl` and captures. UTC19:27:51.509--19:38:03.506;
+delayed audit through19:38:15.506. No desktop error5 was observed.
+Static `b0-native-resize-static-01/ratchet-verification.json` retains319 components,
+6340 procedures,138712 lines, dynamic9/45,192 duplicates and all28 size caps;
+three schemas and456 PowerShell parses pass. B0/4be-A acceptance remains open.
 
 ## Visible replay checkpoint, 2026-10-06 UTC
 
