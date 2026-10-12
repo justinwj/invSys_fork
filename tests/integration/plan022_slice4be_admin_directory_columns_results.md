@@ -2,7 +2,7 @@
 
 4be-A prerequisite, 2026-10-12. Governing rule: Architecture v4.11 D14
 header-extension rules and Warehouse Directory enforcement clarification;
-Plan 022; Controls 1.546. This adds no recording ID, warehouse identity,
+Plan 022; Controls 1.547. This adds no recording ID, warehouse identity,
 annotation association, or business authority. Full 4be-A remains incomplete.
 
 ## Contract and implementation
@@ -112,16 +112,73 @@ recovery process; no COM reattachment or force termination. Settings, reports an
 package pins are restored/preserved. The delayed audit records two native events;
 this diagnostic is not acceptance.
 
-The narrower existing `Test-Slice4beProjectionLiveControl -Cut AfterProjection
+The initial narrower `Test-Slice4beProjectionLiveControl -Cut AfterProjection
 -Setup Chain -TraceBoundaries` stops during probe installation, before business
 checks: `modInventorySchema.EnsureTableWithHeaders.7` has a missing/ambiguous
 anchor. Root `projection-live-control/b4fd39bcecd84d099ee747f8e33bc862` records
 0 business passes / 1 harness failure, clean closure and zero native events
 through `2026-10-12T14:51:40.9293918+00:00`, with restoration and pins preserved.
-This is not product RED. The source anchor `lo.Name = tableName` still exists;
-the matcher uses ordinal case-sensitive comparison. Compiled VBA casing is a
-hypothesis to verify before correcting the trace tool. Do not repeat broad chains
-until the focused diagnostic can reach its intended boundary.
+This is not product RED. The case-sensitive matcher rejected VBA's recased
+anchor. The tooling correction and subsequent native comparisons follow below.
+
+## Focused native comparison: tooling unblocked, product failure unresolved
+
+`Test-ProjectionTraceAnchors.ps1` calls the actual trace installer against fake
+CodeModules and stops before writing a probe. Exact/case-only spelling must pass
+preflight; missing, duplicate and differently cased duplicate anchors must refuse
+before mutation. Tooling RED **7/4** at `projection-trace-anchors/30044594bab74800921de652cdb5601d`
+becomes **11/11** at `53e36e27d609481a9a99cccc92485966` after changing the matcher
+to `OrdinalIgnoreCase`. This is tooling RED/GREEN, not product RED. Existing
+shutdown-trace protection remains **74/74**, root
+`shutdown-trace-contract/9b06cf88bacb4f39b08b560b0534b6b8`.
+
+All following controls use the same pinned directory-01 packages and actual
+ordered validator, `AfterProjection` cut with `Chain` setup. A passing cut retains
+the exact first35 checks; the remaining13 live checks are not executed.
+
+| Control / root under `reports/runtime/projection-live-control` | Observed result |
+| --- | --- |
+| VBA boundaries: `bb0af0b955b44bc5af6b3bbaf01612c4` | 35/35; 37 anchors installed, four instrumented compiles,77 allowlisted markers. Normal closure, clean audit through14:58:25.2002304UTC. |
+| Uninstrumented: `fe7ddb511a7c4ba0954de9acbcb89506` | 32/1; processor RPC0x800706BE after deletion, no return marker. Matching Excel owner fails at15:00:57.9814448UTC with ntdll/c0000028. |
+| Read-only package/reference inspection: `60b71a9fa69047e0bcc8e87595864432` | 35/35; four executing packages and managed references match the candidate, none broken. No explicit compile, source edit or save. Normal closure, clean audit through15:09:11.8643105UTC. |
+| Temporary source-loading option, otherwise uninstrumented: `c85c5985222e4557aedef669d8c93829` | 35/35; normal closure, clean audit through15:15:22.1392592UTC. Original registry-value absence restored after closure. |
+| Ordinary control after restoration: `473f12d2c83141dc9dd831ee6ad4b9ac` | 14/1; fails earlier at Receiving Confirm Writes, HRESULT0x80020009. No projection markers and no Application1000/1001/1002 events through15:18:38.6353286UTC. |
+
+All five restore settings/source reports and preserve five package pins and the
+tracked live report. The uninstrumented failure's owned `/restore` process required
+two normal WM_CLOSE requests; no force-kill or COM reattachment. Its delayed audit
+through15:02:36.3303121UTC records two native events. All three passing controls
+close unassisted. Inspection can affect timing, COM-reference lifetimes or internal VBA
+state: it is not proven inert. These observations do not establish a native cause
+or repair, and none is a full-chain acceptance run.
+
+The source-loading hypothesis comes from Microsoft's historical
+[Excel2016 MSI compiled-stream workaround](https://support.microsoft.com/en-us/servicing/office/update/excel/august-8-2017-update-for-excel-2016-kb3085435).
+That article does not establish the cause in the current Excel build; its old
+update was not installed. With Office closed, the diagnostic temporarily set
+`HKCU\Software\Microsoft\Office\16.0\Excel\Options\ForceVBALoadFromSource` to
+DWORD1, then restored its previously absent state at15:15:22.7592438UTC. Only that
+value changed; prior state/restoration are recorded under
+`reports/runtime/projection-source-load/c9372bfe14dd41d7aa2cacfa80f8de80`.
+No permanent station setting, package change or deployment requirement is adopted.
+
+The post-restoration failure is not the same proven native signature: its original
+Excel process exits and a new Excel child appears, with the captured original
+owner as its parent but without a `/restore` switch. Exact child creation identity
+and parent ownership were checked before one normal WM_CLOSE; no COM attachment
+or force termination. `child-provenance.json` and `recovery-close-request.json`
+retain the distinction. This control never reaches projection recovery, so it
+cannot establish that source loading prevents that particular fault. General
+execution failure remains unresolved; do not turn the setting into a deployment
+requirement or credit instrumented success as ordinary-chain acceptance.
+
+Static02 retains337 components/6412 procedures/139745 lines, all28 caps, dynamic9/45
+and194 duplicate candidates. Three schemas and493 PowerShell files parse. Exact
+verification is `reports/runtime/admin-directory-static-02/ratchet-verification.json`.
+The older trace01 source copies were sanitized after execution to remove the legacy
+fixture credential assignment; `retained-source-redaction.json` records before/after
+hashes. Their lifecycle evidence is unchanged, but retained copies are not the
+original executed bytes. The focused controller transforms credentials before writing.
 
 Evidence reuse is scoped by `admin-directory-build-01/reuse-scope.json`: all
 106 other procedures in `modAdminConsole` are unchanged against `504f0de2`;

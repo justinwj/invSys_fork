@@ -10,8 +10,10 @@ Pending candidate `deploy/validation-admin-directory-01` corrects View Warehouse
 D14 preservation: RED26/4 -> GREEN31, Console118, smoke86, five compiles, static
 limits and one reviewed local-cell capture pass. Clean chain qualification is
 blocked by native Excel failures; trace identifies the live-role processor call
-after projection deletion. The narrower diagnostic needs a compiled-anchor tooling
-correction before it can test that boundary. No new recording ID or acceptance.
+after projection deletion. The compiled-anchor tooling now passes11 focused and74
+existing checks. Narrow traced and read-only inspection controls each pass35;
+the uninstrumented counterpart crashes. Native cause remains unresolved.
+No new recording ID or acceptance.
 See [directory prerequisite evidence](plan022_slice4be_admin_directory_columns_results.md).
 The accepted console-03 baseline below remains frozen; its clean chain is not
 evidence that directory-01 has passed this gate.

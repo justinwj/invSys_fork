@@ -236,8 +236,9 @@ directory-01. Managed-field-only refresh preserves local text/tail/formulas,
 headers, unrelated workbooks and saved authority through normal/empty/restored
 discovery. Console118, smoke86, compiles, static limits and one visible capture
 pass. Native chain failures keep qualification open. The traced failure is in the
-live-role processor after projection deletion; the narrower probe currently has a
-compiled trace-anchor mismatch. See `plan022_slice4be_admin_directory_columns_results.md`.
+live-role processor after projection deletion. The narrower probe's matcher is now
+protected/corrected: traced and read-only inspection cuts pass35, while the ordinary
+cut crashes. Native qualification remains open; see the directory-columns receipt.
 After qualification, continue the discovered-control recording RED. Capture the
 original open-Config/scan-root scope before optional observation while preserving
 the existing optional root prompt. Opening the directory does not prove target

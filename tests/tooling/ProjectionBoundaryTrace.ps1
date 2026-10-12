@@ -61,7 +61,7 @@ function Install-ProjectionBoundaryTrace {
         $start=$module.ProcStartLine($step.Procedure,0)
         $count=$module.ProcCountLines($step.Procedure,0)
         $found=@(for($line=$start;$line -lt $start+$count;$line++){
-            if(([string]$module.Lines($line,1)).Trim().StartsWith($step.Anchor,[StringComparison]::Ordinal)){$line}
+            if(([string]$module.Lines($line,1)).Trim().StartsWith($step.Anchor,[StringComparison]::OrdinalIgnoreCase)){$line}
         })
         if($found.Count -ne 1){throw ('Trace anchor missing/ambiguous: '+$step.Stage+'; not behavioral RED.')}
         $edits.Add([pscustomobject]@{Package=$step.Package;Module=$step.Module;Line=$found[0];Stage=$step.Stage})
