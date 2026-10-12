@@ -26,6 +26,11 @@ Recovery closure was assisted; full-chain acceptance is blocked. Independent smo
 and six-page layout pass with clean preserved closure and reviewed capture evidence in
 [Run results](plan022_slice4be_production_run_local_results.md). General rebuild
 coverage and independent worksheet guides remain open; no comprehensive acceptance.
+The bounded Shipping observer later reaches31 executed chain/live48/warehouse15
+checks with clean shutdown; static is deliberately skipped. This does not reproduce
+or repair the native failure. The [native record](plan022_slice4be_native_localization_results.md)
+also retains an earlier pre-Shipping bootstrap diagnostic failure. Keep the observer
+for a planned chain and resume independent worksheet Scale guide proof.
 
 Prior candidate: `deploy/validation-run-scale-stop-01`, catalog32. Approved
 RUN-SCALE-02 stops after failed worksheet loading, before subsequent scaling,

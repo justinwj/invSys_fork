@@ -9,6 +9,42 @@ a native repair. No 4be-A completion is claimed.
 
 ## Current chain interruption and dismissal ownership
 
+Two bounded diagnostics on unchanged `validation-run-scale-success-02` follow the
+Shipping failure below. Early attachment stops before Shipping: live10/1 at
+`modConfig.LoadConfig`, COM0x800AC472, with first-chance80010108/000006BA but no
+Application1000/1001/1002 event. Native root `run-scale-success-native/5d02709c612f437ab3ecff5ce2452f67`,
+controller `run-scale-success-regression/chain-e73f2db3f3004ac6b16111e1dafce739`,
+UTC00:53:05.812--00:57:38.241. The worker exited; its pinned Excel remained hidden.
+The observer detached and native close requests ended the residual process without
+COM reattachment or force. Preservation passes; this is a pre-target diagnostic
+failure, not Shipping RED or evidence that debugger attachment caused it.
+
+Attachment moved to a fixed before-Sent barrier after capability validation.
+The unchanged actual Shipping call returns at01:01:14.427 UTC. Diagnostic root
+`shipping-boundary-native/9e82c6a12b8b46efb0633da01472328c`, controller
+`run-scale-success-regression/chain-5c71c7e5f1e44270ad921a071b211c82`,
+UTC00:59:01.938--01:02:27.679, retains31 executed chain checks, live48 and warehouse15
+in prior order. Final static is deliberately unexecuted; authoritative controller
+exit1 and StaticNotRun.DiagnosticOnly remain. One first-chance80010108 occurs, no
+second-chance exception or delayed native event; shutdown and preservation qualify
+through01:02:39.679 UTC. No VBA/business calls change. Observation alters timing:
+this does not reproduce or repair the Shipping fault and is not chain acceptance.
+
+The initial ad hoc transformation check had a PowerShell function-scope mistake;
+corrected validation proves parsing, exact call retention, both fixed markers and
+missing-anchor rejection without rerunning Excel. The outer observer incorrectly
+returned zero while its controller correctly recorded exit1; it now reads the
+authoritative closure, matching the established observer wrapper. Diagnostic
+receipts retain both facts. No product GREEN was inferred from that outer exit.
+Local ignored entry points: `reports/runtime/observe-shipping-boundary.ps1` and
+`run-native-chain-at-shipping.ps1`; the calibrated observer is unchanged.
+
+The user reported setting up Firefox and Outlook and said they may have affected
+the activity. This is context, not confirmed input to Excel or a native root cause.
+Keep the barrier for the next planned chain; do not repeat unchanged chains to
+chase a pass. Resume independent worksheet Scale guide proof while this defect
+remains open. No fresh runtime/static rebuild is required for this evidence-only update.
+
 The D14 successful worksheet reload candidate `validation-run-scale-success-02`
 has focused GREEN86 and retained enabled218/missing64/refusal162, but its ordinary
 chain fails at `modTS_Shipments.RunShipmentsSentFormActionForTest`, COM0x800706BE.
