@@ -2,6 +2,7 @@
 # Generated fixtures only; observations expose counts/status/booleans, never keys.
 . (Join-Path $PSScriptRoot 'Slice4beAdminSeedFeedback.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beAdminSeedWorkflow.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beAdminSeedRecording.ps1')
 function Install-AdminSeedOutcomeProbe {
     $probe=$packages['invSys.Admin.xlam'].VBProject.VBComponents.Add(1)
     $probe.Name='TestSeedOutcome'
@@ -132,7 +133,8 @@ End Function
     if($AdminSeedNativeFeedback){
         Install-AdminSeedFeedbackProbe $probe.CodeModule
     }
-    if($AdminSeedWorkflowEdges){Install-AdminSeedWorkflowProbe $probe.CodeModule}
+    if($AdminSeedWorkflowEdges -or $AdminSeedRecording){Install-AdminSeedWorkflowProbe $probe.CodeModule}
+    if($AdminSeedRecording){Install-AdminSeedRecordingProbe $probe.CodeModule}
 }
 
 function Test-AdminSeedOutcome($Fixture,$Other) {
@@ -207,4 +209,5 @@ function Test-AdminSeedOutcome($Fixture,$Other) {
         Check ($prefix+'.DismissedWithoutSuccess') ($native.Observed.OkDispatched -and -not $native.Acknowledged)
     }
     if($AdminSeedWorkflowEdges){Test-AdminSeedWorkflow $Other}
+    if($AdminSeedRecording){Test-AdminSeedRecording $Fixture}
 }

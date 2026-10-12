@@ -194,8 +194,8 @@ function Get-TrackingPolicyVersion($Fixture) {
 function Test-Slice4beTrackingPolicy($Fixture,$Other) {
     $request=Get-TrackingPolicyRequest
     $model=$request|ConvertFrom-Json
-    # Architecture v4.11 D18 catalog36 adds Admin Console to the prior155 controls.
-    $loaded=($model.SchemaVersion -eq 2 -and $model.CatalogVersion -eq 36 -and $model.Controls.Count -eq 156 -and @($model.Users).Count -eq 0)
+    # Architecture v4.11 D18 catalog37 adds Demo Seed to the prior156 controls.
+    $loaded=($model.SchemaVersion -eq 2 -and $model.CatalogVersion -eq 37 -and $model.Controls.Count -eq 157 -and @($model.Users).Count -eq 0)
     Check 'TrackingPolicy.EditorLoaded' $loaded
     if(-not $loaded){throw 'Tracking policy editor fixture did not load.'}
     Check 'TrackingPolicy.BuiltInDefaults' (-not $model.ViewerActionPathCaptureEnabled -and $model.AdminViewerEventLoggingEnabled -and $model.DefaultView -ceq 'How-To' -and

@@ -16,25 +16,29 @@ Private mBuildSkippedCount As Long
 Public Function SeedDemoInventoryForWarehouse(ByVal warehouseId As String, _
                                               ByVal stationId As String, _
                                               ByVal userId As String, _
-                                              ByRef report As String) As Boolean
+                                              ByRef report As String, _
+                                              Optional ByRef outcome As String = "", _
+                                              Optional ByRef sourceEventId As String = "") As Boolean
     Dim activeGroups As Object
     Dim payloadItems As Collection
     Dim skippedCount As Long
 
     On Error GoTo FailSeed
+    outcome = "FAILED": sourceEventId = ""
 
     Set activeGroups = BuildActiveDemoGroupIndex(warehouseId, report)
     If activeGroups Is Nothing Then Exit Function
     Set payloadItems = BuildDemoInventoryPayload(activeGroups, skippedCount)
     If payloadItems.Count = 0 Then
         report = "Demo inventory already present.|Created=0|Skipped=" & CStr(skippedCount)
+        outcome = "UNCHANGED"
         SeedDemoInventoryForWarehouse = True
         Exit Function
     End If
 
     SeedDemoInventoryForWarehouse = QueueDemoCreateAndProcess( _
         warehouseId, stationId, userId, payloadItems, "Admin demo inventory seed", _
-        "Demo inventory seeded.", skippedCount, report)
+        "Demo inventory seeded.", skippedCount, report, outcome, sourceEventId)
     Exit Function
 
 FailSeed:
@@ -143,17 +147,21 @@ Public Function UploadDemoInventoryForWarehouse(ByVal warehouseId As String, _
                                                 ByVal stationId As String, _
                                                 ByVal userId As String, _
                                                 ByVal csvPath As String, _
-                                                ByRef report As String) As Boolean
+                                                ByRef report As String, _
+                                                Optional ByRef outcome As String = "", _
+                                                Optional ByRef sourceEventId As String = "") As Boolean
     Dim activeGroups As Object
     Dim payloadItems As Collection
     Dim skippedCount As Long
 
     On Error GoTo FailUpload
+    outcome = "REJECTED": sourceEventId = ""
 
     csvPath = Trim$(csvPath)
     If csvPath = "" Then report = "Choose a demo inventory CSV file.": Exit Function
     If LCase$(Right$(csvPath, 4)) <> ".csv" Then report = "Demo inventory upload requires a .csv file.": Exit Function
     If Len(Dir$(csvPath, vbNormal)) = 0 Then report = "Demo inventory CSV was not found.": Exit Function
+    outcome = "FAILED"
 
     Set activeGroups = BuildActiveDemoGroupIndex(warehouseId, report)
     If activeGroups Is Nothing Then Exit Function
@@ -161,16 +169,18 @@ Public Function UploadDemoInventoryForWarehouse(ByVal warehouseId As String, _
     If payloadItems Is Nothing Then Exit Function
     If payloadItems.Count = 0 Then
         report = "Uploaded demo inventory is already present.|Created=0|Skipped=" & CStr(skippedCount)
+        outcome = "UNCHANGED"
         UploadDemoInventoryForWarehouse = True
         Exit Function
     End If
 
     UploadDemoInventoryForWarehouse = QueueDemoCreateAndProcess( _
         warehouseId, stationId, userId, payloadItems, "Admin demo inventory upload", _
-        "Demo inventory uploaded.", skippedCount, report)
+        "Demo inventory uploaded.", skippedCount, report, outcome, sourceEventId)
     Exit Function
 
 FailUpload:
+    outcome = "FAILED"
     report = "UploadDemoInventoryForWarehouse failed: " & Err.Description
 End Function
 
@@ -366,7 +376,8 @@ Private Function QueueDemoCreateAndProcess(ByVal warehouseId As String, _
                                            ByVal eventNote As String, _
                                            ByVal successText As String, _
                                            ByVal skippedCount As Long, _
-                                           ByRef report As String) As Boolean
+                                           ByRef report As String, ByRef outcome As String, _
+                                           ByRef sourceEventId As String) As Boolean
     Dim payloadJson As String
     Dim eventIdOut As String
     Dim queueError As String
@@ -380,6 +391,7 @@ Private Function QueueDemoCreateAndProcess(ByVal warehouseId As String, _
     Dim productionInboxWasOpen As Boolean
 
     On Error GoTo FailQueue
+    outcome = "FAILED": sourceEventId = ""
 
     If payloadItems Is Nothing Then report = "Demo inventory payload was not supplied.": Exit Function
     If payloadItems.Count = 0 Then report = "Demo inventory payload was empty.": Exit Function
@@ -417,6 +429,7 @@ Private Function QueueDemoCreateAndProcess(ByVal warehouseId As String, _
         report = "Demo inventory event could not be queued: " & queueError
         GoTo CleanExit
     End If
+    sourceEventId = eventIdOut
 
     processedCount = modProcessor.RunBatch(warehouseId, 0, batchReport, eventIdOut, eventApplied)
     If processedCount < 1 And InStr(1, batchReport, "Poison=0", vbTextCompare) > 0 Then
@@ -425,6 +438,7 @@ Private Function QueueDemoCreateAndProcess(ByVal warehouseId As String, _
         batchReport = batchReport & "|Retry=" & retryReport
     End If
     If Not eventApplied Then
+        outcome = "PENDING"
         report = "Demo inventory event was queued; application was not confirmed. " & batchReport
         GoTo CleanExit
     End If
@@ -433,6 +447,7 @@ Private Function QueueDemoCreateAndProcess(ByVal warehouseId As String, _
              "|Skipped=" & CStr(skippedCount) & "|Applied=" & _
              CStr(processedCount) & "|Processor=" & batchReport
     QueueDemoCreateAndProcess = True
+    outcome = "APPLIED"
 
 CleanExit:
     On Error Resume Next
@@ -441,6 +456,7 @@ CleanExit:
     Exit Function
 
 FailQueue:
+    outcome = "FAILED"
     report = "QueueDemoCreateAndProcess failed: " & Err.Description
     Resume CleanExit
 End Function

@@ -31,6 +31,13 @@ Public Function Valid(ByVal warehouseId As String, ByVal controlId As String, _
         Exit Function
     End If
     sourceKind = "Inventory"
+    If controlId = "ADMIN_DEMO_SEED" Then
+        Set outcome = modAdminActionCodes.Outcome(controlId, outcomeCode)
+        If outcome Is Nothing Then Exit Function
+        If outcomeCode <> "APPLIED" And outcomeCode <> "PENDING" And outcomeCode <> "FAILED" Then Valid = (references.Count = 0): Exit Function
+        If references.Count > 1 Then Exit Function
+        If outcomeCode <> "FAILED" And references.Count <> 1 Then Exit Function
+    End If
     If controlId = "ADMIN_RECONCILE_INSPECT" Then
         Set outcome = modAdminReconcileCodes.Outcome(controlId, outcomeCode)
         If outcome Is Nothing Then Exit Function
@@ -38,7 +45,7 @@ Public Function Valid(ByVal warehouseId As String, ByVal controlId As String, _
         If references.Count > 1 Then Exit Function
     End If
     sourceControl = (controlId = "RECEIVING_CONFIRM_WRITES" Or controlId = "DISPOSITION_CONFIRM" Or _
-                     controlId = "RECEIVING_WORKSHEET_CONFIRM" Or controlId = "ADMIN_RECONCILE_INSPECT")
+                     controlId = "RECEIVING_WORKSHEET_CONFIRM" Or controlId = "ADMIN_RECONCILE_INSPECT" Or controlId = "ADMIN_DEMO_SEED")
     If controlId = "PRODUCTION_RUN_COMPLETE" Then
         Set outcome = modProductionCompleteCodes.Outcome(controlId, outcomeCode)
         If outcome Is Nothing Then Exit Function
@@ -93,6 +100,7 @@ Public Function Valid(ByVal warehouseId As String, ByVal controlId As String, _
         seen.Add key, True
         key = reference("SubmissionState")
         If key <> "Submitted" And key <> "Unknown" Then Exit Function
+        If controlId = "ADMIN_DEMO_SEED" And key <> "Submitted" Then Exit Function
         If controlId = "ADMIN_RECONCILE_INSPECT" And outcomeCode = "FAILED" And key <> "Unknown" Then Exit Function
         If outcomeCode = "CONFIRMED" Or outcomeCode = "PENDING" Then
             If key <> "Submitted" Then Exit Function

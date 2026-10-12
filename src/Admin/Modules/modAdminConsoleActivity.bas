@@ -8,42 +8,30 @@ Public Sub OpenFromRibbon()
     On Error GoTo Failed
     Set target = modAdmin.ResolveInteractiveAdminWorkbook()
     configPath = modAdminConsole.CaptureConsoleConfigPath()
-    Set surface = CurrentSurface()
+    Set surface = modAdminActionObservation.CurrentSurface()
     action = modAdminActionObservation.BeginObservation("ADMIN_CONSOLE_OPEN", notice, _
         "Tracking unavailable: Admin Console opening could not be recorded.")
-    RestoreSurface surface
+    modAdminActionObservation.RestoreSurface surface
     Call modRoleWorkbookSurfaces.EnsureAdminLegacyWorkbookSurface(target, report)
     outcome = "FAILED"
     If modAdminConsole.OpenAdminConsole(target, report, configPath) Then outcome = "OPENED"
-    Set surface = CurrentSurface()
+    Set surface = modAdminActionObservation.CurrentSurface()
     modAdminActionObservation.FinishObservation action, outcome, notice, _
         "Tracking unavailable: the Admin Console opening result could not be recorded."
-    RestoreSurface surface
+    modAdminActionObservation.RestoreSurface surface
     If notice <> "" Then MsgBox notice, vbExclamation, "invSys Admin"
     Exit Sub
 Failed:
     number = Err.Number: source = Err.Source: description = Err.Description
-    Set surface = CurrentSurface()
+    Set surface = modAdminActionObservation.CurrentSurface()
     modAdminActionObservation.FinishObservation action, "FAILED", notice, _
         "Tracking unavailable: the Admin Console opening result could not be recorded."
-    RestoreSurface surface
+    modAdminActionObservation.RestoreSurface surface
     If notice <> "" Then MsgBox notice, vbExclamation, "invSys Admin"
     Err.Raise number, source, description
 End Sub
 
-' Optional policy reads can activate transient workbooks. Restore only the exact
-' still-live surface; never resolve another workbook or reopen a closed one.
-Private Function CurrentSurface() As Object
-    On Error Resume Next
-    Set CurrentSurface = Application.ActiveSheet
-End Function
 
-Private Sub RestoreSurface(ByVal surface As Object)
-    On Error Resume Next
-    If surface Is Nothing Then Exit Sub
-    surface.Parent.Activate
-    surface.Activate
-End Sub
 
 ' Existing navigation owner, delegated here to keep the console module bounded.
 ' vbNullChar means uncaptured legacy discovery; an empty captured path stays empty.

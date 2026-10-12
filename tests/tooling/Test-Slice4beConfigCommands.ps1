@@ -124,6 +124,7 @@ param(
     [switch]$AdminSeedOutcomeOnly,
     [switch]$AdminSeedNativeFeedback,
     [switch]$AdminSeedWorkflowEdges,
+    [switch]$AdminSeedRecording,
     [switch]$AdminConsoleOnly,
     [switch]$AdminDirectoryColumnsOnly,
     [switch]$AdminConsoleGuidePaths,
@@ -454,6 +455,7 @@ if($AdminReconcileIdentityOnly -and (-not $CompileEvaluationProbesForTest -or $A
 if($AdminSeedOutcomeOnly -and (-not $CompileEvaluationProbesForTest -or $AdminDirectoryColumnsOnly -or $AdminConsoleOnly -or $AdminVerifyAddinsOnly -or $AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $AdminSettingsCloseOnly -or $CheckTrackingSettings -or $CheckActivityEvidence -or $CheckViewerPublishedRead)){throw 'Seed outcome requires its isolated compiled callback gate.'}
 if($AdminSeedNativeFeedback -and (-not $AdminSeedOutcomeOnly -or $Phase -cne 'GREEN')){throw 'Seed feedback requires the focused GREEN callback gate.'}
 if($AdminSeedWorkflowEdges -and (-not $AdminSeedOutcomeOnly -or $Phase -cne 'GREEN')){throw 'Seed workflow edges require the focused GREEN callback gate.'}
+if($AdminSeedRecording -and (-not $AdminSeedOutcomeOnly -or $Phase -cne 'GREEN')){throw 'Seed recording retains the focused GREEN completion gate.'}
 if($AdminVerifyAddinsOnly -and (-not $CompileEvaluationProbesForTest -or $AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $AdminSettingsCloseOnly -or $CheckTrackingSettings -or $CheckActivityEvidence -or $CheckViewerPublishedRead)){throw 'Verify Add-ins requires its separate compiled callback gate.'}
 if($AdminVerifyGuidePaths -and -not $AdminVerifyAddinsOnly){throw 'Verify guide proof requires its isolated callback gate.'}
 if($AdminVerifyExpectationChoicesOnly -and -not $AdminVerifyGuidePaths){throw 'Expectation choices require the recording/form probes.'}

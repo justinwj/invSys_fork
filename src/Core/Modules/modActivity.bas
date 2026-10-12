@@ -17,6 +17,22 @@ Public Function CaptureContext() As String
 Unavailable:
 End Function
 
+Public Function MatchesSelection(ByVal warehouseId As String, ByVal stationId As String, _
+                                 ByVal userId As String, ByVal runtimeRoot As String) As Boolean
+    Dim target As WarehouseTarget, selectedRoot As String, capturedRoot As String
+    On Error GoTo Unavailable
+    If CaptureContext() = "" Then Exit Function
+    Set target = modNasConnection.GetCurrentTarget()
+    selectedRoot = Replace$(runtimeRoot, "/", "\"): capturedRoot = Replace$(target.RuntimeRoot, "/", "\")
+    Do While Right$(selectedRoot, 1) = "\": selectedRoot = Left$(selectedRoot, Len(selectedRoot) - 1): Loop
+    Do While Right$(capturedRoot, 1) = "\": capturedRoot = Left$(capturedRoot, Len(capturedRoot) - 1): Loop
+    MatchesSelection = (StrComp(warehouseId, target.WarehouseId, vbTextCompare) = 0 And _
+        StrComp(stationId, target.StationId, vbTextCompare) = 0 And _
+        StrComp(userId, modAuth.GetCurrentUserId(), vbTextCompare) = 0 And _
+        StrComp(selectedRoot, capturedRoot, vbTextCompare) = 0)
+Unavailable:
+End Function
+
 Public Function BeginAction(ByVal controlId As String, ByVal capturedContext As String, _
                             Optional ByRef notice As String = "") As String
     Dim target As WarehouseTarget, definition As Object, action As Object, id As String

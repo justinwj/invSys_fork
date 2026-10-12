@@ -80,7 +80,8 @@ The expanded gate below closes upload/no-op/cancellation and receipt-schema/
 ownership checks for this correction. Whole-form native selection/confirmation
 is not claimed; the changed result messages have their own visible proof. The
 independent ordinary-loading failure and pending D16-VBA-LOAD-01 decision are not declared
-repaired or waived by one clean chain. D8-USERS-01/D18-LOCAL-01 remain pending.
+repaired or waived by one clean chain. D8-USERS-01 was subsequently approved
+on2026-10-12; its implementation is pending. D18-LOCAL-01 remains unapproved.
 Seed's comprehensive recording, publication and independent guide proof remain
 next. No catalog ID or acceptance exclusion is added.
 

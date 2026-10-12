@@ -86,9 +86,6 @@ try {
     $excel.Quit()
     [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($excel)
     [GC]::Collect(); [GC]::WaitForPendingFinalizers()
-    # VBE COM references can keep this isolated, empty Excel process alive.
-    if($empty -and $ownedProcessId -gt 0){
-        $owned=Get-Process -Id $ownedProcessId -ErrorAction SilentlyContinue
-        if($null -ne $owned -and -not $owned.WaitForExit(1000)){Stop-Process -Id $ownedProcessId}
-    }
+    # Remaining VBE references are released when this worker exits. The owning
+    # controller must observe normal Excel exit before restoring shared settings.
 }

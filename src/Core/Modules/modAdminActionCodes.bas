@@ -9,19 +9,22 @@ Public Function Control(ByVal id As String) As Object
             owner = "ADMIN_ADDINS_VERIFY": actionClass = "Command": caption = "Verify Add-ins Published"
         Case "ADMIN_CONSOLE_OPEN"
             owner = "ADMIN_CONSOLE": actionClass = "Navigation": caption = "Admin Console"
+        Case "ADMIN_DEMO_SEED"
+            owner = "ADMIN_DEMO_INVENTORY": actionClass = "Command": caption = "Seed Demo Inventory"
         Case Else: Exit Function
     End Select
     Set record = CreateObject("Scripting.Dictionary")
     record.Add "ControlId", id: record.Add "OwnerId", owner
     record.Add "Class", actionClass: record.Add "Role", "Admin"
     record.Add "Caption", caption: record.Add "Surface", "Admin"
+    If id = "ADMIN_DEMO_SEED" Then record("Surface") = "Admin > Demo Inventory"
     record.Add "Capability", "ADMIN_MAINT": record.Add "CodePrefix", id & "_"
     Set Control = record
 End Function
 
 Public Function Outcome(ByVal id As String, ByVal code As String) As Object
-    Dim record As Object, severity As String, message As String
-    severity = "Info"
+    Dim record As Object, severity As String, message As String, effect As String
+    severity = "Info": effect = "Unknown"
     Select Case id
         Case "ADMIN_VERIFY_ADDINS"
             Select Case code
@@ -37,12 +40,22 @@ Public Function Outcome(ByVal id As String, ByVal code As String) As Object
                 Case "FAILED": message = "Admin Console could not be opened."
                 Case Else: Exit Function
             End Select
+        Case "ADMIN_DEMO_SEED"
+            Select Case code
+                Case "REQUESTED": message = "Demo inventory Seed requested."
+                Case "APPLIED": effect = "Changed": message = "This Seed event has a saved Domain application receipt. Publication and refresh are separate."
+                Case "UNCHANGED": effect = "Unchanged": message = "The requested demo inventory is already present. No new inventory event was submitted."
+                Case "PENDING": severity = "Notice": message = "The Seed event was submitted; its application is not confirmed."
+                Case "REJECTED": effect = "Unchanged": severity = "Warning": message = "Seed validation refused the request before submission."
+                Case "FAILED": message = "Seed could not finish. Inspect the current state before retrying."
+                Case Else: Exit Function
+            End Select
         Case Else: Exit Function
     End Select
     If code = "FAILED" Then severity = "Error"
     Set record = CreateObject("Scripting.Dictionary")
     record.Add "EventCode", id & "_" & code: record.Add "OutcomeCode", code
-    record.Add "Severity", severity: record.Add "DataEffect", "Unknown"
+    record.Add "Severity", severity: record.Add "DataEffect", effect
     record.Add "UserMessage", message: record.Add "NextStep", ""
     Set Outcome = record
 End Function

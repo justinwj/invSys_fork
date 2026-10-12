@@ -48,15 +48,16 @@ so the preceding glyph static baseline remains applicable at its recorded scope.
 - Command: `Test-Slice4beAuthReadOnly.ps1 -DeployRoot deploy/validation-detail-glyph-01
   -Phase GREEN -AdminRefresh -AdminWriteDiagnostic`.
 
-## Required decision and next test
+## Approved decision and next test
 
-Proposed **D8-USERS-01** in v4.11(line4991), Plan022 and Controls1.550 moves the
+**D8-USERS-01**, approved by the user on2026-10-12 and recorded in v4.11,
+Plan022 and the controls catalog, moves the
 three writes into headless Core commands with live captured session/target/Admin
 checks, exact trusted Auth selection and protection of unrelated edits. It explicitly
 replaces the form-owned write/schema-ensure path; ordinary reads, processor
-authorization and explicit provisioning remain separate. Approval is pending.
+authorization and explicit provisioning remain separate. Implementation is pending.
 
-After approval, first add/run actual-handler denial assertions for these cases
+First add/run actual-handler denial assertions for these cases
 and direct Core boundary tests. Then implement and protect authorized persistence,
 post-confirmation context loss, missing/invalid/read-only/dirty authority, unknown
 columns and existing read/provisioning behavior. Recording/guide coverage follows

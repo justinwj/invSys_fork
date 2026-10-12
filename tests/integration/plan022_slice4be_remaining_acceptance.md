@@ -6,7 +6,15 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
-Current unpromoted runtime checkpoint `deploy/validation-admin-seed-outcome-02`
+New unpromoted `deploy/validation-admin-seed-recording-02` adds catalog37/157
+`ADMIN_DEMO_SEED`: [recording RED37/6 -> GREEN114](plan022_slice4be_admin_seed_recording_results.md)
+retains70 lifecycle checks and protects honest outcomes, exact references,
+suppression and the prior156 definitions. Fresh Console118, Settings202, smoke86
+and chain32/live-role48/Create15 pass, with compile/static/preservation and clean
+delayed closure. Context/storage faults, publication, independent guides and other Demo
+Inventory controls remain open; this is not comprehensive recording acceptance.
+
+Prior completion checkpoint `deploy/validation-admin-seed-outcome-02`
 adds the [Seed/Delete completion prerequisite](plan022_slice4be_admin_seed_outcome_results.md):
 RED27/2 -> GREEN35, five cold compiles and smoke86. Exact saved Domain receipts
 replace batch-count inference while retaining the existing processing bounds.
@@ -17,13 +25,15 @@ invalid receipts and read-only ownership. Completion correction qualified; next 
 Seed recording/publication and independent guide proof. Whole-form input is not
 claimed by the selection/confirmation seam; unchanged chooser behavior is outside
 this correction's visible-message evidence.
-This adds no recording ID; catalog36/156 and broader Admin coverage remain open.
+That completion checkpoint adds no recording ID and retains catalog36/156;
+broader Admin recording coverage remains open.
 
 Independent [Users & Roles diagnostic](plan022_slice4be_admin_auth_write_diagnostic.md)
 retains111 checks and confirms nine writes after loss of original-target Admin
 authority. Diagnostic139 establishes the fixture/results, not authorization GREEN.
-D8-USERS-01 is proposed in v4.11/Plan022/Controls1.550; approval and command-boundary
-D13 are pending. This introduces no product change or recording control.
+D8-USERS-01 was explicitly approved2026-10-12 in v4.11/Plan022/the controls catalog;
+command-boundary D13 implementation and acceptance are pending. This approval alone
+introduces no product change or recording control.
 
 Current visual candidate `deploy/validation-detail-glyph-01` corrects final-line
 glyph clipping under existing D18: packaged RED89/1 -> GREEN90, retaining88 prior

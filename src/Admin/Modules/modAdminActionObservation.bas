@@ -28,3 +28,17 @@ Public Sub FinishObservation(ByVal action As String, ByVal outcome As String, By
 Unavailable:
     notice = unavailableMessage
 End Sub
+
+' Optional reads may activate workbooks. Restore only the exact still-live sheet.
+' Never resolve a substitute workbook or reopen one that the operator closed.
+Public Function CurrentSurface() As Object
+    On Error Resume Next
+    Set CurrentSurface = Application.ActiveSheet
+End Function
+
+Public Sub RestoreSurface(ByVal surface As Object)
+    On Error Resume Next
+    If surface Is Nothing Then Exit Sub
+    surface.Parent.Activate
+    surface.Activate
+End Sub

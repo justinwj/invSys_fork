@@ -218,19 +218,12 @@ Sub Seed_DemoInventory()
     stage = LCase$(actionName) & " action"
     Select Case actionName
         Case modAdminInventorySeed.DEMO_ACTION_SEED
-            If uploadPath = "" Then
-                succeeded = modAdminInventorySeed.SeedDemoInventoryForWarehouse( _
-                    warehouseId, stationId, userId, report)
-            Else
-                succeeded = modAdminInventorySeed.UploadDemoInventoryForWarehouse( _
-                    warehouseId, stationId, userId, uploadPath, report)
-            End If
+            succeeded = modAdminSeedObservation.Seed(warehouseId, stationId, userId, runtimeRoot, uploadPath, report)
         Case modAdminInventorySeed.DEMO_ACTION_DELETE
             succeeded = modAdminInventorySeed.DeleteDemoInventoryForWarehouse( _
                 warehouseId, stationId, userId, report)
         Case modAdminInventorySeed.DEMO_ACTION_UPLOAD
-            succeeded = modAdminInventorySeed.UploadDemoInventoryForWarehouse( _
-                warehouseId, stationId, userId, uploadPath, report)
+            succeeded = modAdminSeedObservation.Seed(warehouseId, stationId, userId, runtimeRoot, uploadPath, report)
         Case modAdminInventorySeed.DEMO_ACTION_UPLOAD_DATA_SET
             succeeded = modAdminInventorySeed.ImportDemoInventoryDataSet( _
                 runtimeRoot, uploadPath, storedPath, report)

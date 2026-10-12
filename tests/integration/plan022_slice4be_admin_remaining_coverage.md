@@ -33,6 +33,13 @@ Ignored verification: `reports/runtime/admin-remaining-source-audit-01/ribbon-ve
 
 ## Actions map
 
+Catalog37/157 now adds the first Demo Inventory observation:
+[Seed recording GREEN114](plan022_slice4be_admin_seed_recording_results.md), following
+RED37/6. The actual callback supplies honest outcomes and exact references; the
+prior156 definitions remain unchanged. Full recording/guide acceptance and all
+other Demo Inventory controls remain open. D8-USERS-01 is now approved for the
+separate Users & Roles command-boundary correction; its D13 implementation is pending.
+
 Seed/Delete now have a measured completion prerequisite: the
 [exact-outcome gate](plan022_slice4be_admin_seed_outcome_results.md) gives RED27/2
 to focused GREEN35 on unpromoted seed-outcome-02. The processor captures the exact
@@ -41,8 +48,9 @@ count cannot prove this command applied. Smoke86 and five cold compiles pass.
 Visible feedback43 retains35; ordinary chain32/live-role48/Create Warehouse15 pass
 with unassisted closure/restoration. Expanded gate70 protects upload/no-op/
 cancellation and receipt schema/ownership. Completion correction is qualified;
-next is Seed recording/publication and independent guide proof. No Seed recording
-ID, whole-form native input or comprehensive coverage is claimed.
+that completion gate adds no Seed recording ID. The recording checkpoint above
+is separate; whole-form native input, publication and independent guide proof
+remain open.
 
 Settings, Reconcile and Verify Add-ins have the scoped recording/guide gates
 described here and in their receipts; other entries remain pending.

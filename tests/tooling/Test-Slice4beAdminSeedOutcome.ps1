@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-detail-glyph-01',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$NativeFeedback,[switch]$WorkflowEdges)
+param([string]$DeployRoot='deploy/validation-detail-glyph-01',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$NativeFeedback,[switch]$WorkflowEdges,[switch]$Recording)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Admin Seed outcome gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
@@ -16,6 +16,7 @@ Write-Output ('Admin Seed outcome controller: '+$root)
 try{
     $extra=@();if($NativeFeedback){$extra+='-AdminSeedNativeFeedback'}
     if($WorkflowEdges){$extra+='-AdminSeedWorkflowEdges'}
+    if($Recording){$extra+='-AdminSeedRecording'}
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1') -DeployRoot $DeployRoot -Phase $Phase -AdminSeedOutcomeOnly -CompileEvaluationProbesForTest -WaitForExcelReadyForTest -ExcelReadyReadLimitForTest 40 @extra *> (Join-Path $root 'worker.log')
     $code=$LASTEXITCODE
 }finally{
