@@ -1,8 +1,8 @@
 # Slice4be-A: exact Seed/Delete completion prerequisite
 
-2026-10-12. **Focused GREEN35/35, visible feedback43/43 and chain32/32;
-unpromoted checkpoint, not Seed recording or
-4be-A acceptance.** Governing requirements: v4.11 D14 demo lifecycle and D18
+2026-10-12. **Completion correction qualified: expanded GREEN70/70, visible
+feedback43/43 and chain32/32.** Unpromoted checkpoint, not Seed recording or
+4be-A acceptance. Governing requirements: v4.11 D14 demo lifecycle and D18
 truthful owner outcomes. No new permission, recording policy or replay adapter.
 
 ## Behavioral evidence
@@ -76,12 +76,13 @@ It passes all28 oversized-module caps, with339 components/6416 procedures/139809
 lines, unchanged dynamic calls9/45 and duplicate groups194; three schemas and
 498 PowerShell files validate. The processor shrinks from1467 to1454 lines.
 Combined delayed native audit through17:00:46.8666317UTC has no Excel failure events.
-Uploaded-data-set/no-op/cancellation regressions, broader receipt schema/ownership/
-failure cases and whole-form native interaction remain open. The independent
-ordinary-loading failure and pending D16-VBA-LOAD-01 decision are not declared
+The expanded gate below closes upload/no-op/cancellation and receipt-schema/
+ownership checks for this correction. Whole-form native selection/confirmation
+is not claimed; the changed result messages have their own visible proof. The
+independent ordinary-loading failure and pending D16-VBA-LOAD-01 decision are not declared
 repaired or waived by one clean chain. D8-USERS-01/D18-LOCAL-01 remain pending.
-Seed's comprehensive recording, publication and independent guide proof remain next
-after this prerequisite qualifies. No catalog ID or acceptance exclusion is added.
+Seed's comprehensive recording, publication and independent guide proof remain
+next. No catalog ID or acceptance exclusion is added.
 
 ## Visible feedback and ordinary chain follow-through
 
@@ -119,3 +120,35 @@ Sixteen source harness import lists now include `modProcessorPersistence` and
 Other source suites are not claimed run. The ordered live-role harness also checks
 its generated temporary-directory boundary before cleanup. These are dependency/
 cleanup maintenance, not a new runtime contract or a manufactured behavioral RED.
+
+## Expanded workflow and receipt protection
+
+`-WorkflowEdges` passes **70/70**, retaining35 and adding25 lifecycle checks plus
+ten receipt checks. Actual callbacks on the existing Admin-generated warehouse
+prove repeat Seed/Upload and empty Delete do not queue or mutate inventory; canceled
+Delete/Upload/Data Set Delete preserve state; invalid CSV is refused before queue;
+import stores the exact definition without inventory changes; deleting it removes
+only that definition; and the built-in kit remains protected. Uploaded Seed with
+BatchSize1 also refuses false success while its event is NEW, then applies exactly
+on a later batch. Inventory/log/receipt fingerprints remain in memory only.
+
+Supplemental real Core/Domain bridge reads refuse duplicate receipts, non-APPLIED
+status, absent/ambiguous headers and missing tables without repair. Normalized
+headers work; borrowed workbooks remain open; owned reads close their workbook and
+preserve its file hash. These tests supplement the actual-callback gate. No runtime
+change or new behavioral RED was needed; the original RED27/2 remains applicable.
+
+Evidence under `reports/runtime`: controller
+`admin-seed-outcome-controller/4598d491e1044d6db5e1c5fe3d905395`, worker
+`slice4be-admin-seed-outcome/dfc2090691494bec8e69cb20426ef00b`, controller's
+`qualified-verification.json`. Five instrumented compiles, log/JSON agreement,
+package/settings/tooling preservation and normal closure pass. Delayed audit
+through17:27:02.6002757UTC has zero Excel failures. The preceding60-check gate passed
+before adding receipt cases; it exposed no product defect.
+
+`admin-seed-workflow-static-01` retains339/6416/139809, all28 caps,9/45 dynamic calls
+and194 duplicate groups; three schemas and500 PowerShell files validate. The older
+Seed harness was not executed: its lifecycle expectations were adapted into the
+current Admin-generated fixture, avoiding its direct inventory construction and
+forced-stop timeout. Native chooser/confirmation evidence belongs to subsequent
+Seed recording coverage; it is not a new gate for this unchanged chooser.

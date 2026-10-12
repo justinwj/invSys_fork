@@ -12,7 +12,11 @@ RED27/2 -> GREEN35, five cold compiles and smoke86. Exact saved Domain receipts
 replace batch-count inference while retaining the existing processing bounds.
 Native feedback43 retains35; both result dialogs are complete in reviewed captures.
 Ordinary full chain32/live-role48/Create Warehouse15 pass with unassisted closure
-and restoration. Expanded receipt/workflow edges and whole-form input remain open.
+and restoration. Expanded gate70 retains35 and protects upload/no-op/cancellation,
+invalid receipts and read-only ownership. Completion correction qualified; next is
+Seed recording/publication and independent guide proof. Whole-form input is not
+claimed by the selection/confirmation seam; unchanged chooser behavior is outside
+this correction's visible-message evidence.
 This adds no recording ID; catalog36/156 and broader Admin coverage remain open.
 
 Independent [Users & Roles diagnostic](plan022_slice4be_admin_auth_write_diagnostic.md)
