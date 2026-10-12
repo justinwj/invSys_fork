@@ -120,6 +120,7 @@ param(
     [switch]$CheckAdminSettingsClose,
     [switch]$AdminSettingsCloseOnly,
     [switch]$AdminReconcileIdentityOnly,
+    [switch]$AdminReconcileNativePresentation,
     [switch]$CheckAdminSettingsCloseActivity,
     [switch]$CheckAdminSettingsEntry,
     [switch]$CheckAdminSettingsNavigation,
@@ -435,6 +436,7 @@ if($NativeResizeCaptureDiagnostic -and ($Phase -cne 'RED' -or -not $CheckReceivi
     throw 'Native capture diagnosis requires the visible RED replay gate without close tracing.'
 }
 if($AdminReconcileIdentityOnly -and (-not $CompileEvaluationProbesForTest -or $AdminSettingsCloseOnly -or $CheckTrackingSettings -or $CheckActivityEvidence -or $CheckViewerPublishedRead)) { throw 'Reconcile identity requires its separate compiled callback gate.' }
+if($AdminReconcileNativePresentation -and -not $AdminReconcileIdentityOnly){throw 'Native Reconcile presentation requires its isolated callback gate.'}
 if($AdminSettingsCloseOnly) { $CheckAdminSettingsClose = $true }
 if($CheckAdminSettingsCloseActivity -and (-not $AdminSettingsCloseOnly -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Close observations require the isolated compiled visible Admin close gate.'}
 if($CheckAdminSettingsEntry -and (-not $AdminSettingsCloseOnly -or $CheckAdminSettingsCloseActivity -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Settings entry requires its isolated compiled visible launcher gate.'}

@@ -1,7 +1,11 @@
 # Slice4be-A: Shipment Reconcile identity prerequisite
 
-2026-10-12. **Original55 GREEN retained; expanded authority gate128/2 RED.**
-D8-RECON-01 awaits approval;4be-A remains incomplete. See the final section.
+2026-10-12. **Identity/authority172 GREEN; combined native179/2.**
+Approved D8-RECON-01 is implemented; long-history presentation and4be-A remain incomplete.
+See the final sections for current evidence.
+
+## Historical initial RED
+
 The implementation/evidence section below supersedes the historical RED status.
 Initial candidate `deploy/validation-admin-entry-02`; expanded RED uses
 `deploy/validation-admin-auth-read-01`, whose Reconcile/Core/Domain code is unchanged.
@@ -205,7 +209,7 @@ which calls `HasProvisionedCapabilityForSystem` without authenticating the live
 interactive actor. Do not change the generic headless API to satisfy this UI test.
 v4.11 D8-RECON-01 proposes a captured interactive session/user/target Core gate,
 preserving Admin local target policy, read-only inspection and processor behavior.
-Approval is pending; no correction is implemented. After approval, align the
+Approved2026-10-12; no authentication correction is implemented. Align the
 ordinary signed-out notice assertion with the approved interactive gate before
 implementation; do not preserve the current fallback merely to retain that text.
 
@@ -228,3 +232,96 @@ current candidate used by the explicit deployment argument in these runs.
 Static `reports/runtime/admin-reconcile-authority-static-02` holds all28 caps,
 unchanged328/6379/139222 component/procedure/line counts, dynamic9/45 and duplicates192;
 three schemas and474 PowerShell scripts validate. No runtime rebuild was needed.
+
+## Native presentation RED and authentication approval
+
+The user approved D8-RECON-01 on2026-10-12. Record the captured live session/user,
+warehouse/station and ADMIN_MAINT Core gate without changing Admin local targets
+or provisioned headless processing. Extend mid-dialog mutation RED before that fix.
+
+`-NativePresentation` adds20 real owner-applied SHIP entries, invokes the actual
+packaged callback and forwards its selection seam to native VBA.InputBox. The
+observer identifies the exact generated Excel process and dialog, reads its real
+Static control, measures wrapped text against client bounds, captures only the
+owned foreground window, and dispatches the native Cancel button. Reports expose
+booleans/counts only; screenshots contain disposable fixture data and stay ignored.
+
+Qualified **134 PASS/5 FAIL**,139 checks, retains all130 previous outcomes:
+- two existing signed-out stale-identity failures;
+- `Reconcile.Native.LastChoiceAndExactKeyPresent`;
+- `Reconcile.Native.SelectionTextFitsVisibleDialog`;
+- `Reconcile.Native.HistoryTimestampReadable`.
+
+Prompt length is1023 characters. The viewed capture ends partway through choice7;
+choice20 is absent, visible text is clipped, and timestamps are numeric serials.
+Exact first key, native Cancel, unchanged queue count/inventory bytes/quantities/
+custom values/saved state pass. This does not cover native confirmation/entry.
+
+Controller `reports/runtime/admin-reconcile-controller/4f7357a16e3d4ca89321327abf02d6f7`;
+worker `reports/runtime/slice4be-admin-reconcile/a73a7b2a2b75436b9790572808f749b6`.
+UTC05:20:53.3901647–05:22:07.9668259; clean delayed audit through05:22:19.9668259.
+All five instrumented compiles, log/JSON identity and normal preserved closure pass.
+Static `admin-reconcile-native-static-01`: unchanged328/6379/139222, dynamic9/45,
+duplicates192, all28 caps, three schemas and475 PowerShell parsers pass.
+
+The first observer attempt failed because a helper was dot-sourced only inside
+an installer function; move it to the script scope. That is not behavioral RED.
+The next138-check capture exposed the date problem; the final139 adds its assertion.
+
+## Approved authentication and timestamp corrections
+
+D8-RECON-01 was approved in chat and synchronized in v4.11/Plan022/Controls before
+implementation. Expanded callback RED on `validation-admin-reconcile-date-01` is
+**160/12**,172 checks. It proves sign-out during selection/confirmation, re-sign-in
+as the same Admin, switching to Reader, and switching warehouse through real Core
+owners. Mutation preconditions pass. It also proves one permitted local-fallback
+submission. Generated secrets stay in private transient fixture state, never reports.
+
+RED controller `admin-reconcile-controller/d20e882850aa447a82ff94d2bcd761d6`;
+worker `slice4be-admin-reconcile/6da0b92b03fb40329c75135b7bbdb655`, under reports/runtime.
+UTC05:31:59.5491947–05:33:32.8488052; clean audit through05:33:44.8488052.
+All original55 remain GREEN. The ordinary signed-out notice assertion intentionally
+changes from capability denial to the approved sign-in refusal; no GREEN regression
+is hidden. Five compiles and preserved normal closure pass.
+
+`Core.modAdminReconcileAccess` captures transient session/user/target context and
+validates it with live `modAuth.CanPerform` before Admin's queue helper proceeds.
+Admin captures the authenticated user, not a local/Windows/Office hint. The existing
+headless writer/processor API is unchanged. The first access candidate passed170/172:
+`modRoleUiAccess` also enforces NAS for ADMIN_MAINT and wrongly rejected local use.
+Do not reuse that wrapper here; direct live Core capability authorization preserves
+D8-RECON-01. The explicit Phase6 source import list includes the new dependency.
+
+Current unpromoted candidate **`deploy/validation-admin-reconcile-access-02`** passes
+all **172/172** ordered identity/authority checks. The combined native gate is
+**179 PASS/2 FAIL**: only LastChoiceAndExactKeyPresent and SelectionTextFitsVisibleDialog
+remain RED. Numeric Domain dates now render through the existing ISO-like display
+format in Admin. The reviewed physical capture shows readable timestamps; native
+Cancel queues nothing and preserves quantities, custom values, saved state and bytes.
+Two earlier date-only captures were refused foreground activation; neither was
+accepted as visible evidence. The final capture verifies foreground before/after.
+
+- Controller: `reports/runtime/admin-reconcile-controller/2c63b04cfb2646f799198b0b1c20620e`.
+- Worker: `reports/runtime/slice4be-admin-reconcile/cbd21ccdd85b4634acd0d83340611f72`.
+- UTC05:38:03.1461052–05:39:46.4077465; clean delayed audit through05:39:58.4077465.
+- Build: `reports/runtime/admin-reconcile-access-build-02`; five cold compiles and
+  Operations startup pass. Relative to the date candidate, only Admin Reconcile
+  changes and the Core access helper is added;320 components are unchanged.
+- Smoke: `admin-reconcile-access-regression/smoke-0ef63223a1a745be81f84cf7f5f786b2`
+  under runtime; all86 prior ordered checks, both unassisted exits, preservation
+  and clean delayed native audit pass.
+- Static: `reports/runtime/admin-reconcile-access-static-02`;329 components,
+  6381 procedures,139265 lines; all28 caps, unchanged dynamic9/45 and duplicates192,
+  three schemas and475 PowerShell parsers pass.
+
+No deployment promotion, new tracking ID or4be-A closure. Native history selection
+needs complete readable/reachable choices; confirmation/entry and comprehensive
+recording/guide proof remain open. Do not shorten exact keys or silently reduce20
+choices to make the native RED pass.
+
+Final same-candidate chain: **32 chain/48 live-role/15 Create Warehouse**, exact
+prior order, unassisted normal closure, settings/packages/tracked reports preserved
+and zero delayed native failures. Controller under runtime:
+`admin-reconcile-access-regression/chain-81a8cecc8e994d6bbf4be47c1a61ab5f`.
+UTC05:40:59.8755927–05:46:37.1591580; audit through05:46:49.1591580.
+This is regression evidence, not complete4be-A or full Release1 user acceptance.

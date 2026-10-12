@@ -13,7 +13,7 @@ Private Const FLAG_NAS_INCREASED_AFTER_SHIP As String = "NAS_INCREASED_AFTER_SHI
 Public Sub OpenShipmentReconcileTool()
     On Error GoTo Failed
     Dim target As WarehouseTarget, warehouseId As String, stationId As String, runtimeRoot As String
-    Dim userId As String, recentRows As Collection, selectedRow As Object, state As Variant
+    Dim userId As String, recentRows As Collection, selectedRow As Object, state As Variant, context As String
     Dim selectionText As String, selectedIndex As Long, systemKey As String, correctedShipEventId As String
     Dim currentQty As Double, afterQty As Double, delta As Double, narrative As String, eventIdOut As String, report As String
     Set target = modNasConnection.GetCurrentTarget()
@@ -22,7 +22,8 @@ Public Sub OpenShipmentReconcileTool()
         Exit Sub
     End If
     warehouseId = target.WarehouseId: stationId = target.StationId: runtimeRoot = target.RuntimeRoot
-    userId = modRoleEventWriter.ResolveCurrentUserId()
+    userId = modAuth.GetCurrentUserId()
+    context = modAdminReconcileAccess.CaptureContext()
     Set recentRows = BuildRecentShipmentSentRows(Nothing, 20, warehouseId, runtimeRoot)
     If recentRows.Count = 0 Then
         MsgBox "No valid server shipment deduction entries are available in the selected warehouse.", vbInformation, "invSys Admin - Shipment Reconcile"
@@ -60,7 +61,7 @@ Public Sub OpenShipmentReconcileTool()
         Exit Sub
     End If
     If QueueAdminShipmentReconcileEvent(warehouseId, stationId, userId, systemKey, delta, correctedShipEventId, narrative, _
-        FLAG_NAS_INCREASED_AFTER_SHIP, Nothing, eventIdOut, report, runtimeRoot) Then
+        FLAG_NAS_INCREASED_AFTER_SHIP, Nothing, eventIdOut, report, runtimeRoot, context) Then
         MsgBox "Shipment reconcile event queued." & vbCrLf & "EventID: " & eventIdOut & vbCrLf & _
             "Corrects: " & correctedShipEventId & vbCrLf & "System_Key: " & systemKey & vbCrLf & _
             "Delta: " & Format$(delta, "0.########"), vbInformation, "invSys Admin"
@@ -80,8 +81,9 @@ Public Function QueueAdminShipmentReconcileEvent(ByVal warehouseId As String, By
                                                  ByVal correctedShipEventId As String, ByVal repairNarrative As String, _
                                                  Optional ByVal mismatchFlag As String = "", Optional ByVal targetInboxWb As Workbook = Nothing, _
                                                  Optional ByRef eventIdOut As String = "", Optional ByRef report As String = "", _
-                                                 Optional ByVal runtimeRoot As String = "") As Boolean
+                                                 Optional ByVal runtimeRoot As String = "", Optional ByVal context As String = "") As Boolean
     Dim state As Variant, item As Object, payloadJson As String
+    If Not modAdminReconcileAccess.ValidateSubmission(context, warehouseId, stationId, runtimeRoot, userId, report) Then Exit Function
     state = modInventoryDomainBridge.ReadShipmentReconcileBridge("STATE" & vbTab & correctedShipEventId & vbTab & systemKey, _
         Nothing, warehouseId, runtimeRoot)
     If IsEmpty(state) Then
@@ -295,11 +297,14 @@ Private Function IsShipmentDeductionEventType(ByVal eventType As String) As Bool
 End Function
 
 Private Function FormatLogDateReconcile(ByVal valueIn As Variant) As String
+    FormatLogDateReconcile = SafeTrimReconcile(valueIn)
+    On Error GoTo Done
     If IsDate(valueIn) Then
         FormatLogDateReconcile = Format$(CDate(valueIn), "yyyy-mm-dd hh:nn:ss")
-    Else
-        FormatLogDateReconcile = SafeTrimReconcile(valueIn)
+    ElseIf IsNumeric(valueIn) Then
+        FormatLogDateReconcile = Format$(CDate(CDbl(valueIn)), "yyyy-mm-dd hh:nn:ss")
     End If
+Done:
 End Function
 
 

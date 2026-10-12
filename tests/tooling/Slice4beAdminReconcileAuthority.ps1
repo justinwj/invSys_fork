@@ -6,6 +6,8 @@ Private mBoundaryCase As String
 Private mBoundaryPath As String
 Private mBoundarySnapshot As String
 Private mBoundaryNotice As String
+Private mMutationSecret As String, mOtherRoot As String, mOtherSecret As String
+Private mMutationObserved As Boolean
 '@)
     $Module.AddFromString(@'
 Public Function PrepareAuthoritySuite() As Boolean
@@ -20,6 +22,7 @@ End Function
 Public Function PrepareAuthorityCase(ByVal scenario As String) As Boolean
     Dim lo As ListObject, r As Long
     mBoundaryCase = scenario
+    mMutationObserved = False
     If Not mInventory.Saved Then Err.Raise 5, , "Authority fixture baseline must be saved"
     Set lo = FindTable(mInventory, "tblInventoryEntities")
     Select Case scenario
@@ -38,7 +41,8 @@ Public Function PrepareAuthorityCase(ByVal scenario As String) As Boolean
                 If Len(Dir$(mBoundaryPath & ".reconcile-held")) <> 0 Then Err.Raise 5, , "Held fixture already exists"
                 Name mBoundaryPath As mBoundaryPath & ".reconcile-held"
             End If
-        Case "BorrowedClean", "CancelSelection", "CancelNarrative", "InvalidSelection", "ReaderDenied", "SignedOut", "SignedOutStaleIdentity"
+        Case "BorrowedClean", "CancelSelection", "CancelNarrative", "InvalidSelection", "ReaderDenied", "SignedOut", "SignedOutStaleIdentity", "LocalSignedIn"
+        Case "SignOutDuringSelection", "SignOutDuringNarrative", "ReauthenticateDuringNarrative", "SwitchUserDuringNarrative", "SwitchTargetDuringNarrative"
         Case Else: Err.Raise 5, , "Unknown authority fixture"
     End Select
     mBoundarySnapshot = AuthorityMemorySignature()
@@ -46,6 +50,7 @@ Public Function PrepareAuthorityCase(ByVal scenario As String) As Boolean
 End Function
 
 Public Function AuthoritySelectionAnswer() As String
+    If mBoundaryCase = "SignOutDuringSelection" Then MutateAuthoritySession
     Select Case mBoundaryCase
         Case "CancelSelection": AuthoritySelectionAnswer = ""
         Case "InvalidSelection": AuthoritySelectionAnswer = "1.5"
@@ -55,6 +60,44 @@ End Function
 
 Public Function AuthorityNarrativeAnswer() As String
     If mBoundaryCase = "" Or mBoundaryCase = "ReaderDenied" Or mBoundaryCase = "SignedOut" Or mBoundaryCase = "SignedOutStaleIdentity" Then AuthorityNarrativeAnswer = "Generated training identity correction"
+    If mBoundaryCase = "LocalSignedIn" Then AuthorityNarrativeAnswer = "Generated training local correction"
+    If InStr(1, mBoundaryCase, "During", vbBinaryCompare) > 0 Then
+        If mBoundaryCase <> "SignOutDuringSelection" Then MutateAuthoritySession
+        AuthorityNarrativeAnswer = "Generated training session-change correction"
+    End If
+End Function
+
+Public Sub ConfigureAuthorityMutations(ByVal secret As String, ByVal otherRoot As String, ByVal otherSecret As String)
+    mMutationSecret = secret: mOtherRoot = otherRoot: mOtherSecret = otherSecret
+End Sub
+
+Private Sub MutateAuthoritySession()
+    Dim status As String, target As WarehouseTarget
+    If Not modAuth.IsSignedIn() Then Err.Raise 5, , "Mutation requires the original live session"
+    Select Case mBoundaryCase
+        Case "SignOutDuringSelection", "SignOutDuringNarrative"
+            modAuth.SignOut
+            mMutationObserved = Not modAuth.IsSignedIn()
+        Case "ReauthenticateDuringNarrative"
+            modAuth.SignOut
+            status = modAuth.SignInCurrentTargetForAutomation("config-admin", mMutationSecret, "")
+            mMutationObserved = (Left$(status, 3) = "OK|" And modAuth.IsSignedIn() And modAuth.GetCurrentUserId() = "config-admin")
+        Case "SwitchUserDuringNarrative"
+            status = modAuth.SignInCurrentTargetForAutomation("config-reader", mMutationSecret, "")
+            mMutationObserved = (Left$(status, 3) = "OK|" And modAuth.IsSignedIn() And modAuth.GetCurrentUserId() = "config-reader")
+        Case "SwitchTargetDuringNarrative"
+            modRuntimeWorkbooks.SetCoreDataRootOverride mOtherRoot
+            status = modNasConnection.SelectWarehouseTargetForAutomation(mOtherRoot, mOtherRoot, "S1", False)
+            If Left$(status, 3) <> "OK|" Then Err.Raise 5, , "Other generated target unavailable"
+            status = modAuth.SignInCurrentTargetForAutomation("config-admin", mOtherSecret, "")
+            Set target = modNasConnection.GetCurrentTarget()
+            mMutationObserved = (Left$(status, 3) = "OK|" And modAuth.IsSignedIn() And target.WarehouseId <> mWarehouse)
+    End Select
+    If Not mMutationObserved Then Err.Raise 5, , "Live authority mutation did not occur"
+End Sub
+
+Public Function AuthorityMutationObserved() As Boolean
+    AuthorityMutationObserved = mMutationObserved
 End Function
 
 Public Function AuthorityObservation() As String
@@ -80,11 +123,17 @@ Public Function AuthorityObservation() As String
         Case "InvalidSchema", "AmbiguousKey": noticeMatches = (mBoundaryNotice = "The selected shipment and exact inventory entity could not be validated.")
         Case "CancelSelection": noticeMatches = (mBoundaryNotice = "")
         Case "InvalidSelection": noticeMatches = (InStr(1, mBoundaryNotice, "Enter a whole number from 1 to ", vbBinaryCompare) = 1)
-        Case "ReaderDenied", "SignedOut": noticeMatches = (InStr(1, mBoundaryNotice, "Current user lacks ADMIN_MAINT capability.", vbBinaryCompare) = 1)
-        Case "SignedOutStaleIdentity": noticeMatches = (mBoundaryNotice = "Current invSys user is not signed in.")
+        Case "ReaderDenied": noticeMatches = (InStr(1, mBoundaryNotice, "Current user lacks ADMIN_MAINT capability.", vbBinaryCompare) = 1)
+        Case "SignedOut", "SignedOutStaleIdentity", "SignOutDuringSelection", "SignOutDuringNarrative": noticeMatches = (mBoundaryNotice = "Current invSys user is not signed in.")
+        Case "ReauthenticateDuringNarrative", "SwitchUserDuringNarrative", "SwitchTargetDuringNarrative": noticeMatches = (mBoundaryNotice = "The invSys session or warehouse changed. Reopen Shipment Reconcile.")
         Case Else: noticeMatches = (mBoundaryNotice = "Shipment reconcile cancelled. A human repair narrative is required.")
     End Select
-    AuthorityObservation = CStr(mPrompts = expectedPrompts And Not mQueuedNotice And noticeMatches) & "|" & CStr(memory) & "|" & CStr(saved)
+    If mBoundaryCase = "LocalSignedIn" Then
+        noticeMatches = mQueuedNotice
+    Else
+        noticeMatches = noticeMatches And Not mQueuedNotice
+    End If
+    AuthorityObservation = CStr(mPrompts = expectedPrompts And noticeMatches) & "|" & CStr(memory) & "|" & CStr(saved)
 End Function
 
 Private Function AuthorityMemorySignature() As String
@@ -139,8 +188,17 @@ function Test-AdminReconcileAuthority($Events,$State,$Fixture,$OtherFixture) {
     $ready=[bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.PrepareAuthoritySuite')
     Check 'Reconcile.Authority.OwnerGeneratedBaseline' $ready
     if(-not $ready){throw 'Authority fixture baseline failed; not behavioral RED.'}
-    foreach($case in @('BorrowedClean','BorrowedDirty','InvalidSchema','AmbiguousKey','Closed','Missing','CancelSelection','CancelNarrative','InvalidSelection','ReaderDenied','SignedOut','SignedOutStaleIdentity')){
+    [void](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.ConfigureAuthorityMutations' @($Fixture.Secret,$OtherFixture.Root,$OtherFixture.Secret))
+    foreach($case in @('BorrowedClean','BorrowedDirty','InvalidSchema','AmbiguousKey','Closed','Missing','CancelSelection','CancelNarrative','InvalidSelection','ReaderDenied','SignedOut','SignedOutStaleIdentity','SignOutDuringSelection','SignOutDuringNarrative','ReauthenticateDuringNarrative','SwitchUserDuringNarrative','SwitchTargetDuringNarrative','LocalSignedIn')){
         if($case -ceq 'ReaderDenied'){SelectTarget $Fixture 'config-reader'}
+        if($case -ceq 'LocalSignedIn'){
+            [void](Run 'invSys.Core.xlam' 'modNasConnection.SetCurrentTargetPathsForTest' @($Fixture.Root,$Fixture.Root))
+            [void](Run 'invSys.Core.xlam' 'modNasConnection.SetCurrentTargetSourceTypeForTest' @(3))
+            $allowed=[bool](Run 'invSys.Core.xlam' 'modNasConnection.IsCurrentTargetAllowed' @($false))
+            $nas=[bool](Run 'invSys.Core.xlam' 'modNasConnection.IsCurrentTargetAllowed' @($true))
+            Check 'Reconcile.Authority.LocalSignedIn.LocalFallbackObserved' ($allowed -and -not $nas)
+            if(-not $allowed -or $nas){throw 'Local fallback fixture unavailable; not behavioral RED.'}
+        }
         if($case -in @('SignedOut','SignedOutStaleIdentity')){
             [void](Run 'invSys.Core.xlam' 'modAuth.SignOut')
             if($case -ceq 'SignedOutStaleIdentity'){
@@ -160,10 +218,19 @@ function Test-AdminReconcileAuthority($Events,$State,$Fixture,$OtherFixture) {
             if(-not $prepared){throw 'Authority scenario preparation failed; not behavioral RED.'}
             [void](Run 'invSys.Inventory.Domain.xlam' 'TestReconcileReadLease.Reset')
             [void](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.InvokeCallback')
+            if($case -like '*During*'){
+                $mutated=[bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.AuthorityMutationObserved')
+                Check ('Reconcile.Authority.'+$case+'.LiveMutationObserved') $mutated
+                if(-not $mutated){throw 'Authority mutation failed; not behavioral RED.'}
+            }
             $values=([string](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.AuthorityObservation')) -split '\|'
             if($values.Count -ne 3){throw 'Invalid authority observation envelope.'}
             Check ('Reconcile.Authority.'+$case+'.ExpectedCallbackConclusion') ([bool]::Parse($values[0]))
-            Check ('Reconcile.Authority.'+$case+'.NoQueuedEvent') ($Events.ListRows.Count -eq $rowsBefore)
+            if($case -ceq 'LocalSignedIn'){
+                Check 'Reconcile.Authority.LocalSignedIn.ExactlyOneQueuedEvent' ($Events.ListRows.Count -eq $rowsBefore+1)
+            }else{
+                Check ('Reconcile.Authority.'+$case+'.NoQueuedEvent') ($Events.ListRows.Count -eq $rowsBefore)
+            }
             Check ('Reconcile.Authority.'+$case+'.MemoryAndLifetimePreserved') ([bool]::Parse($values[1]))
             Check ('Reconcile.Authority.'+$case+'.SavedStatePreserved') ([bool]::Parse($values[2]))
             if($case -ceq 'Closed'){
@@ -177,7 +244,8 @@ function Test-AdminReconcileAuthority($Events,$State,$Fixture,$OtherFixture) {
             Check ('Reconcile.Authority.'+$case+'.OtherWarehousePreserved') ((Hash $OtherFixture.Config) -ceq $otherBefore)
         }finally{
             [void](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.RestoreAuthorityFixture')
-            if($case -in @('ReaderDenied','SignedOut','SignedOutStaleIdentity')){SelectTarget $Fixture}
+            if($case -in @('ReaderDenied','SignedOut','SignedOutStaleIdentity','LocalSignedIn') -or $case -like '*During*'){SelectTarget $Fixture}
         }
     }
+    [void](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.ConfigureAuthorityMutations' @('','',''))
 }

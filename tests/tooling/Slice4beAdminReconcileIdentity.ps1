@@ -3,6 +3,7 @@
 # payload builder and queue writer remain unchanged. No native-input claim.
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileHistory.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileAuthority.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beAdminReconcileNative.ps1')
 function Install-AdminReconcileIdentityProbe {
     $project=$packages['invSys.Admin.xlam'].VBProject
     $probe=$project.VBComponents.Add(1);$probe.Name='TestReconcileIdentity'
@@ -18,6 +19,7 @@ Private mQueuedNotice As Boolean
 Private mSelection As Long
 Private mListPrompt As String
 Private mConfirmPrompt As String
+Private mNativePresentation As Boolean
 Private Const SKU As String = "DEMO-RECONCILE-IDENTITY"
 
 Public Function Prepare(ByVal warehouseId As String, ByVal csvPath As String) As Boolean
@@ -58,7 +60,12 @@ Public Function PromptAnswer(ByVal title As String, ByVal prompt As String) As S
     mPrompts = mPrompts + 1
     Select Case title
         Case "invSys Admin - Shipment Reconcile"
-            mListPrompt = prompt: PromptAnswer = AuthoritySelectionAnswer()
+            mListPrompt = prompt
+            If mNativePresentation Then
+                PromptAnswer = VBA.InputBox(prompt, title)
+            Else
+                PromptAnswer = AuthoritySelectionAnswer()
+            End If
         Case "invSys Admin - Confirm Shipment Reconcile"
             mConfirmPrompt = prompt: PromptAnswer = AuthorityNarrativeAnswer()
         Case Else: Err.Raise 5, , "Unexpected reconcile prompt title"
@@ -168,6 +175,9 @@ End Function
 '@)
     Install-AdminReconcileHistoryProbe $probe.CodeModule
     Install-AdminReconcileAuthorityProbe $probe.CodeModule
+    if($AdminReconcileNativePresentation){
+        Install-AdminReconcileNativeProbe $probe.CodeModule
+    }
 }
 
 function Test-AdminReconcileIdentity($Fixture,$OtherFixture) {
@@ -221,6 +231,7 @@ function Test-AdminReconcileIdentity($Fixture,$OtherFixture) {
     Check 'Reconcile.Preservation.OtherWarehouseConfig' ((Hash $OtherFixture.Config) -ceq $otherBefore)
     Test-AdminReconcileHistory $events $inventory $state
     Test-AdminReconcileAuthority $events $state $Fixture $OtherFixture
+    if($AdminReconcileNativePresentation){Test-AdminReconcileNative $events $state}
     if($openedHere){$inbox.Close($false)}
     } finally {
         [void](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.ReleaseFixture')

@@ -391,6 +391,7 @@ try {
         (Join-Path $repo "src/Core/Modules/modRibbonRuntimeStatus.bas"),
         (Join-Path $repo "src/Core/Modules/modRoleWorkbookSurfaces.bas"),
         (Join-Path $repo "src/Core/Modules/modRoleUiAccess.bas"),
+        (Join-Path $repo "src/Core/Modules/modAdminReconcileAccess.bas"),
         (Join-Path $repo "src/Core/Modules/modRoleEventWriter.bas"),
         (Join-Path $repo "src/Core/Modules/modRoleEventJson.bas"),
         (Join-Path $repo "src/Core/Modules/modSystemIdentity.bas"),
