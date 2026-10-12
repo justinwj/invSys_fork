@@ -7,7 +7,7 @@ outcome, permission, exclusion, replay adapter or business rule.
 
 Continuation: [Shipment Reconcile packaged RED](plan022_slice4be_admin_reconcile_results.md)
 now verifies15 pass/3 fail: missing selected key, legacy Row payload and inventory
-dirtied. D14-RECON-01 quantity clarification is pending approval in v4.11. The
+dirtied. The user approved D14-RECON-01 in v4.11 on2026-10-12. The
 source audit below remains useful; its original no-behavioral-RED status is superseded
 for this callback only. Auth and remaining tracking coverage are still open.
 

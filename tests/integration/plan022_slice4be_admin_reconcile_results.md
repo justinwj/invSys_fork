@@ -3,7 +3,7 @@
 2026-10-12. **RED established; no runtime fix or 4be-A acceptance.**
 Candidate `deploy/validation-admin-entry-02` unchanged, catalog33/151.
 Governing contract: v4.11 D14 exact identity/unknown columns, headless owners and
-read preservation. D14-RECON-01 quantity clarification is proposed, not approved.
+read preservation. The user approved D14-RECON-01 on2026-10-12 after this RED.
 
 Run:
 ```powershell
@@ -47,6 +47,6 @@ for normal shutdown. Final run needed no assistance. Use shared-read streams,
 direct ConvertFrom-Json assignment and actual VBA canary staging; do not repeat
 the failed approaches or interpret their preservation failures as product loss.
 
-Next: approve D14-RECON-01, add protecting repeated/multi-entity and Domain guard
+Next: under approved D14-RECON-01, add protecting repeated/multi-entity and Domain guard
 cases, then correct the exact-key/read path. Retain current RED and all prior
 GREEN gates; packaged/native/role/application/layout and regression proof remain.

@@ -277,7 +277,7 @@ the queue owner emits a legacy Row/SKU payload. A Users and Roles Refresh path a
 enters Auth schema maintenance; its effects and D8-A boundary require runtime proof.
 The [new packaged Reconcile test](plan022_slice4be_admin_reconcile_results.md) now
 has15 pass/3 fail: missing exact key, legacy Row and inventory dirtied. No fix or
-new exclusion is accepted. D14-RECON-01 quantity clarification is pending approval;
+new exclusion is accepted. The user approved D14-RECON-01 on2026-10-12;
 protect repeated/multi-entity and Domain cases before implementing it. Retain the
 separate Auth read-only prerequisite and the rest of the coverage map.
 
