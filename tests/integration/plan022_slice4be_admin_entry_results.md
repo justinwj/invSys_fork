@@ -172,12 +172,33 @@ controller `admin-entry-controller/344796ea9fce480eb34d55bd13d4a0a9`, worker
 UTC02:38:11.633-02:39:07.473, delayed audit through02:39:19.473. Five compiles,
 preservation and normal closure pass. This does not close its negative cases.
 
+The additional public-launcher boundary gate subsequently passes **76/76**, retaining
+all24 prior checks in order: controller
+`admin-entry-controller/13549fca690f45778d9c6a95858e0eb1`, worker
+`slice4be-admin-entry/867b07e9d9ff494bb7741f8dbf812e35`,
+UTC02:43:41.264-02:47:46.179, delayed audit through02:47:58.179. Default/disabled/user-off/
+Open-off policies permit presentation without optional records; re-enabled policy
+records the exact OPENED pair. Catalog32 and blocked storage preserve opening and
+present the fixed notice. Same-session ADMIN_MAINT loss presents the existing denial,
+never presents Settings, and records the exact non-concluding DENIED pair. An owned
+single-OK observer verifies the denial without persisting raw modal text.
+
+Five instrumented compiles, captured session, saved Config/host, Domain/Auth bytes,
+other warehouse and older activity preservation, package/settings restoration and
+normal delayed closure all pass. The visible-activation observer performs internal
+Unload cleanup after the real public callback's presentation hook; it never creates
+an owner outcome or turns teardown into a Close action. Configuration refusal,
+signed-out entry, caught opening failure and active capture remain separate gates.
+
 Fresh `admin-navigation-boundary-static-01/ratchet-verification.json` retains all
 28 size caps,326 components/6371 procedures/139227 lines, dynamic9/45 and192 duplicate
 candidates. Three schemas and466 PowerShell scripts validate. The original runtime
 candidate remains byte-identical to prior GREEN; no rebuild or promotion occurred.
 
-Require public-launcher negative cases, active-capture eligibility, exact publication, independent
+After launcher76, fresh `admin-entry-boundary-static-01/ratchet-verification.json`
+retains those exact metrics and all28 caps; three schemas and467 scripts validate.
+
+Require remaining launcher refusal/failure contexts, active-capture eligibility, exact publication, independent
 successful/interrupted guides, relevant regressions, layout and visible evidence.
 The existing native full-chain Shipping failure is not repaired by this work.
 The [remaining-acceptance index](plan022_slice4be_remaining_acceptance.md) retains

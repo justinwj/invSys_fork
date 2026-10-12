@@ -121,6 +121,7 @@ param(
     [switch]$CheckAdminSettingsEntry,
     [switch]$CheckAdminSettingsNavigation,
     [switch]$CheckAdminSettingsNavigationFailures,
+    [switch]$CheckAdminSettingsEntryFailures,
     [switch]$CheckViewerRefreshFailure,
     [switch]$CheckViewerEventDetail,
     [switch]$DetailScrollLockDiagnostic,
@@ -433,6 +434,7 @@ if($CheckAdminSettingsCloseActivity -and (-not $AdminSettingsCloseOnly -or -not 
 if($CheckAdminSettingsEntry -and (-not $AdminSettingsCloseOnly -or $CheckAdminSettingsCloseActivity -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Settings entry requires its isolated compiled visible launcher gate.'}
 if($CheckAdminSettingsNavigation -and -not $CheckAdminSettingsEntry){throw 'Settings navigation requires its compiled entry fixture.'}
 if($CheckAdminSettingsNavigationFailures -and -not $CheckAdminSettingsNavigation){throw 'Navigation failures require the baseline native gate.'}
+if($CheckAdminSettingsEntryFailures -and (-not $CheckAdminSettingsEntry -or $CheckAdminSettingsNavigation)){throw 'Entry failures require the public-launcher baseline.'}
 if($ViewerPublicationOnly) {
     if($Phase -ne 'RED'){throw 'Publication-only diagnosis is not acceptance GREEN.'}
     $CheckViewerPublication = $true
@@ -1345,6 +1347,10 @@ End Function
         if($CheckAdminSettingsEntry){
             . (Join-Path $PSScriptRoot 'Slice4beAdminSettingsEntry.ps1')
             Install-AdminSettingsEntryProbe $testModule $formCode
+            if($CheckAdminSettingsEntryFailures){
+                . (Join-Path $PSScriptRoot 'Slice4beAdminSettingsEntryFailures.ps1')
+                Install-AdminSettingsEntryFailureProbe $testModule $formCode
+            }
             if($CheckAdminSettingsNavigation){
                 . (Join-Path $PSScriptRoot 'Slice4beAdminSettingsNavigation.ps1')
                 Install-AdminSettingsNavigationProbe $testModule $formCode
@@ -1855,6 +1861,7 @@ End Function
             . (Join-Path $PSScriptRoot 'Slice4beAdminSettingsNavigationFailures.ps1')
             Test-AdminSettingsNavigationFailures $a $b
         }
+        if($CheckAdminSettingsEntryFailures){Test-AdminSettingsEntryFailures $a $b}
         if($CheckAdminSettingsCloseActivity){Test-AdminCloseActivity $a $b}
     }
     if($CheckViewerRefreshFailure) {

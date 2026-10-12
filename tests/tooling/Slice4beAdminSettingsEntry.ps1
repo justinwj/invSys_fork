@@ -30,6 +30,7 @@ Public Function EnablePolicy(Optional ByVal mode As String = "Enabled") As Boole
     If mode <> "Defaults" And mode <> "Disabled" Then
         For Each row In model("Controls")
             row("Collect") = Not (mode = "ControlsOff" And Left$(row("ControlId"), 20) = "ADMIN_SETTINGS_PAGE_")
+            If mode = "OpenOff" And row("ControlId") = "ADMIN_SETTINGS_OPEN" Then row("Collect") = False
         Next row
     End If
     If mode = "UserOff" Then
