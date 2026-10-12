@@ -1,6 +1,7 @@
 # Actual packaged form handlers and real Auth persistence. No target-account
 # payload, credential or activity body is emitted to diagnostic reports.
 . (Join-Path $PSScriptRoot 'Slice4beActivityAssertions.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beAdminUsersRecordingStorage.ps1')
 function Install-AdminUsersRecordingProbe {
     $probe=$packages['invSys.Core.xlam'].VBProject.VBComponents.Add(1);$probe.Name='TestUsersRecording'
     $probe.CodeModule.AddFromString(@'
@@ -42,6 +43,7 @@ Public Function Concludes(ByVal wire As String) As Boolean
     Concludes = modEvaluationMatches.CommandCompleted(modTrainingJson.DecodeObject(wire))
 End Function
 '@)
+    Install-AdminUsersRecordingStorageProbe
 }
 
 function Test-AdminUsersRecording($Fixture,$Other) {
@@ -127,4 +129,5 @@ function Test-AdminUsersRecording($Fixture,$Other) {
         SelectTarget $Fixture
     }
     Check 'UsersRecording.AuthFixtureRestored' ((Get-AuthReadFixtureHash $authPath) -ceq $originalHash)
+    Test-AdminUsersRecordingStorage $Fixture $Other
 }
