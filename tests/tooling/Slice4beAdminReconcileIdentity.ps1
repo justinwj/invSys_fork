@@ -1,6 +1,7 @@
 # D14 prerequisite. Only disposable, unsaved packaged test instrumentation.
 # Prompt answers are supplied at the presentation seam; the callback, lookup,
 # payload builder and queue writer remain unchanged. No native-input claim.
+. (Join-Path $PSScriptRoot 'Slice4beAdminReconcileHistory.ps1')
 function Install-AdminReconcileIdentityProbe {
     $project=$packages['invSys.Admin.xlam'].VBProject
     $probe=$project.VBComponents.Add(1);$probe.Name='TestReconcileIdentity'
@@ -13,11 +14,15 @@ Private mKeyB As String
 Private mShipId As String
 Private mPrompts As Long
 Private mQueuedNotice As Boolean
+Private mSelection As Long
+Private mListPrompt As String
+Private mConfirmPrompt As String
 Private Const SKU As String = "DEMO-RECONCILE-IDENTITY"
 
 Public Function Prepare(ByVal warehouseId As String, ByVal csvPath As String) As Boolean
     Dim report As String, lo As ListObject, r As Long, item As Object
     mWarehouse = warehouseId
+    mSelection = 1
     If Not modAdminInventorySeed.UploadDemoInventoryForWarehouse(warehouseId, "S1", "config-admin", csvPath, report) Then Exit Function
     Set mInventory = modInventoryDomainBridge.ResolveInventoryWorkbookBridge(warehouseId)
     Set lo = FindTable(mInventory, "tblInventoryEntities")
@@ -48,11 +53,13 @@ Private Function ApplyFixtureEvent(ByVal kind As String, ByVal eventId As String
     ApplyFixtureEvent = ApplyFixtureEvent And status = "APPLIED"
 End Function
 
-Public Function PromptAnswer(ByVal title As String) As String
+Public Function PromptAnswer(ByVal title As String, ByVal prompt As String) As String
     mPrompts = mPrompts + 1
     Select Case title
-        Case "invSys Admin - Shipment Reconcile": PromptAnswer = "1"
-        Case "invSys Admin - Confirm Shipment Reconcile": PromptAnswer = "Generated training identity correction"
+        Case "invSys Admin - Shipment Reconcile"
+            mListPrompt = prompt: PromptAnswer = CStr(mSelection)
+        Case "invSys Admin - Confirm Shipment Reconcile"
+            mConfirmPrompt = prompt: PromptAnswer = "Generated training identity correction"
         Case Else: Err.Raise 5, , "Unexpected reconcile prompt title"
     End Select
 End Function
@@ -63,7 +70,7 @@ Public Function ObserveNotice(ByVal text As String) As VbMsgBoxResult
 End Function
 
 Public Function InvokeCallback() As Boolean
-    mPrompts = 0: mQueuedNotice = False
+    mPrompts = 0: mQueuedNotice = False: mListPrompt = "": mConfirmPrompt = ""
     modAdminShipmentReconcile.OpenShipmentReconcileTool
     InvokeCallback = (mPrompts = 2 And mQueuedNotice)
 End Function
@@ -87,24 +94,35 @@ Public Sub ReleaseFixture()
 End Sub
 
 Public Function StageCanary() As Boolean
-    Dim lo As ListObject, added As ListColumn
+    Dim lo As ListObject, added As ListColumn, column As ListColumn, r As Long
     Set lo = FindTable(mInventory, "tblInventoryEntities")
     lo.Parent.Unprotect
-    Set added = lo.ListColumns.Add
-    added.Name = "Operator_Identity_Canary"
-    added.DataBodyRange.Value2 = "preserve-generated-canary"
+    For Each column In lo.ListColumns
+        If column.Name = "Operator_Identity_Canary" Then Set added = column
+    Next column
+    If added Is Nothing Then
+        Set added = lo.ListColumns.Add
+        added.Name = "Operator_Identity_Canary"
+    End If
+    For r = 1 To lo.ListRows.Count
+        added.DataBodyRange.Cells(r, 1).Value2 = "generated annotation|" & CStr(Value(lo, r, "System_Key"))
+    Next r
+    lo.Sort.SortFields.Clear
+    lo.Sort.SortFields.Add Key:=lo.ListColumns("QtyOnHand").Range, SortOn:=xlSortOnValues, Order:=xlDescending
+    lo.Sort.Header = xlYes
+    lo.Sort.Apply
     mInventory.Save
     StageCanary = mInventory.Saved And CanaryPreserved()
 End Function
 
 Public Function CanaryPreserved() As Boolean
-    Dim lo As ListObject, column As ListColumn, cell As Range
+    Dim lo As ListObject, column As ListColumn, r As Long
     Set lo = FindTable(mInventory, "tblInventoryEntities")
     For Each column In lo.ListColumns
         If column.Name = "Operator_Identity_Canary" Then
-            For Each cell In column.DataBodyRange.Cells
-                If CStr(cell.Value2) <> "preserve-generated-canary" Then Exit Function
-            Next cell
+            For r = 1 To lo.ListRows.Count
+                If CStr(column.DataBodyRange.Cells(r, 1).Value2) <> "generated annotation|" & CStr(Value(lo, r, "System_Key")) Then Exit Function
+            Next r
             CanaryPreserved = True
             Exit Function
         End If
@@ -140,12 +158,13 @@ End Function
     $owner=$project.VBComponents.Item('modAdminShipmentReconcile').CodeModule
     $owner.AddFromString(@'
 Private Function InputBox(ByVal Prompt As String, Optional ByVal Title As String = "") As String
-    InputBox = TestReconcileIdentity.PromptAnswer(Title)
+    InputBox = TestReconcileIdentity.PromptAnswer(Title, Prompt)
 End Function
 Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgBoxStyle = vbOKOnly, Optional ByVal Title As String = "") As VbMsgBoxResult
     MsgBox = TestReconcileIdentity.ObserveNotice(Prompt)
 End Function
 '@)
+    Install-AdminReconcileHistoryProbe $probe.CodeModule
 }
 
 function Test-AdminReconcileIdentity($Fixture,$OtherFixture) {
@@ -197,6 +216,7 @@ function Test-AdminReconcileIdentity($Fixture,$OtherFixture) {
     Check 'Reconcile.Preservation.InventoryNotDirtied' ([bool]$inventory.Saved)
     Check 'Reconcile.Preservation.UnknownColumn' ([bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.CanaryPreserved'))
     Check 'Reconcile.Preservation.OtherWarehouseConfig' ((Hash $OtherFixture.Config) -ceq $otherBefore)
+    Test-AdminReconcileHistory $events $inventory $state
     if($openedHere){$inbox.Close($false)}
     } finally {
         [void](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.ReleaseFixture')

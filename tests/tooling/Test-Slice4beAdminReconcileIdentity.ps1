@@ -9,6 +9,8 @@ New-Item -ItemType Directory -Path $root|Out-Null
 $pins=@(Get-ChildItem -LiteralPath $DeployRoot -File -Filter '*.xlam'|ForEach-Object{[pscustomobject]@{File=$_.FullName;Hash=(Get-FileHash $_.FullName).Hash}})
 if($pins.Count -ne 5){throw 'Five packages required.'}
 $pins|ConvertTo-Json|Set-Content (Join-Path $root 'package-pins.json')
+$testPins=@(Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.ps1' -File|ForEach-Object{[pscustomobject]@{File=$_.FullName;Hash=(Get-FileHash $_.FullName).Hash}})
+$testPins|ConvertTo-Json|Set-Content (Join-Path $root 'tooling-pins.json')
 $start=[DateTimeOffset]::UtcNow;$code=1
 Write-Output ('Admin reconcile controller: '+$root)
 try{
@@ -18,8 +20,9 @@ try{
     Wait-RecordingCleanup -Creator $null -Worker $null
     $restored=Restore-InvSysTestSettingsSnapshot $settings
     $same=@($pins|Where-Object{(Get-FileHash $_.File).Hash -cne $_.Hash}).Count -eq 0
-    [pscustomobject]@{StartUTC=$start.ToString('o');EndUTC=[DateTimeOffset]::UtcNow.ToString('o');ExitCode=$code;SettingsRestored=$restored;PackagesPreserved=$same;ExcelClosed=$true;FullAcceptance=$false;NativeInputAcceptance=$false}|ConvertTo-Json|Set-Content (Join-Path $root 'closure.json')
-    if(-not($restored -and $same)){throw 'Reconcile identity preservation failed.'}
+    $testsSame=@($testPins|Where-Object{(Get-FileHash $_.File).Hash -cne $_.Hash}).Count -eq 0
+    [pscustomobject]@{StartUTC=$start.ToString('o');EndUTC=[DateTimeOffset]::UtcNow.ToString('o');ExitCode=$code;SettingsRestored=$restored;PackagesPreserved=$same;ToolingPreserved=$testsSame;ExcelClosed=$true;FullAcceptance=$false;NativeInputAcceptance=$false}|ConvertTo-Json|Set-Content (Join-Path $root 'closure.json')
+    if(-not($restored -and $same -and $testsSame)){throw 'Reconcile identity preservation failed.'}
 }
 Get-Content (Join-Path $root 'worker.log') -Tail 16
 exit $code

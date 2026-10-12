@@ -6,8 +6,9 @@ This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
 Continuation: [Shipment Reconcile packaged RED](plan022_slice4be_admin_reconcile_results.md)
-now verifies15 pass/3 fail: missing selected key, legacy Row payload and inventory
-dirtied. The user approved D14-RECON-01 in v4.11 on2026-10-12. The
+now verifies31 pass/24 fail, retaining the original15/3 and adding repeated/multi-entity
+history, actual queued application and Domain association/quantity guards.
+The user approved D14-RECON-01 in v4.11 on2026-10-12. The
 source audit below remains useful; its original no-behavioral-RED status is superseded
 for this callback only. The subsequent [Auth read correction](plan022_slice4be_admin_auth_read_results.md)
 passes 111 packaged checks under D8-A with three reviewed captures. Full layout,

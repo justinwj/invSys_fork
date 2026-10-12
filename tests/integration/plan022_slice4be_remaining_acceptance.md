@@ -278,7 +278,8 @@ enters Auth schema maintenance; its effects and D8-A boundary require runtime pr
 The [new packaged Reconcile test](plan022_slice4be_admin_reconcile_results.md) now
 has15 pass/3 fail: missing exact key, legacy Row and inventory dirtied. No fix or
 new exclusion is accepted. The user approved D14-RECON-01 on2026-10-12;
-protect repeated/multi-entity and Domain cases before implementing it. Retain the
+the expanded packaged RED now has31 pass/24 expected fail across repeated/multi-entity
+history, queued application and Domain guards. No runtime fix is implemented. Retain the
 rest of the coverage map. The [Auth read correction](plan022_slice4be_admin_auth_read_results.md)
 now passes 111 packaged checks under D8-A with reviewed healthy/refusal captures;
 broader Users & Roles layout, recording and authorization coverage remains open.
