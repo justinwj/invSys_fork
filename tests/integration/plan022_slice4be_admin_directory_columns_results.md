@@ -225,6 +225,17 @@ deployment contract. Proposed **D16-VBA-LOAD-01** is explicit in v4.11/Plan022/
 Controls1.548; it requires approval, station-handler D13 and all normal qualification
 gates before acceptance. No permanent setting, station deployment or gate waiver.
 
+Pending-proposal preparation: existing StationSetup regression **9/9** through its
+actual published NAS bootstrap, installer and updater, using a disposable feed,
+cache and test registry key. The diagnostic copy adds only a resolved-path guard
+before deleting its generated scratch folder; no assertion changes. Exact driver
+and log: `reports/runtime/TestStationSetupBaseline01.ps1` and
+`station-setup-source-baseline01.log`. No periodic task is requested. This is a
+baseline, not D13 RED/GREEN for the proposed prerequisite. On approval, protect
+unconsented activation and missing-option behavior first. The updater's existing
+whole-key rollback must also be tested against a concurrent option change; a
+wrapper around the installer alone cannot guarantee the proposed preservation rule.
+
 Evidence reuse is scoped by `admin-directory-build-01/reuse-scope.json`: all
 106 other procedures in `modAdminConsole` are unchanged against `504f0de2`;
 only `RefreshWarehouseDirectory` and `AddWarehouseDirectoryRow` change. Together
