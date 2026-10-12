@@ -15,9 +15,13 @@ recur in this run. Four captures are reviewed, including readable storage notice
 General long values remain clipped. Public launcher24 also retains prior order.
 The extended public launcher also passes76, retaining24 prior checks: recording
 exclusions, fixed older-policy/storage notices and same-session permission denial,
-with five compiles, preservation and clean delayed closure. Remaining launcher
-refusal/failure contexts, active capture, publication and independent guides remain
-open; exact receipts are in the Settings entry results linked below.
+with five compiles, preservation and clean delayed closure. Launcher98 subsequently
+retains all76 checks and proves signed-out entry, controlled configuration refusal
+and caught form-initialization failure through the real callback. Visible notices,
+non-concluding outcomes, preservation and clean delayed closure pass. These faults
+affect unsaved disposable collaborators; runtime and contract are unchanged. Active
+capture, publication and independent guides remain open; exact receipts are in the
+Settings entry results linked below.
 
 Current candidate: `deploy/validation-admin-entry-02`, catalog33/151. Settings Open
 passes RED17/7 -> GREEN24; all five tab destinations pass native mouse/keyboard

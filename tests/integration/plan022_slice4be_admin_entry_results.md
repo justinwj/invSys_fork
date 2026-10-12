@@ -198,7 +198,40 @@ candidate remains byte-identical to prior GREEN; no rebuild or promotion occurre
 After launcher76, fresh `admin-entry-boundary-static-01/ratchet-verification.json`
 retains those exact metrics and all28 caps; three schemas and467 scripts validate.
 
-Require remaining launcher refusal/failure contexts, active-capture eligibility, exact publication, independent
+### Remaining launcher refusals, 2026-10-12 UTC
+
+`Test-Slice4beAdminSettingsEntry.ps1 -DeployRoot deploy/validation-admin-entry-02
+-Phase GREEN -EntryFailures -EntryRefusals` passes **98/98**, retaining all76 prior
+checks in exact order. Controller `admin-entry-controller/58157645ceba423884b658e0f2b2fb35`,
+worker `slice4be-admin-entry/78d0c183add948cea4e7d0b82b66bec1`; UTC03:03:55.594-
+03:09:13.673, delayed native audit through03:09:25.673.
+
+Actual `modAdmin.Open_Settings` handles signed-out entry without optional activity,
+configuration-read refusal with REJECTED/Warning/Unchanged, and caught form-opening
+failure with FAILED/Error/Unknown. Native owner notices appear; Settings is never
+presented. Exact correlated observations preserve captured context, exclude secrets,
+paths and raw fault text, and cannot conclude. Fault counters verify that each
+one-shot collaborator fault was reached. The owner supplies all recorded outcomes.
+The configuration fault occurs after initial policy reads; the form fault occurs in
+actual Initialize. Only unsaved disposable packages are instrumented. This is not
+proof of a real disk outage, a runtime fix, or new behavioral RED.
+
+Five instrumented compiles, unchanged saved authority, older activity, other warehouse,
+operator canary and candidate pins pass. Settings restoration, unassisted Excel
+closure and zero delayed native failure events are independently qualified.
+
+An earlier attempt retained76 checks then failed before the new cases because the
+activity helper was missing from the function scope: controller
+`admin-entry-controller/2747953d44b64235bb9928030eac8556`, worker
+`slice4be-admin-entry/c7886fa220ff40829e8144758f27b34f`. Its `fixture-audit.json`
+records clean preserved closure. Explicitly importing the helper fixes the harness;
+this attempt is not application RED and is not combined into GREEN.
+
+Fresh `admin-entry-refusal-static-01/ratchet-verification.json` retains all28 caps,
+326 components/6371 procedures/139227 lines, dynamic9/45 and192 duplicate candidates.
+Three schemas and468 PowerShell scripts validate. No runtime source or package changed.
+
+Require active-capture eligibility, exact publication, independent
 successful/interrupted guides, relevant regressions, layout and visible evidence.
 The existing native full-chain Shipping failure is not repaired by this work.
 The [remaining-acceptance index](plan022_slice4be_remaining_acceptance.md) retains

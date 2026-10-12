@@ -122,6 +122,7 @@ param(
     [switch]$CheckAdminSettingsNavigation,
     [switch]$CheckAdminSettingsNavigationFailures,
     [switch]$CheckAdminSettingsEntryFailures,
+    [switch]$CheckAdminSettingsEntryRefusals,
     [switch]$CheckViewerRefreshFailure,
     [switch]$CheckViewerEventDetail,
     [switch]$DetailScrollLockDiagnostic,
@@ -435,6 +436,7 @@ if($CheckAdminSettingsEntry -and (-not $AdminSettingsCloseOnly -or $CheckAdminSe
 if($CheckAdminSettingsNavigation -and -not $CheckAdminSettingsEntry){throw 'Settings navigation requires its compiled entry fixture.'}
 if($CheckAdminSettingsNavigationFailures -and -not $CheckAdminSettingsNavigation){throw 'Navigation failures require the baseline native gate.'}
 if($CheckAdminSettingsEntryFailures -and (-not $CheckAdminSettingsEntry -or $CheckAdminSettingsNavigation)){throw 'Entry failures require the public-launcher baseline.'}
+if($CheckAdminSettingsEntryRefusals -and -not $CheckAdminSettingsEntryFailures){throw 'Entry refusals require the boundary baseline.'}
 if($ViewerPublicationOnly) {
     if($Phase -ne 'RED'){throw 'Publication-only diagnosis is not acceptance GREEN.'}
     $CheckViewerPublication = $true
@@ -1350,6 +1352,10 @@ End Function
             if($CheckAdminSettingsEntryFailures){
                 . (Join-Path $PSScriptRoot 'Slice4beAdminSettingsEntryFailures.ps1')
                 Install-AdminSettingsEntryFailureProbe $testModule $formCode
+                if($CheckAdminSettingsEntryRefusals){
+                    . (Join-Path $PSScriptRoot 'Slice4beAdminSettingsEntryRefusals.ps1')
+                    Install-AdminSettingsEntryRefusalProbe $testModule $formCode
+                }
             }
             if($CheckAdminSettingsNavigation){
                 . (Join-Path $PSScriptRoot 'Slice4beAdminSettingsNavigation.ps1')
@@ -1862,6 +1868,7 @@ End Function
             Test-AdminSettingsNavigationFailures $a $b
         }
         if($CheckAdminSettingsEntryFailures){Test-AdminSettingsEntryFailures $a $b}
+        if($CheckAdminSettingsEntryRefusals){Test-AdminSettingsEntryRefusals $a $b}
         if($CheckAdminSettingsCloseActivity){Test-AdminCloseActivity $a $b}
     }
     if($CheckViewerRefreshFailure) {
