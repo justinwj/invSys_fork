@@ -120,6 +120,9 @@ param(
     [switch]$CheckAdminSettingsClose,
     [switch]$AdminSettingsCloseOnly,
     [switch]$AdminReconcileIdentityOnly,
+    [switch]$AdminVerifyAddinsOnly,
+    [switch]$AdminVerifyGuidePaths,
+    [switch]$AdminVerifyExpectationChoicesOnly,
     [switch]$AdminReconcileNativePresentation,
     [switch]$AdminReconcileRecording,
     [switch]$AdminReconcileGuidePaths,
@@ -427,7 +430,7 @@ if($CheckProductionDesignerActivity){
 }
 if($CheckProductionDesignerPaths -and -not $CheckProductionDesignerActivity){throw 'Production paths require the designer gate.'}
 if($CaptureProductionDesignerPaths -and -not $CheckProductionDesignerPaths){throw 'Production captures require the path gate.'}
-if($CompileEvaluationProbesForTest -and -not ($AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $RecordingEvaluationDiagnostic -or $CheckEvaluationVisualEvidence -or $CheckViewerPublishedRead -or $CheckAdminUomActivity -or $CheckSettingsEditorActivity -or $CheckTrackingSettings -or $CheckProductionDesignerActivity)){
+if($CompileEvaluationProbesForTest -and -not ($AdminVerifyAddinsOnly -or $AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $RecordingEvaluationDiagnostic -or $CheckEvaluationVisualEvidence -or $CheckViewerPublishedRead -or $CheckAdminUomActivity -or $CheckSettingsEditorActivity -or $CheckTrackingSettings -or $CheckProductionDesignerActivity)){
     throw 'Instrumented project compilation requires a supported focused gate.'
 }
 if($TraceSettingsOpenForTest -and ($Phase -ne 'RED' -or -not $CheckTrackingSettings)) {
@@ -440,6 +443,9 @@ if($NativeResizeCaptureDiagnostic -and ($Phase -cne 'RED' -or -not $CheckReceivi
     throw 'Native capture diagnosis requires the visible RED replay gate without close tracing.'
 }
 if($AdminReconcileIdentityOnly -and (-not $CompileEvaluationProbesForTest -or $AdminSettingsCloseOnly -or $CheckTrackingSettings -or $CheckActivityEvidence -or $CheckViewerPublishedRead)) { throw 'Reconcile identity requires its separate compiled callback gate.' }
+if($AdminVerifyAddinsOnly -and (-not $CompileEvaluationProbesForTest -or $AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $AdminSettingsCloseOnly -or $CheckTrackingSettings -or $CheckActivityEvidence -or $CheckViewerPublishedRead)){throw 'Verify Add-ins requires its separate compiled callback gate.'}
+if($AdminVerifyGuidePaths -and -not $AdminVerifyAddinsOnly){throw 'Verify guide proof requires its isolated callback gate.'}
+if($AdminVerifyExpectationChoicesOnly -and -not $AdminVerifyGuidePaths){throw 'Expectation choices require the recording/form probes.'}
 if($AdminReconcileNativePresentation -and -not $AdminReconcileIdentityOnly){throw 'Native Reconcile presentation requires its isolated callback gate.'}
 if($AdminReconcileRecording -and -not $AdminReconcileNativePresentation){throw 'Reconcile recording requires native callback/form coverage.'}
 if($AdminReconcileGuidePaths -and -not $AdminReconcileRecording){throw 'Reconcile guide proof requires recorded callbacks.'}
@@ -719,6 +725,7 @@ if($AdminClosePathsOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-
 if($CheckAdminSettingsEntry -and -not $CheckAdminSettingsNavigation){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-entry/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin entry evidence: '+$reportRoot)}
 if($CheckAdminSettingsNavigation){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-navigation/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin navigation evidence: '+$reportRoot)}
 if($AdminReconcileIdentityOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-reconcile/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin reconcile evidence: '+$reportRoot)}
+if($AdminVerifyAddinsOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-verify/'+[guid]::NewGuid().ToString('N'));Write-Output ('Verify Add-ins evidence: '+$reportRoot)}
 New-Item -ItemType Directory -Path $runRoot,$reportRoot -Force | Out-Null
 $inputDeploy=$deploy
 if($ViewerStartupPackageStateForTest -ne 'OriginalReadOnly'){
@@ -1216,7 +1223,7 @@ function NewFixture([string]$Suffix) {
             $row.Range.Cells.Item(1,$caps.ListColumns.Item($pair.Key).Index).Value2=$pair.Value
         }
     }
-    if($AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
+    if($AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
         # Explicit fixture grant: Admin bootstrap does not imply guide maintenance.
         $row=$caps.ListRows.Add()
         foreach($pair in @{UserId='config-admin';Capability='ACTION_PATH_MAINT';WarehouseId=$wh;StationId='S1';Status='Active'}.GetEnumerator()){
@@ -1837,6 +1844,12 @@ End Function
         . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
         Compile-Slice4beEvaluationProbes
     }
+    if($AdminVerifyAddinsOnly){
+        . (Join-Path $PSScriptRoot 'Slice4beAdminVerifyAddins.ps1')
+        Install-AdminVerifyAddinsProbe
+        . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
+        Compile-Slice4beEvaluationProbes
+    }
     $templateRoot=Join-Path $repo 'deploy/current/templates'
     if($CheckReceivingReplay){$templateRoot=Join-Path $inputDeploy 'templates'}
     [void](Run 'invSys.Core.xlam' 'modWarehouseBootstrap.SetWarehouseBootstrapTemplateRootOverride' @($templateRoot))
@@ -1995,7 +2008,11 @@ End Function
         $step='packaged Shipment Reconcile exact identity'
         Test-AdminReconcileIdentity $a $b
     }
-    if(-not $AdminReconcileIdentityOnly -and -not $AdminSettingsCloseOnly -and -not $CheckViewerRefreshFailure -and -not $CheckViewerEventDetail -and -not $CheckViewerEventGroups -and -not $CheckViewerPublishedRead -and $PrintSeedBoundaryForTest -notin @('FreshSeed','BareSeed')) {
+    if($AdminVerifyAddinsOnly){
+        $step='packaged Verify Add-ins Published callback'
+        Test-AdminVerifyAddins $a $b
+    }
+    if(-not $AdminVerifyAddinsOnly -and -not $AdminReconcileIdentityOnly -and -not $AdminSettingsCloseOnly -and -not $CheckViewerRefreshFailure -and -not $CheckViewerEventDetail -and -not $CheckViewerEventGroups -and -not $CheckViewerPublishedRead -and $PrintSeedBoundaryForTest -notin @('FreshSeed','BareSeed')) {
     $step='unauthenticated command'
     [void](Run 'invSys.Core.xlam' 'modAuth.SignOut')
     $before=(Get-FileHash -LiteralPath $a.Config).Hash

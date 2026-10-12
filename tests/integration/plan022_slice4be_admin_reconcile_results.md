@@ -711,3 +711,18 @@ The package-identical360 recording/guide gate and earlier cold compile/smoke/
 Settings/full-chain/live-role receipts remain valid. Desktop monitor10:12:27–
 10:20:23 UTC closed normally after95 samples with zero cursor/desktop/capture/error5
 failures. These reads do not establish mouse-movement success.
+
+## Catalog35 regression, 2026-10-12
+
+Candidate `deploy/validation-admin-verify-03` retains **360/360** through the same
+native, recording, guide and applied-guide gate, including the exact330 prefix.
+Controller `admin-reconcile-controller/30e3fac433da4e91be5a305704188978`; worker
+`slice4be-admin-reconcile/4fda40d42dd14c8abe6355b940e89494`, under `reports/runtime/`.
+UTC11:48:54.9447675 to12:16:41.8405233; zero native failures through12:16:53.8405233.
+Five instrumented compiles, exact console/JSON, compiled candidate03 pins,
+settings/package/tooling preservation and normal Excel closure pass. Current
+catalog assertions now read the owning catalog version; historical version checks
+remain unchanged. Reviewed interrupted, Awaiting and applied-result captures keep
+their distinct conclusions, exact source provenance and immutable prior results.
+This adds no Reconcile behavior or local-target eligibility change. Candidate03's
+remaining regression gates are tracked in the Verify Add-ins receipt.

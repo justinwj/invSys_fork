@@ -2401,23 +2401,7 @@ Private Sub PromptForWarehouseDirectoryRootIfNeeded()
 End Sub
 
 Sub Verify_AddinsPublished()
-    Dim report As String
-    Dim detail As String
-    Dim targetWb As Workbook
-
-    Set targetWb = ResolveInteractiveAdminWorkbook()
-    Call modRoleWorkbookSurfaces.EnsureAdminLegacyWorkbookSurface(targetWb, report)
-    If modAddinsPublish.VerifyAddinsPublished() Then
-        MsgBox "All required add-ins are published." & vbCrLf & modAddinsPublish.GetLastAddinsPublishReport(), vbInformation, "invSys Admin"
-    Else
-        detail = modAddinsPublish.GetLastAddinsPublishReport()
-        If Len(detail) = 0 Then detail = "One or more required add-ins are missing or zero-byte."
-        If InStr(1, detail, "PathSharePointRoot is not configured", vbTextCompare) > 0 Then
-            detail = detail & vbCrLf & _
-                     "Use Create New Warehouse or Test Environment Setup to choose the locally synced invSys SharePoint root first."
-        End If
-        MsgBox "Add-ins publish verification failed." & vbCrLf & detail, vbExclamation, "invSys Admin"
-    End If
+    modAdminVerifyAddins.VerifyAddinsPublished
 End Sub
 
 Sub Export_LoadedPackageReport()

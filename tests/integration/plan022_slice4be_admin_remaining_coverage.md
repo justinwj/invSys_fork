@@ -33,8 +33,8 @@ Ignored verification: `reports/runtime/admin-remaining-source-audit-01/ribbon-ve
 
 ## Actions map
 
-Except for Settings, complete recording/publication/guide proof remains pending;
-Reconcile has the scoped command/application-conclusion gates described above.
+Settings, Reconcile and Verify Add-ins have the scoped recording/guide gates
+described here and in their receipts; other entries remain pending.
 Form subactions below are source findings, not a complete live-control census.
 Do not count typing, initialization, programmatic selection or internal refresh
 as deliberate actions merely because an event procedure exists.
@@ -186,3 +186,29 @@ point to generated non-executable dummy files for that narrow fixture; never
 replace or corrupt the validation packages. No control ID/outcome or changed
 behavior is approved by this audit. A D18 refinement must preserve the precise
 verification meaning and exclude paths/raw diagnostics from shared activity.
+
+Subsequent implementation under the v4.11 D18 discovered-control refinement now
+adds catalog35 `ADMIN_VERIFY_ADDINS`. The focused recording/context gate is
+130/130 GREEN; the actual expectation-dropdown gate is23/23 GREEN after adding
+the missing VERIFIED choice. See `plan022_slice4be_admin_verify_results.md` for
+REDs, package pins and the excluded native-error run. Complete recording/guide
+proof is now202/202, exact130 prefix, with six reviewed captures and a clean
+delayed native audit on verify-03. That candidate also retains Reconcile360,
+Settings202, smoke86 and chain32/live-role48/Create15, with compiled pins,
+preservation and clean delayed native audits. Static06 retains all28 caps and
+dynamic9/45. This closes eligible NAS recording/guide coverage for this callback;
+local eligibility and other Admin entries keep4be-A open.
+
+## Next independent audit: Admin Console
+
+Read-only source review,2026-10-12; no new contract or runtime acceptance.
+`btnAdminOpen` retains ADMIN_MAINT and dispatches `modAdmin.Admin_Click`.
+That callback captures a workbook, prepares its local surfaces, then discards
+`OpenAdminConsole`'s Boolean. The owner returns True only after schema preparation,
+console refresh and AdminConsole activation. Refresh includes a poison-queue
+projection and inbox/lock/application counts; an open must not imply processing.
+`TestOpenAdminConsole_WithoutRuntime_DoesNotCreateDefaultWarehouse` protects a
+service-level no-runtime case, but does not establish callback recording or live
+authorization. Before implementation, refine D18 coverage and run a packaged
+callback RED that protects actual success/failure, captured workbook/custom
+values, unchanged authority, policy/session boundaries and truthful conclusions.

@@ -65,6 +65,9 @@ Public Function Definition(ByVal id As String, Optional ByVal version As Long = 
     Set value = modActivityCatalog.Control(id, version)
     If Not value Is Nothing Then Definition = modTrainingJson.EncodeObject(value)
 End Function
+Public Function CurrentCatalogVersion() As Long
+    CurrentCatalogVersion = modActivityCatalog.CATALOG_VERSION
+End Function
 Public Function PriorDefinitionsPreserved() As Boolean
     Dim id As Variant, a As Object, b As Object, ids As Variant
     ids = modActivityCatalog.ControlIds(33)
@@ -137,11 +140,12 @@ function Test-AdminReconcileRecording($Fixture,[string[]]$Before,$Events,$State)
     foreach($attempt in $attempts){$last=@($outcomes|Where-Object ActivityId -CEQ $attempt.ActivityId);$pairs=$pairs -and $last.Count -eq 1;if($last.Count -eq 1){$pairs=$pairs -and $last[0].ControlId -ceq $attempt.ControlId}}
     Check 'Reconcile.Recording.DistinctCorrelatedIdentities' $pairs
     $context=$records.Count -eq 20;$safe=$context;$conclusion=$context;$effects=$context;$references=$context
+    $catalogVersion=[int](Probe 'CurrentCatalogVersion')
     $last=$Events.ListRows.Item($Events.ListRows.Count)
     $newEvent=[string]$last.Range.Cells.Item(1,$Events.ListColumns.Item('EventID').Index).Value2
     foreach($record in $records){
         $wire=ConvertTo-Json $record -Depth 20 -Compress
-        $context=$context -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.StationId -ceq 'S1' -and $record.UserId -ceq 'config-admin' -and $record.OwnerId -ceq 'ADMIN_SHIPMENT_RECONCILE' -and $record.CatalogVersion -eq 34
+        $context=$context -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.StationId -ceq 'S1' -and $record.UserId -ceq 'config-admin' -and $record.OwnerId -ceq 'ADMIN_SHIPMENT_RECONCILE' -and $record.CatalogVersion -eq $catalogVersion
         foreach($value in @($Fixture.Secret,(CredentialHash $Fixture.Secret),$Fixture.Root,$State.KeyA,$State.KeyB,'Generated native training correction','PinHash','OpenShipmentReconcileTool')){$safe=$safe -and -not $wire.Contains($value)}
         $positive=$record.OutcomeCode -cin @('OPENED','CONFIRMED')
         $conclusion=$conclusion -and ([bool](Probe 'Concludes' @($wire)) -eq $positive)

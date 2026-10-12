@@ -100,7 +100,7 @@ Public Function FinishAction(ByVal activityId As String, ByVal outcomeCode As St
         notice = "Tracking unavailable: the tracking policy changed during this action."
         GoTo CleanExit
     End If
-    If outcomeCode = "COMPLETED" Or outcomeCode = "UNCHANGED" Or outcomeCode = "CONFIRMED" Or outcomeCode = "PENDING" Then
+    If outcomeCode = "COMPLETED" Or outcomeCode = "UNCHANGED" Or outcomeCode = "CONFIRMED" Or outcomeCode = "PENDING" Or outcomeCode = "VERIFIED" Then
         If definition.Exists("AuthorityMode") Then
             permitted = (definition("AuthorityMode") = "SIGNED_IN_CONTEXT" And _
                 definition("OwnerId") = "CORE_PERSONAL_PREFERENCE" And _

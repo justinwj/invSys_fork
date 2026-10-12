@@ -6,7 +6,11 @@ Private Const ADDINS_MANIFEST_FILE As String = "addins-manifest.json"
 Private mSharePointRootOverride As String
 Private mLastAddinsPublishReport As String
 
-Public Function VerifyAddinsPublished() As Boolean
+Public Function CaptureVerificationRoot() As String
+    CaptureVerificationRoot = ResolveAddinsRootPath()
+End Function
+
+Public Function VerifyAddinsPublished(Optional ByVal capturedRoot As String = "", Optional ByVal useCapturedRoot As Boolean = False) As Boolean
     Dim addinsRoot As String
     Dim addinNames As Variant
     Dim i As Long
@@ -17,7 +21,11 @@ Public Function VerifyAddinsPublished() As Boolean
     On Error GoTo FailVerify
 
     mLastAddinsPublishReport = vbNullString
-    addinsRoot = ResolveAddinsRootPath()
+    If useCapturedRoot Then
+        addinsRoot = capturedRoot
+    Else
+        addinsRoot = ResolveAddinsRootPath()
+    End If
     If addinsRoot = "" Then
         detail = "PathSharePointRoot is not configured."
         LogDiagnosticEvent "ADDINS-PUBLISH", "Verify skipped|" & detail

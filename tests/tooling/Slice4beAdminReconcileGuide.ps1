@@ -42,7 +42,8 @@ function Test-ReconcileGuide($Fixture,$Events,$State) {
             $records=@(Get-Slice4beActivityFiles $Fixture|Where-Object {$_ -cnotin $before}|ForEach-Object {Get-Content $_ -Raw|ConvertFrom-Json})
             $success=$kind -cne 'Interrupted';$expectedCount=if($success){4}else{3}
             $valid=$records.Count -eq $expectedCount -and @($records|Where-Object {$_.Ordinal -eq 1 -and $_.ControlId -ceq $steps[0][1] -and $_.OutcomeCode -ceq 'OPENED'}).Count -eq 1 -and @($records|Where-Object {$_.Ordinal -eq 2 -and $_.ControlId -ceq $steps[1][1] -and $_.OutcomeCode -ceq 'REQUESTED'}).Count -eq 1
-            foreach($record in $records){$valid=$valid -and $record.SequenceId -ceq $sequence -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.CatalogVersion -eq 34}
+            $catalogVersion=[int](Run 'invSys.Core.xlam' 'TestReconcileRecording.CurrentCatalogVersion')
+            foreach($record in $records){$valid=$valid -and $record.SequenceId -ceq $sequence -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.CatalogVersion -eq $catalogVersion}
             Check ('Reconcile.Recorded.'+$kind+'.ExactActionsAndContext') $valid
             $confirmed=@($records|Where-Object OutcomeCode -CEQ 'CONFIRMED');$valid=$confirmed.Count -eq $(if($success){1}else{0})
             if($success -and $confirmed.Count -eq 1){
