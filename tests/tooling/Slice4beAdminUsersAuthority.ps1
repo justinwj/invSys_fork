@@ -53,12 +53,13 @@ Private Sub mExcel_WorkbookBeforeSave(ByVal Wb As Workbook, ByVal SaveAsUI As Bo
 End Sub
 '@)
     $form=$packages['invSys.Admin.xlam'].VBProject.VBComponents.Item('frmCreateDeleteUser').CodeModule
-    $start=$form.ProcStartLine('MsgBox',0);$count=$form.ProcCountLines('MsgBox',0)
-    $source=$form.Lines($start,$count)
-    $anchor='    MsgBox = vbYes'
+    $messages=$packages['invSys.Admin.xlam'].VBProject.VBComponents.Item('TestAdminAuthRefresh').CodeModule
+    $start=$messages.ProcStartLine('ConfirmDeleteForTest',0);$count=$messages.ProcCountLines('ConfirmDeleteForTest',0)
+    $source=$messages.Lines($start,$count)
+    $anchor='    ConfirmDeleteForTest = vbYes'
     if([regex]::Matches($source,[regex]::Escape($anchor)).Count -ne 1){throw 'Confirmation seam missing.'}
     $source=$source.Replace($anchor,"    TestAdminAuthRefresh.OnConfirmation`r`n"+$anchor)
-    $form.DeleteLines($start,$count);$form.InsertLines($start,$source)
+    $messages.DeleteLines($start,$count);$messages.InsertLines($start,$source)
     $start=$form.ProcStartLine('ShowStatusForm',0);$count=$form.ProcCountLines('ShowStatusForm',0)
     $source=$form.Lines($start,$count)
     $anchor='(?im)^[ \t]*mLblStatus\.Caption[ \t]*=[ \t]*messageText[ \t]*\r?$'

@@ -2,10 +2,17 @@ Attribute VB_Name = "modActivityCatalog"
 Option Explicit
 Option Private Module
 
-Public Const CATALOG_VERSION As Long = 37
+Public Const CATALOG_VERSION As Long = 38
 
 Public Function ControlIds(Optional ByVal version As Long = CATALOG_VERSION) As Variant
     Dim ids As Variant, added As Variant, index As Long, offset As Long
+    If version = 38 Then
+        ids = ControlIds(37): added = Array("ADMIN_USER_SAVE", "ADMIN_USER_DEACTIVATE", "ADMIN_USER_DELETE")
+        offset = UBound(ids) + 1
+        ReDim Preserve ids(LBound(ids) To UBound(ids) + UBound(added) + 1)
+        For index = LBound(added) To UBound(added): ids(offset + index) = added(index): Next index
+        ControlIds = ids: Exit Function
+    End If
     If version = 37 Then
         ids = ControlIds(36)
         ReDim Preserve ids(LBound(ids) To UBound(ids) + 1)
@@ -245,6 +252,7 @@ End Function
 Public Function Control(ByVal controlId As String, Optional ByVal version As Long = CATALOG_VERSION) As Object
     Dim record As Object
     If version < 1 Or version > CATALOG_VERSION Then Exit Function
+    If Left$(controlId, 11) = "ADMIN_USER_" And version < 38 Then Exit Function
     If controlId = "ADMIN_DEMO_SEED" And version < 37 Then Exit Function
     If version >= 35 Then
         If controlId = "ADMIN_CONSOLE_OPEN" And version < 36 Then Exit Function

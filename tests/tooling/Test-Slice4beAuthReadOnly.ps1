@@ -1,10 +1,12 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-approved-detail-scroll',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$AdminRefresh,[switch]$CaptureEvidence,[switch]$AdminWriteDiagnostic,[switch]$RequireWriteAuthority,[switch]$CoreAuthority)
+param([string]$DeployRoot='deploy/validation-approved-detail-scroll',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$AdminRefresh,[switch]$CaptureEvidence,[switch]$AdminWriteDiagnostic,[switch]$RequireWriteAuthority,[switch]$CoreAuthority,[switch]$UserRecording,[switch]$UserRecordingOnly)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if($CaptureEvidence -and -not $AdminRefresh){throw 'Visible Auth evidence requires the Admin Refresh gate.'}
 if($AdminWriteDiagnostic -and -not $AdminRefresh){throw 'Auth write diagnostic requires the Admin Refresh gate.'}
 if($RequireWriteAuthority -and -not $AdminWriteDiagnostic){throw 'Write authority assertions require the existing write diagnostic cases.'}
 if($CoreAuthority -and -not $RequireWriteAuthority){throw 'Core authority coverage requires the real handler authority gate.'}
+if($UserRecording -and -not $CoreAuthority){throw 'Users recording requires the qualified Core authority gate.'}
+if($UserRecordingOnly -and -not $UserRecording){throw 'Focused mode requires Users recording.'}
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Excel must be closed before the isolated Auth gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
 $snapshot=Get-InvSysTestSettingsSnapshot
@@ -23,6 +25,8 @@ try {
     if($AdminWriteDiagnostic){$extra+='-AdminAuthWriteDiagnostic'}
     if($RequireWriteAuthority){$extra+='-RequireAdminAuthWriteAuthority'}
     if($CoreAuthority){$extra+='-CheckAdminUsersAuthority'}
+    if($UserRecording){$extra+='-CheckAdminUsersRecording'}
+    if($UserRecordingOnly){$extra+='-AdminUsersRecordingOnly'}
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1') -DeployRoot $DeployRoot -Phase $Phase -CheckAuthReadOnly -CompileEvaluationProbesForTest -WaitForExcelReadyForTest -ExcelReadyReadLimitForTest 40 @extra *> (Join-Path $controller worker.log)
     $code=$LASTEXITCODE
 } finally {

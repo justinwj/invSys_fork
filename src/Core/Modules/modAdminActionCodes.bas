@@ -11,6 +11,11 @@ Public Function Control(ByVal id As String) As Object
             owner = "ADMIN_CONSOLE": actionClass = "Navigation": caption = "Admin Console"
         Case "ADMIN_DEMO_SEED"
             owner = "ADMIN_DEMO_INVENTORY": actionClass = "Command": caption = "Seed Demo Inventory"
+        Case "ADMIN_USER_SAVE", "ADMIN_USER_DEACTIVATE", "ADMIN_USER_DELETE"
+            owner = "ADMIN_USERS_ROLES": actionClass = "Command"
+            If id = "ADMIN_USER_SAVE" Then caption = "Create / Update"
+            If id = "ADMIN_USER_DEACTIVATE" Then caption = "Deactivate"
+            If id = "ADMIN_USER_DELETE" Then caption = "Delete"
         Case Else: Exit Function
     End Select
     Set record = CreateObject("Scripting.Dictionary")
@@ -18,6 +23,7 @@ Public Function Control(ByVal id As String) As Object
     record.Add "Class", actionClass: record.Add "Role", "Admin"
     record.Add "Caption", caption: record.Add "Surface", "Admin"
     If id = "ADMIN_DEMO_SEED" Then record("Surface") = "Admin > Demo Inventory"
+    If owner = "ADMIN_USERS_ROLES" Then record("Surface") = "Admin > Users & Roles"
     record.Add "Capability", "ADMIN_MAINT": record.Add "CodePrefix", id & "_"
     Set Control = record
 End Function
@@ -26,6 +32,18 @@ Public Function Outcome(ByVal id As String, ByVal code As String) As Object
     Dim record As Object, severity As String, message As String, effect As String
     severity = "Info": effect = "Unknown"
     Select Case id
+        Case "ADMIN_USER_SAVE", "ADMIN_USER_DEACTIVATE", "ADMIN_USER_DELETE"
+            Select Case code
+                Case "REQUESTED": message = "Users & Roles command requested."
+                Case "SAVED": message = "The Users & Roles command was saved. Domain application is not asserted."
+                Case "REJECTED": effect = "Unchanged": severity = "Warning": message = "The Users & Roles command was refused before writing."
+                Case "DENIED": severity = "Warning": message = "The Users & Roles command lacked current authority. Inspect the current state before retrying."
+                Case "FAILED": message = "The Users & Roles command could not finish. Inspect the current Auth state before retrying."
+                Case "CANCELLED"
+                    If id <> "ADMIN_USER_DELETE" Then Exit Function
+                    effect = "Unchanged": message = "User deletion was cancelled."
+                Case Else: Exit Function
+            End Select
         Case "ADMIN_VERIFY_ADDINS"
             Select Case code
                 Case "REQUESTED": message = "Required add-in file verification requested."

@@ -67,17 +67,47 @@ Public Sub WriteReaderForTest(ByVal action As String)
         Case Else: Err.Raise 5, , "Unknown fixture write action"
     End Select
 End Sub
-Private Function MsgBox(ByVal prompt As String, Optional ByVal buttons As VbMsgBoxStyle = vbOKOnly, Optional ByVal title As String = "") As VbMsgBoxResult
-    If prompt <> "Delete user 'config-reader' and all assigned capabilities?" Or title <> "Users & Roles" Then Err.Raise 5, , "Unexpected fixture confirmation"
-    MsgBox = vbYes
-End Function
 '@)
+    $messageModules=@($packages['invSys.Admin.xlam'].VBProject.VBComponents|Where-Object Name -CEQ 'modAdminUsersAction')
+    $messages=if($messageModules.Count){$messageModules[0].CodeModule}else{$form}
+    $method=if($messageModules.Count){'Execute'}else{'DeleteUserForm'}
+    $start=$messages.ProcStartLine($method,0);$count=$messages.ProcCountLines($method,0)
+    $source=$messages.Lines($start,$count)
+    $anchor='If MsgBox("Delete user '
+    if([regex]::Matches($source,[regex]::Escape($anchor)).Count -ne 1){throw 'Exact native Delete confirmation call missing.'}
+    $source=$source.Replace($anchor,'If TestAdminAuthRefresh.ConfirmDeleteForTest("Delete user ')
+    $messages.DeleteLines($start,$count);$messages.InsertLines($start,$source)
+    if($messageModules.Count){
+        $start=$messages.ProcStartLine('ShowNotice',0);$count=$messages.ProcCountLines('ShowNotice',0)
+        $source=$messages.Lines($start,$count)
+        $anchor='MsgBox TRACKING_NOTICE, vbExclamation, "Users & Roles"'
+        if(-not $source.Contains($anchor)){throw 'Tracking notice presentation call missing.'}
+        $source=$source.Replace($anchor,'TestAdminAuthRefresh.ObserveNoticeForTest TRACKING_NOTICE')
+        $messages.DeleteLines($start,$count);$messages.InsertLines($start,$source)
+    }
     $probe=$packages['invSys.Admin.xlam'].VBProject.VBComponents.Add(1);$probe.Name='TestAdminAuthRefresh'
     $probe.CodeModule.AddFromString(@'
 Option Explicit
 Private mSeen As Boolean
 Private mReadOnly As Boolean
 Private mSaved As Boolean
+Private mTrackingNotices As Long
+Private mCancelDelete As Boolean
+Public Sub SetCancelDelete(ByVal value As Boolean)
+    mCancelDelete = value
+End Sub
+Public Sub ObserveNoticeForTest(ByVal notice As String)
+    If notice <> "Tracking unavailable: the Users & Roles action could not be fully recorded." Then Err.Raise 5, , "Unexpected tracking notice"
+    mTrackingNotices = mTrackingNotices + 1
+End Sub
+Public Function TrackingNotices() As Long
+    TrackingNotices = mTrackingNotices
+End Function
+Public Function ConfirmDeleteForTest(ByVal prompt As String, ByVal buttons As VbMsgBoxStyle, ByVal title As String) As VbMsgBoxResult
+    If prompt <> "Delete user 'config-reader' and all assigned capabilities?" Or title <> "Users & Roles" Or buttons <> vbQuestion + vbYesNo Then Err.Raise 5, , "Unexpected fixture confirmation"
+    ConfirmDeleteForTest = vbYes
+    If mCancelDelete Then ConfirmDeleteForTest = vbNo
+End Function
 Public Function LoadForTest(ByVal expectedPath As String) As Boolean
     Load frmCreateDeleteUser
     LoadForTest = (StrComp(frmCreateDeleteUser.SelectedPathForTest(), expectedPath, vbTextCompare) = 0)
@@ -107,6 +137,7 @@ Public Sub SetVisibleForTest(ByVal shown As Boolean)
     frmCreateDeleteUser.SetVisibleForTest shown
 End Sub
 Public Sub WriteReaderForTest(ByVal action As String)
+    mTrackingNotices = 0
     frmCreateDeleteUser.WriteReaderForTest action
 End Sub
 Public Function BorrowedCanaryForTest(ByVal bookName As String, ByVal stage As Boolean) As Boolean

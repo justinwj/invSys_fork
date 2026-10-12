@@ -9,6 +9,8 @@ param(
     [switch]$AdminAuthWriteDiagnostic,
     [switch]$RequireAdminAuthWriteAuthority,
     [switch]$CheckAdminUsersAuthority,
+    [switch]$CheckAdminUsersRecording,
+    [switch]$AdminUsersRecordingOnly,
     [switch]$CheckActivityEvidence,
     [switch]$CheckActivityFoundation,
     [switch]$CheckAdminUomActivity,
@@ -728,6 +730,8 @@ if($CheckAdminAuthRefresh -and -not $CheckAuthReadOnly){throw 'Admin Auth Refres
 if($AdminAuthWriteDiagnostic -and -not $CheckAdminAuthRefresh){throw 'Auth write diagnostic requires the existing Admin Auth gate.'}
 if($RequireAdminAuthWriteAuthority -and -not $AdminAuthWriteDiagnostic){throw 'Write authority assertions require the existing diagnostic cases.'}
 if($CheckAdminUsersAuthority -and -not $RequireAdminAuthWriteAuthority){throw 'Direct Core authority tests require the handler authority gate.'}
+if($CheckAdminUsersRecording -and -not $CheckAdminUsersAuthority){throw 'Recording requires the authority probe.'}
+if($AdminUsersRecordingOnly -and -not $CheckAdminUsersRecording){throw 'Focused recording requires its probe.'}
 if($CheckAuthReadOnly){
     if(-not $CompileEvaluationProbesForTest -or $CheckActivityEvidence -or $CheckTrackingSettings -or $CheckViewerPublishedRead -or $CheckViewerEventDetail -or $CheckViewerEventGroups -or $CheckViewerRefreshFailure -or $CheckAdminSettingsClose){throw 'Auth reads require the separate compiled Core/caller gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-auth-read/'+[guid]::NewGuid().ToString('N'))
@@ -1862,6 +1866,10 @@ End Function
             if($CheckAdminUsersAuthority){
                 . (Join-Path $PSScriptRoot 'Slice4beAdminUsersAuthority.ps1')
                 Install-AdminUsersAuthorityProbe
+                if($CheckAdminUsersRecording){
+                    . (Join-Path $PSScriptRoot 'Slice4beAdminUsersRecording.ps1')
+                    Install-AdminUsersRecordingProbe
+                }
             }
         }
         . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
@@ -1947,7 +1955,10 @@ End Function
         [void](Run 'invSys.Core.xlam' 'modWarehouseBootstrap.SetLocalOperatorRootOverrideForAutomation' @((Join-Path $runRoot 'operators')))
     }
     SelectTarget $a
-    if($CheckAuthReadOnly){
+    if($AdminUsersRecordingOnly){
+        $step='packaged Users and Roles recording'
+        Test-AdminUsersRecording $a $b
+    }elseif($CheckAuthReadOnly){
         $step='packaged ordinary Auth reads and explicit provisioning'
         Test-Slice4beAuthReadOnly $a $b
         if($CheckAdminAuthRefresh){
@@ -1957,6 +1968,7 @@ End Function
                 . (Join-Path $PSScriptRoot 'Slice4beAdminAuthWriteDiagnostic.ps1')
                 Test-AdminAuthWriteDiagnostic $a $b
                 if($CheckAdminUsersAuthority){Test-AdminUsersAuthority $a $b}
+                if($CheckAdminUsersRecording){Test-AdminUsersRecording $a $b}
             }
         }
     }

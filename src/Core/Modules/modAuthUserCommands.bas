@@ -21,36 +21,39 @@ End Function
 ' Capability bits retain the six existing form choices, in their displayed order.
 Public Function SaveUser(ByVal context As String, ByVal authPath As String, ByVal userId As String, _
                          ByVal displayName As String, ByVal credential As String, ByVal warehouseScope As String, _
-                         ByVal stationScope As String, ByVal capabilityMask As Long, ByRef report As String) As Boolean
-    SaveUser = Execute("SAVE", context, authPath, userId, displayName, credential, warehouseScope, stationScope, capabilityMask, report)
+                         ByVal stationScope As String, ByVal capabilityMask As Long, ByRef report As String, _
+                         Optional ByRef outcome As String = "") As Boolean
+    SaveUser = Execute("SAVE", context, authPath, userId, displayName, credential, warehouseScope, stationScope, capabilityMask, report, outcome)
 End Function
 
 Public Function DeactivateUser(ByVal context As String, ByVal authPath As String, _
-                               ByVal userId As String, ByRef report As String) As Boolean
-    DeactivateUser = Execute("DEACTIVATE", context, authPath, userId, "", "", "", "", 0, report)
+                               ByVal userId As String, ByRef report As String, Optional ByRef outcome As String = "") As Boolean
+    DeactivateUser = Execute("DEACTIVATE", context, authPath, userId, "", "", "", "", 0, report, outcome)
 End Function
 
 Public Function DeleteUser(ByVal context As String, ByVal authPath As String, _
-                           ByVal userId As String, ByRef report As String) As Boolean
-    DeleteUser = Execute("DELETE", context, authPath, userId, "", "", "", "", 0, report)
+                           ByVal userId As String, ByRef report As String, Optional ByRef outcome As String = "") As Boolean
+    DeleteUser = Execute("DELETE", context, authPath, userId, "", "", "", "", 0, report, outcome)
 End Function
 
 Private Function Execute(ByVal command As String, ByVal context As String, ByVal authPath As String, _
                          ByVal userId As String, ByVal displayName As String, ByVal credential As String, _
                          ByVal warehouseScope As String, ByVal stationScope As String, _
-                         ByVal capabilityMask As Long, ByRef report As String) As Boolean
+                         ByVal capabilityMask As Long, ByRef report As String, ByRef outcome As String) As Boolean
     Dim target As WarehouseTarget, wb As Workbook, candidate As Workbook, opened As Boolean
     Dim users As ListObject, capabilities As ListObject, userFields As Object, capabilityFields As Object
     Dim userRow As Long, row As Long, index As Long, capability As Variant, capabilityRow As Long
     Dim names As Variant, selected As Boolean, actor As String
     On Error GoTo Failed
+    outcome = "REJECTED"
     report = "Another Users & Roles command is still running."
     If mWriting Then Exit Function
     mWriting = True
-    If Not SameContext(context, report) Then GoTo CleanExit
+    If Not SameContext(context, report) Then outcome = "DENIED": GoTo CleanExit
     Set target = modNasConnection.GetCurrentTarget()
     If StrComp(Replace$(Trim$(authPath), "/", "\"), Replace$(target.AuthPath, "/", "\"), vbTextCompare) <> 0 Then
         report = "Select the signed-in warehouse's Auth workbook. Reopen Users & Roles after changing warehouses."
+        outcome = "DENIED"
         GoTo CleanExit
     End If
     userId = Trim$(userId): displayName = Trim$(displayName)
@@ -92,6 +95,7 @@ Private Function Execute(ByVal command As String, ByVal context As String, ByVal
     actor = modAuth.GetCurrentUserId()
     If Not modAuth.CanPerform("ADMIN_MAINT", actor, target.WarehouseId, target.StationId, "USERS_ROLES") Then
         report = "Current user lacks ADMIN_MAINT capability."
+        outcome = "DENIED"
         GoTo CleanExit
     End If
     userRow = MatchUser(users, userFields, userId)
@@ -106,7 +110,7 @@ Private Function Execute(ByVal command As String, ByVal context As String, ByVal
     ElseIf command = "DEACTIVATE" And userRow = 0 Then
         report = "User was not found.": GoTo CleanExit
     End If
-    If Not SameContext(context, report) Then GoTo CleanExit
+    If Not SameContext(context, report) Then outcome = "DENIED": GoTo CleanExit
     If wb.ReadOnly Or Not wb.Saved Then report = "Auth workbook changed before the command could write.": GoTo CleanExit
     Select Case command
         Case "SAVE"
@@ -137,10 +141,11 @@ Private Function Execute(ByVal command As String, ByVal context As String, ByVal
                 If StrComp(CellText(capabilities, capabilityFields, row, "UserId"), userId, vbTextCompare) = 0 Then capabilities.ListRows(row).Delete
             Next row
     End Select
-    If Not SameContext(context, report) Then GoTo CleanExit
+    If Not SameContext(context, report) Then outcome = "DENIED": GoTo CleanExit
     wb.Save
     If Not wb.Saved Then Err.Raise vbObjectError + 7210, , "Auth persistence was not confirmed."
     Execute = True
+    outcome = "SAVED"
     report = ""
     ' Invalidate cached role presentation only after actual persistence.
     On Error Resume Next
@@ -153,6 +158,7 @@ CleanExit:
     mWriting = False
     Exit Function
 Failed:
+    outcome = "FAILED"
     report = "Users & Roles could not persist the command. Inspect the current Auth state before retrying."
     Execute = False
     Resume CleanExit

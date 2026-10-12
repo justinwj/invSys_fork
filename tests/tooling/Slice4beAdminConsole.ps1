@@ -198,7 +198,7 @@ function Test-AdminConsole($Fixture,$Other) {
             Check ($prefix+'ExactRecordedPair') ($pair -and $attempt[0].ActivityId -ceq $outcome[0].ActivityId -and $attempt[0].RecordId -cne $outcome[0].RecordId)
             $safe=$pair;$bound=$pair;$concludes=$pair
             foreach($record in $records){
-                $bound=$bound -and $record.OwnerId -ceq 'ADMIN_CONSOLE' -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.CatalogVersion -eq 37 -and $record.DataEffect -ceq 'Unknown'
+                $bound=$bound -and $record.OwnerId -ceq 'ADMIN_CONSOLE' -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.CatalogVersion -eq 38 -and $record.DataEffect -ceq 'Unknown'
                 $json=$record|ConvertTo-Json -Depth 20 -Compress
                 $safe=$safe -and @($record.SourceEventRefs).Count -eq 0
                 foreach($value in @($Fixture.Root,$Other.Root,$Fixture.Secret,(CredentialHash $Fixture.Secret),'Operator_Custom_Canary','svc_processor')){$safe=$safe -and -not $json.Contains($value)}

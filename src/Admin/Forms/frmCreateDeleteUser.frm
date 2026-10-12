@@ -53,6 +53,7 @@ Private mAnchors As Object
 Private mBusy As Boolean
 Private mResizeInitialized As Boolean
 Private mWriteContext As String
+Private mActivityContext As String
 
 Private Const COLOR_INFO As Long = 0
 Private Const COLOR_SUCCESS As Long = 32768
@@ -104,6 +105,7 @@ Private Declare Function WNetCancelConnection2 Lib "mpr.dll" Alias "WNetCancelCo
 
 Private Sub UserForm_Initialize()
     mWriteContext = modAuthUserCommands.CaptureContext()
+    mActivityContext = modActivity.CaptureContext()
     Randomize
     mBusy = True
     Me.Caption = "Users & Roles"
@@ -425,15 +427,15 @@ Private Sub mBtnClear_Click()
 End Sub
 
 Private Sub mBtnSave_Click()
-    SaveUserAndRolesForm
+    RunUserWriteForm "SAVE"
 End Sub
 
 Private Sub mBtnDeactivate_Click()
-    SetUserStatusForm "INACTIVE"
+    RunUserWriteForm "DEACTIVATE"
 End Sub
 
 Private Sub mBtnDelete_Click()
-    DeleteUserForm
+    RunUserWriteForm "DELETE"
 End Sub
 
 Private Sub mBtnClose_Click()
@@ -728,56 +730,33 @@ CleanExit:
     CloseTransientWorkbookForm wb, openedTransient
 End Sub
 
-Private Sub SaveUserAndRolesForm()
-    Dim report As String, station As String, mask As Long
-    station = Trim$(CStr(mTxtStationId.Value))
-    If CBool(mChkRoamingStation.Value) Or station = "" Then station = "*"
-    If CBool(mChkAdmin.Value) Then mask = mask Or 1
-    If CBool(mChkReceivePost.Value) Then mask = mask Or 2
-    If CBool(mChkReceiveView.Value) Then mask = mask Or 4
-    If CBool(mChkShipPost.Value) Then mask = mask Or 8
-    If CBool(mChkProdPost.Value) Then mask = mask Or 16
-    If CBool(mChkInboxProcess.Value) Then mask = mask Or 32
-    If Not modAuthUserCommands.SaveUser(mWriteContext, NormalizePathForm(CStr(mTxtAuthPath.Value)), _
-        CStr(mTxtUserId.Value), CStr(mTxtDisplayName.Value), CStr(mTxtPin.Value), _
-        CStr(mTxtWarehouseId.Value), station, mask, report) Then
-        ShowStatusForm report, COLOR_ERROR
-        Exit Sub
-    End If
-    ShowStatusForm "User and role assignments saved. Store the visible PIN/password now; it cannot be recovered later.", COLOR_SUCCESS
-    RefreshUsersForm
-End Sub
-
-Private Sub SetUserStatusForm(ByVal statusText As String)
-    Dim report As String
-    If Trim$(CStr(mTxtUserId.Value)) = "" Then
-        ShowStatusForm "Select or enter a user first.", COLOR_ERROR
-        Exit Sub
-    End If
-    If Not modAuthUserCommands.DeactivateUser(mWriteContext, NormalizePathForm(CStr(mTxtAuthPath.Value)), _
-        CStr(mTxtUserId.Value), report) Then
+Private Sub RunUserWriteForm(ByVal command As String)
+    Dim request As modAdminUsersAction.UserWriteRequest, report As String, notice As String
+    ' Capture every input before optional observation can yield to other events.
+    With request
+        .Command = command: .WriteContext = mWriteContext: .ActivityContext = mActivityContext
+        .AuthPath = NormalizePathForm(CStr(mTxtAuthPath.Value))
+        .UserId = CStr(mTxtUserId.Value)
+        If command = "SAVE" Then
+            .DisplayName = CStr(mTxtDisplayName.Value): .Credential = CStr(mTxtPin.Value)
+            .Warehouse = CStr(mTxtWarehouseId.Value): .Station = Trim$(CStr(mTxtStationId.Value))
+            If CBool(mChkRoamingStation.Value) Or .Station = "" Then .Station = "*"
+            If CBool(mChkAdmin.Value) Then .CapabilityMask = .CapabilityMask Or 1
+            If CBool(mChkReceivePost.Value) Then .CapabilityMask = .CapabilityMask Or 2
+            If CBool(mChkReceiveView.Value) Then .CapabilityMask = .CapabilityMask Or 4
+            If CBool(mChkShipPost.Value) Then .CapabilityMask = .CapabilityMask Or 8
+            If CBool(mChkProdPost.Value) Then .CapabilityMask = .CapabilityMask Or 16
+            If CBool(mChkInboxProcess.Value) Then .CapabilityMask = .CapabilityMask Or 32
+        End If
+    End With
+    If modAdminUsersAction.Execute(request, report, notice) Then
+        If command = "DELETE" Then ClearUserFieldsForm
+        ShowStatusForm report, COLOR_SUCCESS
+        RefreshUsersForm
+    ElseIf report <> "" Then
         If report = "User was not found." Then ShowStatusForm report, COLOR_WARNING Else ShowStatusForm report, COLOR_ERROR
-        Exit Sub
     End If
-    ShowStatusForm "User status set to INACTIVE.", COLOR_SUCCESS
-    RefreshUsersForm
-End Sub
-
-Private Sub DeleteUserForm()
-    Dim userId As String, report As String
-    userId = Trim$(CStr(mTxtUserId.Value))
-    If userId = "" Then
-        ShowStatusForm "Select or enter a user first.", COLOR_ERROR
-        Exit Sub
-    End If
-    If MsgBox("Delete user '" & userId & "' and all assigned capabilities?", vbQuestion + vbYesNo, "Users & Roles") <> vbYes Then Exit Sub
-    If Not modAuthUserCommands.DeleteUser(mWriteContext, NormalizePathForm(CStr(mTxtAuthPath.Value)), userId, report) Then
-        ShowStatusForm report, COLOR_ERROR
-        Exit Sub
-    End If
-    ClearUserFieldsForm
-    ShowStatusForm "User deleted.", COLOR_SUCCESS
-    RefreshUsersForm
+    modAdminUsersAction.ShowNotice notice
 End Sub
 
 Private Function OpenSelectedAuthWorkbookForm(ByRef openedTransient As Boolean, ByRef report As String) As Workbook

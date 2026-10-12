@@ -30,7 +30,7 @@ End Function
 Public Function CatalogCompatible() As Boolean
     Dim id As Variant, before As Object, after As Object, ids As Variant
     ids = modActivityCatalog.ControlIds(36)
-    If UBound(ids) <> 155 Or UBound(modActivityCatalog.ControlIds()) <> 156 Then Exit Function
+    If UBound(ids) <> 155 Or UBound(modActivityCatalog.ControlIds()) <> 159 Then Exit Function
     If Not modActivityCatalog.Control("ADMIN_DEMO_SEED", 36) Is Nothing Then Exit Function
     For Each id In ids
         Set before = modActivityCatalog.Control(CStr(id), 36)
@@ -80,7 +80,7 @@ function Test-AdminSeedRecording($Fixture) {
         foreach($record in $records){
             $terminal=$record.OutcomeCode -ceq 'APPLIED'
             $effect=if($terminal){'Changed'}else{'Unknown'}
-            $bound=$bound -and $record.OwnerId -ceq 'ADMIN_DEMO_INVENTORY' -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.StationId -ceq 'S1' -and $record.UserId -ceq 'config-admin' -and $record.CatalogVersion -eq 37 -and $record.DataEffect -ceq $effect
+            $bound=$bound -and $record.OwnerId -ceq 'ADMIN_DEMO_INVENTORY' -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.StationId -ceq 'S1' -and $record.UserId -ceq 'config-admin' -and $record.CatalogVersion -eq 38 -and $record.DataEffect -ceq $effect
             $references=@($record.SourceEventRefs)
             if($terminal){
                 $refs=$refs -and $references.Count -eq 1
