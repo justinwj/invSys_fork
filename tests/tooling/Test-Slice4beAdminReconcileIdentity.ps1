@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-admin-reconcile-01',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$NativePresentation,[switch]$CheckRecording,[switch]$CheckGuidePaths,[switch]$CheckAppliedGuide)
+param([string]$DeployRoot='deploy/validation-admin-reconcile-01',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$NativePresentation,[switch]$CheckRecording,[switch]$CheckGuidePaths,[switch]$CheckAppliedGuide,[switch]$LocalRecordingDiagnostic)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before Reconcile identity validation.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
@@ -18,6 +18,7 @@ try{
     if($CheckRecording){if(-not $NativePresentation){throw 'Recording gate requires native handlers.'};$nativeArgs+='-AdminReconcileRecording'}
     if($CheckGuidePaths){if(-not $CheckRecording){throw 'Guide proof requires the recording gate.'};$nativeArgs+='-AdminReconcileGuidePaths'}
     if($CheckAppliedGuide){if(-not $CheckGuidePaths){throw 'Applied guide proof requires the independent guide gate.'};$nativeArgs+='-AdminReconcileAppliedGuide'}
+    if($LocalRecordingDiagnostic){if($NativePresentation){throw 'Local diagnostic uses its deterministic callback gate.'};$nativeArgs+='-AdminReconcileLocalDiagnostic'}
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1') -DeployRoot $DeployRoot -Phase $Phase -AdminReconcileIdentityOnly -CompileEvaluationProbesForTest -WaitForExcelReadyForTest -ExcelReadyReadLimitForTest 40 @nativeArgs *> (Join-Path $root 'worker.log')
     $code=$LASTEXITCODE
 }finally{

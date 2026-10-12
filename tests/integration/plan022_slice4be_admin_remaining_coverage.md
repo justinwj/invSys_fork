@@ -155,3 +155,34 @@ explicitly selected local runtime from the existing signed-in fallback fixture
 through the packaged callback, then resolve any needed contract decision before
 changing these shared gates. This source audit approves no exclusion, fallback,
 store policy or business-permission change.
+
+Packaged diagnostic now confirms this boundary:199/199, exact172 identity/authority
+prefix, five instrumented compiles, normal preserved closure and zero delayed
+native failures. Explicit local uses the actual resolver's explicit-root branch,
+without a source-type setter or fixture UNC substitution. Fallback uses the
+existing modeled source-type fixture and is not a full fallback-discovery proof.
+Both remain signed in, read enabled policy and queue one exact correction, but
+context/activity/journal access are false, no files are added, and no warning is
+shown. The NAS fixture records two activity files. Existing training bytes,
+inventory/custom values and policy remain unchanged. See the Reconcile receipt.
+D18-LOCAL-01 is proposed in v4.11/Plan022/Controls1.543; approval is pending.
+
+## Next independent entry: Verify Add-ins Published
+
+Source audit,2026-10-12; not runtime acceptance. The packaged Ribbon maps
+`btnAdminVerifyAddinsPublished` to `modAdmin.Verify_AddinsPublished` with
+ADMIN_MAINT. The macro calls `EnsureAdminLegacyWorkbookSurface` before
+`modAddinsPublish.VerifyAddinsPublished` and displays its result. Surface setup
+can create/format workbook tables; do not assume the entire callback is read-only
+or claim Unchanged effects solely from the file-checking service. Protect the
+captured operator workbook and unknown columns in its packaged test.
+
+The owner checks the five D12 filenames under configured `Addins` for existence
+and nonzero size. Success proves those checks only, not hash/manifest integrity,
+deployment promotion or Domain application. Existing `TestAddinsPublish.bas`
+tests the service for present/missing/zero-byte files; it does not prove callback
+recording, displayed result or live authorization. Its explicit root override can
+point to generated non-executable dummy files for that narrow fixture; never
+replace or corrupt the validation packages. No control ID/outcome or changed
+behavior is approved by this audit. A D18 refinement must preserve the precise
+verification meaning and exclude paths/raw diagnostics from shared activity.

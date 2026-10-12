@@ -671,3 +671,43 @@ package pins remain identical; reuse the cold compile,86 smoke,202 Settings and
 32 chain/48 live-role/15 Create Warehouse evidence above. This closes the scoped
 SourceEventsApplied guide proof; local recording eligibility and remaining Admin
 coverage remain open, so4be-A is incomplete.
+
+## Local recording eligibility diagnostic — 2026-10-12
+
+Tests only; unchanged recording-06 candidate. **199/199 diagnostic PASS**, exact172
+identity/authority prefix; not product RED or acceptance of a local exclusion.
+Controller `admin-reconcile-controller/6e96e1190da74e1e92d6e42583b219c3`; worker
+`slice4be-admin-reconcile/f6fd0eb4df7a4cc2b076ddda01919019`.
+UTC10:13:37.1084819–10:15:32.7776022; clean delayed native audit through10:15:44.7776022.
+Five instrumented compiles, exact log/JSON, normal Excel closure and unchanged
+settings/packages/tooling pass. Command: the Reconcile controller with
+`-DeployRoot deploy/validation-admin-reconcile-recording-06 -Phase GREEN -LocalRecordingDiagnostic`.
+The switch is separate from native/recording-guide gates; it does not replace360.
+
+| Context | Live sign-in / enabled policy / queues once | Context/activity/journal available | New activity files | Tracking warnings |
+|---|---|---|---|---|
+| Existing NAS fixture | Yes | Yes | 2 | 0 |
+| Explicit local, actual resolver | Yes | No | 0 | 0 |
+| Valid local fallback fixture | Yes | No | 0 | 0 |
+
+The explicit local case clears the prior target and invokes the normal Core
+explicit-root resolver, proving WH_SOURCE_LOCAL without a source-type setter or
+UNC substitution. The fallback case deliberately models WH_SOURCE_FALLBACK;
+it does not prove full fallback discovery. Each invokes the actual public
+Reconcile callback and Inspect handler through the existing deterministic
+presentation seam. No native-input/presentation claim. Existing training files,
+inventory, exact selected key/custom values and saved policy are preserved.
+Store-read probes use existing fixture roots so missing directories cannot
+explain the rejection. No activity is fabricated by the diagnostic.
+
+The three shared NAS guards explain the result. D18-LOCAL-01 is now an explicit
+proposal in v4.11, synchronized to Plan022 and Controls1.543; approval is pending.
+No product-source, package, business permission or replay eligibility changed.
+
+Regenerated static `admin-reconcile-local-diagnostic-static-01` matches the prior
+332 components/6399 procedures/139542 lines, dynamic9/45 and194 duplicate candidates.
+All28 caps, three schemas and482 PowerShell parsers pass; no new exception.
+The package-identical360 recording/guide gate and earlier cold compile/smoke/
+Settings/full-chain/live-role receipts remain valid. Desktop monitor10:12:27–
+10:20:23 UTC closed normally after95 samples with zero cursor/desktop/capture/error5
+failures. These reads do not establish mouse-movement success.

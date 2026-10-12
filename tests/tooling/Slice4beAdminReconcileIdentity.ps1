@@ -8,6 +8,7 @@
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileFont.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileSelection.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileRecording.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beAdminReconcileLocalDiagnostic.ps1')
 function Install-AdminReconcileIdentityProbe {
     $project=$packages['invSys.Admin.xlam'].VBProject
     $probe=$project.VBComponents.Add(1);$probe.Name='TestReconcileIdentity'
@@ -195,6 +196,7 @@ End Function
         Install-AdminReconcileNativeProbe $probe.CodeModule
     }
     if($AdminReconcileRecording){Install-AdminReconcileRecordingProbe}
+    if($AdminReconcileLocalDiagnostic){Install-ReconcileLocalDiagnostic}
 }
 
 function Test-AdminReconcileIdentity($Fixture,$OtherFixture) {
@@ -248,6 +250,7 @@ function Test-AdminReconcileIdentity($Fixture,$OtherFixture) {
     Check 'Reconcile.Preservation.OtherWarehouseConfig' ((Hash $OtherFixture.Config) -ceq $otherBefore)
     Test-AdminReconcileHistory $events $inventory $state
     Test-AdminReconcileAuthority $events $state $Fixture $OtherFixture
+    if($AdminReconcileLocalDiagnostic){Test-ReconcileLocalDiagnostic $Fixture $events $state}
     if($AdminReconcileNativePresentation){
         if($AdminReconcileRecording){
             SelectTarget $Fixture
