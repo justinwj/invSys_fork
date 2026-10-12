@@ -103,8 +103,10 @@ check names and assertions remain. Static evidence also regenerated in the chain
 
 Context/reentrancy/storage failure observations,
 continuous recording, exact Viewer publication, independent saved-guide conclusions
-and native control acceptance remain open. The shared expected-conclusion editor
-currently omits SAVED; protect the actual editor with RED before adding that choice.
+and native control acceptance remain open. The subsequent shared-editor checkpoint
+adds SAVED/APPLIED after actual-handler RED35/4 -> GREEN43; see
+`plan022_slice4be_expected_outcome_choices_results.md` for its separate candidate
+and qualification. It does not establish independent Users/Seed guide conclusions.
 Other Users & Roles controls and existing layout defects remain pending.
 D18-LOCAL-01 and D16-VBA-LOAD-01 remain unapproved. No local recording exclusion,
 new replay adapter or full4be-A acceptance is claimed.

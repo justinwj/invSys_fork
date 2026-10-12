@@ -65,7 +65,7 @@ Public Function Choices(ByVal context As String, ByVal draftId As String, ByVal 
         Next id
     Else
         For Each id In Array("REQUESTED", "COMPLETED", "UNCHANGED", "DENIED", "REJECTED", "FAILED", _
-                             "CONFIRMED", "VERIFIED", "PENDING", "STAGED", "REFRESHED", "STALE", "CLEARED", "EMPTY", _
+                             "CONFIRMED", "VERIFIED", "SAVED", "APPLIED", "PENDING", "STAGED", "REFRESHED", "STALE", "CLEARED", "EMPTY", _
                              "OPENED", "REUSED", "CLOSED", "SELECTED", "CANCELLED", "VALIDATED", "PRESENTED", "PREVIEW_RETURNED")
             Set definition = modActivityCatalog.Outcome(controlId, CStr(id))
             If Not definition Is Nothing Then

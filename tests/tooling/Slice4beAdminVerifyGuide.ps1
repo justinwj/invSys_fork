@@ -97,6 +97,25 @@ function Test-AdminVerifyExpectationChoices($Fixture,[string]$PathId) {
         Check 'AdminVerify.Expectation.ExistingOutcomesPresent' ('REQUESTED' -cin $choices -and 'FAILED' -cin $choices)
         Check 'AdminVerify.Expectation.VerifiedOutcomeOffered' ('VERIFIED' -cin $choices)
         Check 'AdminVerify.Expectation.NoUnregisteredOutcomes' (@($choices|Where-Object {$_ -cnotin @('REQUESTED','VERIFIED','FAILED')}).Count -eq 0)
+        foreach($case in @(
+            @('ADMIN_USER_SAVE','SAVED',@('REQUESTED','SAVED','DENIED','REJECTED','FAILED')),
+            @('ADMIN_USER_DEACTIVATE','SAVED',@('REQUESTED','SAVED','DENIED','REJECTED','FAILED')),
+            @('ADMIN_USER_DELETE','SAVED',@('REQUESTED','SAVED','DENIED','REJECTED','FAILED','CANCELLED')),
+            @('ADMIN_DEMO_SEED','APPLIED',@('REQUESTED','APPLIED','UNCHANGED','PENDING','REJECTED','FAILED'))
+        )){
+            $selected=BoundControl 'cboExpectedControl' 'Write' $case[0] 'frmActionPathExpectation'
+            Check ('Expectation.Catalog.'+$case[0]+'.ActualControlSelection') ($selected -ceq 'DELIVERED')
+            if($selected -cne 'DELIVERED'){throw 'Registered control selection prerequisite unavailable.'}
+            $offered=@((BoundControl 'cboExpectedOutcome' 'Values' '' 'frmActionPathExpectation') -split "`n"|Where-Object {$_ -cne ''})
+            Check ('Expectation.Catalog.'+$case[0]+'.OwnerSuccessOffered') ($case[1] -cin $offered)
+            Check ('Expectation.Catalog.'+$case[0]+'.ExistingOutcomesRetained') (@($case[2]|Where-Object {$_ -cne $case[1] -and $_ -cnotin $offered}).Count -eq 0)
+            Check ('Expectation.Catalog.'+$case[0]+'.NoUnregisteredOrDuplicateOutcomes') (@($offered|Where-Object {$_ -cnotin $case[2]}).Count -eq 0 -and @($offered|Select-Object -Unique).Count -eq $offered.Count)
+            if($case[1] -cin $offered){
+                $delivered=BoundControl 'cboExpectedOutcome' 'Write' $case[1] 'frmActionPathExpectation'
+                Check ('Expectation.Catalog.'+$case[0]+'.OwnerSuccessSelected') ($delivered -ceq 'DELIVERED' -and (BoundControl 'cboExpectedOutcome' 'Selected' '' 'frmActionPathExpectation') -ceq $case[1])
+                if($case[0] -cin @('ADMIN_USER_SAVE','ADMIN_DEMO_SEED')){CaptureOwnedFormByCaptionEvidence 'Expected steps and conclusion' ('expectation-'+$case[0].ToLowerInvariant()+'.png')}
+            }
+        }
     }finally{
         Check 'AdminVerify.Expectation.ActualCancel' ((BoundControl 'btnCancelExpectation' 'Click' '' 'frmActionPathExpectation') -ceq 'DELIVERED')
         CloseRecordingViewer
