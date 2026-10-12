@@ -107,18 +107,20 @@ End Sub
     }
 }
 
-function Invoke-ReconcileSelectionNative([switch]$InspectLast) {
+function Invoke-ReconcileSelectionNative([switch]$InspectLast,[switch]$WindowClose,[ValidateSet('','Cancel','Submit')][string]$Confirmation='',[string]$ExpectedEvent='',[string]$ExpectedKey='') {
     $prefix=Join-Path $reportRoot ('selection-'+[guid]::NewGuid().ToString('N'))
     $ready=$prefix+'-form.json';$closed=$prefix+'-closed.json';$jobReady=$prefix+'-job.ready'
-    $capture=Join-Path $reportRoot $(if($InspectLast){'reconcile-selection-inspect.png'}else{'reconcile-selection-last.png'})
+    $suffix=if($Confirmation){'confirmation-'+$Confirmation.ToLowerInvariant()}elseif($WindowClose){'close'}elseif($InspectLast){'inspect'}else{'last'}
+    $capture=Join-Path $reportRoot ('reconcile-selection-'+$suffix+'.png')
     [void](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.SetSelectionProbePaths' @($ready,$closed))
-    $job=Start-Job -ArgumentList ([long]$excel.Hwnd),$ready,$jobReady,$capture,([bool]$InspectLast) -ScriptBlock {
-        param($handle,$ready,$jobReady,$capture,[bool]$inspectLast)
+    $extension=Get-ReconcileConfirmationSource
+    $job=Start-Job -ArgumentList ([long]$excel.Hwnd),$ready,$jobReady,$capture,([bool]$InspectLast),([bool]$WindowClose),$Confirmation,$ExpectedEvent,$ExpectedKey,$extension -ScriptBlock {
+        param($handle,$ready,$jobReady,$capture,[bool]$inspectLast,[bool]$windowClose,[string]$confirmation,[string]$expectedEvent,[string]$expectedKey,[string]$extension)
         $ErrorActionPreference='Stop'
         function Stage([string]$name){[IO.File]::AppendAllText($jobReady+'.stages.jsonl',('{"UTC":"'+[DateTimeOffset]::UtcNow.ToString('o')+'","Stage":"'+$name+'"}'+[Environment]::NewLine))}
-        Add-Type -ReferencedAssemblies System.Drawing @'
+        $nativeCode=@'
 using System;using System.Text;using System.Drawing;using System.Runtime.InteropServices;
-public static class ReconcileSelectionInput {
+public static partial class ReconcileSelectionInput {
  public delegate bool CB(IntPtr h,IntPtr p);
  [StructLayout(LayoutKind.Sequential)]public struct R{public int L,T,Right,Bottom;}
  [StructLayout(LayoutKind.Sequential)]public struct P{public int X,Y;}
@@ -143,8 +145,10 @@ public static class ReconcileSelectionInput {
  [DllImport("user32.dll",SetLastError=true)]static extern uint SendInput(uint n,I[] input,int size);
  [DllImport("user32.dll",SetLastError=true)]static extern bool PostMessage(IntPtr h,uint m,IntPtr w,IntPtr l);
  public static uint Owner(IntPtr h){uint p;GetWindowThreadProcessId(h,out p);return p;}
- public static IntPtr Find(uint owner){IntPtr found=IntPtr.Zero;EnumWindows((h,p)=>{var title=new StringBuilder(256);GetWindowText(h,title,256);if(Owner(h)==owner&&IsWindowVisible(h)&&title.ToString()=="invSys Admin - Shipment Reconcile")found=h;return found==IntPtr.Zero;},IntPtr.Zero);return found;}
- static void Guard(IntPtr h,uint owner){if(Find(owner)!=h||GetForegroundWindow()!=h)throw new Exception("Owned selection form is not foreground.");}
+ public static IntPtr Find(uint owner){return FindTitle(owner,"invSys Admin - Shipment Reconcile");}
+ static IntPtr FindTitle(uint owner,string expected){IntPtr found=IntPtr.Zero;EnumWindows((h,p)=>{var title=new StringBuilder(256);GetWindowText(h,title,256);if(Owner(h)==owner&&IsWindowVisible(h)&&title.ToString()==expected)found=h;return found==IntPtr.Zero;},IntPtr.Zero);return found;}
+ static void Guard(IntPtr h,uint owner){GuardTitle(h,owner,"invSys Admin - Shipment Reconcile");}
+ static void GuardTitle(IntPtr h,uint owner,string title){if(h==IntPtr.Zero||FindTitle(owner,title)!=h||GetForegroundWindow()!=h)throw new Exception("Owned Reconcile dialog is not foreground.");}
  static I Key(ushort key,bool up){return new I{Type=1,Data=new U{Key=new K{Key=key,Flags=up?2u:0u}}};}
  static void Keys(I[] keys){uint n=SendInput((uint)keys.Length,keys,Marshal.SizeOf(typeof(I)));int e=n==keys.Length?0:Marshal.GetLastWin32Error();if(n!=keys.Length)throw new Exception("Keyboard delivery failed; Win32 error "+e);}
  public static void ScrollEnd(IntPtr h,uint owner){Guard(h,owner);try{Keys(new[]{Key(17,false),Key(36,false),Key(36,true),Key(35,false),Key(35,true),Key(17,true)});}finally{Keys(new[]{Key(36,true),Key(35,true),Key(17,true)});}}
@@ -153,18 +157,20 @@ public static class ReconcileSelectionInput {
  public static R Bounds(IntPtr h){R r;if(!GetWindowRect(h,out r))throw new Exception("Selection bounds unavailable.");return r;}
  public static void Resize(IntPtr h,uint owner,R original,double scale){Guard(h,owner);if(!SetWindowPos(h,IntPtr.Zero,original.L,original.T,(int)((original.Right-original.L)*scale),(int)((original.Bottom-original.T)*scale),4))throw new Exception("Native resize failed.");}
  public static void WindowState(IntPtr h,uint owner,int state){Guard(h,owner);ShowWindow(h,state);}
- public static void CloseOwned(IntPtr h,uint owner){var cls=new StringBuilder(128);GetClassName(h,cls,128);if(h!=IntPtr.Zero&&Owner(h)==owner&&cls.ToString().StartsWith("Thunder"))PostMessage(h,0x10,IntPtr.Zero,IntPtr.Zero);}
- public class Result{public bool ExactDialog,WindowWithinDisplay,Captured,CancelDispatched,InspectDispatched,ForegroundRequestAccepted;public int DesktopError;}
- public static Result Capture(IntPtr h,uint owner,string path){
-  var r=new Result();Guard(h,owner);var cls=new StringBuilder(128);GetClassName(h,cls,128);r.ExactDialog=cls.ToString().StartsWith("Thunder");
+ public static void CloseOwned(IntPtr h,uint owner){var cls=new StringBuilder(128);GetClassName(h,cls,128);if(h!=IntPtr.Zero&&Owner(h)==owner&&(cls.ToString().StartsWith("Thunder")||FindConfirmation(owner)==h))PostMessage(h,0x10,IntPtr.Zero,IntPtr.Zero);}
+ public class Result{public bool ExactDialog,WindowWithinDisplay,Captured,CancelDispatched,InspectDispatched,WindowCloseDispatched,ForegroundRequestAccepted;public int DesktopError;}
+ public static Result Capture(IntPtr h,uint owner,string path){return Capture(h,owner,path,"invSys Admin - Shipment Reconcile");}
+ public static Result Capture(IntPtr h,uint owner,string path,string title){
+  var r=new Result();GuardTitle(h,owner,title);var cls=new StringBuilder(128);GetClassName(h,cls,128);r.ExactDialog=cls.ToString().StartsWith("Thunder");
   P p;if(!GetCursorPos(out p)){r.DesktopError=Marshal.GetLastWin32Error();return r;}
   IntPtr previous=SetThreadDpiAwarenessContext(new IntPtr(-4));if(previous==IntPtr.Zero)throw new Exception("Physical pixel context unavailable.");
   try{R b;if(DwmGetWindowAttribute(h,9,out b,Marshal.SizeOf(typeof(R)))!=0&&!GetWindowRect(h,out b))throw new Exception("Selection bounds unavailable.");int left=GetSystemMetrics(76),top=GetSystemMetrics(77);r.WindowWithinDisplay=b.L>=left&&b.T>=top&&b.Right<=left+GetSystemMetrics(78)&&b.Bottom<=top+GetSystemMetrics(79);
-   if(r.WindowWithinDisplay){using(var bitmap=new Bitmap(b.Right-b.L,b.Bottom-b.T)){using(var g=Graphics.FromImage(bitmap)){g.CopyFromScreen(b.L,b.T,0,0,bitmap.Size);}Guard(h,owner);bitmap.Save(path,System.Drawing.Imaging.ImageFormat.Png);r.Captured=true;}}
+   if(r.WindowWithinDisplay){using(var bitmap=new Bitmap(b.Right-b.L,b.Bottom-b.T)){using(var g=Graphics.FromImage(bitmap)){g.CopyFromScreen(b.L,b.T,0,0,bitmap.Size);}GuardTitle(h,owner,title);bitmap.Save(path,System.Drawing.Imaging.ImageFormat.Png);r.Captured=true;}}
   }finally{SetThreadDpiAwarenessContext(previous);}return r;
  }
 }
 '@
+        Add-Type -ReferencedAssemblies System.Drawing -TypeDefinition ($nativeCode+[Environment]::NewLine+$extension)
         $owner=[ReconcileSelectionInput]::Owner([IntPtr]$handle)
         $started=(Get-Process -Id $owner).StartTime.ToUniversalTime().Ticks
         [IO.File]::WriteAllText($jobReady,'Ready')
@@ -187,10 +193,11 @@ public static class ReconcileSelectionInput {
             Stage 'ScrollInputDelivered'
             Start-Sleep -Milliseconds 250
             $result=[ReconcileSelectionInput]::Capture($window,$owner,$capture)
+            [ReconcileSelectionInput]::RequireDesktop($result)
             Stage 'CaptureReturned'
             $original=[ReconcileSelectionInput]::Bounds($window)
             $layouts=@()
-            $modes=@();if(-not $inspectLast){$modes=@('Grow','Minimum','Maximize','Restore')}
+            $modes=@();if(-not $inspectLast -and -not $windowClose -and -not $confirmation){$modes=@('Grow','Minimum','Maximize','Restore')}
             foreach($mode in $modes){
                 $before=Get-Content -LiteralPath $ready -Raw|ConvertFrom-Json
                 switch($mode){
@@ -209,15 +216,44 @@ public static class ReconcileSelectionInput {
                 [ReconcileSelectionInput]::ScrollEnd($window,$owner)
                 Start-Sleep -Milliseconds 200
                 $picture=[ReconcileSelectionInput]::Capture($window,$owner,($capture.Replace('.png','-'+$mode.ToLowerInvariant()+'.png')))
+                [ReconcileSelectionInput]::RequireDesktop($picture)
                 $layouts+=[pscustomobject]@{Mode=$mode;Width=$layout.Width;Height=$layout.Height;Geometry=$layout.Geometry;CompleteHistory=$layout.CompleteHistory;Scrollable=$layout.Scrollable;Captured=$picture.Captured;WithinDisplay=$picture.WindowWithinDisplay}
                 Stage ('Layout'+$mode)
             }
             ConvertTo-Json -InputObject @($layouts)|Set-Content ($jobReady+'.layouts.json')
             $result.ForegroundRequestAccepted=$foreground
-            if($inspectLast){$result.InspectDispatched=[ReconcileSelectionInput]::InspectLast($window,$owner);Stage 'InspectInputDelivered'}
+            if($confirmation){$result.InspectDispatched=[ReconcileSelectionInput]::InspectFirst($window,$owner);Stage 'InspectFirstInputDelivered'}
+            elseif($windowClose){$result.WindowCloseDispatched=[ReconcileSelectionInput]::CloseWindow($window,$owner);Stage 'WindowCloseDispatched'}
+            elseif($inspectLast){$result.InspectDispatched=[ReconcileSelectionInput]::InspectLast($window,$owner);Stage 'InspectInputDelivered'}
             else{$result.CancelDispatched=[ReconcileSelectionInput]::Cancel($window,$owner);Stage 'CancelInputDelivered'}
             for($i=0;$i -lt 50 -and [ReconcileSelectionInput]::Find($owner) -ne [IntPtr]::Zero;$i++){Start-Sleep -Milliseconds 100}
             if([ReconcileSelectionInput]::Find($owner) -ne [IntPtr]::Zero){throw 'Native action did not close the selection form.'}
+            if($confirmation){
+                $window=[IntPtr]::Zero
+                for($i=0;$i -lt 100;$i++){
+                    $window=[ReconcileSelectionInput]::FindConfirmation($owner)
+                    if($window -ne [IntPtr]::Zero){break}
+                    Start-Sleep -Milliseconds 100
+                }
+                if($window -eq [IntPtr]::Zero){throw 'Native confirmation unavailable.'}
+                [void][ReconcileSelectionInput]::SetForegroundWindow($window)
+                Start-Sleep -Milliseconds 200
+                Stage 'ConfirmationObserved'
+                $proof=[ReconcileSelectionInput]::ReadConfirmation($window,$owner,$expectedEvent,$expectedKey,($capture.Replace('.png','-dialog.png')))
+                $submit=$confirmation -ceq 'Submit'
+                if($submit){
+                    [ReconcileSelectionInput]::TypeNarrative($window,$owner,'Generated native training correction')
+                    Start-Sleep -Milliseconds 200
+                    $proof.NarrativeExact=[ReconcileSelectionInput]::NarrativeMatches($window,$owner,'Generated native training correction')
+                    if(-not $proof.NarrativeExact){throw 'Native narrative input did not reach the expected edit control; submission withheld.'}
+                    $typed=[ReconcileSelectionInput]::Capture($window,$owner,($capture.Replace('.png','-typed.png')),'invSys Admin - Confirm Shipment Reconcile')
+                    [ReconcileSelectionInput]::RequireDesktop($typed)
+                    $proof.Captured=$proof.Captured -and $typed.Captured
+                }
+                $proof.ActionDispatched=[ReconcileSelectionInput]::ConfirmAction($window,$owner,$submit)
+                Stage ('Confirmation'+$confirmation+'Dispatched')
+                $proof|ConvertTo-Json|Set-Content ($jobReady+'.confirmation.json')
+            }
             return $result
         }catch{
             Stage 'ObserverFailed'
@@ -236,7 +272,7 @@ public static class ReconcileSelectionInput {
     try{
         for($i=0;$i -lt 100 -and -not(Test-Path -LiteralPath $jobReady);$i++){Start-Sleep -Milliseconds 100}
         if(-not(Test-Path -LiteralPath $jobReady)){throw 'Selection keyboard observer not ready.'}
-        $returned=[bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.InvokeNativeSelection' @([bool]$InspectLast))
+        $returned=[bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.InvokeNativeSelection' @([bool]$InspectLast,$Confirmation))
         [void](Wait-Job $job -Timeout 5)
         $observed=Receive-Job $job -ErrorAction Stop
         if($null -eq $observed){throw 'Selection keyboard receipt unavailable.'}
@@ -245,8 +281,21 @@ public static class ReconcileSelectionInput {
         $receipt=[pscustomobject]@{ExactDialog=$observed.ExactDialog;LastChoicePresent=($facts.CompleteHistory -and $facts.AtEnd);ExactKeyPresent=$facts.CompleteHistory;HumanReadableTimestamp=$facts.Timestamp;TextFits=($facts.Geometry -and $facts.Scrollable);WindowWithinDisplay=$observed.WindowWithinDisplay;Captured=$observed.Captured;CancelDispatched=$observed.CancelDispatched;PromptCharacters=$facts.Characters;DesktopError=$observed.DesktopError;NativeKeyboardReachedEnd=$facts.AtEnd;ForegroundRequestAccepted=$observed.ForegroundRequestAccepted}
         $receipt|Add-Member -NotePropertyName InspectDispatched -NotePropertyValue ([bool]$observed.InspectDispatched)
         $receipt|Add-Member -NotePropertyName SelectionIs20 -NotePropertyValue ([bool]$facts.SelectionIs20)
-        $receipt|ConvertTo-Json|Set-Content (Join-Path $reportRoot $(if($InspectLast){'native-selection-inspect.json'}else{'native-selection.json'}))
+        $receipt|Add-Member -NotePropertyName WindowCloseDispatched -NotePropertyValue ([bool]$observed.WindowCloseDispatched)
+        $receipt|ConvertTo-Json|Set-Content (Join-Path $reportRoot $(if($suffix -ceq 'last'){'native-selection.json'}else{'native-selection-'+$suffix+'.json'}))
         $layouts=Get-Content ($jobReady+'.layouts.json') -Raw|ConvertFrom-Json
-        return [pscustomobject]@{Returned=$returned;Observed=$receipt;Layouts=$layouts}
+        $confirmationProof=$null
+        if($Confirmation){
+            $confirmationProof=Get-Content ($jobReady+'.confirmation.json') -Raw|ConvertFrom-Json
+            $measurement=[string](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.NativeFontProof')
+            if($measurement -notmatch '^\d+\|\d+\|\d+\|\d+$'){throw 'In-process font measurement unavailable; not behavioral RED.'}
+            $parts=@($measurement.Split('|')|ForEach-Object {[int]$_})
+            if($parts[0] -ne $confirmationProof.Characters){throw 'In-process and native prompt observations differ.'}
+            $confirmationProof.FontAvailable=$true
+            $confirmationProof.ClientWidth=$parts[1];$confirmationProof.ClientHeight=$parts[2];$confirmationProof.MeasuredHeight=$parts[3]
+            $confirmationProof.TextFits=$parts[1] -gt 0 -and $parts[3] -gt 0 -and $parts[3] -le $parts[2]
+            $confirmationProof|ConvertTo-Json|Set-Content ($jobReady+'.confirmation.json')
+        }
+        return [pscustomobject]@{Returned=$returned;Observed=$receipt;Layouts=$layouts;Confirmation=$confirmationProof}
     }finally{if($job.State -eq 'Running'){Stop-Job $job};Remove-Job $job}
 }

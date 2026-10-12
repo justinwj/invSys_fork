@@ -4,6 +4,8 @@
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileHistory.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileAuthority.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileNative.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beAdminReconcileConfirmation.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beAdminReconcileFont.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileSelection.ps1')
 function Install-AdminReconcileIdentityProbe {
     $project=$packages['invSys.Admin.xlam'].VBProject

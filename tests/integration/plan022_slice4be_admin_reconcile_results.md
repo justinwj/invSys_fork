@@ -388,3 +388,42 @@ checks retain exact prior order. Controller under runtime:
 `admin-reconcile-selection-regression/chain-98c7d4114a4048b6997d451769713736`.
 UTC06:26:33.2352910--06:32:19.1695957; zero delayed native failures through
 06:32:31.1695957, normal closure and settings/packages/tracked reports preserved.
+
+## Native confirmation and window-close GREEN
+
+The unchanged `validation-admin-reconcile-selection-02` passes **203/203**,
+retaining the exact191-check prefix. This extends acceptance under D14-RECON-01
+and D8-RECON-01; no product code, package, wording or architectural contract changes.
+The two preliminary readability failures were observer defects, not behavioral RED.
+
+Native WM_CLOSE reaches the selection form's existing close handler and queues
+nothing. After an owner-applied adjustment, native selection/Inspect opens the
+actual confirmation with the exact selected EventID/System_Key, current4,
+after-event1 and delta-3. Native Escape cancels; Unicode keyboard entry followed
+by Enter submits one exact correction with the required synthetic narrative and
+no legacy identity field. Neither action applies inventory: bytes, both entity
+quantities, custom values and saved state remain unchanged. The existing notice
+seam verifies the callback conclusion; final notices are not native captures.
+
+The two reviewed foreground captures show complete blank and typed confirmation
+states. Exact prompt text is checked separately. Its270 characters measure150px
+inside a150px-high client area using the actual font inside Excel. A bounded,
+test-only timer observes that dialog and is stopped after observation/cancellation;
+it never supplies input. A GDI font handle cannot be used from the external helper
+process. Native edit readback uses WM_GETTEXT, because GetWindowText cannot retrieve
+another process's edit contents. Missing measurements or mismatched input fail the
+harness; submission is withheld when native input readback differs.
+
+- Controller: `reports/runtime/admin-reconcile-controller/933d47cb6a244f2b8a2ad59ea39de8c2`.
+- Worker: `reports/runtime/slice4be-admin-reconcile/0ed7dfc863ca47038e274b7da114e850`.
+- UTC06:51:19.4366473--06:53:27.8039640; clean delayed audit through06:53:39.8039640.
+- All five instrumented compiles, exact log/JSON agreement,191-check prefix,
+  settings/package/tooling preservation and normal Excel closure pass.
+- Reuse the same-candidate cold compile,86 smoke,32 chain/48 live-role/15 Create
+  Warehouse and layout evidence above; no new package was built or promoted.
+- Static `reports/runtime/admin-reconcile-confirmation-static-02`: unchanged330
+  components/6390 procedures/139369 lines,28 caps, dynamic9/45 and duplicates193;
+  all three JSON schemas and478 PowerShell parsers pass. The prior reviewed
+  one-line layout-adapter exception remains unchanged.
+
+Recording/publication/guide coverage remains open. This is not4be-A acceptance.

@@ -1,7 +1,8 @@
 # Actual generated-fixture native selection/cancel evidence. Never logs row values.
 # Screenshots contain only disposable fixture data and remain ignored runtime files.
 function Install-AdminReconcileNativeProbe($Module) {
-    $Module.InsertLines($Module.CountOfDeclarationLines+1,'Private mNativeLastChoiceEvent As String')
+    Install-AdminReconcileFontProbe $Module
+    $Module.InsertLines($Module.CountOfDeclarationLines+1,'Private mNativeLastChoiceEvent As String, mNativeFirstChoiceEvent As String, mNativeConfirmationMode As String')
     $Module.AddFromString(@'
 Public Function PrepareNativeHistory() As Boolean
     Dim item As Object, eventId As String, i As Long
@@ -10,6 +11,7 @@ Public Function PrepareNativeHistory() As Boolean
         Set item = HistoryItem(mKeyA, 1, "CURRENT-A", "DAMAGED", "SHIP")
         eventId = modRoleEventWriter.CreateSystemKey()
         If i = 1 Then mNativeLastChoiceEvent = eventId
+        If i = 20 Then mNativeFirstChoiceEvent = eventId
         If Not ApplyFixtureEvent("SHIP", eventId, item) Then Exit Function
     Next i
     PrepareNativeHistory = (EntityQty(mKeyA) = 1 And EntityQty(mKeyB) = 55 And StageCanary())
@@ -17,22 +19,54 @@ End Function
 Public Function NativeLastChoiceEvent() As String
     NativeLastChoiceEvent = mNativeLastChoiceEvent
 End Function
-Public Function InvokeNativeSelection(Optional ByVal inspectLast As Boolean = False) As Boolean
+Public Function NativeFirstChoiceEvent() As String
+    NativeFirstChoiceEvent = mNativeFirstChoiceEvent
+End Function
+Public Function PrepareNativeConfirmation() As Boolean
+    Dim item As Object
+    Set item = HistoryItem(mKeyA, 3, "CURRENT-A", "DAMAGED")
+    If Not ApplyFixtureEvent("ADMIN_INVENTORY_ADJUST", modRoleEventWriter.CreateSystemKey(), item) Then Exit Function
+    PrepareNativeConfirmation = (EntityQty(mKeyA) = 4 And EntityQty(mKeyB) = 55 And StageCanary())
+End Function
+Public Function NativeNarrativeAnswer(ByVal prompt As String) As String
+    If mNativeConfirmationMode <> "" Then
+        StartNativeFontProbe prompt
+        NativeNarrativeAnswer = VBA.InputBox(prompt, "invSys Admin - Confirm Shipment Reconcile")
+        StopNativeFontProbe
+    Else
+        NativeNarrativeAnswer = AuthorityNarrativeAnswer()
+    End If
+End Function
+Public Function InvokeNativeSelection(Optional ByVal inspectLast As Boolean = False, Optional ByVal confirmationMode As String = "") As Boolean
     On Error GoTo Failed
     mNativePresentation = True
+    mNativeConfirmationMode = confirmationMode
     InvokeCallback
     mNativePresentation = False
     InvokeNativeSelection = (mPrompts = 1 And Not mQueuedNotice And mBoundaryNotice = "")
     If inspectLast Then InvokeNativeSelection = (mPrompts = 1 And Not mQueuedNotice And mBoundaryNotice = "Current quantity is not higher than the selected entity's balance after that shipment. No correction was queued.")
+    If confirmationMode = "Cancel" Then InvokeNativeSelection = (mPrompts = 2 And Not mQueuedNotice And mBoundaryNotice = "Shipment reconcile cancelled. A human repair narrative is required.")
+    If confirmationMode = "Submit" Then InvokeNativeSelection = (mPrompts = 2 And mQueuedNotice)
+    mNativeConfirmationMode = ""
     Exit Function
 Failed:
-    mNativePresentation = False
+    StopNativeFontProbe
+    mNativePresentation = False: mNativeConfirmationMode = ""
     Err.Raise 5, , "Native Reconcile callback failed"
 End Function
-Public Function NativeFixturePreserved() As Boolean
-    NativeFixturePreserved = (EntityQty(mKeyA) = 1 And EntityQty(mKeyB) = 55 And mInventory.Saved And CanaryPreserved())
+Public Function NativeFixturePreserved(Optional ByVal expectedQty As Double = 1) As Boolean
+    NativeFixturePreserved = (EntityQty(mKeyA) = expectedQty And EntityQty(mKeyB) = 55 And mInventory.Saved And CanaryPreserved())
 End Function
 '@)
+    $start=$Module.ProcStartLine('PromptAnswer',0)
+    $count=$Module.ProcCountLines('PromptAnswer',0)
+    $found=0
+    for($line=$start;$line -lt $start+$count;$line++){
+        if($Module.Lines($line,1).Trim() -ceq 'mConfirmPrompt = prompt: PromptAnswer = AuthorityNarrativeAnswer()'){
+            $Module.ReplaceLine($line,'            mConfirmPrompt = prompt: PromptAnswer = NativeNarrativeAnswer(prompt)');$found++
+        }
+    }
+    if($found -ne 1){throw 'Exactly one native narrative presentation seam required.'}
 }
 
 function Invoke-ReconcileNativeCancel([string]$LastEvent,[string]$SystemKey) {
@@ -172,6 +206,10 @@ function Test-AdminReconcileNative($Events,$State) {
         Check 'Reconcile.Native.InspectLast.ExactEventAndKeyRead' ([bool](Run 'invSys.Inventory.Domain.xlam' 'TestReconcileReadLease.ExactStateRequest' @($last,$State.KeyA)))
         Check 'Reconcile.Native.InspectLast.ConclusionWithoutQueue' ($inspected.Returned -and $Events.ListRows.Count -eq $rows)
         Check 'Reconcile.Native.InspectLast.InventoryPreserved' (((Hash $State.InventoryPath) -ceq $bytes) -and [bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.NativeFixturePreserved'))
+        $closed=Invoke-ReconcileSelectionNative -WindowClose
+        Check 'Reconcile.Native.WindowClose.NoQueue' ($closed.Returned -and $closed.Observed.WindowCloseDispatched -and $Events.ListRows.Count -eq $rows)
+        Check 'Reconcile.Native.WindowClose.InventoryPreserved' (((Hash $State.InventoryPath) -ceq $bytes) -and [bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.NativeFixturePreserved'))
+        Test-AdminReconcileConfirmation $Events $State
     }
     }finally{try{$nativeHost.Close($false)}catch{};[void][Runtime.InteropServices.Marshal]::ReleaseComObject($nativeHost)}
 }
