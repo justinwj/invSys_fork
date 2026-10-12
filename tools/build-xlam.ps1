@@ -12,6 +12,10 @@ param(
     [Parameter(Mandatory = $false)]
     [switch]$IncludeOperationsShadow,
 
+    # Diagnostic option for Excel/VBE failures between hidden project builds.
+    [Parameter(Mandatory = $false)]
+    [switch]$VisibleHost,
+
     [Parameter(Mandatory = $false)]
     [switch]$Apply
 )
@@ -1173,6 +1177,7 @@ if (Test-Path -LiteralPath $referenceDir) {
 
 $builtOutputs = @{}
 $excel = $null
+$buildVisibleHost = $null
 try {
     if (($legacyArtifacts.Count -gt 0) -and (-not (Test-Path -LiteralPath $archiveDir))) {
         New-Item -ItemType Directory -Path $archiveDir -Force | Out-Null
@@ -1190,6 +1195,11 @@ try {
     $excel.DisplayAlerts = $false
     $excel.EnableEvents = $false
     $excel.AutomationSecurity = 1
+
+    if ($VisibleHost) {
+        $excel.Visible = $true
+        $buildVisibleHost = $excel.Workbooks.Add()
+    }
 
     foreach ($project in $projectMap) {
         Write-Host ("Building " + $project.OutputFile + " ...")
@@ -1270,6 +1280,10 @@ try {
 }
 finally {
     if ($null -ne $excel) {
+        if ($null -ne $buildVisibleHost) {
+            try { $buildVisibleHost.Close($false) } catch {}
+            Release-ComObject $buildVisibleHost
+        }
         try { $excel.Quit() } catch {}
         Release-ComObject $excel
         $excel = $null

@@ -7,6 +7,7 @@
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileConfirmation.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileFont.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileSelection.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beAdminReconcileRecording.ps1')
 function Install-AdminReconcileIdentityProbe {
     $project=$packages['invSys.Admin.xlam'].VBProject
     $probe=$project.VBComponents.Add(1);$probe.Name='TestReconcileIdentity'
@@ -23,6 +24,7 @@ Private mSelection As Long
 Private mListPrompt As String
 Private mConfirmPrompt As String
 Private mNativePresentation As Boolean
+Private mTrackingNotices As Long
 Private Const SKU As String = "DEMO-RECONCILE-IDENTITY"
 
 Public Function Prepare(ByVal warehouseId As String, ByVal csvPath As String) As Boolean
@@ -76,15 +78,25 @@ Public Function PromptAnswer(ByVal title As String, ByVal prompt As String) As S
 End Function
 
 Public Function ObserveNotice(ByVal text As String) As VbMsgBoxResult
+    If Left$(text, 21) = "Tracking unavailable:" Then
+        mTrackingNotices = mTrackingNotices + 1
+        ObserveNotice = vbOK
+        Exit Function
+    End If
     mBoundaryNotice = text
     If InStr(1, text, "Shipment reconcile event queued.", vbBinaryCompare) = 1 Then mQueuedNotice = True
     ObserveNotice = vbOK
 End Function
 
 Public Function InvokeCallback() As Boolean
+    mTrackingNotices = 0
     mPrompts = 0: mQueuedNotice = False: mListPrompt = "": mConfirmPrompt = "": mBoundaryNotice = ""
     modAdminShipmentReconcile.OpenShipmentReconcileTool
     InvokeCallback = (mPrompts = 2 And mQueuedNotice)
+End Function
+
+Public Function TrackingNoticeCount() As Long
+    TrackingNoticeCount = mTrackingNotices
 End Function
 
 Public Function FixtureValue(ByVal field As String) As String
@@ -182,6 +194,7 @@ End Function
     if($AdminReconcileNativePresentation){
         Install-AdminReconcileNativeProbe $probe.CodeModule
     }
+    if($AdminReconcileRecording){Install-AdminReconcileRecordingProbe}
 }
 
 function Test-AdminReconcileIdentity($Fixture,$OtherFixture) {
@@ -235,7 +248,15 @@ function Test-AdminReconcileIdentity($Fixture,$OtherFixture) {
     Check 'Reconcile.Preservation.OtherWarehouseConfig' ((Hash $OtherFixture.Config) -ceq $otherBefore)
     Test-AdminReconcileHistory $events $inventory $state
     Test-AdminReconcileAuthority $events $state $Fixture $OtherFixture
-    if($AdminReconcileNativePresentation){Test-AdminReconcileNative $events $state}
+    if($AdminReconcileNativePresentation){
+        if($AdminReconcileRecording){
+            SelectTarget $Fixture
+            if(-not [bool](Run 'invSys.Core.xlam' 'TestReconcileRecording.EnablePolicy')){throw 'Recording fixture unavailable; not behavioral RED.'}
+            $recordingBefore=@(Get-Slice4beActivityFiles $Fixture)
+        }
+        Test-AdminReconcileNative $events $state
+        if($AdminReconcileRecording){Test-AdminReconcileRecording $Fixture $recordingBefore $events $state}
+    }
     if($openedHere){$inbox.Close($false)}
     } finally {
         [void](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.ReleaseFixture')

@@ -6,10 +6,12 @@ This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
 Continuation: [Shipment Reconcile evidence](plan022_slice4be_admin_reconcile_results.md)
-now passes203/203, retaining the191-check prefix under approved D8-RECON-01.
+now passes248/248, retaining the203-check native/authority prefix under approved D8-RECON-01.
 Scrollable history, native entry20/Inspect/Escape, resize, window-close and
-confirmation Cancel/typed Submit pass. Recording/publication/guide proof remains
-open. Earlier31/24 RED covered repeated/multi-entity history,
+confirmation Cancel/typed Submit pass. Catalog34 Open/Inspect/Cancel recording,
+suppression, exact references and original-session binding pass. Storage-failure,
+active recording/publication/guide proof and local eligibility remain open.
+Earlier31/24 RED covered repeated/multi-entity history,
 actual queued application and Domain association/quantity guards.
 The user approved D14-RECON-01 in v4.11 on2026-10-12. The
 source audit below remains useful; its original no-behavioral-RED status is superseded
@@ -26,7 +28,8 @@ Ignored verification: `reports/runtime/admin-remaining-source-audit-01/ribbon-ve
 
 ## Actions map
 
-All rows except Settings remain pending shared recording/publication/guide proof.
+Except for Settings, complete recording/publication/guide proof remains pending;
+Reconcile has the partial recording gate described above.
 Form subactions below are source findings, not a complete live-control census.
 Do not count typing, initialization, programmatic selection or internal refresh
 as deliberate actions merely because an event procedure exists.
@@ -42,7 +45,7 @@ as deliberate actions merely because an event procedure exists.
 | `btnAdminSetupTesterStation` | `modAdmin.Admin_SetupTesterStation_Click` | `frmSetupTesterStation`: path helpers, `modTesterSetup.SetupTesterStation`, open generated Receiving workbook, delete generated setup, cancel. Capture only eligible current-context actions; never use existing operational workbooks as disposable fixtures. |
 | `btnAdminAddInventoryItem` | `modAdmin.Add_InventoryItem` | Captures exact warehouse/station/user and operator workbook, then modal `frmAddInventoryItem`: Add/Edit selection, custom fields, sheet workbench create/upload, accept/delete/cancel. Owner command results occur after form acceptance; retain existing System_Key, unknown columns and workflow gates. |
 | `btnAdminSeedInventory` | `modAdmin.Seed_DemoInventory` | `frmSeedInventory` selects Seed/Delete/Upload Data Set/Delete Data Set; callback confirmations and `modAdminInventorySeed` results follow. Inbox repair has its own form handler. CSV definition changes are not inventory changes. Existing automation result text is not shared activity proof. |
-| `btnAdminShipmentReconcile` | `modAdminShipmentReconcile.OpenShipmentReconcileTool` | `frmShipmentReconcileSelection`/narrative -> `QueueAdminShipmentReconcileEvent` -> Core live-context gate -> provisioned queue API. Approved D14-RECON-01/D8-RECON-01 pass203 checks, including native confirmation/window-close. Recording/publication/guide proof remains open. |
+| `btnAdminShipmentReconcile` | `modAdminShipmentReconcile.OpenShipmentReconcileTool` | `frmShipmentReconcileSelection`/narrative -> `QueueAdminShipmentReconcileEvent` -> Core live-context gate -> provisioned queue API. D14-RECON-01/D8-RECON-01/D18 pass248 checks: native confirmation/window-close, catalog34 recording, suppression, references and original-session binding. Storage-failure, active capture/publication/guide proof and local eligibility remain open. |
 | `btnAdminHqAggregator` | `modAdmin.Admin_AggregateGlobalSnapshot_Click` | `frmAggregationSources`: discover/add/connect, source selection, `RunHQAggregationFromSourceSet`, Close. Explicit source-set aggregation remains advisory. Connection credentials and source paths are excluded from activity payloads. |
 | `btnAdminDesignLifecycle` | `modAdminDesignLifecycle.Admin_DesignLifecycle_Click` | `frmAdminDesignLifecycle`: refresh, constructed Import Legacy Recipes, Release selected, Obsolete selected, Close. `ExecuteDesignLifecycleCommand` separates queued event, processing and resulting status. A form open is not a release; recipe import is not authority to migrate legacy inventory. |
 | `btnAdminVerifyAddinsPublished` | `modAdmin.Verify_AddinsPublished` | `modAddinsPublish.VerifyAddinsPublished` checks required files/nonzero sizes and shows existing result. Verification is not PublishAddins. Capture fixed result facts, not full diagnostic paths. |

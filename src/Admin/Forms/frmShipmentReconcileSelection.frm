@@ -19,6 +19,7 @@ Private mHistory As MSForms.TextBox, mSelection As MSForms.TextBox
 Private WithEvents mInspect As MSForms.CommandButton
 Private WithEvents mCancel As MSForms.CommandButton
 Private mAnchors As Object, mResizeReady As Boolean, mSelectedText As String
+Private mActivity As cAdminReconcileActivity
 
 Private Sub UserForm_Initialize()
     Dim definition As Variant, control As Object
@@ -48,7 +49,8 @@ Private Sub UserForm_Initialize()
     mInspect.Default = True: mCancel.Cancel = True
 End Sub
 
-Public Sub Configure(ByVal history As String)
+Public Sub Configure(ByVal history As String, Optional ByVal observer As cAdminReconcileActivity = Nothing)
+    Set mActivity = observer
     mHistory.Value = history: mHistory.SelStart = 0
     mSelection.Value = "": mSelectedText = ""
 End Sub
@@ -58,13 +60,16 @@ Public Property Get SelectedText() As String
 End Property
 
 Private Sub mInspect_Click()
+    If Not mActivity Is Nothing Then mActivity.SelectAction False
     mSelectedText = Trim$(CStr(mSelection.Value))
     Me.Hide
 End Sub
 
 Private Sub mCancel_Click()
+    If Not mActivity Is Nothing Then mActivity.SelectAction True
     mSelectedText = ""
     Me.Hide
+    If Not mActivity Is Nothing Then mActivity.Finish "CANCELLED"
 End Sub
 
 Private Sub UserForm_Activate()
@@ -74,6 +79,7 @@ Private Sub UserForm_Activate()
     End If
     mAnchors.ResizeControls
     mSelection.SetFocus
+    If Not mActivity Is Nothing Then mActivity.Presented Me.Visible
 End Sub
 
 Private Sub UserForm_Layout()
@@ -85,5 +91,6 @@ Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
         Cancel = True: mCancel_Click
     Else
         Set mAnchors = Nothing
+        Set mActivity = Nothing
     End If
 End Sub

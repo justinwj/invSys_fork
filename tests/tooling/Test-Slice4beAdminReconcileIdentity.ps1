@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-admin-reconcile-01',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$NativePresentation)
+param([string]$DeployRoot='deploy/validation-admin-reconcile-01',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$NativePresentation,[switch]$CheckRecording)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before Reconcile identity validation.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
@@ -15,6 +15,7 @@ $start=[DateTimeOffset]::UtcNow;$code=1
 Write-Output ('Admin reconcile controller: '+$root)
 try{
     $nativeArgs=@();if($NativePresentation){$nativeArgs+='-AdminReconcileNativePresentation'}
+    if($CheckRecording){if(-not $NativePresentation){throw 'Recording gate requires native handlers.'};$nativeArgs+='-AdminReconcileRecording'}
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1') -DeployRoot $DeployRoot -Phase $Phase -AdminReconcileIdentityOnly -CompileEvaluationProbesForTest -WaitForExcelReadyForTest -ExcelReadyReadLimitForTest 40 @nativeArgs *> (Join-Path $root 'worker.log')
     $code=$LASTEXITCODE
 }finally{

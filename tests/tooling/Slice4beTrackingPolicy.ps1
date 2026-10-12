@@ -194,8 +194,8 @@ function Get-TrackingPolicyVersion($Fixture) {
 function Test-Slice4beTrackingPolicy($Fixture,$Other) {
     $request=Get-TrackingPolicyRequest
     $model=$request|ConvertFrom-Json
-    # Architecture v4.11 D18 catalog33 adds Settings Open and five destinations to the prior145 controls.
-    $loaded=($model.SchemaVersion -eq 2 -and $model.CatalogVersion -eq 33 -and $model.Controls.Count -eq 151 -and @($model.Users).Count -eq 0)
+    # Architecture v4.11 D18 catalog34 adds Reconcile Open, Inspect and Cancel to the prior151 controls.
+    $loaded=($model.SchemaVersion -eq 2 -and $model.CatalogVersion -eq 34 -and $model.Controls.Count -eq 154 -and @($model.Users).Count -eq 0)
     Check 'TrackingPolicy.EditorLoaded' $loaded
     if(-not $loaded){throw 'Tracking policy editor fixture did not load.'}
     Check 'TrackingPolicy.BuiltInDefaults' (-not $model.ViewerActionPathCaptureEnabled -and $model.AdminViewerEventLoggingEnabled -and $model.DefaultView -ceq 'How-To' -and

@@ -111,6 +111,8 @@ Public Function CommandCompleted(ByVal record As Object) As Boolean
     End If
     ' Explicit owner facts; severity and data effect are deliberately not classifiers.
     Select Case CStr(record("ControlId"))
+        Case "ADMIN_RECONCILE_OPEN": CommandCompleted = (code = "OPENED")
+        Case "ADMIN_RECONCILE_INSPECT": CommandCompleted = (code = "CONFIRMED")
         Case "ADMIN_SETTINGS_OPEN": CommandCompleted = (code = "OPENED")
         Case "ADMIN_SETTINGS_PAGE_GENERAL", "ADMIN_SETTINGS_PAGE_EVENT_TRACKING", _
              "ADMIN_SETTINGS_PAGE_TRACKING", "ADMIN_SETTINGS_PAGE_EVENT_DETAIL", "ADMIN_SETTINGS_PAGE_ACTION_PATHS"

@@ -427,3 +427,118 @@ harness; submission is withheld when native input readback differs.
   one-line layout-adapter exception remains unchanged.
 
 Recording/publication/guide coverage remains open. This is not4be-A acceptance.
+
+## Reconcile recording and binding gate
+
+D18's recorded control map precedes implementation: catalog34 adds Open, Inspect
+and Cancel under ADMIN_SHIPMENT_RECONCILE, preserving all151 prior definitions.
+Admin owns an invocation-scoped observer; Core owns policy, storage and conclusions.
+The existing native narrative response belongs to Inspect. No entered values,
+paths, inventory keys or quantities enter activity. CONFIRMED means one new queued
+correction with an Inventory/Submitted reference, never Domain application or the
+older corrected shipment. FAILED references, if present, remain singular/Unknown.
+
+Qualified D13 progression (all paths below are under ignored `reports/runtime`):
+
+- Absent-record RED:207/11 of218 on unchanged selection-02; original203 all GREEN.
+  Controller `admin-reconcile-controller/a2e35baa35dc46b1b362a4d18cdb0256`, worker
+  `slice4be-admin-reconcile/6f41e470aee44ad08f0406ccf37a6b4c`.
+- Missing sign-out warning RED:223/1 of224 on recording-03; controller
+  `admin-reconcile-controller/924d329b49364b1ca25f2d45acb81513`, worker
+  `slice4be-admin-reconcile/17e6d7aa3ea842649770f527f571fefd`.
+  The earlier214/4 run exposed an observer conflating tracking and business notices;
+  that harness defect is not behavioral RED. Separate observations preserve both.
+- Reference guard RED:241/3 of244 on recording-04. Core incorrectly accepted
+  multiple CONFIRMED/FAILED references and a FAILED/Submitted reference.
+  Controller `admin-reconcile-controller/7ad13190888345d3848c140e173acc8f`, worker
+  `slice4be-admin-reconcile/f779b379d6ba464193ca42e1b4908470`.
+  Recording-05 passes244/244; controller
+  `admin-reconcile-controller/588a10b0aba64a958e0621ff199e687d`, worker
+  `slice4be-admin-reconcile/3695df0eba66416880a4ab4aacbf9265`.
+- Entry-binding RED:246/2 of248 on recording-05, retaining the exact244 prefix.
+  A one-shot test-only hook performs real sign-out/re-authentication as optional
+  Core recording begins. The callback wrongly captures that later session and
+  queues a correction. Controller
+  `admin-reconcile-controller/6640e35597e84e46b0bb2da19a3aa583`, worker
+  `slice4be-admin-reconcile/4b13f8f524d244e7826b1a60b8dfa3e7`.
+  Clean delayed audit through07:42:55.1338934 UTC. Business target/user/context
+  capture now precedes optional recording, preserving approved D8-RECON-01.
+
+The first entry test incorrectly required InvokeCallback's successful-queue
+Boolean while expecting no queue. Its247/1 candidate06 result is not GREEN.
+Correct the assertion to require False plus unchanged queue count; the qualified
+246/2 RED above reruns that corrected assertion against candidate05.
+
+The244 gate observes five actual native callbacks producing exactly20 records:
+five Open/OPENED pairs, two Cancel/CANCELLED pairs, and Inspect NO_CORRECTION,
+CANCELLED and CONFIRMED pairs. It checks unique correlation, original context,
+fixed messages/effects, exact new-event references and CommandCompleted polarity.
+Five mid-dialog context changes show one tracking warning each. Global recording
+off, all three controls off and current-user recording off each leave the business
+command working once, with no activity or false warning and unchanged inventory.
+These checks do not yet prove storage failure, recording publication or guide use.
+
+Final recording-06 passes **248/248** with the exact244-check prefix retained.
+Controller `admin-reconcile-controller/7ddc1113764344a99d3dc0510a692a71`, worker
+`slice4be-admin-reconcile/46d64de022df47908b3fffa27fac4ef9`, UTC07:42:55.6245589--
+07:45:48.3790984; zero delayed native failures through07:46:00.3790984. All five
+instrumented compiles, exact log/JSON correspondence, preservation and normal
+closure pass. Entry reauthentication refuses with the existing exact message,
+no queued event, no later-context activity and unchanged inventory.
+Final foreground captures were reviewed directly: minimum-size history retains
+entry20 and reachable controls; the typed native confirmation displays the full
+selected event/key, quantities, delta and narrative. Other sizes and native
+cancellation retain the passing measurements and handler checks.
+
+Build `admin-reconcile-recording-build-06` cold-compiles all five packages and
+passes Operations startup: five intended components changed, two added,318
+unchanged. Prior candidate/settings are preserved; clean delayed audit through
+07:35:56.5107972. The candidate is not promoted.
+
+Static `admin-reconcile-recording-static-04`:332 components,6399 procedures,
+139542 lines; all28 size caps, unchanged dynamic9/45, three schemas and479 parsers
+pass. **Reviewed exception:** duplicates194 (+1) is the literal-erased three-ID
+ControlIds list shared by separate Reconcile and Production recipe-order registries.
+Their fixed identities differ; merging the registries would obscure ownership.
+No duplicate business logic is accepted. Prior one-line layout-adapter exception
+remains; no scanner rule or deletion authority changes.
+
+Same-candidate smoke retains86/86 in exact prior order, with both unassisted exits:
+`admin-reconcile-recording-regression/smoke-52989636304f4be29249cab44c6a0027`,
+UTC07:46:00.7179731--07:46:21.2101993; delayed native audit is clean.
+Settings retains202/202 in exact prior order, including policy/detail/preference,
+restart, Operations isolation/binding and Admin Close:
+`admin-reconcile-recording-regression/settings-d0dfdc5bdbf649debc236c3fdd405dc1`,
+UTC07:46:53.6726159--07:51:31.5088476; clean audit through07:51:43.5088476.
+All five instrumented compiles and settings/package/report preservation pass.
+Settings' fixed catalog expectation changes33/151 to specified34/154; no check
+is removed. Earlier scope-specific tests retain historical candidate expectations;
+update their version assertion explicitly when rerunning them on a later catalog.
+
+Build diagnostics: two hidden builds crashed in VBE7.DLL with native access
+violation c0000005 before Operations construction. Neither is GREEN or desktop
+error5. A disposable visible host succeeded; canonical `build-xlam.ps1` now offers
+opt-in `-VisibleHost`, closes its unsaved host and retains the default hidden mode.
+This does not claim to repair Excel. Raw diagnostic artifacts remain ignored.
+
+First recording-06 full-chain run is not accepted: controller
+`admin-reconcile-recording-regression/chain-4b98c7ad3e994ef992f1ae3d71c1e494`.
+At07:53:58.8468184 UTC Excel crashed in ntdll.dll, c0000028, offset12d2f, while
+`modTS_Shipments.RunShipmentsSentFormActionForTest` was active; the harness received
+0x800706BE. Live checks stopped40/1, Create15/15, chain5/1. Root cause is unresolved;
+this is neither product RED nor desktop error5. The replacement window matched a
+generated fixture and closed normally through WM_CLOSE, without COM attachment
+or force-kill. The waiting controller then restored settings/packages/tracked
+reports; assisted cleanup is not GREEN. A separate fresh run is required.
+
+Fresh same-candidate full-chain GREEN:
+`admin-reconcile-recording-regression/chain-ce50c7639c4046caaeb6c85697667bdd`,
+UTC07:57:28.0771557--08:02:59.4228247. All32 chain,48 live-role and15 Create Warehouse
+checks retain the exact prior order. Normal unassisted completion, restoration,
+package/report preservation and zero delayed native failures through08:03:11.4228247
+pass. This qualifies the separate clean run; it does not diagnose or repair the
+earlier intermittent Excel crash.
+
+Local-target recording eligibility, active capture/publication/guide proof and
+remaining Admin coverage stay open. No local business permission restriction,
+recording exclusion, package promotion or complete4be-A acceptance is claimed.

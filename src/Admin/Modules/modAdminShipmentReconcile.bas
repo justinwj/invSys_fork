@@ -16,21 +16,24 @@ Public Sub OpenShipmentReconcileTool()
     Dim userId As String, recentRows As Collection, selectedRow As Object, state As Variant, context As String
     Dim selectionText As String, selectedIndex As Long, systemKey As String, correctedShipEventId As String
     Dim currentQty As Double, afterQty As Double, delta As Double, narrative As String, eventIdOut As String, report As String
+    Dim activity As cAdminReconcileActivity, outcome As String
+    Set activity = New cAdminReconcileActivity
     Set target = modNasConnection.GetCurrentTarget()
     If target Is Nothing Then
         MsgBox "Select a warehouse before opening Shipment Reconcile.", vbExclamation, "invSys Admin"
-        Exit Sub
+        activity.Finish "REJECTED": GoTo Finished
     End If
     warehouseId = target.WarehouseId: stationId = target.StationId: runtimeRoot = target.RuntimeRoot
     userId = modAuth.GetCurrentUserId()
     context = modAdminReconcileAccess.CaptureContext()
+    activity.Capture
     Set recentRows = BuildRecentShipmentSentRows(Nothing, 20, warehouseId, runtimeRoot)
     If recentRows.Count = 0 Then
         MsgBox "No valid server shipment deduction entries are available in the selected warehouse.", vbInformation, "invSys Admin - Shipment Reconcile"
-        Exit Sub
+        activity.Finish "REJECTED": GoTo Finished
     End If
-    selectionText = SelectShipmentHistory(FormatRecentShipmentRows(recentRows))
-    If selectionText = "" Then Exit Sub
+    selectionText = SelectShipmentHistory(FormatRecentShipmentRows(recentRows), activity)
+    If selectionText = "" Then activity.Finish "REJECTED": GoTo Finished
     If Not IsNumeric(selectionText) Then GoTo InvalidSelection
     If CDbl(selectionText) < 1 Or CDbl(selectionText) > recentRows.Count Then GoTo InvalidSelection
     If CDbl(selectionText) <> Fix(CDbl(selectionText)) Then GoTo InvalidSelection
@@ -41,12 +44,12 @@ Public Sub OpenShipmentReconcileTool()
         Nothing, warehouseId, runtimeRoot)
     If IsEmpty(state) Then
         MsgBox "The selected shipment and exact inventory entity could not be validated.", vbExclamation, "invSys Admin - Shipment Reconcile"
-        Exit Sub
+        activity.Finish "REJECTED": GoTo Finished
     End If
     currentQty = CDbl(state(0)): afterQty = CDbl(state(1))
     If currentQty <= afterQty Then
         MsgBox "Current quantity is not higher than the selected entity's balance after that shipment. No correction was queued.", vbInformation, "invSys Admin - Shipment Reconcile"
-        Exit Sub
+        activity.Finish "NO_CORRECTION": GoTo Finished
     End If
     delta = afterQty - currentQty
     narrative = Trim$(InputBox("Type one line explaining why this admin correction is being made." & vbCrLf & vbCrLf & _
@@ -57,29 +60,38 @@ Public Sub OpenShipmentReconcileTool()
         "Queued correction delta: " & Format$(delta, "0.########"), "invSys Admin - Confirm Shipment Reconcile"))
     If narrative = "" Then
         MsgBox "Shipment reconcile cancelled. A human repair narrative is required.", vbExclamation, "invSys Admin"
-        Exit Sub
+        activity.Finish "CANCELLED": GoTo Finished
     End If
     If QueueAdminShipmentReconcileEvent(warehouseId, stationId, userId, systemKey, delta, correctedShipEventId, narrative, _
-        FLAG_NAS_INCREASED_AFTER_SHIP, Nothing, eventIdOut, report, runtimeRoot, context) Then
+        FLAG_NAS_INCREASED_AFTER_SHIP, Nothing, eventIdOut, report, runtimeRoot, context, outcome) Then
+        activity.Finish "CONFIRMED", eventIdOut
         MsgBox "Shipment reconcile event queued." & vbCrLf & "EventID: " & eventIdOut & vbCrLf & _
             "Corrects: " & correctedShipEventId & vbCrLf & "System_Key: " & systemKey & vbCrLf & _
             "Delta: " & Format$(delta, "0.########"), vbInformation, "invSys Admin"
     Else
+        activity.Finish outcome, eventIdOut
         MsgBox report, vbExclamation, "invSys Admin"
     End If
-    Exit Sub
+    GoTo Finished
 InvalidSelection:
+    activity.Finish "REJECTED"
     MsgBox "Enter a whole number from 1 to " & CStr(recentRows.Count) & ".", vbExclamation, "invSys Admin - Shipment Reconcile"
-    Exit Sub
+    GoTo Finished
 Failed:
-    MsgBox "Shipment reconcile could not finish: " & Err.Description, vbExclamation, "invSys Admin"
+    report = Err.Description
+    If Not activity Is Nothing Then activity.Finish "FAILED", eventIdOut
+    MsgBox "Shipment reconcile could not finish: " & report, vbExclamation, "invSys Admin"
+Finished:
+    If Not activity Is Nothing Then
+        If activity.Notice <> "" Then MsgBox activity.Notice, vbExclamation, "invSys Admin"
+    End If
 End Sub
 
-Private Function SelectShipmentHistory(ByVal prompt As String) As String
+Private Function SelectShipmentHistory(ByVal prompt As String, ByVal activity As cAdminReconcileActivity) As String
     Dim dialog As frmShipmentReconcileSelection
     On Error GoTo Failed
     Set dialog = New frmShipmentReconcileSelection
-    dialog.Configure prompt
+    dialog.Configure prompt, activity
     dialog.Show vbModal
     SelectShipmentHistory = dialog.SelectedText
     Unload dialog
@@ -96,9 +108,12 @@ Public Function QueueAdminShipmentReconcileEvent(ByVal warehouseId As String, By
                                                  ByVal correctedShipEventId As String, ByVal repairNarrative As String, _
                                                  Optional ByVal mismatchFlag As String = "", Optional ByVal targetInboxWb As Workbook = Nothing, _
                                                  Optional ByRef eventIdOut As String = "", Optional ByRef report As String = "", _
-                                                 Optional ByVal runtimeRoot As String = "", Optional ByVal context As String = "") As Boolean
+                                                 Optional ByVal runtimeRoot As String = "", Optional ByVal context As String = "", _
+                                                 Optional ByRef outcome As String = "") As Boolean
     Dim state As Variant, item As Object, payloadJson As String
+    outcome = "DENIED"
     If Not modAdminReconcileAccess.ValidateSubmission(context, warehouseId, stationId, runtimeRoot, userId, report) Then Exit Function
+    outcome = "REJECTED"
     state = modInventoryDomainBridge.ReadShipmentReconcileBridge("STATE" & vbTab & correctedShipEventId & vbTab & systemKey, _
         Nothing, warehouseId, runtimeRoot)
     If IsEmpty(state) Then
@@ -118,8 +133,10 @@ Public Function QueueAdminShipmentReconcileEvent(ByVal warehouseId As String, By
     item("RepairNarrative") = repairNarrative
     If mismatchFlag <> "" Then item("MismatchFlag") = mismatchFlag
     payloadJson = modRoleEventWriter.BuildPayloadJson(item)
+    outcome = "FAILED"
     QueueAdminShipmentReconcileEvent = modRoleEventWriter.QueuePayloadEvent(ADMIN_RECON_EVENT_TYPE, warehouseId, stationId, userId, _
         payloadJson, repairNarrative, correctedShipEventId, "", Now, targetInboxWb, eventIdOut, report)
+    If QueueAdminShipmentReconcileEvent Then outcome = "CONFIRMED"
 End Function
 
 Public Function ValidateShipmentReconcileRequest(ByVal sku As String, _

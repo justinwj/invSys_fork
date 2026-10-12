@@ -190,6 +190,7 @@ End Function
 }
 
 function Test-AdminReconcileAuthority($Events,$State,$Fixture,$OtherFixture) {
+    $script:reconcileContextNotices=@()
     $ready=[bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.PrepareAuthoritySuite')
     Check 'Reconcile.Authority.OwnerGeneratedBaseline' $ready
     if(-not $ready){throw 'Authority fixture baseline failed; not behavioral RED.'}
@@ -227,6 +228,7 @@ function Test-AdminReconcileAuthority($Events,$State,$Fixture,$OtherFixture) {
                 $mutated=[bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.AuthorityMutationObserved')
                 Check ('Reconcile.Authority.'+$case+'.LiveMutationObserved') $mutated
                 if(-not $mutated){throw 'Authority mutation failed; not behavioral RED.'}
+                if($AdminReconcileRecording){$script:reconcileContextNotices+=[pscustomobject]@{Case=$case;Count=[int](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.TrackingNoticeCount')}}
             }
             $values=([string](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.AuthorityObservation')) -split '\|'
             if($values.Count -ne 3){throw 'Invalid authority observation envelope.'}

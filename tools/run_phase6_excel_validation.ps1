@@ -431,6 +431,7 @@ try {
         (Join-Path $repo "src/Core/Modules/modEvaluationPresentation.bas"),
         (Join-Path $repo "src/Core/Modules/modRecordingJournal.bas"),
         (Join-Path $repo "src/Core/Modules/modActivityCatalog.bas"),
+        (Join-Path $repo "src/Core/Modules/modAdminReconcileCodes.bas"),
         (Join-Path $repo "src/Core/Modules/modActivityPolicy.bas"),
         (Join-Path $repo "src/Core/Modules/modTrackingPolicyModel.bas"),
         (Join-Path $repo "src/Core/Modules/modTrackingPolicyCommand.bas"),
@@ -510,6 +511,7 @@ try {
     )
 
     $classPaths = @(
+        (Join-Path $repo "src/Admin/ClassModules/cAdminReconcileActivity.cls"),
         (Join-Path $repo "src/Core/ClassModules/WarehouseTarget.cls"),
         (Join-Path $repo "src/InventoryDomain/ClassModules/cInventoryAppEvents.cls"),
         (Join-Path $repo "src/Receiving/ClassModules/cReceivingAppEvents.cls"),
