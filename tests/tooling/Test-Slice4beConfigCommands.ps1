@@ -11,6 +11,7 @@ param(
     [switch]$CheckAdminUsersAuthority,
     [switch]$CheckAdminUsersRecording,
     [switch]$AdminUsersRecordingOnly,
+    [switch]$AdminUsersGuideOnly,
     [switch]$CheckActivityEvidence,
     [switch]$CheckActivityFoundation,
     [switch]$CheckAdminUomActivity,
@@ -732,6 +733,7 @@ if($RequireAdminAuthWriteAuthority -and -not $AdminAuthWriteDiagnostic){throw 'W
 if($CheckAdminUsersAuthority -and -not $RequireAdminAuthWriteAuthority){throw 'Direct Core authority tests require the handler authority gate.'}
 if($CheckAdminUsersRecording -and -not $CheckAdminUsersAuthority){throw 'Recording requires the authority probe.'}
 if($AdminUsersRecordingOnly -and -not $CheckAdminUsersRecording){throw 'Focused recording requires its probe.'}
+if($AdminUsersGuideOnly -and (-not $CheckAdminUsersRecording -or $AdminUsersRecordingOnly)){throw 'Focused guide requires Users recording and excludes recording-only mode.'}
 if($CheckAuthReadOnly){
     if(-not $CompileEvaluationProbesForTest -or $CheckActivityEvidence -or $CheckTrackingSettings -or $CheckViewerPublishedRead -or $CheckViewerEventDetail -or $CheckViewerEventGroups -or $CheckViewerRefreshFailure -or $CheckAdminSettingsClose){throw 'Auth reads require the separate compiled Core/caller gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-auth-read/'+[guid]::NewGuid().ToString('N'))
@@ -1252,7 +1254,7 @@ function NewFixture([string]$Suffix) {
             $row.Range.Cells.Item(1,$caps.ListColumns.Item($pair.Key).Index).Value2=$pair.Value
         }
     }
-    if($AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
+    if($AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
         # Explicit fixture grant: Admin bootstrap does not imply guide maintenance.
         $row=$caps.ListRows.Add()
         foreach($pair in @{UserId='config-admin';Capability='ACTION_PATH_MAINT';WarehouseId=$wh;StationId='S1';Status='Active'}.GetEnumerator()){
@@ -1869,6 +1871,10 @@ End Function
                 if($CheckAdminUsersRecording){
                     . (Join-Path $PSScriptRoot 'Slice4beAdminUsersRecording.ps1')
                     Install-AdminUsersRecordingProbe
+                    if($AdminUsersGuideOnly){
+                        . (Join-Path $PSScriptRoot 'Slice4beAdminUsersGuide.ps1')
+                        Install-AdminUsersGuideProbe
+                    }
                 }
             }
         }
@@ -1955,7 +1961,10 @@ End Function
         [void](Run 'invSys.Core.xlam' 'modWarehouseBootstrap.SetLocalOperatorRootOverrideForAutomation' @((Join-Path $runRoot 'operators')))
     }
     SelectTarget $a
-    if($AdminUsersRecordingOnly){
+    if($AdminUsersGuideOnly){
+        $step='packaged Users continuous recording and independent guide'
+        Test-AdminUsersGuide $a $b
+    }elseif($AdminUsersRecordingOnly){
         $step='packaged Users and Roles recording'
         Test-AdminUsersRecording $a $b
     }elseif($CheckAuthReadOnly){

@@ -14,6 +14,7 @@ Public Function Policy(Optional ByVal mode As String = "Enabled") As Boolean
     If context = "" Then Exit Function
     If Not modTrackingPolicySettings.ReadEditor(context, version, wire, report) Then Exit Function
     Set model = modTrackingPolicyModel.Defaults(mode <> "Disabled")
+    If mode = "Capture" Then model("ViewerActionPathCaptureEnabled") = True
     If mode = "ControlOff" Then
         For Each row In model("Controls")
             If Left$(row("ControlId"), 11) = "ADMIN_USER_" Then row("Collect") = False
