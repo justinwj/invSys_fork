@@ -1199,7 +1199,18 @@ try {
     }
     finally {
         try { [void](Run-WorkbookMacro -Excel $excel -WorkbookName $workbookMap["invSys.Core.xlam"].Name -MacroName "modRuntimeWorkbooks.ClearCoreDataRootOverride") } catch {}
-        try { if (Test-Path $bootstrapRoot) { Remove-Item -Path $bootstrapRoot -Recurse -Force } } catch {}
+        $resolvedBootstrap = [IO.Path]::GetFullPath($bootstrapRoot)
+        $bootstrapTempRoot = [IO.Path]::GetFullPath($env:TEMP).TrimEnd('\') + '\'
+        if (-not $resolvedBootstrap.StartsWith($bootstrapTempRoot, [StringComparison]::OrdinalIgnoreCase) -or
+            [IO.Path]::GetFileName($resolvedBootstrap) -notmatch '^phase6_cfg_live_[a-f0-9]{32}$') {
+            throw 'Config bootstrap cleanup target is outside its generated temporary directory.'
+        }
+        if (Test-Path -LiteralPath $resolvedBootstrap) {
+            if ((Get-Item -LiteralPath $resolvedBootstrap).Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                throw 'Config bootstrap cleanup root is a reparse point.'
+            }
+            Remove-Item -LiteralPath $resolvedBootstrap -Recurse -Force
+        }
     }
 
     $currentStep = "Reopen live config after bootstrap isolation"

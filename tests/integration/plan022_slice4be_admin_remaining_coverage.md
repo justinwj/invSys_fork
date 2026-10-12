@@ -38,7 +38,8 @@ Seed/Delete now have a measured completion prerequisite: the
 to focused GREEN35 on unpromoted seed-outcome-02. The processor captures the exact
 saved Domain receipt before publication can dirty authority; another event's batch
 count cannot prove this command applied. Smoke86 and five cold compiles pass.
-Visible feedback, expanded edge/regression cases and full qualification remain;
+Visible feedback43 retains35; ordinary chain32/live-role48/Create Warehouse15 pass
+with unassisted closure/restoration. Expanded edges and whole-form input remain;
 no Seed recording ID or comprehensive coverage is claimed.
 
 Settings, Reconcile and Verify Add-ins have the scoped recording/guide gates

@@ -1,5 +1,6 @@
 # Test-only typed probes. The callback, writer and processor are not replaced.
 # Generated fixtures only; observations expose counts/status/booleans, never keys.
+. (Join-Path $PSScriptRoot 'Slice4beAdminSeedFeedback.ps1')
 function Install-AdminSeedOutcomeProbe {
     $probe=$packages['invSys.Admin.xlam'].VBProject.VBComponents.Add(1)
     $probe.Name='TestSeedOutcome'
@@ -127,11 +128,15 @@ Public Function ReceiptReadChecks() As String
 End Function
 '@)
     }
+    if($AdminSeedNativeFeedback){
+        Install-AdminSeedFeedbackProbe $probe.CodeModule
+    }
 }
 
 function Test-AdminSeedOutcome($Fixture,$Other) {
     function Probe([string]$Name,[object[]]$Values=@()){Run 'invSys.Admin.xlam' ('TestSeedOutcome.'+$Name) $Values}
     $observations=[Collections.Generic.List[object]]::new()
+    $nativeObservations=[Collections.Generic.List[object]]::new()
     foreach($case in @('EmptyBatch','EarlierEvent')){
         $target=if($case -ceq 'EmptyBatch'){$Fixture}else{$Other}
         SelectTarget $target
@@ -143,7 +148,9 @@ function Test-AdminSeedOutcome($Fixture,$Other) {
             $prerequisite=($before[0] -ceq '0' -and $before[4] -ceq '3')
             Check ('SeedOutcome.'+$case+'.NoSeedBeforeCallback') $prerequisite
             if(-not $prerequisite){throw 'Expected three bootstrap entities and no new Seed event; not product RED.'}
-            $ack=[bool](Probe 'Invoke')
+            if($AdminSeedNativeFeedback -and $case -ceq 'EarlierEvent'){
+                $native=Invoke-AdminSeedFeedback 'SEED';$nativeObservations.Add($native);$ack=$native.Acknowledged
+            }else{$ack=[bool](Probe 'Invoke')}
             $state=([string](Probe 'State')).Split('|')
             Check ('SeedOutcome.'+$case+'.ExactlyOneSeedQueued') ($state[0] -ceq '1')
             Check ('SeedOutcome.'+$case+'.ExactUniqueKeys') ($state[6] -ceq 'True')
@@ -164,7 +171,9 @@ function Test-AdminSeedOutcome($Fixture,$Other) {
             $before=([string](Probe 'State')).Split('|')
             if($before[0] -cne '0' -or $before[7] -cne '24'){throw 'Delete requires all 24 active demo entities; not product RED.'}
             Check ('DeleteOutcome.'+$case+'.ActiveDemoPrecondition') $true
-            $ack=[bool](Probe 'Invoke' @('DELETE'))
+            if($AdminSeedNativeFeedback -and $case -ceq 'EarlierEvent'){
+                $native=Invoke-AdminSeedFeedback 'DELETE';$nativeObservations.Add($native);$ack=$native.Acknowledged
+            }else{$ack=[bool](Probe 'Invoke' @('DELETE'))}
             $state=([string](Probe 'State')).Split('|')
             Check ('DeleteOutcome.'+$case+'.ExactlyOneDeleteQueued') ($state[0] -ceq '1')
             Check ('DeleteOutcome.'+$case+'.HistoryAndUniqueKeysRetained') ($state[4] -ceq '24' -and $state[6] -ceq 'True')
@@ -188,4 +197,11 @@ function Test-AdminSeedOutcome($Fixture,$Other) {
         }
     }
     $observations|ConvertTo-Json|Set-Content (Join-Path $reportRoot 'seed-outcome-observations.json')
+    foreach($native in $nativeObservations){
+        $prefix='SeedOutcome.Native.'+$native.Action
+        Check ($prefix+'.ExactUnconfirmedMessage') $native.Observed.ExpectedMessage
+        Check ($prefix+'.TextFits') ($native.Observed.FontAvailable -and $native.Observed.TextFits -and $native.Observed.WindowWithinDisplay)
+        Check ($prefix+'.VisibleCapture') ($native.Observed.Captured -and $native.Observed.ForegroundBefore -and $native.Observed.ForegroundAfter)
+        Check ($prefix+'.DismissedWithoutSuccess') ($native.Observed.OkDispatched -and -not $native.Acknowledged)
+    }
 }

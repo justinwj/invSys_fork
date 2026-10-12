@@ -1,6 +1,7 @@
 # Slice4be-A: exact Seed/Delete completion prerequisite
 
-2026-10-12. **Focused GREEN35/35; unpromoted checkpoint, not Seed recording or
+2026-10-12. **Focused GREEN35/35, visible feedback43/43 and chain32/32;
+unpromoted checkpoint, not Seed recording or
 4be-A acceptance.** Governing requirements: v4.11 D14 demo lifecycle and D18
 truthful owner outcomes. No new permission, recording policy or replay adapter.
 
@@ -9,7 +10,8 @@ truthful owner outcomes. No new permission, recording policy or replay adapter.
 The actual `modAdmin.Seed_DemoInventory` callback runs through its existing
 automation selection/confirmation seam. Queue writer, inventory payloads, Domain
 application and processor are real. These are Admin-generated disposable warehouses;
-the seam does not prove native form selection, confirmation or displayed feedback.
+the seam does not prove native form selection or confirmation. The supplemental
+gate below proves the two queued/unconfirmed result messages.
 
 With BatchSize1, queue an independent create event before Seed/Delete. The earlier
 event applies, the callback's exact event remains NEW, and a later processor call
@@ -74,9 +76,46 @@ It passes all28 oversized-module caps, with339 components/6416 procedures/139809
 lines, unchanged dynamic calls9/45 and duplicate groups194; three schemas and
 498 PowerShell files validate. The processor shrinks from1467 to1454 lines.
 Combined delayed native audit through17:00:46.8666317UTC has no Excel failure events.
-Native operator feedback, uploaded-data-set/no-op/cancellation regressions, broader
-receipt schema/ownership/failure cases, and current full-chain/live-role qualification
-remain open. The independent ordinary-loading failure and pending D16-VBA-LOAD-01
-decision are not repaired or waived here. D8-USERS-01/D18-LOCAL-01 remain pending.
+Uploaded-data-set/no-op/cancellation regressions, broader receipt schema/ownership/
+failure cases and whole-form native interaction remain open. The independent
+ordinary-loading failure and pending D16-VBA-LOAD-01 decision are not declared
+repaired or waived by one clean chain. D8-USERS-01/D18-LOCAL-01 remain pending.
 Seed's comprehensive recording, publication and independent guide proof remain next
 after this prerequisite qualifies. No catalog ID or acceptance exclusion is added.
+
+## Visible feedback and ordinary chain follow-through
+
+No product code or package changes in this follow-through. `-NativeFeedback` uses
+the actual callback and real queue/processor results. Unsaved instrumentation
+reveals the callback's existing failure MsgBox despite the selection/confirmation
+automation seam. Its observer verifies the owning Excel process/dialog, captures
+the foreground result and dismisses its native OK button by BM_CLICK. This proves
+visible result feedback, not mouse/keyboard selection or the complete form flow.
+
+Native GREEN **43/43** retains the original35 in order and adds eight message
+checks. Both full queued/unconfirmed sentences and processor reports fit within
+the display and their text controls: Seed measured52/client54 pixels; Delete
+measured65/client67. Measurements use the font inside Excel, where its GDI handle
+is valid. Both captures were reviewed. The first attempt's41/2 used another
+process's font handle and was a measurement defect, not behavioral RED.
+
+Five instrumented compiles, normal closure, settings/package/tooling preservation
+and delayed native audit pass. Exact evidence under `reports/runtime`:
+
+- Controller `admin-seed-outcome-controller/5713d1f441c346b6a0ef8c62ab0ee6d2`,
+  including `qualified-verification.json` and reviewed-image hashes.
+- Worker `slice4be-admin-seed-outcome/8107abc75a424960adeefa8bdc25e57b`,
+  including both `seed-feedback-*.png` and redacted Boolean/measurement JSON.
+- `admin-seed-outcome-regression/chain-d323695bfc214725bacfd4ff26acbb35`:
+  ordinary full chain **32**, live-role **48**, Create Warehouse **15**, exact
+  prior check order retained. Controllers waited through Excel cleanup without
+  intervention; all exited normally. Packages/settings/tracked reports preserved;
+  delayed audit through17:17:57.4876141UTC found zero Excel failures.
+- `admin-seed-feedback-static-01`: same339/6416/139809 surface,28 non-growing caps,
+  dynamic9/45 and194 duplicate groups; three schemas and499 PowerShell files pass.
+
+Sixteen source harness import lists now include `modProcessorPersistence` and
+`modInventoryEventReceipt`; the exercised Create Warehouse harness passes15.
+Other source suites are not claimed run. The ordered live-role harness also checks
+its generated temporary-directory boundary before cleanup. These are dependency/
+cleanup maintenance, not a new runtime contract or a manufactured behavioral RED.
