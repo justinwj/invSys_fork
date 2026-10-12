@@ -1182,43 +1182,7 @@ Private Function ValidateAdminShipmentReconcileLine(ByVal rawItem As Object, _
                                                     ByVal wb As Workbook, _
                                                     ByRef errorCode As String, _
                                                     ByRef errorMessage As String) As Boolean
-    Dim correctedShipEventId As String
-
-    correctedShipEventId = SafeTrimApply(GetDictionaryValue(rawItem, "CorrectedShipEventId"))
-    If correctedShipEventId = "" Then
-        errorCode = "INVALID_PAYLOAD"
-        errorMessage = "ADMIN_SHIPMENT_RECONCILE requires CorrectedShipEventId evidence."
-        Exit Function
-    End If
-    If Not InventoryLogEventExistsApply(wb, correctedShipEventId) Then
-        errorCode = "INVALID_PAYLOAD"
-        errorMessage = "ADMIN_SHIPMENT_RECONCILE CorrectedShipEventId was not found in tblInventoryLog."
-        Exit Function
-    End If
-    If SafeTrimApply(GetDictionaryValue(rawItem, "RepairNarrative")) = "" Then
-        errorCode = "INVALID_PAYLOAD"
-        errorMessage = "ADMIN_SHIPMENT_RECONCILE requires a human repair narrative."
-        Exit Function
-    End If
-
-    ValidateAdminShipmentReconcileLine = True
-End Function
-
-Private Function InventoryLogEventExistsApply(ByVal wb As Workbook, ByVal eventId As String) As Boolean
-    Dim loLog As ListObject
-    Dim rowIndex As Long
-
-    eventId = SafeTrimApply(eventId)
-    If wb Is Nothing Or eventId = "" Then Exit Function
-    Set loLog = FindListObjectByNameApply(wb, "tblInventoryLog")
-    If loLog Is Nothing Or loLog.DataBodyRange Is Nothing Then Exit Function
-
-    For rowIndex = 1 To loLog.ListRows.Count
-        If StrComp(SafeTrimApply(GetCellByColumnApply(loLog, rowIndex, "EventID")), eventId, vbTextCompare) = 0 Then
-            InventoryLogEventExistsApply = True
-            Exit Function
-        End If
-    Next rowIndex
+    ValidateAdminShipmentReconcileLine = modShipmentReconcile.ValidateCorrection(rawItem, wb, errorCode, errorMessage)
 End Function
 
 Private Function BuildDispositionLines(ByVal evt As Object, _
@@ -2709,8 +2673,10 @@ Private Sub RewriteEntityProjectionTable(ByVal lo As ListObject, ByVal entities 
     Dim entity As Object
     Dim r As ListRow
     Dim qtyOnHand As Double
+    Dim extras As Object
 
     If lo Is Nothing Then Exit Sub
+    Set extras = modInventoryProjectionExtras.CaptureEntityExtras(lo)
     ClearProjectionRows lo
     If entities Is Nothing Then Exit Sub
 
@@ -2730,6 +2696,7 @@ Private Sub RewriteEntityProjectionTable(ByVal lo As ListObject, ByVal entities 
         If entity.Exists("AttributesJson") Then SetTableRowValue lo, r.Index, "AttributesJson", CStr(entity("AttributesJson"))
         If entity.Exists("LastAppliedUTC") Then SetTableRowValue lo, r.Index, "LastAppliedUTC", entity("LastAppliedUTC")
     Next key
+    modInventoryProjectionExtras.RestoreEntityExtras lo, extras
 End Sub
 
 Private Sub RefreshLedgerStatus(ByVal wb As Workbook, _

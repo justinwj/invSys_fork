@@ -1,6 +1,10 @@
 Attribute VB_Name = "modInventoryBridgeApi"
 Option Explicit
 
+Public Function ReadShipmentReconcileBridgeResult(ByVal request As String, ByVal inventoryWb As Workbook) As Variant
+    ReadShipmentReconcileBridgeResult = modShipmentReconcile.ReadShipmentReconcile(request, inventoryWb)
+End Function
+
 Public Function ResolveInventoryWorkbookBridgeResult(Optional ByVal warehouseId As String = "", _
                                                     Optional ByVal inventoryWb As Workbook = Nothing) As Workbook
     Set ResolveInventoryWorkbookBridgeResult = modInventoryApply.ResolveInventoryWorkbook(warehouseId, inventoryWb)

@@ -172,6 +172,8 @@ try {
         (Join-Path $repo "src/InventoryDomain/Modules/modInventoryPublisher.bas"),
         (Join-Path $repo "src/InventoryDomain/Modules/modInventoryBridgeApi.bas"),
         (Join-Path $repo "src/InventoryDomain/Modules/modInventoryApply.bas"),
+        (Join-Path $repo "src/InventoryDomain/Modules/modInventoryProjectionExtras.bas"),
+        (Join-Path $repo "src/InventoryDomain/Modules/modShipmentReconcile.bas"),
         (Join-Path $repo "tests/integration/prove_wan_wh1_setup.bas"),
         (Join-Path $repo "tests/integration/TestWanWh1SetupEntry.bas")
     )

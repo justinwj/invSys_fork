@@ -39,7 +39,7 @@ as deliberate actions merely because an event procedure exists.
 | `btnAdminSetupTesterStation` | `modAdmin.Admin_SetupTesterStation_Click` | `frmSetupTesterStation`: path helpers, `modTesterSetup.SetupTesterStation`, open generated Receiving workbook, delete generated setup, cancel. Capture only eligible current-context actions; never use existing operational workbooks as disposable fixtures. |
 | `btnAdminAddInventoryItem` | `modAdmin.Add_InventoryItem` | Captures exact warehouse/station/user and operator workbook, then modal `frmAddInventoryItem`: Add/Edit selection, custom fields, sheet workbench create/upload, accept/delete/cancel. Owner command results occur after form acceptance; retain existing System_Key, unknown columns and workflow gates. |
 | `btnAdminSeedInventory` | `modAdmin.Seed_DemoInventory` | `frmSeedInventory` selects Seed/Delete/Upload Data Set/Delete Data Set; callback confirmations and `modAdminInventorySeed` results follow. Inbox repair has its own form handler. CSV definition changes are not inventory changes. Existing automation result text is not shared activity proof. |
-| `btnAdminShipmentReconcile` | `modAdminShipmentReconcile.OpenShipmentReconcileTool` | Native selection/narrative dialogs -> `QueueAdminShipmentReconcileEvent` -> `modRoleEventWriter.QueuePayloadEvent`. Current identity path conflicts with D14; do not accept or add a ROW-compatible observation contract. |
+| `btnAdminShipmentReconcile` | `modAdminShipmentReconcile.OpenShipmentReconcileTool` | Native selection/narrative dialogs -> `QueueAdminShipmentReconcileEvent` -> `modRoleEventWriter.QueuePayloadEvent`. Approved D14-RECON-01 exact-key correction has scoped55-check GREEN; recording, native presentation and role/authority edge proof remain open. |
 | `btnAdminHqAggregator` | `modAdmin.Admin_AggregateGlobalSnapshot_Click` | `frmAggregationSources`: discover/add/connect, source selection, `RunHQAggregationFromSourceSet`, Close. Explicit source-set aggregation remains advisory. Connection credentials and source paths are excluded from activity payloads. |
 | `btnAdminDesignLifecycle` | `modAdminDesignLifecycle.Admin_DesignLifecycle_Click` | `frmAdminDesignLifecycle`: refresh, constructed Import Legacy Recipes, Release selected, Obsolete selected, Close. `ExecuteDesignLifecycleCommand` separates queued event, processing and resulting status. A form open is not a release; recipe import is not authority to migrate legacy inventory. |
 | `btnAdminVerifyAddinsPublished` | `modAdmin.Verify_AddinsPublished` | `modAddinsPublish.VerifyAddinsPublished` checks required files/nonzero sizes and shows existing result. Verification is not PublishAddins. Capture fixed result facts, not full diagnostic paths. |
@@ -62,7 +62,15 @@ internals and scheduled automation still call some owners. Complete reachability
 review before classifying a deliberate entry, compatibility-only API or exclusion;
 neither public visibility nor a unit-test call proves a user-side control.
 
-## Confirmed identity conflict: Shipment Reconcile
+## Shipment Reconcile prerequisite: scoped correction
+
+The historical source finding below is superseded by approved D14-RECON-01 and
+candidate `validation-admin-reconcile-01`: focused31/24 RED →55/55 GREEN, including
+exact history/queue/Domain application and unknown-column preservation. See
+[Reconcile evidence](plan022_slice4be_admin_reconcile_results.md). Recording,
+native dialogs, role and authority edge gates remain open.
+
+### Historical identity conflict
 
 Normative v4.11 D14 requires opaque exact `System_Key`, prohibits managed `ROW`
 and prohibits identifying one entity by SKU. Current source instead:

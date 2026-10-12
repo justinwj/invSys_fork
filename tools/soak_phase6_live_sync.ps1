@@ -377,6 +377,8 @@ $modulePaths = @(
     (Join-Path $repo "src/InventoryDomain/Modules/modInventorySchema.bas"),
     (Join-Path $repo "src/InventoryDomain/Modules/modInventoryBridgeApi.bas"),
     (Join-Path $repo "src/InventoryDomain/Modules/modInventoryApply.bas"),
+    (Join-Path $repo "src/InventoryDomain/Modules/modInventoryProjectionExtras.bas"),
+    (Join-Path $repo "src/InventoryDomain/Modules/modShipmentReconcile.bas"),
     (Join-Path $repo "tests/unit/TestPhase2Helpers.bas"),
     (Join-Path $repo "tests/unit/TestPhase6LanBoundary.bas")
 )

@@ -1,6 +1,7 @@
 # Slice4be-A: Shipment Reconcile identity prerequisite
 
-2026-10-12. **RED established; no runtime fix or 4be-A acceptance.**
+2026-10-12. **Scoped GREEN 55/55; 4be-A remains incomplete.**
+The implementation/evidence section below supersedes the historical RED status.
 Initial candidate `deploy/validation-admin-entry-02`; expanded RED uses
 `deploy/validation-admin-auth-read-01`, whose Reconcile/Core/Domain code is unchanged.
 Both retain catalog33/151. No Reconcile implementation has changed.
@@ -105,7 +106,71 @@ Maintenance: `reports/runtime/admin-reconcile-history-red-static-01` holds all28
 caps and unchanged326 components/6371 procedures/139226 lines, dynamic9/45 and192
 duplicate candidates. Three schemas validate and473 PowerShell scripts parse.
 
-Next: implement the exact-key read/queue path and Domain guards under the approved
+The implementation below resolves these focused failures under the approved
 contract, preserving custom values by System_Key through projection rebuild.
 Keep closed/missing/invalid authority, cancellation, permissions, native/layout,
 full processor and relevant regression gates open until separately proved.
+
+## Approved implementation and qualified GREEN
+
+New, unpromoted candidate `deploy/validation-admin-reconcile-01` implements
+D14-RECON-01. Admin captures warehouse/root, uses exact event/key selection and
+queues only the confirmed negative delta with narrative. Core provides a read-only
+lease over the existing captured authority; the new headless Domain module owns
+history calculation and event/key validation. Invalid wrong-entity/non-SHIP/
+positive/missing-narrative corrections are refused. Current attributes are
+preserved; a separate projection helper restores unknown columns by exact key.
+Reviewed caller searches preceded removal of obsolete private SKU/ROW helpers.
+Existing unrelated payload compatibility paths are not acceptance evidence.
+
+Run the focused command above with `-DeployRoot deploy/validation-admin-reconcile-01`
+and `-Phase GREEN`. All **55/55** checks pass in the exact RED
+order, including actual queued application and duplicate-event idempotency.
+Prompts still use deterministic test seams; native UI acceptance is not implied.
+
+- Build: `reports/runtime/admin-reconcile-build-01`; five cold compiles and
+  Operations cold start pass. Four changed/two added/315 unchanged components;
+  five package pins recorded. Prior candidate and local settings preserved.
+- Focused controller: `reports/runtime/admin-reconcile-controller/ce61a0f0e95945e3bab03c65531698cd`.
+- Worker: `reports/runtime/slice4be-admin-reconcile/c93d48330ba94846bae8f11dac40f314/green.json`.
+- UTC 04:40:51.7525561–04:41:36.2118577; delayed audit through04:41:48.2118577.
+  Five instrumented compiles, exact log/receipt agreement, package/tooling/settings
+  preservation and normal unassisted shutdown pass; zero native failures.
+- Smoke: `reports/runtime/admin-reconcile-regression/smoke-cd6638d9a252442abc198d28c4e30172`.
+  Exact prior86 checks pass, both native exits unassisted, settings/packages/tracked
+  reports preserved and zero delayed native failures. UTC04:42:19.8786641–04:42:42.5677651.
+- Static: `reports/runtime/admin-reconcile-green-static-01/ratchet-verification.json`.
+  328 components/6379 procedures/139222 lines (four fewer total); all28 caps hold,
+  InventoryApply2882→2849 lines. Dynamic9/45 and duplicate192 counts unchanged;
+  three schemas and473 PowerShell scripts validate.
+
+No deployment promotion, new recording ID, complete Reconcile acceptance or
+4be-A closure. Next prove authority/permission/cancellation edges and native
+dialog layout/input, then integrate the reachable control's recording contract.
+
+## Source-harness dependency correction
+
+The first chain attempt (`admin-reconcile-regression/chain-b04b3da00be9476ca384ba3ccf6348d5`
+under runtime) stops at4/1 before live roles: the Create Warehouse source harness
+omits the new projection helper, producing a compile error. An owned VBE capture
+identifies the missing module. This is a harness failure, not behavioral RED.
+Owned dialog dismissal and VBE Reset allowed original cleanup; packages/settings/
+tracked reports were restored. An attempted native close was refused by Excel;
+no force termination or Excel COM reattachment was used. Cursor target and restore
+were verified for Reset. This attempt does not qualify for normal shutdown.
+
+All16 explicit source-harness import lists that include InventoryApply now also
+include its two new Domain dependencies. Each change adds only those two imports;
+all scripts parse. No product contract or package changes follow from this repair.
+
+Fresh chain is qualified GREEN: **32 chain /48 live-role /15 Create Warehouse**
+checks in exact prior order, on the same five package hashes. Controller:
+`reports/runtime/admin-reconcile-regression/chain-9fa6e9d72f104e2f905474e3766860a7`.
+UTC04:50:56.2396123–04:56:46.9596530; delayed audit through04:56:58.9596530.
+No native failures; Excel exits without assistance and settings/packages/tracked
+reports are preserved. The final static audit takes several minutes while hidden
+Excel processes remain; do not mistake active audit work for stuck shutdown.
+This qualifies the candidate's existing full-chain regression, not all4be-A gates
+or a root-cause resolution of earlier intermittent Shipping/native failures.
+Legacy source tests with SKU/ROW fixtures and broader Reconcile native/role/
+authority cases are not claimed as covered by this run.

@@ -140,6 +140,8 @@ try {
         (Join-Path $repo "src/InventoryDomain/Modules/modInventorySchema.bas"),
         (Join-Path $repo "src/InventoryDomain/Modules/modInventoryPublisher.bas"),
         (Join-Path $repo "src/InventoryDomain/Modules/modInventoryApply.bas"),
+        (Join-Path $repo "src/InventoryDomain/Modules/modInventoryProjectionExtras.bas"),
+        (Join-Path $repo "src/InventoryDomain/Modules/modShipmentReconcile.bas"),
         (Join-Path $repo "src/InventoryDomain/Modules/modInventoryQueries.bas"),
         (Join-Path $repo "src/InventoryDomain/Modules/modInventoryBridgeApi.bas"),
         (Join-Path $repo "src/Shipping/Modules/modShippingEventCreator.bas"),

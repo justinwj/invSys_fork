@@ -217,8 +217,25 @@ Public Function ListInventoryPickerItemsBridge(Optional ByVal filterText As Stri
 CleanFail:
 End Function
 
+Public Function ReadShipmentReconcileBridge(ByVal request As String, Optional ByVal inventoryWb As Workbook = Nothing, _
+                                            Optional ByVal warehouseId As String = "", Optional ByVal runtimeRoot As String = "") As Variant
+    On Error GoTo CleanExit
+    Dim target As WarehouseTarget, boundPath As String
+    If inventoryWb Is Nothing Then
+        Set target = modNasConnection.GetCurrentTarget()
+        If target Is Nothing Then Exit Function
+        If Len(target.WarehouseId) = 0 Or Len(target.RuntimeRoot) = 0 Then Exit Function
+        If warehouseId <> "" And StrComp(warehouseId, target.WarehouseId, vbTextCompare) <> 0 Then Exit Function
+        If runtimeRoot <> "" And StrComp(NormalizeFolderPathLocal(runtimeRoot), NormalizeFolderPathLocal(target.RuntimeRoot), vbTextCompare) <> 0 Then Exit Function
+        boundPath = NormalizeFolderPathLocal(target.RuntimeRoot) & target.WarehouseId & ".invSys.Data.Inventory.xlsb"
+    End If
+    ReadShipmentReconcileBridge = RunInventoryQueryReadOnlyLocal( _
+        "modInventoryBridgeApi.ReadShipmentReconcileBridgeResult", request, inventoryWb, boundPath)
+CleanExit:
+End Function
+
 Private Function RunInventoryQueryReadOnlyLocal(ByVal macroName As String, ByVal queryValue As Variant, _
-                                                ByVal suppliedWorkbook As Workbook) As Variant
+                                                ByVal suppliedWorkbook As Workbook, Optional ByVal boundPath As String = "") As Variant
     On Error GoTo CleanExit
     Dim wb As Workbook
     Dim targetPath As String
@@ -226,7 +243,8 @@ Private Function RunInventoryQueryReadOnlyLocal(ByVal macroName As String, ByVal
 
     Set wb = suppliedWorkbook
     If wb Is Nothing Then
-        targetPath = BuildCanonicalInventoryPathLocal("")
+        targetPath = boundPath
+        If targetPath = "" Then targetPath = BuildCanonicalInventoryPathLocal("")
         If targetPath = "" Then Exit Function
         Set wb = FindOpenWorkbookByFullNameLocal(targetPath)
         If wb Is Nothing Then
