@@ -101,8 +101,10 @@ check names and assertions remain. Static evidence also regenerated in the chain
 
 ## Remaining acceptance
 
-Context/reentrancy/storage failure observations,
-continuous recording, exact Viewer publication, independent saved-guide conclusions
+Separate subsequent checkpoints cover real attempt/outcome file-Open failures
+(`plan022_slice4be_admin_users_storage_results.md`) and context changes at recording
+entry (`plan022_slice4be_admin_users_context_results.md`). Other context/reentrancy
+boundaries, continuous recording, exact Viewer publication, independent saved-guide conclusions
 and native control acceptance remain open. The subsequent shared-editor checkpoint
 adds SAVED/APPLIED after actual-handler RED35/4 -> GREEN43; see
 `plan022_slice4be_expected_outcome_choices_results.md` for its separate candidate

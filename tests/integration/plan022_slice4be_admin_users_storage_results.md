@@ -46,6 +46,8 @@ unchanged. No native warning-dialog acceptance is claimed: the existing fixed
 notice/confirmation seams observe messages while preserving real handlers.
 See the Users recording and expected-outcome choices receipts for exact scopes.
 
-Context-loss observation, continuous recordings, exact publication, independent
+The subsequent context-entry correction is tracked separately in
+`plan022_slice4be_admin_users_context_results.md`. Other context boundaries,
+continuous recordings, exact publication, independent
 saved-guide conclusions, other controls and native/layout acceptance remain open.
 D18-LOCAL-01 and D16-VBA-LOAD-01 remain unapproved.

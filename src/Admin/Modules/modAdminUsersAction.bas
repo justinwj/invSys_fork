@@ -61,8 +61,8 @@ End Function
 Private Function BeginObservation(ByVal command As String, ByVal context As String, ByRef notice As String) As String
     Dim current As String
     On Error GoTo Unavailable
-    current = modActivity.CaptureContext()
     BeginObservation = modActivity.BeginAction("ADMIN_USER_" & command, context, notice)
+    current = modActivity.CaptureContext()
     If context <> "" And context <> current Then notice = TRACKING_NOTICE
     Exit Function
 Unavailable:
