@@ -757,7 +757,7 @@ Private Sub SaveUserAndRolesForm()
         Exit Sub
     End If
 
-    Set wb = OpenSelectedAuthWorkbookForm(openedTransient, report)
+    Set wb = OpenSelectedAuthWorkbookForm(openedTransient, report, True)
     If wb Is Nothing Then
         ShowStatusForm report, COLOR_ERROR
         Exit Sub
@@ -818,7 +818,7 @@ Private Sub SetUserStatusForm(ByVal statusText As String)
         Exit Sub
     End If
 
-    Set wb = OpenSelectedAuthWorkbookForm(openedTransient, report)
+    Set wb = OpenSelectedAuthWorkbookForm(openedTransient, report, True)
     If wb Is Nothing Then
         ShowStatusForm report, COLOR_ERROR
         Exit Sub
@@ -861,7 +861,7 @@ Private Sub DeleteUserForm()
     End If
     If MsgBox("Delete user '" & userId & "' and all assigned capabilities?", vbQuestion + vbYesNo, "Users & Roles") <> vbYes Then Exit Sub
 
-    Set wb = OpenSelectedAuthWorkbookForm(openedTransient, report)
+    Set wb = OpenSelectedAuthWorkbookForm(openedTransient, report, True)
     If wb Is Nothing Then
         ShowStatusForm report, COLOR_ERROR
         Exit Sub
@@ -893,13 +893,13 @@ CleanExit:
     CloseTransientWorkbookForm wb, openedTransient
 End Sub
 
-Private Function OpenSelectedAuthWorkbookForm(ByRef openedTransient As Boolean, ByRef report As String) As Workbook
+Private Function OpenSelectedAuthWorkbookForm(ByRef openedTransient As Boolean, ByRef report As String, Optional ByVal forWrite As Boolean = False) As Workbook
     Dim authPath As String
     Dim wb As Workbook
-    Dim whId As String
 
+    On Error GoTo FailOpen
+    openedTransient = False
     authPath = NormalizePathForm(CStr(mTxtAuthPath.Value))
-    whId = Trim$(CStr(mTxtWarehouseId.Value))
     If authPath = "" Then
         report = "Select a warehouse first."
         Exit Function
@@ -911,28 +911,27 @@ Private Function OpenSelectedAuthWorkbookForm(ByRef openedTransient As Boolean, 
 
     For Each wb In Application.Workbooks
         If StrComp(NormalizePathForm(wb.FullName), authPath, vbTextCompare) = 0 Then
-            Set OpenSelectedAuthWorkbookForm = wb
-            openedTransient = False
-            Exit Function
+            GoTo ValidateRead
         End If
     Next wb
 
-    On Error GoTo FailOpen
-    Set wb = Application.Workbooks.Open(Filename:=authPath, UpdateLinks:=0, ReadOnly:=False, AddToMru:=False)
+    Set wb = Application.Workbooks.Open(Filename:=authPath, UpdateLinks:=0, ReadOnly:=Not forWrite, AddToMru:=False)
     openedTransient = True
-    If Not modAuth.EnsureAuthSchema(wb, whId, "svc_processor", report) Then GoTo FailSoft
+    If forWrite Then
+        If Not modAuth.EnsureAuthSchema(wb, Trim$(CStr(mTxtWarehouseId.Value)), "svc_processor", report) Then GoTo FailSoft
+    End If
+ValidateRead:
+    If Not forWrite And Not modRuntimeWorkbooks.RuntimeWorkbookSchemaPresentForRead(wb, "AUTH") Then
+        report = "Auth workbook has missing required tables or columns."
+        GoTo FailSoft
+    End If
     Set OpenSelectedAuthWorkbookForm = wb
-    Exit Function
-
-FailSoft:
-    On Error Resume Next
-    wb.Close SaveChanges:=False
-    On Error GoTo 0
-    Set wb = Nothing
     Exit Function
 
 FailOpen:
     report = "Unable to open auth workbook: " & Err.Description
+FailSoft:
+    CloseTransientWorkbookForm wb, openedTransient
 End Function
 
 Private Sub CloseTransientWorkbookForm(ByVal wb As Workbook, ByVal openedTransient As Boolean)

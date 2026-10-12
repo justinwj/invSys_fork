@@ -9,7 +9,9 @@ Continuation: [Shipment Reconcile packaged RED](plan022_slice4be_admin_reconcile
 now verifies15 pass/3 fail: missing selected key, legacy Row payload and inventory
 dirtied. The user approved D14-RECON-01 in v4.11 on2026-10-12. The
 source audit below remains useful; its original no-behavioral-RED status is superseded
-for this callback only. Auth and remaining tracking coverage are still open.
+for this callback only. The subsequent [Auth read correction](plan022_slice4be_admin_auth_read_results.md)
+passes 111 packaged checks under D8-A with three reviewed captures. Full layout,
+write authorization and remaining tracking coverage are still open.
 
 The packaged Admin Ribbon contains exactly14 Actions buttons. All use
 `RibbonOnActionAdmin` and `RibbonRequiredCapabilityGetEnabledAdmin`; their IDs
@@ -84,20 +86,21 @@ callback refusal from missing fixtures or a broken dialog driver. A direct queue
 service test may supplement this, not replace the actual handler. Resolve any
 underspecified correction semantics in v4.11 before changing them.
 
-## Auth refresh finding requiring a focused test
+## Auth refresh prerequisite and separate write review
 
 `frmCreateDeleteUser.mBtnRefreshUsers_Click` calls `RefreshUsersForm`, which calls
 `OpenSelectedAuthWorkbookForm`. An already-open Auth workbook is borrowed, but a
-closed one is opened writable and passed to `modAuth.EnsureAuthSchema`. Thus a read
-path enters provisioning/schema maintenance. Its exact mutation/closure effects
-have not been measured. The same helper is reused by write actions, so replacing
-it indiscriminately could alter authorized maintenance.
+closed one in candidate02 is opened writable and passed to `modAuth.EnsureAuthSchema`.
+Packaged RED subsequently proves dirtying and invalid-schema repair; candidate
+`validation-admin-auth-read-01` separates ordinary reads from explicit writes and
+passes 111 checks. Exact evidence and remaining visible gates are in the
+[Auth read result](plan022_slice4be_admin_auth_read_results.md). The new refusal
+message is readable; existing long-path/account-copy clipping remains open.
 
-Reconcile this path with D8-A Auth read/provisioning separation using the actual
-Refresh handler on generated complete and incomplete Auth workbooks. Verify no
-create/repair/format/dirty/save, preservation of caller-owned open books, missing
-authority refusal and current warehouse/rights behavior. Form save/deactivate/delete
-also need current-context/capability review; a prior Ribbon gate is not evidence
+The actual Refresh and selection handlers now protect complete/incomplete/missing
+Auth, borrowed edits and other-warehouse refusal. Save/deactivate/delete retain
+their explicit write behavior. These writes still need current-context/capability
+review; a prior Ribbon gate is not evidence
 of a later write gate. This audit neither changes Auth write ownership nor grants
 a new permission exception. Any material Auth contract change needs an explicit
 architecture decision and approval before implementation.

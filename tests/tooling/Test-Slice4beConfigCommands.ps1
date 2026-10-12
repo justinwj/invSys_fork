@@ -5,6 +5,7 @@ param(
     [ValidateSet('RED','GREEN')][string]$Phase = 'GREEN',
     [switch]$CaptureEvidence,
     [switch]$CheckAuthReadOnly,
+    [switch]$CheckAdminAuthRefresh,
     [switch]$CheckActivityEvidence,
     [switch]$CheckActivityFoundation,
     [switch]$CheckAdminUomActivity,
@@ -688,6 +689,7 @@ if($CheckProductionDesignerActivity){
     . (Join-Path $PSScriptRoot 'Slice4beProductionDesignerProbe.ps1')
     . (Join-Path $PSScriptRoot 'Slice4beProductionDesignerActivity.ps1')
 }
+if($CheckAdminAuthRefresh -and -not $CheckAuthReadOnly){throw 'Admin Auth Refresh requires the compiled Auth regression gate.'}
 if($CheckAuthReadOnly){
     if(-not $CompileEvaluationProbesForTest -or $CheckActivityEvidence -or $CheckTrackingSettings -or $CheckViewerPublishedRead -or $CheckViewerEventDetail -or $CheckViewerEventGroups -or $CheckViewerRefreshFailure -or $CheckAdminSettingsClose){throw 'Auth reads require the separate compiled Core/caller gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-auth-read/'+[guid]::NewGuid().ToString('N'))
@@ -1812,6 +1814,10 @@ End Function
     }
     if($CheckAuthReadOnly){
         Install-Slice4beAuthReadProbe
+        if($CheckAdminAuthRefresh){
+            . (Join-Path $PSScriptRoot 'Slice4beAdminAuthRefresh.ps1')
+            Install-AdminAuthRefreshProbe
+        }
         . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
         Compile-Slice4beEvaluationProbes
     }
@@ -1874,6 +1880,10 @@ End Function
     if($CheckAuthReadOnly){
         $step='packaged ordinary Auth reads and explicit provisioning'
         Test-Slice4beAuthReadOnly $a $b
+        if($CheckAdminAuthRefresh){
+            $step='packaged Users and Roles Refresh read separation'
+            Test-AdminAuthRefresh $a $b
+        }
     }
     if($CheckAdminSettingsClose) {
         $step='real Admin Settings close and reopen'

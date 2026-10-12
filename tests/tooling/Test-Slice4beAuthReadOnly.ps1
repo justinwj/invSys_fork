@@ -1,6 +1,7 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-approved-detail-scroll',[ValidateSet('RED','GREEN')][string]$Phase='RED')
+param([string]$DeployRoot='deploy/validation-approved-detail-scroll',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$AdminRefresh,[switch]$CaptureEvidence)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
+if($CaptureEvidence -and -not $AdminRefresh){throw 'Visible Auth evidence requires the Admin Refresh gate.'}
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Excel must be closed before the isolated Auth gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
 $snapshot=Get-InvSysTestSettingsSnapshot
@@ -14,7 +15,9 @@ $pins|ConvertTo-Json|Set-Content (Join-Path $controller package-pins.json)
 $start=[DateTimeOffset]::UtcNow;$code=1
 Write-Output ('Controller: '+$controller)
 try {
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1') -DeployRoot $DeployRoot -Phase $Phase -CheckAuthReadOnly -CompileEvaluationProbesForTest -WaitForExcelReadyForTest -ExcelReadyReadLimitForTest 40 *> (Join-Path $controller worker.log)
+    $extra=@();if($AdminRefresh){$extra+='-CheckAdminAuthRefresh'}
+    if($CaptureEvidence){$extra+='-CaptureEvidence'}
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1') -DeployRoot $DeployRoot -Phase $Phase -CheckAuthReadOnly -CompileEvaluationProbesForTest -WaitForExcelReadyForTest -ExcelReadyReadLimitForTest 40 @extra *> (Join-Path $controller worker.log)
     $code=$LASTEXITCODE
 } finally {
     Wait-RecordingCleanup -Creator $null -Worker $null
