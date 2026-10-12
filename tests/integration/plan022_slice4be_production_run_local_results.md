@@ -7,8 +7,80 @@ historical meaning. Scoped RUN-SCALE-01 and RUN-UI-01 evidence follows; remainin
 Scale coverage and broader acceptance are still required.
 The user also approved RUN-SCALE-02 on2026-10-11: stop after failed worksheet
 loading, before subsequent scaling/output preparation/refresh, and display
-"Recipe could not be loaded. Scale was not applied." Implementation is pending;
+"Recipe could not be loaded. Scale was not applied." Scoped implementation follows;
 FAILED retains Unknown data effect and makes no owner-rollback claim.
+
+## Stop Scale after failed worksheet loading, 2026-10-11
+
+Approval was recorded and pushed in docs `72225bb` before implementation.
+Unpromoted `deploy/validation-run-scale-stop-01`, catalog32, delegates the load
+result check to `modProductionRunScaleActions.TryLoadWorksheetRecipe`. It retains
+the captured-context check after the owner returns; False then stops scaling,
+output preparation and subsequent refresh, showing the exact approved message.
+The owner is not retried or rolled back. The reusable Execute branch is unchanged.
+
+Two actual-handler D13 runs on frozen `validation-admin-close-02` fail only the
+three approved behavior predicates: prior quantities preserved, no subsequent
+scale/preparation/refresh calls, and exact failure message. Missing-definition
+RED61/3 becomes GREEN64/64; caught-owner-failure RED159/3 becomes GREEN162/162.
+All original61/160 ordered identities remain, with current-record metadata
+advanced to32. Existing custom fields/formulas, exact key, saved authority,
+older records, decoy/other warehouse, refusal messages and FAILED facts pass.
+Observers count real boundaries; they neither replace owner results nor fabricate
+events. The missing-definition case injects no failure; the exception case reaches
+the real owner's caught-exception boundary.
+
+Ignored controllers under `reports/runtime/production-run-local-controller/`:
+RED missing `968bb91c43a24817861c1ba672bc7fed`, worker
+`slice4be-production-run-scale-reload/fb4c37409f1b4426a2ab68eb06855214`,
+UTC23:43:36.870--23:45:18.605; RED exception `ff7bac268e8742478212c47408cf43d3`,
+worker `slice4be-production-run-scale-disabled/144812953d994eb0b1b363ce71df3ceb`,
+UTC23:45:30.796--23:47:20.067. GREEN missing `6f296e2ffb1e475097517b818826a223`,
+worker `slice4be-production-run-scale-reload/56098eaeb9d3416383beacfbd1e561da`,
+UTC23:48:36.144--23:50:21.577; GREEN exception `8fcac3761c34477bbdf85d8bc76f5535`,
+worker `slice4be-production-run-scale-disabled/370d559be5274980a48904e7320218f8`,
+UTC23:50:33.865--23:52:24.659. Every run qualifies five instrumented compiles,
+preservation, unassisted closure and zero delayed native failures.
+
+Build `run-scale-stop-build-01/verification.json`, UTC23:47:40.444--23:48:19.071,
+passes five cold compiles and Operations cold start. Only `frmProduction` and
+`modProductionRunScaleActions` change;313 compiled components match AdminClose02.
+Frozen packages/settings and delayed audit are preserved. Both original failure
+PNGs were reviewed individually: the approved message is fully readable; controls
+remain reachable. This is agent review, not human or long-description acceptance.
+Static `run-scale-stop-static-01/ratchet-verification.json` records322 components,
+6346 procedures/138837 lines, dynamic9/45 and192 duplicate candidates. The form
+shrinks two lines; the other27 oversized limits stay unchanged. Three schemas
+validate;459 scripts under tools/tests-tooling parse without error.
+
+Enabled-Designs regression218/218 retains the exact prior order, including the
+released Load/Scale sequence: controller `7e42c90896c148beaa9b9057135dfb31`, worker
+`slice4be-production-run-worksheet-scale/845f248467dc4cff811008d524837caa`,
+UTC23:52:37.841--23:54:39.768. Five compiles, preservation, unassisted closure and
+zero delayed faults pass. The earlier loaded-run503 retains its original candidate
+scope; its unchanged reusable branch is not claimed as a new503 run.
+
+Ordinary full-chain32/32, live-role48/48 and warehouse15/15 retain exact prior
+order at `run-scale-stop-regression/chain-78f29462f4a84ddfa7841dc256eca4c3`,
+2026-10-11T23:54:52.063--2026-10-12T00:00:16.201 UTC. This includes two consecutive
+Production batches, restart/reconciliation, runtime package extraction and static
+maintenance. Settings/packages/tracked reports are restored, Excel closes
+unassisted and the delayed native audit is zero. This successful run does not
+diagnose or declare repaired the earlier intermittent native fault.
+
+Smoke86/86 retains exact prior order and both unassisted exits at
+`run-scale-stop-regression/smoke-586f9db45bcd41c584e8797f2f7a779d`,
+2026-10-12T00:00:28.684--00:00:48.410 UTC. Layout at
+`run-scale-stop-regression/layout-54bcfe341eb243f0bc2243518abc58df`,
+00:01:00.811--00:01:17.702 UTC, preserves18 requested size/page pairs, six maximized
+pages and five native transitions. Six original captures are readable; minimum
+and default requests produce identical image pairs at the same actual size.
+One black preview resolves on individual original-image review with unchanged
+hashes, not by rerunning Excel. Both gates preserve packages/settings, close
+normally and have zero delayed faults. Layout review is not human acceptance.
+
+Successful worksheet reload, general D14 rebuild preservation, independent
+worksheet guide proof and comprehensive 4be-A acceptance remain separate.
 
 ## Missing worksheet definition preserves staging, 2026-10-11
 

@@ -21,7 +21,7 @@ function Test-ProductionRunLocalActivity($Fixture,$Other) {
         $context=$paired;$safe=$paired;$integrity=$paired;$linked=$false;$facts=$false;$terminal=$false;$distinct=$false
         $control='PRODUCTION_RUN_'+$Action
         foreach($r in $records){
-            $context=$context -and $r.ControlId -ceq $control -and $r.OwnerId -ceq 'PRODUCTION_RUN_LOCAL' -and $r.UserId -ceq 'config-producer' -and $r.WarehouseId -ceq $Fixture.Warehouse -and $r.StationId -ceq 'S1' -and $r.CatalogVersion -eq 31
+            $context=$context -and $r.ControlId -ceq $control -and $r.OwnerId -ceq 'PRODUCTION_RUN_LOCAL' -and $r.UserId -ceq 'config-producer' -and $r.WarehouseId -ceq $Fixture.Warehouse -and $r.StationId -ceq 'S1' -and $r.CatalogVersion -eq 32
             $safe=$safe -and @($r.SourceEventRefs).Count -eq 0
         }
         foreach($value in $raw){

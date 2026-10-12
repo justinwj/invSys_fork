@@ -3965,14 +3965,12 @@ End Sub
 Public Sub ApplyWorksheetRunScale(ByVal scalePercent As Double, ByRef scaleReport As String, ByVal action As cProductionWorksheetAction)
     Dim idx As Long
     Dim prepared As Variant
-    Dim loaded As Boolean
 
     idx = mLstLoaderRecipes.ListIndex
     If Not action.CanContinue(scaleReport) Then Exit Sub
     If Not mRunTreeCollapsed Is Nothing Then mRunTreeCollapsed.RemoveAll
     If Not modProductionRunBinding.BindWorksheetOwner(mOperatorWorkbook) Then Exit Sub
-    loaded = mProduction.LoadRecipeChooser(NzStr(mLstLoaderRecipes.List(idx, 0)))
-    If Not action.CanContinue(scaleReport) Then Exit Sub
+    If Not modProductionRunScaleActions.TryLoadWorksheetRecipe(NzStr(mLstLoaderRecipes.List(idx, 0)), action, scaleReport) Then Exit Sub
     If Not ApplyBatchScaleToRunList(scalePercent, scaleReport) Then Exit Sub
     prepared = mProduction.PrepareProductionOutputForCurrentRecipe()
     If Not action.CanContinue(scaleReport) Then Exit Sub
@@ -3985,7 +3983,7 @@ Public Sub ApplyWorksheetRunScale(ByVal scalePercent As Double, ByRef scaleRepor
         scaleReport = "Loaded recipe, but no output rows were prepared: " & NzStr(mLstLoaderRecipes.List(idx, 1))
     End If
     If Not action.CanContinue(scaleReport) Then Exit Sub
-    If loaded Then action.OutcomeCode = "STAGED"
+    action.OutcomeCode = "STAGED"
 End Sub
 
 Private Sub PrepareProductionOutput()

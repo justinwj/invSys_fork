@@ -42,6 +42,15 @@ End Function
         $module.InsertLines($hits[0]+1,('    TestProductionDesigner.RunScaleReleasedRead "'+$entry[3]+'", (Len(jsonText) > 0)'))
     }
     $form=$project.VBComponents.Item('frmProduction').CodeModule
+    # Observe each subsequent owner boundary without replacing its implementation.
+    $start=$form.ProcStartLine('ApplyWorksheetRunScale',0);$end=$start+$form.ProcCountLines('ApplyWorksheetRunScale',0)
+    $postLoadLines=@()
+    foreach($anchor in @('If Not ApplyBatchScaleToRunList(scalePercent, scaleReport) Then Exit Sub','prepared = mProduction.PrepareProductionOutputForCurrentRecipe()','RefreshLoaderState','RefreshManagerState')){
+        $hits=@(for($line=$start;$line -lt $end;$line++){if($form.Lines($line,1).Trim() -ceq $anchor){$line}})
+        if($hits.Count -ne 1){throw 'Post-load Scale observation seam changed; not behavioral RED.'}
+        $postLoadLines+=$hits[0]
+    }
+    foreach($line in @($postLoadLines|Sort-Object -Descending)){$form.InsertLines($line,'    TestProductionDesigner.RunScalePostLoadEntered')}
     $form.AddFromString(@'
 Public Function RunScaleSheetStageForTest(ByVal mode As String, ByVal canary As String) As String
     Dim ws As Worksheet, lo As ListObject, name As Variant, row As Long, phase As String
@@ -105,8 +114,7 @@ Public Function RunScaleSheetValuesForTest(ByVal mode As String, ByVal canary As
         Set ws = mOperatorWorkbook.Worksheets("Production")
     End If
     factor = 1#
-    If mode = "OwnerException" Then factor = 2#
-    ' RUN-SCALE-01: an unloaded run must leave these staging quantities unchanged.
+    ' RUN-SCALE-01/02: refused or failed loading must not scale prior quantities.
     For Each name In Array("RecipeChooser_generated", "InventoryPalette_generated")
         Set lo = ws.ListObjects(CStr(name))
         If lo.ListColumns("Operator Extra").DataBodyRange.Cells(1, 1).Value2 <> canary Or _
@@ -148,7 +156,7 @@ End Sub
 Private mScaleLoadCalls As Long, mScaleReadCalls As Long, mScaleReadOK As Boolean, mScaleLegacyCalls As Long
 Private mScaleOwnerTarget As String
 Private mScaleRecipeReads As Long, mScaleProcessReads As Long
-Private mScaleRebuildCalls As Long
+Private mScaleRebuildCalls As Long, mScalePostLoadCalls As Long
 '@)
     $adapter.AddFromString(@'
 Public Sub RunScaleReset()
@@ -156,6 +164,7 @@ Public Sub RunScaleReset()
     mScaleOwnerTarget = "NotEntered"
     mScaleRecipeReads = 0: mScaleProcessReads = 0
     mScaleRebuildCalls = 0
+    mScalePostLoadCalls = 0
 End Sub
 Public Sub RunScaleReleasedRead(ByVal kind As String, ByVal available As Boolean)
     If Not available Then Exit Sub
@@ -191,6 +200,12 @@ Public Sub RunScaleRebuildEntered()
 End Sub
 Public Function RunScaleRebuildReached() As Boolean
     RunScaleRebuildReached = mScaleRebuildCalls = 1
+End Function
+Public Sub RunScalePostLoadEntered()
+    mScalePostLoadCalls = mScalePostLoadCalls + 1
+End Sub
+Public Function RunScalePostLoadCount() As Long
+    RunScalePostLoadCount = mScalePostLoadCalls
 End Function
 Public Function RunScaleEvidence() As String
     RunScaleEvidence = CStr(mScaleLoadCalls) & "|" & CStr(mScaleReadCalls) & "|" & CStr(mScaleReadOK) & "|" & CStr(mScaleLegacyCalls) & "|" & mScaleOwnerTarget & "|" & CStr(mRunSheetNotices)
@@ -305,6 +320,8 @@ function Test-ProductionRunScaleDisabled($Fixture) {
             Check ($label+'.CanonicalSourcePreserved') ([bool](Probe 'RunWorksheetSource'))
             if($mode -ceq 'OwnerException'){
                 Check ($label+'.RealOwnerCaughtException') ([string](Probe 'RunFaultEvidence') -ceq '1|True|False' -and $evidence -ceq '1|0|False|0|Captured|1')
+                Check ($label+'.NoSubsequentScalePreparationOrRefresh') ([int](Probe 'RunScalePostLoadCount') -eq 0)
+                Check ($label+'.ApprovedFailureMessage') ($notice -ceq 'Recipe could not be loaded. Scale was not applied.')
             }else{Check ($label+'.NoRecipeOwnerRead') ($evidence -ceq '0|0|False|0|NotEntered|0')}
             if($mode -ceq 'NoSelection'){$expected='Select a recipe, enter Batch scale %, then click Apply Scale.'}
             elseif($mode -ceq 'BadScale'){$expected='Batch scale must be a number from 0.001% through 1000%.'}
@@ -319,6 +336,10 @@ function Test-ProductionRunScaleDisabled($Fixture) {
             if($CaptureEvidence -and $mode -ceq 'NoSelection'){
                 Check ($label+'.VisibleOperatorPage') ([int](Probe 'RunLocalShowAndCapture' @($book.Name,'SCALE')) -eq 3)
                 CaptureOwnedFormByCaptionEvidence 'Production' 'run-scale-disabled-refusal.png'
+            }
+            if($CaptureEvidence -and $mode -ceq 'OwnerException'){
+                if([int](Probe 'RunLocalShowAndCapture' @($book.Name,'SCALE')) -ne 3){throw 'Scale failure page unavailable for visible evidence.'}
+                CaptureOwnedFormByCaptionEvidence 'Production' 'run-scale-disabled-owner-failure.png'
             }
         }finally{[void](Probe 'RunSheetOwnerRestore')}
     }
@@ -340,6 +361,9 @@ function Test-ProductionRunScaleReload($Fixture) {
         Check 'RunScaleReload.GuardsRestored' ([bool](Probe 'RunFaultGuards'))
         Check 'RunScaleReload.RealCapturedOwnerWithoutFaultInjection' ($evidence.StartsWith('1|0|False|1|Captured|') -and [string](Probe 'RunFaultEvidence') -ceq '0|False|False')
         Check 'RunScaleReload.UnknownColumnsValuesAndFormulasPreserved' ([bool](Probe 'RunScaleCustomValues' @($canary)))
+        Check 'RunScaleReload.PriorQuantitiesAndExactKeyPreserved' ([bool](Probe 'RunScaleSheetValues' @('Reload',$canary)))
+        Check 'RunScaleReload.NoSubsequentScalePreparationOrRefresh' ([int](Probe 'RunScalePostLoadCount') -eq 0)
+        Check 'RunScaleReload.ApprovedFailureMessage' ($notice -ceq 'Recipe could not be loaded. Scale was not applied.')
         Check 'RunScaleReload.CanonicalIdentityAndValuesPreserved' ([bool](Probe 'RunWorksheetSource'))
         Pair $before 'SCALE' 'FAILED' 'RunScaleReload.MissingWorksheetDefinition'
         if($CaptureEvidence){

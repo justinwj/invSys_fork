@@ -13,14 +13,17 @@ candidate is `deploy/validation-guide-transfer-notice-01`; the preceding Print c
 is `deploy/validation-print-recorded-01`, code checkpoint `89674af1`.
 Do not equate control registration, a scoped GREEN or a diagnostic with full acceptance.
 
-Current Production-only candidate: `deploy/validation-run-scale-empty-recipe-01`, catalog31.
-The missing-definition D14 guard passes RED54/7 to GREEN61, retained disabled160
-and smoke86, with five cold/instrumented compiles, preservation, normal closure,
-zero delayed Excel failures and unchanged static ratchets. It stops staging
-rebuild and preserves custom fields; subsequent scaling and misleading loaded
-wording remain. RUN-SCALE-02 was approved2026-10-11; implementation is pending. Successful
-worksheet reload/general rebuild preservation and native-chain acceptance remain
-open. Exact receipts: [Run results](plan022_slice4be_production_run_local_results.md).
+Current candidate: `deploy/validation-run-scale-stop-01`, catalog32. Approved
+RUN-SCALE-02 stops after failed worksheet loading, before subsequent scaling,
+output preparation/refresh, and displays the approved failure message. Missing
+definition RED61/3 to GREEN64 and caught-failure RED159/3 to GREEN162 preserve
+quantities, exact key and custom fields. Five cold/instrumented compiles, static
+ratchets and clean preserved closure pass; both failure captures are readable.
+Enabled-Designs218 and full-chain32/live48/warehouse15 pass with clean preserved
+closure and delayed audit. Smoke86 and the six-page layout gate also pass, with
+reviewed captures. The intermittent native fault remains unresolved. Successful
+worksheet reload/general rebuild preservation and independent worksheet guides remain open.
+Exact receipts: [Run results](plan022_slice4be_production_run_local_results.md).
 
 Current independent Close candidate: `validation-admin-close-02`, catalog32/145
 controls. [Admin Close](plan022_slice4be_admin_close_results.md) passes actual-handler

@@ -2,6 +2,19 @@ Attribute VB_Name = "modProductionRunScaleActions"
 Option Explicit
 Option Private Module
 
+' Keep captured-context failure authoritative and never scale after failed loading.
+Public Function TryLoadWorksheetRecipe(ByVal recipeId As String, ByVal action As cProductionWorksheetAction, _
+                                       ByRef report As String) As Boolean
+    Dim loaded As Boolean
+    loaded = mProduction.LoadRecipeChooser(recipeId)
+    If Not action.CanContinue(report) Then Exit Function
+    If Not loaded Then
+        report = "Recipe could not be loaded. Scale was not applied."
+        Exit Function
+    End If
+    TryLoadWorksheetRecipe = True
+End Function
+
 ' Observe both Scale branches without substituting a successful owner result.
 Public Function Execute(ByVal owner As frmProduction, ByVal context As String, _
                         ByVal operatorBook As Workbook, ByRef loading As Boolean, ByRef busy As Boolean, _
