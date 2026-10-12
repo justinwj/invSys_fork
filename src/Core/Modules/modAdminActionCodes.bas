@@ -1,0 +1,48 @@
+Attribute VB_Name = "modAdminActionCodes"
+Option Explicit
+Option Private Module
+
+Public Function Control(ByVal id As String) As Object
+    Dim record As Object, owner As String, actionClass As String, caption As String
+    Select Case id
+        Case "ADMIN_VERIFY_ADDINS"
+            owner = "ADMIN_ADDINS_VERIFY": actionClass = "Command": caption = "Verify Add-ins Published"
+        Case "ADMIN_CONSOLE_OPEN"
+            owner = "ADMIN_CONSOLE": actionClass = "Navigation": caption = "Admin Console"
+        Case Else: Exit Function
+    End Select
+    Set record = CreateObject("Scripting.Dictionary")
+    record.Add "ControlId", id: record.Add "OwnerId", owner
+    record.Add "Class", actionClass: record.Add "Role", "Admin"
+    record.Add "Caption", caption: record.Add "Surface", "Admin"
+    record.Add "Capability", "ADMIN_MAINT": record.Add "CodePrefix", id & "_"
+    Set Control = record
+End Function
+
+Public Function Outcome(ByVal id As String, ByVal code As String) As Object
+    Dim record As Object, severity As String, message As String
+    severity = "Info"
+    Select Case id
+        Case "ADMIN_VERIFY_ADDINS"
+            Select Case code
+                Case "REQUESTED": message = "Required add-in file verification requested."
+                Case "VERIFIED": message = "The five required add-in files are present and nonempty. Package integrity and deployment are not asserted."
+                Case "FAILED": message = "Required add-in file verification did not succeed. Inspect the verification result."
+                Case Else: Exit Function
+            End Select
+        Case "ADMIN_CONSOLE_OPEN"
+            Select Case code
+                Case "REQUESTED": message = "Admin Console opening requested."
+                Case "OPENED": message = "Admin Console opened. Processing and Domain application are not asserted."
+                Case "FAILED": message = "Admin Console could not be opened."
+                Case Else: Exit Function
+            End Select
+        Case Else: Exit Function
+    End Select
+    If code = "FAILED" Then severity = "Error"
+    Set record = CreateObject("Scripting.Dictionary")
+    record.Add "EventCode", id & "_" & code: record.Add "OutcomeCode", code
+    record.Add "Severity", severity: record.Add "DataEffect", "Unknown"
+    record.Add "UserMessage", message: record.Add "NextStep", ""
+    Set Outcome = record
+End Function

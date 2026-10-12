@@ -123,20 +123,13 @@ Public Function DeleteLocalRuntimeAdmin(ByVal sourceWarehouseId As String, _
 End Function
 
 Public Function OpenAdminConsole(Optional ByVal adminWb As Workbook = Nothing, _
-                                 Optional ByRef report As String = "") As Boolean
-    Dim wb As Workbook
+                                 Optional ByRef report As String = "", _
+                                 Optional ByVal capturedConfigPath As String = vbNullChar) As Boolean
+    OpenAdminConsole = modAdminConsoleActivity.OpenConsoleView(adminWb, report, capturedConfigPath)
+End Function
 
-    Set wb = ResolveAdminWorkbook(adminWb)
-    If wb Is Nothing Then
-        report = "Admin workbook not resolved."
-        Exit Function
-    End If
-
-    If Not EnsureAdminSchema(wb, report) Then Exit Function
-    If Not RefreshAdminConsole(wb, report) Then Exit Function
-
-    wb.Worksheets(SHEET_ADMIN_CONSOLE).Activate
-    OpenAdminConsole = True
+Public Function CaptureConsoleConfigPath() As String
+    CaptureConsoleConfigPath = FindExistingConfigWorkbookPathAdmin()
 End Function
 
 Public Function OpenUserManagement(Optional ByVal adminWb As Workbook = Nothing, _
@@ -388,7 +381,8 @@ FailEnsure:
 End Function
 
 Public Function RefreshAdminConsole(Optional ByVal adminWb As Workbook = Nothing, _
-                                    Optional ByRef report As String = "") As Boolean
+                                    Optional ByRef report As String = "", _
+                                    Optional ByVal capturedConfigPath As String = vbNullChar) As Boolean
     On Error GoTo FailRefresh
 
     Dim wb As Workbook
@@ -425,7 +419,7 @@ Public Function RefreshAdminConsole(Optional ByVal adminWb As Workbook = Nothing
     Set ws = wb.Worksheets(SHEET_ADMIN_CONSOLE)
     InitializeAdminConsoleValues ws
 
-    If TryResolveExistingAdminRuntimeContext(runtimeWh, runtimeSt, processorUser, inventoryWb, inventoryOpenedTransient, statusText) Then
+    If TryResolveExistingAdminRuntimeContext(runtimeWh, runtimeSt, processorUser, inventoryWb, inventoryOpenedTransient, statusText, capturedConfigPath) Then
         If Not inventoryWb Is Nothing Then
             Set loLocks = FindListObjectByNameAdmin(inventoryWb, TABLE_LOCKS)
             Set loApplied = FindListObjectByNameAdmin(inventoryWb, TABLE_APPLIED)
@@ -1884,7 +1878,8 @@ Private Function TryResolveExistingAdminRuntimeContext(ByRef warehouseId As Stri
                                                        ByRef processorUserId As String, _
                                                        ByRef inventoryWb As Workbook, _
                                                        ByRef inventoryOpenedTransient As Boolean, _
-                                                       ByRef statusText As String) As Boolean
+                                                       ByRef statusText As String, _
+                                                       Optional ByVal capturedConfigPath As String = vbNullChar) As Boolean
     Dim wbCfg As Workbook
     Dim wbCfgOpenedTransient As Boolean
     Dim configPath As String
@@ -1896,7 +1891,8 @@ Private Function TryResolveExistingAdminRuntimeContext(ByRef warehouseId As Stri
     statusText = "No runtime configured. Admin Console did not create any warehouse files."
     processorUserId = "svc_processor"
 
-    configPath = FindExistingConfigWorkbookPathAdmin()
+    configPath = capturedConfigPath
+    If configPath = vbNullChar Then configPath = FindExistingConfigWorkbookPathAdmin()
     If configPath = "" Then Exit Function
 
     Set wbCfg = OpenWorkbookIfExistsAdmin(configPath, wbCfgOpenedTransient)

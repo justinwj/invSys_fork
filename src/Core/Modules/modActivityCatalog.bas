@@ -2,14 +2,14 @@ Attribute VB_Name = "modActivityCatalog"
 Option Explicit
 Option Private Module
 
-Public Const CATALOG_VERSION As Long = 35
+Public Const CATALOG_VERSION As Long = 36
 
 Public Function ControlIds(Optional ByVal version As Long = CATALOG_VERSION) As Variant
     Dim ids As Variant, added As Variant, index As Long, offset As Long
-    If version = 35 Then
-        ids = ControlIds(34)
+    If version = 35 Or version = 36 Then
+        ids = ControlIds(version - 1)
         ReDim Preserve ids(LBound(ids) To UBound(ids) + 1)
-        ids(UBound(ids)) = "ADMIN_VERIFY_ADDINS"
+        If version = 35 Then ids(UBound(ids)) = "ADMIN_VERIFY_ADDINS" Else ids(UBound(ids)) = "ADMIN_CONSOLE_OPEN"
         ControlIds = ids
         Exit Function
     End If
@@ -240,7 +240,8 @@ Public Function Control(ByVal controlId As String, Optional ByVal version As Lon
     Dim record As Object
     If version < 1 Or version > CATALOG_VERSION Then Exit Function
     If version >= 35 Then
-        Set record = modAdminVerifyCodes.Control(controlId)
+        If controlId = "ADMIN_CONSOLE_OPEN" And version < 36 Then Exit Function
+        Set record = modAdminActionCodes.Control(controlId)
         If Not record Is Nothing Then Set Control = record: Exit Function
     End If
     If version >= 34 Then
@@ -433,9 +434,9 @@ Public Function Outcome(ByVal controlId As String, ByVal outcomeCode As String) 
     Dim record As Object, definition As Object, message As String
     Set definition = Control(controlId)
     If definition Is Nothing Then Exit Function
-    Set record = modAdminVerifyCodes.Control(controlId)
+    Set record = modAdminActionCodes.Control(controlId)
     If Not record Is Nothing Then
-        Set Outcome = modAdminVerifyCodes.Outcome(controlId, outcomeCode)
+        Set Outcome = modAdminActionCodes.Outcome(controlId, outcomeCode)
         Exit Function
     End If
     Set record = modAdminReconcileCodes.Control(controlId)

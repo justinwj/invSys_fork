@@ -6,6 +6,19 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+Current validation candidate: `deploy/validation-admin-console-03`, catalog36/156.
+Fresh Console118, Verify130, Reconcile258, Settings202, smoke86 and chain32/live-role48/
+Create15 pass. Console guide188/six reviewed captures from02 are reused with
+compiled-component comparison; prior Verify202/Reconcile360 guide proofs retain
+their original scope. Five cold compiles, Operations startup, static03, preservation
+and delayed native audits pass. No station deployment is promoted.
+See [Console evidence](plan022_slice4be_admin_console_results.md). Prior accepted
+Reconcile360 and Verify202 remain scoped baselines, not claims of complete4be-A.
+[Remaining Admin coverage](plan022_slice4be_admin_remaining_coverage.md) tracks
+uncovered entries. D18-LOCAL-01 remains proposed and requires approval.
+
+### Prior Settings entry checkpoint
+
 The native Settings boundary extension now passes177/177 with all43 prior checks
 in order. Current/default/disabled/user/control policies, context/permission loss,
 older policy, repeated activation and storage notices pass with preservation and
@@ -32,7 +45,7 @@ retain every prior check in order on candidate02, with five compiles each,
 preservation and clean delayed closure. The native helper's C# body is unchanged;
 all60 input operations retain exact movement/restoration and desktop matches.
 
-Current candidate: `deploy/validation-admin-entry-02`, catalog33/151. Settings Open
+Settings entry candidate: `deploy/validation-admin-entry-02`, catalog33/151. Settings Open
 passes RED17/7 -> GREEN24; all five tab destinations pass native mouse/keyboard
 RED33/10 -> GREEN43. Programmatic/same-tab exclusion, five compiles, preservation,
 clean delayed closure and three reviewed default-size captures pass. Static caps
@@ -220,7 +233,7 @@ maintenance-denial, terminal/interruption and recorded/evaluated comparisons now
 have scoped GREEN499 proof; reuse it. Neither this audit
 nor B0 alone accepts4be-A or R1.
 
-### Current source findings (2026-10-06)
+### Earlier source findings (2026-10-06)
 
 Source-only review at runtime checkpoint `89674af1`; this does not establish
 operator acceptance or a new contract. No business action was used for the census.
@@ -256,7 +269,7 @@ entries, with launcher98, native tabs177 and continuous recording/guide125 evide
 above. Close has actual-handler/policy70 and independent-guide123 proof at its
 recorded candidate scope. Programmatic page changes remain excluded.
 
-### Admin reachability follow-up (2026-10-12)
+### Historical Admin reachability follow-up (2026-10-12)
 
 `tools/build-xlam.ps1` declares14 buttons in Admin's Actions group; only Settings
 currently maps to this completed recording proof. Audit the other13 actual callbacks
@@ -283,6 +296,16 @@ history, queued application and Domain guards. No runtime fix is implemented. Re
 rest of the coverage map. The [Auth read correction](plan022_slice4be_admin_auth_read_results.md)
 now passes 111 packaged checks under D8-A with reviewed healthy/refusal captures;
 broader Users & Roles layout, recording and authorization coverage remains open.
+
+The earlier no-fix/Settings-only statements above are superseded at their scoped
+boundaries by the current receipts: Reconcile now has approved exact-identity and
+live-authority corrections plus360 recording/guide checks; Verify Add-ins has202
+recording/guide checks with current-package regressions. Admin Console has69
+focused checks and118 context/storage checks on console-02; guide/visible and
+current-package regression acceptance is still pending. See the maintained
+[Admin coverage map](plan022_slice4be_admin_remaining_coverage.md) and
+[Console receipt](plan022_slice4be_admin_console_results.md). Local-recording
+eligibility still requires D18-LOCAL-01 approval, and broader Admin coverage is open.
 
 ## Historical checkpoints (candidate-specific)
 
@@ -777,10 +800,14 @@ of the later verified result.
   the single-form component delta pass. Subsequent multiline native/visible
   evidence is 88/88 with 14 reviewed principal images; broader and human acceptance
   remain open.
-- **Carrier authority:** Windows-user persistence conflicts with D5's warehouse
-  Config authority. No hybrid, implied UOM permission, or silent migration.
-- Guide transfer details are still a proposal. D18 already requires export/import;
-  do not substitute local-only guides for that accepted outcome.
+- **Carrier authority:** current v4.11 D18 General Settings coverage explicitly
+  retains per-Windows-user carrier/connection storage and captured-context command
+  authorization. The earlier conflict note is superseded; no implied UOM permission
+  or silent migration follows. See [General Settings evidence](plan022_slice4be_general_settings_results.md).
+- Guide transfer wire v1 is defined in current v4.11 D18. Its approved exact-version,
+  receiving-permission and no-overwrite boundaries govern; see
+  [transfer evidence](plan022_slice4be_guide_transfer_results.md). Broader acceptance
+  is separate from contract approval.
 - A new contract amendment requires normative approval first. New discovered
   controls that inherit D18 require exact catalog/plan/control entries and D13,
   not repeated approval of the already accepted synthesized contract.
@@ -794,7 +821,7 @@ of the later verified result.
 - Revalidate approval, desktop/process state and the candidate before dependent
   work. Do not interpret automatic continuation as architecture approval.
 
-Latest desktop checkpoint (03:05:30 UTC, 2026-09-24): cursor access succeeds and
+Historical desktop checkpoint (03:05:30 UTC, 2026-09-24): cursor access succeeds and
 the blank-form capture calibration passes all three cases without elevation.
 The current palette candidate's presentation retry stops earlier at Create guide
 fixture dispatch (10 PASS/one harness exception); no product screenshots or

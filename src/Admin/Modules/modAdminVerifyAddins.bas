@@ -8,7 +8,8 @@ Public Sub VerifyAddinsPublished()
     On Error GoTo Failed
     Set targetWb = modAdmin.ResolveInteractiveAdminWorkbook()
     addinsRoot = modAddinsPublish.CaptureVerificationRoot()
-    action = BeginObservation(notice)
+    action = modAdminActionObservation.BeginObservation("ADMIN_VERIFY_ADDINS", notice, _
+        "Tracking unavailable: add-in file verification could not be recorded.")
     Call modRoleWorkbookSurfaces.EnsureAdminLegacyWorkbookSurface(targetWb, report)
     If modAddinsPublish.VerifyAddinsPublished(addinsRoot, True) Then
         outcome = "VERIFIED"
@@ -23,36 +24,14 @@ Public Sub VerifyAddinsPublished()
         End If
         MsgBox "Add-ins publish verification failed." & vbCrLf & detail, vbExclamation, "invSys Admin"
     End If
-    FinishObservation action, outcome, notice
+    modAdminActionObservation.FinishObservation action, outcome, notice, _
+        "Tracking unavailable: the add-in file verification result could not be recorded."
     If notice <> "" Then MsgBox notice, vbExclamation, "invSys Admin"
     Exit Sub
 Failed:
     errorNumber = Err.Number: errorSource = Err.Source: errorDescription = Err.Description
-    FinishObservation action, "FAILED", notice
+    modAdminActionObservation.FinishObservation action, "FAILED", notice, _
+        "Tracking unavailable: the add-in file verification result could not be recorded."
     If notice <> "" Then MsgBox notice, vbExclamation, "invSys Admin"
     Err.Raise errorNumber, errorSource, errorDescription
-End Sub
-
-Private Function BeginObservation(ByRef notice As String) As String
-    Dim context As String
-    On Error GoTo Unavailable
-    context = modActivity.CaptureContext()
-    If context <> "" Then
-        BeginObservation = modActivity.BeginAction("ADMIN_VERIFY_ADDINS", context, notice)
-        If context <> modActivity.CaptureContext() Then GoTo Unavailable
-    End If
-    Exit Function
-Unavailable:
-    notice = "Tracking unavailable: add-in file verification could not be recorded."
-End Function
-
-Private Sub FinishObservation(ByVal action As String, ByVal outcome As String, ByRef notice As String)
-    Dim resultNotice As String
-    On Error GoTo Unavailable
-    If action = "" Then Exit Sub
-    modActivity.FinishAction action, outcome, resultNotice
-    If resultNotice <> "" Then notice = resultNotice
-    Exit Sub
-Unavailable:
-    notice = "Tracking unavailable: the add-in file verification result could not be recorded."
 End Sub

@@ -97,6 +97,9 @@ Public Function Definition(ByVal version As Long) As String
     Set record = modActivityCatalog.Control("ADMIN_VERIFY_ADDINS", version)
     If Not record Is Nothing Then Definition = modTrainingJson.EncodeObject(record)
 End Function
+Public Function CurrentCatalogVersion() As Long
+    CurrentCatalogVersion = modActivityCatalog.CATALOG_VERSION
+End Function
 Public Function PriorDefinitionsPreserved() As Boolean
     Dim id As Variant, before As Object, after As Object
     For Each id In modActivityCatalog.ControlIds(34)
@@ -117,6 +120,7 @@ End Function
 
 function Test-AdminVerifyAddins($Fixture,$Other) {
     function Probe([string]$Method,[object[]]$Values=@()){Run 'invSys.Core.xlam' ('TestVerifyActivity.'+$Method) $Values}
+    $catalogVersion=[int](Probe 'CurrentCatalogVersion')
     function FileHash([string]$Path){$stream=[IO.File]::Open($Path,'Open','Read','ReadWrite');try{(Get-FileHash -InputStream $stream).Hash}finally{$stream.Dispose()}}
     function Pins([string]$Root){$pins=@{};Get-ChildItem -LiteralPath $Root -Recurse -File|ForEach-Object {$pins[$_.FullName]=FileHash $_.FullName};return $pins}
     function SamePins($Before,$After){if($Before.Count -ne $After.Count){return $false};foreach($path in $Before.Keys){if(-not $After.ContainsKey($path) -or $Before[$path] -cne $After[$path]){return $false}};return $true}
@@ -169,7 +173,7 @@ function Test-AdminVerifyAddins($Fixture,$Other) {
             Check ($prefix+'ExactRecordedPair') ($pair -and $attempts[0].ActivityId -ceq $outcomes[0].ActivityId -and $attempts[0].RecordId -cne $outcomes[0].RecordId)
             $safe=$pair;$bound=$pair;$conclusion=$pair
             foreach($record in $records){
-                $bound=$bound -and $record.OwnerId -ceq 'ADMIN_ADDINS_VERIFY' -and $record.CatalogVersion -eq 35 -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.DataEffect -ceq 'Unknown'
+                $bound=$bound -and $record.OwnerId -ceq 'ADMIN_ADDINS_VERIFY' -and $record.CatalogVersion -eq $catalogVersion -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.DataEffect -ceq 'Unknown'
                 $json=$record|ConvertTo-Json -Depth 20 -Compress
                 $safe=$safe -and @($record.SourceEventRefs).Count -eq 0
                 foreach($value in @($root,$Fixture.Root,$Fixture.Secret,(CredentialHash $Fixture.Secret),'Operator_Custom_Canary')){$safe=$safe -and -not $json.Contains($value)}

@@ -1,6 +1,6 @@
 # Slice4be remaining Admin coverage
 
-Source/package audit,2026-10-12, code `a0491583`; candidate
+Original source/package audit,2026-10-12, code `a0491583`; candidate
 `deploy/validation-admin-entry-02`, catalog33/151. **Not runtime acceptance.**
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
@@ -199,16 +199,38 @@ preservation and clean delayed native audits. Static06 retains all28 caps and
 dynamic9/45. This closes eligible NAS recording/guide coverage for this callback;
 local eligibility and other Admin entries keep4be-A open.
 
-## Next independent audit: Admin Console
+## Admin Console coverage
 
-Read-only source review,2026-10-12; no new contract or runtime acceptance.
-`btnAdminOpen` retains ADMIN_MAINT and dispatches `modAdmin.Admin_Click`.
-That callback captures a workbook, prepares its local surfaces, then discards
-`OpenAdminConsole`'s Boolean. The owner returns True only after schema preparation,
-console refresh and AdminConsole activation. Refresh includes a poison-queue
-projection and inbox/lock/application counts; an open must not imply processing.
-`TestOpenAdminConsole_WithoutRuntime_DoesNotCreateDefaultWarehouse` protects a
-service-level no-runtime case, but does not establish callback recording or live
-authorization. Before implementation, refine D18 coverage and run a packaged
-callback RED that protects actual success/failure, captured workbook/custom
-values, unchanged authority, policy/session boundaries and truthful conclusions.
+Catalog36 `ADMIN_CONSOLE_OPEN` observes the actual `btnAdminOpen` / ADMIN_MAINT /
+`modAdmin.Admin_Click` callback. OPENED proves presentation after existing schema,
+refresh and sheet activation; effects remain Unknown, references empty. It does
+not prove processing. Workbook/read-scope capture, unknown columns, authorization,
+policy/session/storage behavior and truthful guide conclusions are protected.
+Packaged55/9 absent-record and66/3 surface REDs lead to69 and118 GREEN; the separate
+pre-dispatch Reader focus diagnostic is not claimed fixed.
+
+Console-03 qualification closes eligible NAS coverage for this control:
+fresh118/Verify130/Reconcile258/Settings202/smoke86 and chain32/live-role48/Create15,
+five compiles, static03, preservation and clean delayed audits. Guide188 and six
+reviewed captures from02 are reused with compiled-component comparison and fresh
+recording proof. Static03 holds28 caps, dynamic9/45,194 duplicates, three schemas
+and490 parsers after typed observation/catalog consolidation. See
+`plan022_slice4be_admin_console_results.md` for exact gates and reuse limits.
+Local eligibility and remaining Admin entries keep4be-A incomplete.
+
+## Next independent entry: View Warehouses
+
+Read-only source audit only. `btnAdminWarehouses` uses ADMIN_MAINT and dispatches
+`modAdmin.Open_WarehouseDirectory`: capture workbook, prepare surfaces, optionally
+prompt for a scan root, then open/refresh/activate the directory and show the owner
+result. `RefreshWarehouseDirectory` rebuilds its local table from open Config
+workbooks and remembered/discovered roots. Presentation is not target selection
+or warehouse creation. Review custom-column preservation and capture of this read
+scope before optional observation; the root prompt can also remember a local root.
+`btnAdminWarehouseRoot` is a separate explicit action and must not borrow the
+directory-open result as proof of every possible effect. No new ID, permission,
+exclusion or implementation is approved by this audit.
+
+Next: refine the discovered control under v4.11 D18 and run its actual packaged
+Ribbon/callback missing-record RED on console-03, preserving the owning results,
+original workbook/read scope, unknown columns and saved authority.

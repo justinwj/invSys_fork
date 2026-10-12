@@ -12,12 +12,7 @@ Private mSeedCallbackAutomationDeleteConfirmed As Boolean
 Private mSeedCallbackLastResult As String
 
 Sub Admin_Click()
-    Dim report As String
-    Dim targetWb As Workbook
-
-    Set targetWb = ResolveInteractiveAdminWorkbook()
-    Call modRoleWorkbookSurfaces.EnsureAdminLegacyWorkbookSurface(targetWb, report)
-    Call modAdminConsole.OpenAdminConsole(targetWb, report)
+    modAdminConsoleActivity.OpenFromRibbon
 End Sub
 
 Sub Set_CurrentUser()
