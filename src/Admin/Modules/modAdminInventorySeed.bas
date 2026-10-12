@@ -61,6 +61,7 @@ Public Function DeleteDemoInventoryForWarehouse(ByVal warehouseId As String, _
     Dim batchReport As String
     Dim retryReport As String
     Dim processedCount As Long
+    Dim eventApplied As Boolean, retryApplied As Boolean
     Dim inboxReport As String
 
     On Error GoTo FailDelete
@@ -117,13 +118,14 @@ Public Function DeleteDemoInventoryForWarehouse(ByVal warehouseId As String, _
         Exit Function
     End If
 
-    processedCount = modProcessor.RunBatch(warehouseId, 0, batchReport)
+    processedCount = modProcessor.RunBatch(warehouseId, 0, batchReport, eventIdOut, eventApplied)
     If processedCount < 1 And InStr(1, batchReport, "Poison=0", vbTextCompare) > 0 Then
-        processedCount = modProcessor.RunBatch(warehouseId, 0, retryReport)
+        processedCount = modProcessor.RunBatch(warehouseId, 0, retryReport, eventIdOut, retryApplied)
+        eventApplied = eventApplied Or retryApplied
         batchReport = batchReport & "|Retry=" & retryReport
     End If
-    If processedCount < 1 Then
-        report = "Delete event was queued but not applied. " & batchReport
+    If Not eventApplied Then
+        report = "Delete event was queued; application was not confirmed. " & batchReport
         Exit Function
     End If
 
@@ -371,6 +373,7 @@ Private Function QueueDemoCreateAndProcess(ByVal warehouseId As String, _
     Dim batchReport As String
     Dim retryReport As String
     Dim processedCount As Long
+    Dim eventApplied As Boolean, retryApplied As Boolean
     Dim inboxReport As String
     Dim productionInboxPath As String
     Dim productionInbox As Workbook
@@ -415,13 +418,14 @@ Private Function QueueDemoCreateAndProcess(ByVal warehouseId As String, _
         GoTo CleanExit
     End If
 
-    processedCount = modProcessor.RunBatch(warehouseId, 0, batchReport)
+    processedCount = modProcessor.RunBatch(warehouseId, 0, batchReport, eventIdOut, eventApplied)
     If processedCount < 1 And InStr(1, batchReport, "Poison=0", vbTextCompare) > 0 Then
-        processedCount = modProcessor.RunBatch(warehouseId, 0, retryReport)
+        processedCount = modProcessor.RunBatch(warehouseId, 0, retryReport, eventIdOut, retryApplied)
+        eventApplied = eventApplied Or retryApplied
         batchReport = batchReport & "|Retry=" & retryReport
     End If
-    If processedCount < 1 Then
-        report = "Demo inventory event was queued but not applied. " & batchReport
+    If Not eventApplied Then
+        report = "Demo inventory event was queued; application was not confirmed. " & batchReport
         GoTo CleanExit
     End If
 

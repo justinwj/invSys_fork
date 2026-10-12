@@ -42,8 +42,11 @@ Private Const TABLE_INBOX_PROD As String = "tblInboxProd"
 
 Public Function RunBatch(Optional ByVal warehouseId As String = "", _
                          Optional ByVal batchSize As Long = 0, _
-                         Optional ByRef report As String = "") As Long
+                         Optional ByRef report As String = "", _
+                         Optional ByVal receiptEventId As String = "", _
+                         Optional ByRef receiptApplied As Boolean = False) As Long
     On Error GoTo FailRun
+    receiptApplied = False
 
     Dim totalStart As Single
     Dim phaseStart As Single
@@ -236,9 +239,11 @@ ContinueRow:
         Next rowIndex
 
         If targetInventoryDirty Then
-            SaveWorkbookProcessor inventoryWb
+            modProcessorPersistence.SaveWorkbook inventoryWb
             eventPersistenceSaves = eventPersistenceSaves + 1
         End If
+        If receiptEventId <> "" And Not receiptApplied Then _
+            receiptApplied = modInventoryDomainBridge.InventoryEventAppliedBridge(warehouseId, receiptEventId)
         If targetOutboxEvents.Count > 0 Then
             artifactReport = vbNullString
             If AppendEventsToOutboxBatch(targetOutboxEvents, inventoryWb, runId, artifactReport) Then
@@ -248,7 +253,7 @@ ContinueRow:
             End If
         End If
         If targetInboxDirty Then
-            SaveWorkbookProcessor target("Workbook")
+            modProcessorPersistence.SaveWorkbook target("Workbook")
             eventPersistenceSaves = eventPersistenceSaves + 1
         End If
 
@@ -291,8 +296,8 @@ CleanExit:
         Next target
     End If
     If lockHeld Then Call modLockManager.ReleaseLock("INVENTORY", runId, inventoryWb)
-    If inventoryOpenedTransient Then CloseTransientProcessorWorkbook inventoryWb
-    If designsOpenedTransient Then CloseTransientProcessorWorkbook designsWb
+    If inventoryOpenedTransient Then modProcessorPersistence.CloseTransient inventoryWb
+    If designsOpenedTransient Then modProcessorPersistence.CloseTransient designsWb
     If perfOwned Then PerfEndSafeProcessor runId, CLng((Timer - totalStart) * 1000), report
     Exit Function
 
@@ -619,7 +624,7 @@ Private Function EnsureInboxSchemaCore(ByVal targetWb As Workbook, _
     RemoveBlankSeedRowProcessor lo
     EnsureInboxDefaultEventType lo, defaultEventType
     ensureStage = "save workbook"
-    SaveWorkbookProcessor wb
+    modProcessorPersistence.SaveWorkbook wb
     ensureStage = "protect worksheet"
     SetSheetProtectionProcessor ws, True
     report = "OK"
@@ -1213,7 +1218,7 @@ Private Sub UpdateInboxRowStatus(ByVal lo As ListObject, ByVal rowIndex As Long,
     End Select
 
     SetSheetProtectionProcessor lo.Parent, True
-    If Not deferSave Then SaveWorkbookProcessor lo.Parent.Parent
+    If Not deferSave Then modProcessorPersistence.SaveWorkbook lo.Parent.Parent
     LogDiagnosticSafeProcessor "INBOX-STATUS", "Workbook=" & lo.Parent.Parent.Name & "|Table=" & lo.Name & "|EventID=" & eventId & "|Status=" & newStatus & "|ErrorCode=" & errorCode & "|ErrorMessage=" & errorMessage
 End Sub
 
@@ -1446,22 +1451,4 @@ Private Sub SetSheetProtectionProcessor(ByVal ws As Worksheet, ByVal protectAfte
                       "Excel automation cannot update inbox tables while the sheet remains protected."
         End If
     End If
-End Sub
-
-Private Sub SaveWorkbookProcessor(ByVal wb As Workbook)
-    If wb Is Nothing Then Exit Sub
-    If wb.ReadOnly Then Exit Sub
-    If Trim$(wb.Path) = "" Then Exit Sub
-    wb.Save
-End Sub
-
-Private Sub CloseTransientProcessorWorkbook(ByVal wb As Workbook)
-    If wb Is Nothing Then Exit Sub
-
-    On Error Resume Next
-    If Not wb.ReadOnly Then
-        If wb.Saved = False Then wb.Save
-    End If
-    wb.Close SaveChanges:=False
-    On Error GoTo 0
 End Sub

@@ -217,6 +217,14 @@ Public Function ListInventoryPickerItemsBridge(Optional ByVal filterText As Stri
 CleanFail:
 End Function
 
+Public Function InventoryEventAppliedBridge(ByVal warehouseId As String, ByVal eventId As String) As Boolean
+    On Error GoTo CleanExit
+    If Len(Trim$(warehouseId)) = 0 Or Len(Trim$(eventId)) = 0 Then Exit Function
+    InventoryEventAppliedBridge = CBool(RunInventoryQueryReadOnlyLocal( _
+        "modInventoryBridgeApi.InventoryEventAppliedBridgeResult", eventId, Nothing, BuildCanonicalInventoryPathLocal(warehouseId)))
+CleanExit:
+End Function
+
 Public Function ReadShipmentReconcileBridge(ByVal request As String, Optional ByVal inventoryWb As Workbook = Nothing, _
                                             Optional ByVal warehouseId As String = "", Optional ByVal runtimeRoot As String = "") As Variant
     On Error GoTo CleanExit

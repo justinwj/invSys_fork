@@ -1,6 +1,10 @@
 Attribute VB_Name = "modInventoryBridgeApi"
 Option Explicit
 
+Public Function InventoryEventAppliedBridgeResult(ByVal eventId As String, ByVal inventoryWb As Workbook) As Boolean
+    InventoryEventAppliedBridgeResult = modInventoryEventReceipt.IsApplied(eventId, inventoryWb)
+End Function
+
 Public Function ReadShipmentReconcileBridgeResult(ByVal request As String, ByVal inventoryWb As Workbook) As Variant
     ReadShipmentReconcileBridgeResult = modShipmentReconcile.ReadShipmentReconcile(request, inventoryWb)
 End Function

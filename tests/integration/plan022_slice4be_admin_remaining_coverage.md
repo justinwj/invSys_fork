@@ -33,6 +33,14 @@ Ignored verification: `reports/runtime/admin-remaining-source-audit-01/ribbon-ve
 
 ## Actions map
 
+Seed/Delete now have a measured completion prerequisite: the
+[exact-outcome gate](plan022_slice4be_admin_seed_outcome_results.md) gives RED27/2
+to focused GREEN35 on unpromoted seed-outcome-02. The processor captures the exact
+saved Domain receipt before publication can dirty authority; another event's batch
+count cannot prove this command applied. Smoke86 and five cold compiles pass.
+Visible feedback, expanded edge/regression cases and full qualification remain;
+no Seed recording ID or comprehensive coverage is claimed.
+
 Settings, Reconcile and Verify Add-ins have the scoped recording/guide gates
 described here and in their receipts; other entries remain pending.
 Form subactions below are source findings, not a complete live-control census.
