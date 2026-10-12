@@ -4,6 +4,7 @@
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileHistory.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileAuthority.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileNative.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beAdminReconcileSelection.ps1')
 function Install-AdminReconcileIdentityProbe {
     $project=$packages['invSys.Admin.xlam'].VBProject
     $probe=$project.VBComponents.Add(1);$probe.Name='TestReconcileIdentity'
@@ -175,6 +176,7 @@ End Function
 '@)
     Install-AdminReconcileHistoryProbe $probe.CodeModule
     Install-AdminReconcileAuthorityProbe $probe.CodeModule
+    Install-ReconcileSelectionProbe $project $probe.CodeModule $owner
     if($AdminReconcileNativePresentation){
         Install-AdminReconcileNativeProbe $probe.CodeModule
     }

@@ -1,7 +1,7 @@
 # Slice4be-A: Shipment Reconcile identity prerequisite
 
-2026-10-12. **Identity/authority172 GREEN; combined native179/2.**
-Approved D8-RECON-01 is implemented; long-history presentation and4be-A remain incomplete.
+2026-10-12. **191/191 GREEN: identity/authority, complete history, native selection and layout.**
+Native confirmation/window-close coverage, recording and4be-A remain incomplete.
 See the final sections for current evidence.
 
 ## Historical initial RED
@@ -325,3 +325,66 @@ and zero delayed native failures. Controller under runtime:
 `admin-reconcile-access-regression/chain-81a8cecc8e994d6bbf4be47c1a61ab5f`.
 UTC05:40:59.8755927–05:46:37.1591580; audit through05:46:49.1591580.
 This is regression evidence, not complete4be-A or full Release1 user acceptance.
+
+## Scrollable selection form GREEN
+
+The pre-implementation native179/2 RED above protects the replacement of the
+1023-character InputBox. Admin now owns `frmShipmentReconcileSelection`: complete
+locked/wrapped history, numbered entry, Inspect and Cancel, using the existing
+callback validation and shared Core anchor manager. Default720x480, minimum540x360;
+grow900x600, maximize and restore retain reachable actions and full history.
+Set the caption in Initialize: the FRX-less packaged designer initially retained
+`UserForm1`. No quantity, identity, authorization or recording rule changes.
+
+Candidate **`deploy/validation-admin-reconcile-selection-02`** passes **191/191**.
+All181 prior checks retain order, all179 prior GREEN remain GREEN, and both native
+history failures pass. The original172 identity/authority prefix is unchanged.
+Native Ctrl+Home/End reaches entry20; Escape invokes Cancel without queuing.
+Native Tab/20/Enter invokes Inspect; a read-only observer verifies the exact
+selected event/key reaches Domain and the existing no-higher-quantity conclusion
+queues nothing. Inventory bytes, quantities, custom values and saved state hold.
+Six foreground captures were directly reviewed, including readable entry20 at
+minimum/default/restored sizes and the complete history at larger/maximized sizes.
+The conclusion message is observed at the existing notice seam, not a native
+confirmation screenshot. Native window-close is not separately accepted here.
+
+- Controller: `reports/runtime/admin-reconcile-controller/825b1a529c504fc6bd54f0b8f3734765`.
+- Worker: `reports/runtime/slice4be-admin-reconcile/4397cbda0d054a6f8920d6d8d0f5368d`.
+- UTC06:24:13.5415385--06:26:09.6691404; clean delayed audit through06:26:21.6691404.
+- Five instrumented compiles, exact log/JSON correspondence, normal closure and
+  settings/package/tooling preservation pass. Prior191 GREEN controller
+  `0931ca9cb13a4a9891dfc1a3e666ad34` is superseded only for stronger resized captures.
+- Build `reports/runtime/admin-reconcile-selection-build-02`: five cold compiles,
+  Operations startup, only the intended Admin module change/new form,321 unchanged
+  components, preserved prior candidate and clean delayed native audit.
+- Smoke `admin-reconcile-selection-regression/smoke-42cbea0cf15b4a3e9e3996b2649f6959`
+  under runtime:86 retained ordered checks, both unassisted exits, preservation and
+  clean delayed native audit.
+- Static `reports/runtime/admin-reconcile-selection-static-03`:330 components,
+  6390 procedures,139369 lines, all28 module caps, unchanged dynamic9/45, three
+  schemas and476 PowerShell parsers pass. **Reviewed exception:** duplicates193
+  (+1) is the one-line `UserForm_Layout` event adapter shared with `frmItemSearch`;
+  both delegate layout to the existing anchor manager. Retain required event
+  entries; do not alter scanner rules or add duplicate layout implementation.
+
+Diagnostic limits: hidden Excel suffered intermittent `EXCEL.EXE` access violations
+before native input. Traced controller `8dbd4bcc085f4725855ae48cbaba27ff` wrote only
+ObserverReady before the crash. Startup visibility alone did not survive hidden
+fixture windows (`af848eed21194f07bf7cf375865da1c6`). The native harness now keeps an
+unsaved disposable operator workbook visible and refuses entry if that prerequisite
+fails. Both qualified191 runs close normally without native failures. This matches
+operator context; it does not claim to repair Excel's hidden-host fault. Assisted
+recovery runs are diagnostic only and never accepted as GREEN.
+
+Harness corrections are not product RED: caret position3210 versus value length3229
+reflects19 CRLF separators; compare native position to the same control's clamped
+end only after capture. Traverse Home then End after resizing to prove viewport
+reachability. Keep test assertions outside returned receipt objects and parenthesize
+the Boolean Start-Job argument so Cancel cannot become Inspect. No new tracking ID,
+deployment promotion or complete4be-A acceptance is claimed.
+
+Final same-candidate regression:32 full-chain/48 live-role/15 Create Warehouse
+checks retain exact prior order. Controller under runtime:
+`admin-reconcile-selection-regression/chain-98c7d4114a4048b6997d451769713736`.
+UTC06:26:33.2352910--06:32:19.1695957; zero delayed native failures through
+06:32:31.1695957, normal closure and settings/packages/tracked reports preserved.

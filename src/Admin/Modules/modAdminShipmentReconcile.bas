@@ -29,8 +29,7 @@ Public Sub OpenShipmentReconcileTool()
         MsgBox "No valid server shipment deduction entries are available in the selected warehouse.", vbInformation, "invSys Admin - Shipment Reconcile"
         Exit Sub
     End If
-    selectionText = Trim$(InputBox("Enter the number of the server shipment deduction log line to inspect." & vbCrLf & vbCrLf & _
-        FormatRecentShipmentRows(recentRows), "invSys Admin - Shipment Reconcile"))
+    selectionText = SelectShipmentHistory(FormatRecentShipmentRows(recentRows))
     If selectionText = "" Then Exit Sub
     If Not IsNumeric(selectionText) Then GoTo InvalidSelection
     If CDbl(selectionText) < 1 Or CDbl(selectionText) > recentRows.Count Then GoTo InvalidSelection
@@ -75,6 +74,22 @@ InvalidSelection:
 Failed:
     MsgBox "Shipment reconcile could not finish: " & Err.Description, vbExclamation, "invSys Admin"
 End Sub
+
+Private Function SelectShipmentHistory(ByVal prompt As String) As String
+    Dim dialog As frmShipmentReconcileSelection
+    On Error GoTo Failed
+    Set dialog = New frmShipmentReconcileSelection
+    dialog.Configure prompt
+    dialog.Show vbModal
+    SelectShipmentHistory = dialog.SelectedText
+    Unload dialog
+    Exit Function
+Failed:
+    Dim failure As String
+    failure = Err.Description
+    If Not dialog Is Nothing Then Unload dialog
+    Err.Raise vbObjectError + 7301, "Shipment Reconcile", failure
+End Function
 
 Public Function QueueAdminShipmentReconcileEvent(ByVal warehouseId As String, ByVal stationId As String, ByVal userId As String, _
                                                  ByVal systemKey As String, ByVal signedQtyDelta As Double, _

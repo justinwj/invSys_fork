@@ -479,6 +479,7 @@ try {
         (Join-Path $repo "src/Admin/Modules/modAdminWorkbookTarget.bas"),
         (Join-Path $repo "src/Admin/Modules/modAdminConsole.bas"),
         (Join-Path $repo "src/Admin/Modules/modAdminShipmentReconcile.bas"),
+        (Join-Path $repo "src/Admin/Forms/frmShipmentReconcileSelection.frm"),
         (Join-Path $repo "src/Admin/Modules/modAdminDesignMigration.bas"),
         (Join-Path $repo "src/Admin/Modules/modAdminDesignLifecycle.bas"),
         (Join-Path $repo "tests/unit/TestPhase2Helpers.bas"),

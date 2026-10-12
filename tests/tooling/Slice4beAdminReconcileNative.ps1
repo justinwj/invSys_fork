@@ -17,12 +17,13 @@ End Function
 Public Function NativeLastChoiceEvent() As String
     NativeLastChoiceEvent = mNativeLastChoiceEvent
 End Function
-Public Function InvokeNativeSelection() As Boolean
+Public Function InvokeNativeSelection(Optional ByVal inspectLast As Boolean = False) As Boolean
     On Error GoTo Failed
     mNativePresentation = True
     InvokeCallback
     mNativePresentation = False
     InvokeNativeSelection = (mPrompts = 1 And Not mQueuedNotice And mBoundaryNotice = "")
+    If inspectLast Then InvokeNativeSelection = (mPrompts = 1 And Not mQueuedNotice And mBoundaryNotice = "Current quantity is not higher than the selected entity's balance after that shipment. No correction was queued.")
     Exit Function
 Failed:
     mNativePresentation = False
@@ -35,6 +36,7 @@ End Function
 }
 
 function Invoke-ReconcileNativeCancel([string]$LastEvent,[string]$SystemKey) {
+    if($script:reconcileSelectionFormPresent){return Invoke-ReconcileSelectionNative}
     $handle=[long]$excel.Hwnd
     $ready=Join-Path $runRoot ('reconcile-native-'+[guid]::NewGuid().ToString('N')+'.ready')
     $capture=Join-Path $reportRoot 'reconcile-native-selection.png'
@@ -135,11 +137,21 @@ public static class ReconcileNativeDialog {
 }
 
 function Test-AdminReconcileNative($Events,$State) {
+    # Owner-generated data windows are hidden by the normal services. Keep an
+    # unsaved, disposable operator window visible during native form interaction.
+    $nativeHost=$excel.Workbooks.Add()
+    try{
+    $nativeHost.Windows.Item(1).Visible=$true
+    $excel.Visible=$true
+    $nativeHost.Activate()
     $ready=[bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.PrepareNativeHistory')
     Check 'Reconcile.Native.TwentyOwnerAppliedShipments' $ready
     if(-not $ready){throw 'Native history fixture failed; not behavioral RED.'}
     $last=[string](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.NativeLastChoiceEvent')
     $bytes=Hash $State.InventoryPath;$rows=$Events.ListRows.Count
+    $visible=[bool]$excel.Visible -and [bool]$nativeHost.Windows.Item(1).Visible
+    Check 'Reconcile.Native.VisibleExcelHost' $visible
+    if(-not $visible){throw 'Visible operator host prerequisite failed; native entry withheld.'}
     $result=Invoke-ReconcileNativeCancel $last $State.KeyA
     Check 'Reconcile.Native.ActualSelectionControlsObserved' ([bool]$result.Observed.ExactDialog)
     Check 'Reconcile.Native.LastChoiceAndExactKeyPresent' ($result.Observed.LastChoicePresent -and $result.Observed.ExactKeyPresent)
@@ -149,4 +161,17 @@ function Test-AdminReconcileNative($Events,$State) {
     Check 'Reconcile.Native.CancelReturnsWithoutQueue' ($result.Returned -and $result.Observed.CancelDispatched -and $Events.ListRows.Count -eq $rows)
     Check 'Reconcile.Native.InventoryBytesPreserved' ((Hash $State.InventoryPath) -ceq $bytes)
     Check 'Reconcile.Native.QuantitiesCustomValuesAndSavedStatePreserved' ([bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.NativeFixturePreserved'))
+    if($script:reconcileSelectionFormPresent){
+        Check 'Reconcile.Native.Layout.AllRequiredSizesObserved' ((@($result.Layouts.Mode) -join '|') -ceq 'Grow|Minimum|Maximize|Restore')
+        foreach($layout in $result.Layouts){
+            Check ('Reconcile.Native.Layout.'+$layout.Mode) ($layout.Geometry -and $layout.CompleteHistory -and $layout.Scrollable -and $layout.Captured -and $layout.WithinDisplay)
+        }
+        [void](Run 'invSys.Inventory.Domain.xlam' 'TestReconcileReadLease.Reset')
+        $inspected=Invoke-ReconcileSelectionNative -InspectLast
+        Check 'Reconcile.Native.InspectLast.ActualEntryAndHandler' ($inspected.Observed.InspectDispatched -and $inspected.Observed.SelectionIs20)
+        Check 'Reconcile.Native.InspectLast.ExactEventAndKeyRead' ([bool](Run 'invSys.Inventory.Domain.xlam' 'TestReconcileReadLease.ExactStateRequest' @($last,$State.KeyA)))
+        Check 'Reconcile.Native.InspectLast.ConclusionWithoutQueue' ($inspected.Returned -and $Events.ListRows.Count -eq $rows)
+        Check 'Reconcile.Native.InspectLast.InventoryPreserved' (((Hash $State.InventoryPath) -ceq $bytes) -and [bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.NativeFixturePreserved'))
+    }
+    }finally{try{$nativeHost.Close($false)}catch{};[void][Runtime.InteropServices.Marshal]::ReleaseComObject($nativeHost)}
 }

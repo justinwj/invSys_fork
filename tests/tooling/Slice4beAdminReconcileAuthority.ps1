@@ -168,20 +168,25 @@ End Sub
 Option Explicit
 Private mSeen As Long
 Private mAllReadOnly As Boolean
+Private mLastStateRequest As String
 Public Sub Reset()
-    mSeen = 0: mAllReadOnly = True
+    mSeen = 0: mAllReadOnly = True: mLastStateRequest = ""
 End Sub
-Public Sub Observe(ByVal wb As Workbook)
+Public Sub Observe(ByVal wb As Workbook, ByVal request As String)
     mSeen = mSeen + 1
     mAllReadOnly = mAllReadOnly And wb.ReadOnly
+    If Left$(request, 6) = "STATE" & vbTab Then mLastStateRequest = request
 End Sub
+Public Function ExactStateRequest(ByVal eventId As String, ByVal systemKey As String) As Boolean
+    ExactStateRequest = (StrComp(mLastStateRequest, "STATE" & vbTab & eventId & vbTab & systemKey, vbBinaryCompare) = 0)
+End Function
 Public Function ReadOnlyLeaseObserved() As Boolean
     ReadOnlyLeaseObserved = (mSeen > 0 And mAllReadOnly)
 End Function
 '@)
     $api=$domain.VBComponents.Item('modInventoryBridgeApi').CodeModule
     $line=$api.ProcBodyLine('ReadShipmentReconcileBridgeResult',0)
-    $api.InsertLines($line+1,'    TestReconcileReadLease.Observe inventoryWb')
+    $api.InsertLines($line+1,'    TestReconcileReadLease.Observe inventoryWb, request')
 }
 
 function Test-AdminReconcileAuthority($Events,$State,$Fixture,$OtherFixture) {
