@@ -26,6 +26,7 @@ Public Function GeneralSettingsActionForTest(ByVal action As String, ByVal value
     End If
     Select Case action
         Case "SelectConfig": mLstConfig_Click
+        Case "Close": mBtnClose_Click: GeneralSettingsActionForTest = "DELIVERED": Exit Function
         Case "SelectCarrier": mLstCarriers_Click
         Case "SelectUom": mLstUoms_Click
         Case "Reload": mBtnReloadConfig_Click
@@ -57,6 +58,12 @@ End Function
     $admin.VBComponents.Item('TestD5Commands').CodeModule.AddFromString(@'
 Public Function GeneralSettingsAction(ByVal action As String, ByVal value As String) As String
     GeneralSettingsAction = mForm.GeneralSettingsActionForTest(action, value)
+End Function
+Public Function GeneralSettingsInstancesForTest() As Long
+    Dim instance As Object
+    For Each instance In VBA.UserForms
+        If TypeName(instance) = "frmAdminSettings" Then GeneralSettingsInstancesForTest = GeneralSettingsInstancesForTest + 1
+    Next instance
 End Function
 '@)
     $core=$packages['invSys.Core.xlam'].VBProject.VBComponents.Add(1)

@@ -101,6 +101,7 @@ param(
     [switch]$GeneralSettingsPolicyOnly,
     [switch]$CheckGeneralSettingsRecorded,
     [switch]$GeneralSettingsRecordedOnly,
+    [switch]$AdminClosePathsOnly,
     [string]$DesktopMonitorReport='',
     [switch]$CheckSettingsDiagnostics,
     [switch]$SettingsSafetyOnly,
@@ -331,6 +332,7 @@ if($GeneralSettingsOnly -and (-not $CheckSettingsEditorActivity -or $CheckSettin
 if($GeneralSettingsPolicyOnly -and (-not $GeneralSettingsOnly -or $Phase -cne 'RED')){throw 'Policy-only fixture diagnosis requires the General gate and RED; it is not full acceptance GREEN.'}
 if($CheckGeneralSettingsRecorded -and (-not $GeneralSettingsOnly -or $GeneralSettingsPolicyOnly)){throw 'General recordings require their General gate, separate from policy-only diagnosis.'}
 if($GeneralSettingsRecordedOnly -and (-not $CheckGeneralSettingsRecorded -or $Phase -cne 'RED')){throw 'Recorded-only diagnosis requires the recorded gate and RED.'}
+if($AdminClosePathsOnly -and (-not $CheckGeneralSettingsRecorded -or $GeneralSettingsPolicyOnly -or $GeneralSettingsRecordedOnly)){throw 'Close paths require the separate compiled General recorded gate.'}
 if($CheckSettingsEditorActivity){
     if(-not $CompileEvaluationProbesForTest -or -not $CaptureEvidence -or $CheckAdminUomActivity -or $CheckViewerPublishedRead -or $CheckTrackingSettings -or $CheckShippingActivity -or $CheckReceivingActivity -or $CheckActivityFoundation){throw 'Settings editor observations require their separate visible compiled gate.'}
     $CheckActivityEvidence=$true
@@ -681,6 +683,7 @@ if($CheckGuideTransfer){
     Write-Output ('Guide transfer evidence: '+$reportRoot)
 }
 if($CheckAdminSettingsCloseActivity){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-close/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin Close evidence: '+$reportRoot)}
+if($AdminClosePathsOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-close-paths/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin Close paths evidence: '+$reportRoot)}
 New-Item -ItemType Directory -Path $runRoot,$reportRoot -Force | Out-Null
 $inputDeploy=$deploy
 if($ViewerStartupPackageStateForTest -ne 'OriginalReadOnly'){
@@ -2166,7 +2169,10 @@ End Function
     }
     if($CheckSettingsEditorActivity){
         $step='Settings observations through actual packaged callbacks'
-        if($GeneralSettingsOnly){
+        if($AdminClosePathsOnly){
+            . (Join-Path $PSScriptRoot 'Slice4beAdminCloseRecorded.ps1')
+            Test-AdminCloseRecorded $a $b
+        }elseif($GeneralSettingsOnly){
             if(-not $GeneralSettingsRecordedOnly){
                 if(-not $GeneralSettingsPolicyOnly){Test-GeneralSettings $a $b}
                 . (Join-Path $PSScriptRoot 'Slice4beGeneralSettingsPolicy.ps1')

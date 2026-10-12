@@ -2,8 +2,9 @@
 
 Architecture v4.11 D18 catalog32 registers ADMIN_SETTINGS_CLOSE under approved
 comprehensive recording/semantic inheritance. This preserves the existing Close
-workflow; RUN-SCALE-02 was separately approved2026-10-11 and awaits implementation. Current unpromoted candidate is
-`deploy/validation-admin-close-02`; initial01 evidence is scoped below. This is not complete Close,
+workflow; RUN-SCALE-02 was separately approved2026-10-11 and implemented in
+`deploy/validation-run-scale-stop-01`. Its Core/Admin packages retain Close02 behavior;
+earlier candidate evidence is scoped below. This is not complete Close,
 4be-A or Release1 acceptance.
 
 ## Focused actual-handler evidence, 2026-10-11
@@ -112,8 +113,44 @@ Final02 smoke86/86 retains every prior ordered check and both unassisted exits:
 UTC23:42:26.109--23:42:45.629. Candidate hashes, settings and tracked reports are
 preserved; delayed native audit is clean. Initial01 smoke remains historical.
 
+## Independent recording and guide proof (2026-10-12 UTC)
+
+Unchanged `validation-run-scale-stop-01` passes123/123 through compiled packaged
+handlers. Distinct source/observed recordings each contain actual button and native
+Close; sign-out after one Close creates an Incomplete recording. Actual authoring,
+publication and evaluation produce two observed matches/Concluded versus one
+match/one missing step/Incomplete. Exact guide, journal and publication hashes,
+observed ActivityIds and saved result IDs prevent borrowed source success. Both
+gestures have the same ControlId; authored instructions do not infer the gesture
+from recorded data. No settings-save or Domain-application claim is made.
+
+How-To, Diagnostic and Compare pass six layout checks and preserve the evidence.
+Six original captures were individually reviewed: multiline guidance, complete
+saved conclusions, two successful matches and the interrupted missing step are
+readable; scrolling reveals the successful comparison's tail. This is agent review,
+not human or comprehensive long-value acceptance. Config/Auth, generated host,
+other warehouse and earlier immutable records are preserved.
+
+Controller `general-settings-controller/e97a7554d43f44859f12754491778c6a`, worker
+`slice4be-admin-close-paths/9c1d86099da04ba0a2bda09eff993907`,
+UTC00:07:43.902--00:13:34.427. Five instrumented compiles, package/settings
+preservation, normal closure and zero delayed Excel failures qualify through
+00:13:46.427. Ignored receipts include controller `qualified-verification.json`
+and worker `capture-review.json`. The first attempt stopped before action cases
+because the invocation supplied the monitor pointer instead of its summary;
+6PASS/1 harness failure is not behavioral RED. It also closed cleanly.
+
+No runtime change or new implementation RED was needed; retain the existing
+RED34/19 -> GREEN53 and extended70. The new `-Recorded -ClosePaths` gate reuses
+the General controller/guide helper while preserving its default nine-step cases.
+Fresh `admin-close-paths-static-01/ratchet-verification.json` retains322 components,
+6346 procedures,138837 lines, dynamic9/45, duplicates192 and all28 oversized caps;
+three schemas validate and460 scripts parse. Existing current-candidate full-chain32,
+live48, warehouse15, smoke86 and Production layout retain their scope; no redundant
+runtime rebuild or full-chain rerun was performed for these test-only changes.
+
 ## Remaining acceptance
 
-Complete independent recording/publication/How-To/Diagnostic/Compare proof and applicable regression,
-maintenance and release gates. Open and deliberate page navigation remain separate
+Independent Close guide proof is complete within the scope above. Human and broader
+release acceptance remain open. Settings Open and deliberate page navigation are separate
 recording gaps. Preserve the unresolved intermittent native-chain diagnosis.

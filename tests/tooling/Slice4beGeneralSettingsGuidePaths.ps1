@@ -1,24 +1,27 @@
-# One authored nine-control guide compared with three independent recordings.
-function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps) {
+# Authored intent compared with independent recordings through packaged controls.
+function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps,[switch]$CloseActions) {
     function Delivered([string]$Value){if($Value -cne 'DELIVERED'){throw 'Actual General guide control unavailable; not product RED.'}}
     function Author([string]$Name,[string]$Action,[string]$Value=''){BoundControl $Name $Action $Value 'frmActionPathGuide'}
     function View([string]$Name,[string]$Action,[string]$Value=''){BoundControl $Name $Action $Value 'frmActionPathView'}
-    function Pass([string]$Name,[bool]$Value){Check ('GeneralGuide.'+$Name) $Value|Out-Host}
+    $prefix=if($CloseActions){'AdminCloseGuide'}else{'GeneralGuide'}
+    $capturePrefix=if($CloseActions){'admin-close-guide-'}else{'general-guide-'}
+    function Pass([string]$Name,[bool]$Value){Check ($prefix+'.'+$Name) $Value|Out-Host}
     $source=@($Runs|Where-Object Kind -CEQ 'Source')[0]
     $observed=@($Runs|Where-Object Kind -CEQ 'Observed')[0]
     $eventsPath=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Snapshot.Events.json')
     $publication=Get-Content $eventsPath -Raw|ConvertFrom-Json;$publicationHash=Hash $eventsPath
     $originalPins=BoundPins $journalRoot;$activityPins=ActivityPins
     $instruction="Use General Settings to inspect configuration and UOM choices, manage carriers, and save the connection option.`r`nCarrier and connection changes apply to this Windows user; they do not prove inventory changes.`r`nRead the observed result. Interrupted or denied actions cannot borrow completion from this guide."
+    if($CloseActions){$instruction="Dismiss Settings with Close, reopen it, then use the window close button.`r`nUnsaved form edits are discarded. Dismissal proves neither a settings save nor Domain application.`r`nBoth gestures record the same Close control; the recording does not identify the gesture. Interrupted actions cannot borrow completion from this guide."}
     try {
         Pass 'IndependentSourceAndObservedRun' ($source.Journal.ActionPathId -cne $observed.Journal.ActionPathId -and @($observed.Records|Where-Object {$_.ActivityId -cin @($source.Records.ActivityId)}).Count -eq 0)
         CloseRecordingViewer;SelectTarget $Fixture 'config-admin';OpenRecordingViewer
         Delivered (BoundLibrary 'Open')
         if((BoundLibrary 'Select' $source.Journal.ActionPathId) -cne 'SELECTED'){throw 'Exact General guide source unavailable.'}
         Delivered (BoundControl 'btnCreateGuide' 'Click' '' 'frmActionPaths')
-        Delivered (Author 'txtGuideName' 'Write' 'General Settings training')
+        Delivered (Author 'txtGuideName' 'Write' $(if($CloseActions){'Settings Close training'}else{'General Settings training'}))
         Delivered (Author 'txtGuideInstructions' 'Write' $instruction)
-        Pass 'NineObservedGuideSteps' ((Author 'lstGuideSteps' 'Rows') -ceq '9')
+        Pass $(if($CloseActions){'TwoObservedGuideSteps'}else{'NineObservedGuideSteps'}) ((Author 'lstGuideSteps' 'Rows') -ceq [string]$Steps.Count)
         for($index=0;$index -lt $Steps.Count;$index++){
             if((Author 'lstGuideSteps' 'Select' ([string]$index)) -cne 'SELECTED'){throw 'General guide step unavailable.'}
             Delivered (Author 'txtGuideStepInstruction' 'Write' ('Use '+$Steps[$index][0]+'. Read the owner result before continuing.'))
@@ -34,7 +37,7 @@ function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps) {
             Delivered (BoundControl 'cboExpectedOutcome' 'Write' $step[2] 'frmActionPathExpectation')
             Delivered (BoundControl 'btnAddExpectedStep' 'Click' '' 'frmActionPathExpectation')
         }
-        if((BoundControl 'cboTerminalStep' 'Select' '8' 'frmActionPathExpectation') -cne 'SELECTED'){throw 'Save Connection terminal step unavailable.'}
+        if((BoundControl 'cboTerminalStep' 'Select' ([string]($Steps.Count-1)) 'frmActionPathExpectation') -cne 'SELECTED'){throw 'Last expected terminal step unavailable.'}
         Delivered (BoundControl 'cboTerminalKind' 'Write' 'CommandCompleted' 'frmActionPathExpectation')
         Delivered (BoundControl 'btnUseExpectation' 'Click' '' 'frmActionPathExpectation')
         $directory=Join-Path $journalRoot 'Guides';$prior=BoundPins $directory
@@ -43,12 +46,13 @@ function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps) {
         if($fresh.Count -ne 1){throw 'Exactly one newly authored General guide required.'}
         $guide=ReadGuideExpectationRecord $fresh[0].FullName
         if($null -eq $guide){throw 'General guide integrity unavailable.'}
-        $exact=$guide.SourceRun.RecordId -ceq $source.Journal.RecordId -and $guide.SourceRun.ContentSha256 -ceq $source.Journal.ContentSha256 -and @($guide.Steps).Count -eq 9 -and @($guide.ExpectedConclusion.Steps).Count -eq 9 -and $guide.ExpectedConclusion.TerminalKind -ceq 'CommandCompleted'
+        $exact=$guide.SourceRun.RecordId -ceq $source.Journal.RecordId -and $guide.SourceRun.ContentSha256 -ceq $source.Journal.ContentSha256 -and @($guide.Steps).Count -eq $Steps.Count -and @($guide.ExpectedConclusion.Steps).Count -eq $Steps.Count -and $guide.ExpectedConclusion.TerminalKind -ceq 'CommandCompleted'
         for($index=0;$index -lt $Steps.Count;$index++){$exact=$exact -and $guide.ExpectedConclusion.Steps[$index].ControlId -ceq $Steps[$index][1] -and $guide.ExpectedConclusion.Steps[$index].RequiredOutcome -ceq $Steps[$index][2]}
         Pass 'ExactSourceAndAuthoredIntent' $exact
         CloseRecordingViewer;SelectTarget $Fixture 'config-reader';OpenRecordingViewer
         Pass 'ReaderCannotAuthor' (-not [bool](Run 'invSys.Core.xlam' 'modAuth.CanPerform' @('ACTION_PATH_MAINT','config-reader',$Fixture.Warehouse,'S1')))
-        foreach($kind in @('Observed','Interrupted','Denied')){
+        $kinds=if($CloseActions){@('Observed','Interrupted')}else{@('Observed','Interrupted','Denied')}
+        foreach($kind in $kinds){
             $run=@($Runs|Where-Object Kind -CEQ $kind)[0];$journal=$run.Journal
             Delivered (BoundLibrary 'Open')
             if((BoundLibrary 'Select' $journal.ActionPathId) -cne 'SELECTED'){throw 'Exact General comparison recording unavailable.'}
@@ -67,7 +71,7 @@ function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps) {
             Pass ($kind+'.NoDomainApplicationClaim') (@($result.TerminalSources).Count -eq 0 -and $result.ExpectedConclusion.TerminalKind -ceq 'CommandCompleted')
             # Incomplete/failed conclusions retain the actions actually completed.
             # Interruption follows Reload; denial still permits four selections.
-            $ordinals=@(if($run.Success){1..9}elseif($run.Incomplete){1}else{2,3,6,8})
+            $ordinals=@(if($run.Success){1..$Steps.Count}elseif($run.Incomplete){1}else{2,3,6,8})
             $exactMatches=@($result.Matches).Count -eq $ordinals.Count
             foreach($ordinal in $ordinals){
                 $expected=@($run.Records|Where-Object {$_.Ordinal -eq $ordinal -and $_.OutcomeCode -ceq $Steps[$ordinal-1][2]})
@@ -76,7 +80,7 @@ function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps) {
                 if($expected.Count -eq 1 -and $matches.Count -eq 1){$exactMatches=$exactMatches -and $matches[0].ActivityId -ceq $expected[0].ActivityId -and $matches[0].StepId -ceq $guide.ExpectedConclusion.Steps[$ordinal-1].StepId}
             }
             Pass ($kind+'.OnlyObservedRunCanMatch') $exactMatches
-            Pass ($kind+'.ExactUnmatchedSteps') (@($result.MissingSteps).Count -eq $(if($run.Incomplete){8}else{0}) -and @($result.FailedSteps).Count -eq $(if(-not $run.Success -and -not $run.Incomplete){5}else{0}) -and @($result.UnavailableSteps).Count -eq 0)
+            Pass ($kind+'.ExactUnmatchedSteps') (@($result.MissingSteps).Count -eq $(if($run.Incomplete){$Steps.Count-1}else{0}) -and @($result.FailedSteps).Count -eq $(if(-not $run.Success -and -not $run.Incomplete){5}else{0}) -and @($result.UnavailableSteps).Count -eq 0)
             $pins=BoundPins $journalRoot
             Delivered (BoundControl 'btnViewActionPath' 'Click' '' 'frmActionPaths')
             $pair=View 'lblActionPathPair' 'Label';$how=View 'txtActionPathHowTo' 'Text';$diagnostic=View 'txtActionPathDiagnostic' 'Text'
@@ -91,10 +95,10 @@ function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps) {
                 Pass ($kind+'.View.'+$method) ((View 'cboActionPathView' 'Selected') -ceq $method -and ((View 'txtActionPathHowTo' 'State') -split '\|')[0] -ceq $(if($method -ceq 'Diagnostic'){'False'}else{'True'}) -and ((View 'txtActionPathDiagnostic' 'State') -split '\|')[0] -ceq $(if($method -ceq 'How-To'){'False'}else{'True'}))
                 Pass ($kind+'.SameEvidence.'+$method) ((View 'lblActionPathPair' 'Label') -ceq $pair -and (View 'txtActionPathHowTo' 'Text') -ceq $how -and (View 'txtActionPathDiagnostic' 'Text') -ceq $diagnostic)
                 Pass ($kind+'.Layout.'+$method) ((BoundControl '' 'Fit' 'Current' 'frmActionPathView') -ceq 'True')
-                if($kind -ceq 'Observed' -or $method -ceq 'Compare both'){CaptureOwnedFormByCaptionEvidence 'Action Path view' ('general-guide-'+$kind.ToLowerInvariant()+'-'+$method.Replace(' ','-').ToLowerInvariant()+'.png')}
+                if($kind -ceq 'Observed' -or $method -ceq 'Compare both'){CaptureOwnedFormByCaptionEvidence 'Action Path view' ($capturePrefix+$kind.ToLowerInvariant()+'-'+$method.Replace(' ','-').ToLowerInvariant()+'.png')}
             }
             Delivered (View 'txtActionPathDiagnostic' 'ViewportText' ($caption+"`r`nSaved diagnostic result: "+$result.EvaluationId))
-            CaptureOwnedFormByCaptionEvidence 'Action Path view' ('general-guide-'+$kind.ToLowerInvariant()+'-conclusion.png')
+            CaptureOwnedFormByCaptionEvidence 'Action Path view' ($capturePrefix+$kind.ToLowerInvariant()+'-conclusion.png')
             Pass ($kind+'.ViewsPreserveTrainingEvidence') (BoundSame $pins (BoundPins $journalRoot))
             Delivered (View 'btnCloseActionPathView' 'Click')
         }

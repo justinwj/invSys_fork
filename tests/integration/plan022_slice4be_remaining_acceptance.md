@@ -1,6 +1,6 @@
 # Slice 4be remaining acceptance checklist
 
-Last reviewed: 2026-10-11 UTC. **4be-A remains incomplete.** Architecture v4.11,
+Last reviewed: 2026-10-12 UTC. **4be-A remains incomplete.** Architecture v4.11,
 the designated Plan022 and the controls catalog govern; this index records evidence
 and remaining verification, not a new contract or a percentage estimate.
 
@@ -34,8 +34,12 @@ and clean preserved closure pass. Final02 smoke86 also passes; initial01
 Settings202 retains its candidate scope.
 Final02 ordinary chain32/live48/warehouse15 passes with clean delayed shutdown;
 the prior intermittent native fault remains unresolved.
-Extended GREEN70 covers user-off, older-policy and storage notices; independent
-guide and broader acceptance remain open.
+Extended GREEN70 covers user-off, older-policy and storage notices. Independent
+Close guide proof now passes123 on unchanged `validation-run-scale-stop-01`:
+two independent successful sequences and an interrupted recording, exact saved
+conclusions, all three views, six reviewed captures, five instrumented compiles,
+preservation and clean delayed closure. Fresh static metrics are unchanged.
+Human and broader acceptance remain open.
 No full Close acceptance is implied; RUN-SCALE-02 has separate explicit approval.
 
 Prior Production candidate: `deploy/validation-run-scale-disabled-01`, catalog31.
@@ -179,6 +183,9 @@ Existing observation probes change pages programmatically and correctly require
 no extra clicks. A navigation test must deliver deliberate input, independently
 verify the selected page and then check its observation; fixture setup is not RED.
 This census defines no new ControlIds, outcomes or architectural contract.
+Close now has catalog32 actual-handler/policy70 and independent-guide123 proof;
+the other six entries remain unobserved. This does not turn programmatic page
+changes into user actions.
 
 ## Historical checkpoints (candidate-specific)
 
