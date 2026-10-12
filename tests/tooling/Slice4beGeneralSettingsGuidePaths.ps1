@@ -1,11 +1,11 @@
 # Authored intent compared with independent recordings through packaged controls.
-function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps,[switch]$CloseActions,[switch]$WorksheetScale) {
-    if($CloseActions -and $WorksheetScale){throw 'Choose one independent guide fixture.'}
+function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps,[switch]$CloseActions,[switch]$WorksheetScale,[switch]$SettingsNavigation) {
+    if(@($CloseActions,$WorksheetScale,$SettingsNavigation|Where-Object{$_}).Count -gt 1){throw 'Choose one independent guide fixture.'}
     function Delivered([string]$Value){if($Value -cne 'DELIVERED'){throw 'Actual General guide control unavailable; not product RED.'}}
     function Author([string]$Name,[string]$Action,[string]$Value=''){BoundControl $Name $Action $Value 'frmActionPathGuide'}
     function View([string]$Name,[string]$Action,[string]$Value=''){BoundControl $Name $Action $Value 'frmActionPathView'}
-    $prefix=if($WorksheetScale){'WorksheetScaleGuide'}elseif($CloseActions){'AdminCloseGuide'}else{'GeneralGuide'}
-    $capturePrefix=if($WorksheetScale){'worksheet-scale-guide-'}elseif($CloseActions){'admin-close-guide-'}else{'general-guide-'}
+    $prefix=if($SettingsNavigation){'SettingsNavigationGuide'}elseif($WorksheetScale){'WorksheetScaleGuide'}elseif($CloseActions){'AdminCloseGuide'}else{'GeneralGuide'}
+    $capturePrefix=if($SettingsNavigation){'settings-navigation-guide-'}elseif($WorksheetScale){'worksheet-scale-guide-'}elseif($CloseActions){'admin-close-guide-'}else{'general-guide-'}
     function Pass([string]$Name,[bool]$Value){Check ($prefix+'.'+$Name) $Value|Out-Host}
     $source=@($Runs|Where-Object Kind -CEQ 'Source')[0]
     $observed=@($Runs|Where-Object Kind -CEQ 'Observed')[0]
@@ -15,15 +15,16 @@ function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps,[switch]$CloseActi
     $instruction="Use General Settings to inspect configuration and UOM choices, manage carriers, and save the connection option.`r`nCarrier and connection changes apply to this Windows user; they do not prove inventory changes.`r`nRead the observed result. Interrupted or denied actions cannot borrow completion from this guide."
     if($CloseActions){$instruction="Dismiss Settings with Close, reopen it, then use the window close button.`r`nUnsaved form edits are discarded. Dismissal proves neither a settings save nor Domain application.`r`nBoth gestures record the same Close control; the recording does not identify the gesture. Interrupted actions cannot borrow completion from this guide."}
     if($WorksheetScale){$instruction="With Designs disabled and the local worksheet recipe available, select the recipe and enter 200 percent. Click Apply Scale and inspect the prepared rows.`r`nClick Apply Scale again. The recipe quantity remains four, not eight; existing System_Key and custom fields are preserved.`r`nThis concludes two local staging commands, not inventory application. An interrupted recording cannot borrow completion from this guide."}
+    if($SettingsNavigation){$instruction="Open Settings, select Event Tracking, Event Detail, Action Paths, Tracking, and General, then Close.`r`nKeep Settings open throughout the tab changes. These observations prove presentation and dismissal, not a settings save or Domain application.`r`nAn interrupted recording cannot borrow completion from this guide."}
     try {
         Pass 'IndependentSourceAndObservedRun' ($source.Journal.ActionPathId -cne $observed.Journal.ActionPathId -and @($observed.Records|Where-Object {$_.ActivityId -cin @($source.Records.ActivityId)}).Count -eq 0)
         CloseRecordingViewer;SelectTarget $Fixture 'config-admin';OpenRecordingViewer
         Delivered (BoundLibrary 'Open')
         if((BoundLibrary 'Select' $source.Journal.ActionPathId) -cne 'SELECTED'){throw 'Exact General guide source unavailable.'}
         Delivered (BoundControl 'btnCreateGuide' 'Click' '' 'frmActionPaths')
-        Delivered (Author 'txtGuideName' 'Write' $(if($WorksheetScale){'Worksheet Scale training'}elseif($CloseActions){'Settings Close training'}else{'General Settings training'}))
+        Delivered (Author 'txtGuideName' 'Write' $(if($SettingsNavigation){'Settings navigation training'}elseif($WorksheetScale){'Worksheet Scale training'}elseif($CloseActions){'Settings Close training'}else{'General Settings training'}))
         Delivered (Author 'txtGuideInstructions' 'Write' $instruction)
-        Pass $(if($CloseActions -or $WorksheetScale){'TwoObservedGuideSteps'}else{'NineObservedGuideSteps'}) ((Author 'lstGuideSteps' 'Rows') -ceq [string]$Steps.Count)
+        Pass $(if($SettingsNavigation){'SevenObservedGuideSteps'}elseif($CloseActions -or $WorksheetScale){'TwoObservedGuideSteps'}else{'NineObservedGuideSteps'}) ((Author 'lstGuideSteps' 'Rows') -ceq [string]$Steps.Count)
         for($index=0;$index -lt $Steps.Count;$index++){
             if((Author 'lstGuideSteps' 'Select' ([string]$index)) -cne 'SELECTED'){throw 'General guide step unavailable.'}
             Delivered (Author 'txtGuideStepInstruction' 'Write' ('Use '+$Steps[$index][0]+'. Read the owner result before continuing.'))
@@ -53,7 +54,7 @@ function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps,[switch]$CloseActi
         Pass 'ExactSourceAndAuthoredIntent' $exact
         CloseRecordingViewer;SelectTarget $Fixture 'config-reader';OpenRecordingViewer
         Pass 'ReaderCannotAuthor' (-not [bool](Run 'invSys.Core.xlam' 'modAuth.CanPerform' @('ACTION_PATH_MAINT','config-reader',$Fixture.Warehouse,'S1')))
-        $kinds=if($CloseActions -or $WorksheetScale){@('Observed','Interrupted')}else{@('Observed','Interrupted','Denied')}
+        $kinds=if($CloseActions -or $WorksheetScale -or $SettingsNavigation){@('Observed','Interrupted')}else{@('Observed','Interrupted','Denied')}
         foreach($kind in $kinds){
             $run=@($Runs|Where-Object Kind -CEQ $kind)[0];$journal=$run.Journal
             Delivered (BoundLibrary 'Open')

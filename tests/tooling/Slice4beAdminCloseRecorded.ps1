@@ -1,4 +1,4 @@
-# Catalog32: real button/native dismissal, independent recordings and authored intent.
+# Catalog33 regression: real button/native dismissal, independent recordings and authored intent.
 function Test-AdminCloseRecorded($Fixture,$Other) {
     . (Join-Path $PSScriptRoot 'Slice4beRecordingFixture.ps1')
     . (Join-Path $PSScriptRoot 'Slice4beRecordingEvaluation.ps1')
@@ -49,7 +49,7 @@ function Test-AdminCloseRecorded($Fixture,$Other) {
                 $first=@($records|Where-Object OutcomeCode -CEQ 'REQUESTED');$last=@($records|Where-Object OutcomeCode -CEQ 'CLOSED')
                 $valid=$records.Count -eq 2 -and $first.Count -eq 1 -and $last.Count -eq 1
                 if($valid){$valid=$first[0].ActivityId -ceq $last[0].ActivityId -and $first[0].RecordId -cne $last[0].RecordId}
-                foreach($record in $records){$valid=$valid -and $record.ControlId -ceq 'ADMIN_SETTINGS_CLOSE' -and $record.OwnerId -ceq 'ADMIN_SETTINGS_UI' -and $record.SequenceId -ceq $sequence -and $record.Ordinal -eq $ordinal -and $record.CatalogVersion -eq 32 -and $record.UserId -ceq 'config-admin' -and $record.WarehouseId -ceq $Fixture.Warehouse -and @($record.SourceEventRefs).Count -eq 0}
+                foreach($record in $records){$valid=$valid -and $record.ControlId -ceq 'ADMIN_SETTINGS_CLOSE' -and $record.OwnerId -ceq 'ADMIN_SETTINGS_UI' -and $record.SequenceId -ceq $sequence -and $record.Ordinal -eq $ordinal -and $record.CatalogVersion -eq 33 -and $record.UserId -ceq 'config-admin' -and $record.WarehouseId -ceq $Fixture.Warehouse -and @($record.SourceEventRefs).Count -eq 0}
                 Check ($label+'.'+$ordinal+'.ExactRecordedPairAndContext') $valid
                 $safe=$true
                 foreach($record in $records){$raw=ConvertTo-Json $record -Depth 20 -Compress;foreach($value in @($Fixture.Secret,(CredentialHash $Fixture.Secret),$Fixture.Root,'PinHash')){$safe=$safe -and -not $raw.Contains($value)}}

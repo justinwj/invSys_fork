@@ -19,17 +19,27 @@ with five compiles, preservation and clean delayed closure. Launcher98 subsequen
 retains all76 checks and proves signed-out entry, controlled configuration refusal
 and caught form-initialization failure through the real callback. Visible notices,
 non-concluding outcomes, preservation and clean delayed closure pass. These faults
-affect unsaved disposable collaborators; runtime and contract are unchanged. Active
-capture, publication and independent guides remain open; exact receipts are in the
-Settings entry results linked below.
+affect unsaved disposable collaborators; runtime and contract are unchanged.
+Continuous modal recording/guide proof now passes125 with all43 shared checks:
+independent seven-action source/observed runs, one-action interrupted evidence,
+exact publication and saved comparisons, three views and six reviewed captures.
+Five compiles, preservation and clean delayed closure pass. No runtime changed;
+broader coverage/layout/human gates remain open. Exact receipts are in the Settings
+entry results linked below.
+
+After the shared test-helper changes, Close guide123 and full native tab177 both
+retain every prior check in order on candidate02, with five compiles each,
+preservation and clean delayed closure. The native helper's C# body is unchanged;
+all60 input operations retain exact movement/restoration and desktop matches.
 
 Current candidate: `deploy/validation-admin-entry-02`, catalog33/151. Settings Open
 passes RED17/7 -> GREEN24; all five tab destinations pass native mouse/keyboard
 RED33/10 -> GREEN43. Programmatic/same-tab exclusion, five compiles, preservation,
 clean delayed closure and three reviewed default-size captures pass. Static caps
 hold, dynamic/duplicate counts are unchanged and465 scripts parse. This is scoped
-implementation; public-launcher negative cases, active capture, publication, independent guides and broader
-acceptance remain open. See [Settings entry results](plan022_slice4be_admin_entry_results.md).
+implementation; launcher98 and recording125 above supply its subsequent refusal,
+capture and independent guide gates. Broader acceptance remains open.
+See [Settings entry results](plan022_slice4be_admin_entry_results.md).
 The corrected existing Close regression retains70 in exact prior order, with five
 compiles, preservation and clean delayed closure; its scope remains separate from
 the new entry/tab failure cases.
@@ -185,7 +195,7 @@ lifecycle; retain the transfer499 checkpoint at its frozen candidate.
 | Required outcome | Verified evidence / remaining action |
 | --- | --- |
 | Approved shared A/B contract | D18-REPLAY-01 was approved2026-10-04. Preserve the A finish line and early B0 requirement; broader replay/results management belongs to B. RUN-SCALE-01/RUN-UI-01 were explicitly approved2026-10-11 and have scoped implementation/proof above; broader acceptance remains open. |
-| Comprehensive Operations/Admin recording | Catalog32 declares145 IDs, adding scoped Admin Close53 to the prior144; nine General controls now have GREEN871, retaining647 and adding224 independent recording/guide checks. Recorded transfer GREEN499 retains all79 observation checks and adds420 recording/comparison checks at its frozen candidate. The source audit below identifies remaining gaps; registration alone is insufficient. |
+| Comprehensive Operations/Admin recording | Catalog33 declares151 IDs; Settings entry/tab boundaries98/177 and continuous recording/guide125 now cover its six added controls. Admin Close retains its separately scoped evidence; nine General controls now have GREEN871, retaining647 and adding224 independent recording/guide checks. Recorded transfer GREEN499 retains all79 observation checks and adds420 recording/comparison checks at its frozen candidate. The source audit below identifies remaining gaps; registration alone is insufficient. |
 | Per-action/per-user Admin policy | [Policy evidence](plan022_slice4be_user_tracking_policy_results.md) reaches104/104; General02 refresh retains all104, five compiles, four reviewed captures, preservation and clean delayed closure. Historical/version, rights and required-audit evidence retain their documented scope. |
 | Viewer and configurable Detail | [Multiline](plan022_slice4be_multiline_results.md) has88/88 with14 reviewed images and separate98-check captured Viewer regression; [overflow](plan022_slice4be_detail_overflow_results.md) has50/50. Preserve their exact candidate/source scope and reconcile later changed dependencies; human acceptance is separate. |
 | Versioned guide authoring/transfer | [Guide transfer](plan022_slice4be_guide_transfer_results.md) retains policy/storage RED423/1 -> GREEN429, transfer71 and native-edit58. Test-only GREEN499 proves20 actual recordings/evaluations and independent successful/incomplete/denied guide comparisons for Export and Import. Five instrumented compiles,12 reviewed captures, preservation, normal closure, delayed zero Excel failures and unchanged static ratchets pass. Runtime/packages are unchanged; broader acceptance remains open. |
@@ -241,9 +251,22 @@ Existing observation probes change pages programmatically and correctly require
 no extra clicks. A navigation test must deliver deliberate input, independently
 verify the selected page and then check its observation; fixture setup is not RED.
 This census defines no new ControlIds, outcomes or architectural contract.
-Close now has catalog32 actual-handler/policy70 and independent-guide123 proof;
-the other six entries remain unobserved. This does not turn programmatic page
-changes into user actions.
+That historical discovery is now implemented: catalog33 observes all six additional
+entries, with launcher98, native tabs177 and continuous recording/guide125 evidence
+above. Close has actual-handler/policy70 and independent-guide123 proof at its
+recorded candidate scope. Programmatic page changes remain excluded.
+
+### Admin reachability follow-up (2026-10-12)
+
+`tools/build-xlam.ps1` declares14 buttons in Admin's Actions group; only Settings
+currently maps to this completed recording proof. Audit the other13 actual callbacks
+and their constructed forms before assigning new IDs. `modAdminConsole` still has
+processor/publication functions, but the current Ribbon does not directly declare
+those entries and `ClearAdminConsoleActionButtons` deletes old `btnAdmin` shapes.
+This is a source finding, not proof that every legacy function is reachable or
+excluded. Start with `modAdmin.Admin_Click` -> `modAdminConsole.OpenAdminConsole`
+and its actual worksheet presentation/result. Preserve pre-sign-in/nonexistent-target
+exclusions and keep scheduled/internal calls separate from deliberate operator actions.
 
 ## Historical checkpoints (candidate-specific)
 

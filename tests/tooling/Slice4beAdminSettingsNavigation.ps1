@@ -1,86 +1,5 @@
-# Observe actual MSForms events: owned SendInput clicks and focused keyboard messages.
-function Install-AdminSettingsNavigationProbe($TestModule,$FormCode) {
-    foreach($field in @('mPages','mTrackingSections')){
-        for($line=1;$line -le $FormCode.CountOfDeclarationLines;$line++){
-            if($FormCode.Lines($line,1).Trim() -ceq ('Private '+$field+' As MSForms.MultiPage')){$FormCode.ReplaceLine($line,('Private WithEvents '+$field+' As MSForms.MultiPage'));break}
-        }
-        foreach($event in @('Change','Click','MouseDown','MouseUp','KeyDown','KeyUp')){
-            $parameters=if($event -in @('MouseDown','MouseUp')){'ByVal Index As Long, ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single'}elseif($event -in @('KeyDown','KeyUp')){'ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer'}elseif($event -ceq 'Click'){'ByVal Index As Long'}else{''}
-            $name=$field+'_'+$event;$start=0
-            try{$start=$FormCode.ProcStartLine($name,0)}catch{}
-            $trace='    mEntryNavigationTrace = mEntryNavigationTrace & "'+$name+';"'
-            if($start){$body=$FormCode.ProcBodyLine($name,0);while($FormCode.Lines($body,1).TrimEnd().EndsWith('_')){$body++};$FormCode.InsertLines($body+1,$trace)}
-            else{$FormCode.AddFromString("Private Sub $name($parameters)`r`n$trace`r`nEnd Sub")}
-        }
-    }
-    $FormCode.InsertLines(1,'Private mEntryNavigationTrace As String')
-    $FormCode.AddFromString(@'
-Public Sub EntryNavigationPrepare(ByVal inner As Boolean, ByVal source As Long)
-    If inner Then
-        mPages.Value = 1: mTrackingSections.Value = source
-    Else
-        mPages.Value = source
-    End If
-    mEntryNavigationTrace = ""
-End Sub
-Public Function EntryNavigationFocus(ByVal inner As Boolean) As Boolean
-    On Error GoTo Unavailable
-    If inner Then mTrackingSections.SetFocus Else mPages.SetFocus
-    EntryNavigationFocus = True
-Unavailable:
-End Function
-Public Function EntryNavigationState(ByVal inner As Boolean) As Long
-    If inner Then EntryNavigationState = mTrackingSections.Value Else EntryNavigationState = mPages.Value
-End Function
-Public Function EntryNavigationTrace() As String
-    EntryNavigationTrace = mEntryNavigationTrace
-End Function
-Public Function EntryNavigationGeometry(ByVal inner As Boolean) As String
-    Dim x As Double, y As Double
-    x = mPages.Left: y = mPages.Top
-    If inner Then x = x + mTrackingSections.Left: y = y + 23 + mTrackingSections.Top
-    EntryNavigationGeometry = CStr(x) & "|" & CStr(y) & "|" & CStr(Me.InsideWidth) & "|" & CStr(Me.InsideHeight)
-End Function
-Public Function EntryNavigationHandle() As Double
-    EntryNavigationHandle = CDbl(modUserFormResizeWin.GetUserFormWindowHandle(Me))
-End Function
-Public Function EntryNavigationNotice() As String
-    EntryNavigationNotice = mLblStatus.Caption
-End Function
-'@)
-    $TestModule.CodeModule.AddFromString(@'
-Public Sub EntryNavPrepare(ByVal inner As Boolean, ByVal source As Long)
-    mForm.EntryNavigationPrepare inner, source
-End Sub
-Public Function EntryNavFocus(ByVal inner As Boolean) As Boolean
-    EntryNavFocus = mForm.EntryNavigationFocus(inner)
-End Function
-Public Function EntryNavState(ByVal inner As Boolean) As Long
-    EntryNavState = mForm.EntryNavigationState(inner)
-End Function
-Public Function EntryNavTrace() As String
-    EntryNavTrace = mForm.EntryNavigationTrace()
-End Function
-Public Function EntryNavGeometry(ByVal inner As Boolean) As String
-    EntryNavGeometry = mForm.EntryNavigationGeometry(inner)
-End Function
-Public Function EntryNavHandle() As Double
-    EntryNavHandle = mForm.EntryNavigationHandle()
-End Function
-Public Function EntryNavNotice() As String
-    EntryNavNotice = mForm.EntryNavigationNotice()
-End Function
-Public Sub EntryNavReactivate()
-    mForm.Hide
-    mForm.Show vbModeless
-End Sub
-'@)
-}
-
-function Test-AdminSettingsNavigation($Fixture) {
-    . (Join-Path $PSScriptRoot 'Slice4beActivityAssertions.ps1')
-    . (Join-Path $PSScriptRoot 'Slice4beReceivingNavigation.ps1')
-    Initialize-ReceivingNavigationInput
+function Initialize-SettingsNavigationInput {
+    if('SettingsNavigationCoordinates' -as [type]){return}
     Add-Type -ReferencedAssemblies System.Web.Extensions @'
 using System;using System.Runtime.InteropServices;
 public static class SettingsNavigationCoordinates {
@@ -167,6 +86,92 @@ public static class SettingsNavigationCoordinates {
  public static string Read(IntPtr h,double x,double y,double w,double height){R r,b;GetClientRect(h,out r);GetWindowRect(h,out b);var p=new P{X=(int)(x*(r.Right-r.L)/w),Y=(int)(y*(r.Bottom-r.T)/height)};ClientToScreen(h,ref p);return (p.X-b.L)+"|"+(p.Y-b.T)+"|"+x+"|"+y+"|"+w+"|"+height;}
 }
 '@
+}
+
+# Observe actual MSForms events: owned SendInput clicks and focused keyboard messages.
+function Install-AdminSettingsNavigationProbe($TestModule,$FormCode) {
+    foreach($field in @('mPages','mTrackingSections')){
+        for($line=1;$line -le $FormCode.CountOfDeclarationLines;$line++){
+            if($FormCode.Lines($line,1).Trim() -ceq ('Private '+$field+' As MSForms.MultiPage')){$FormCode.ReplaceLine($line,('Private WithEvents '+$field+' As MSForms.MultiPage'));break}
+        }
+        foreach($event in @('Change','Click','MouseDown','MouseUp','KeyDown','KeyUp')){
+            $parameters=if($event -in @('MouseDown','MouseUp')){'ByVal Index As Long, ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single'}elseif($event -in @('KeyDown','KeyUp')){'ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer'}elseif($event -ceq 'Click'){'ByVal Index As Long'}else{''}
+            $name=$field+'_'+$event;$start=0
+            try{$start=$FormCode.ProcStartLine($name,0)}catch{}
+            $trace='    mEntryNavigationTrace = mEntryNavigationTrace & "'+$name+';"'
+            if($start){$body=$FormCode.ProcBodyLine($name,0);while($FormCode.Lines($body,1).TrimEnd().EndsWith('_')){$body++};$FormCode.InsertLines($body+1,$trace)}
+            else{$FormCode.AddFromString("Private Sub $name($parameters)`r`n$trace`r`nEnd Sub")}
+        }
+    }
+    $FormCode.InsertLines(1,'Private mEntryNavigationTrace As String')
+    $FormCode.AddFromString(@'
+Public Sub EntryNavigationPrepare(ByVal inner As Boolean, ByVal source As Long)
+    If inner Then
+        mPages.Value = 1: mTrackingSections.Value = source
+    Else
+        mPages.Value = source
+    End If
+    mEntryNavigationTrace = ""
+End Sub
+Public Function EntryNavigationFocus(ByVal inner As Boolean) As Boolean
+    On Error GoTo Unavailable
+    If inner Then mTrackingSections.SetFocus Else mPages.SetFocus
+    EntryNavigationFocus = True
+Unavailable:
+End Function
+Public Function EntryNavigationState(ByVal inner As Boolean) As Long
+    If inner Then EntryNavigationState = mTrackingSections.Value Else EntryNavigationState = mPages.Value
+End Function
+Public Function EntryNavigationTrace() As String
+    EntryNavigationTrace = mEntryNavigationTrace
+End Function
+Public Function EntryNavigationGeometry(ByVal inner As Boolean) As String
+    Dim x As Double, y As Double
+    x = mPages.Left: y = mPages.Top
+    If inner Then x = x + mTrackingSections.Left: y = y + 23 + mTrackingSections.Top
+    EntryNavigationGeometry = CStr(x) & "|" & CStr(y) & "|" & CStr(Me.InsideWidth) & "|" & CStr(Me.InsideHeight)
+End Function
+Public Function EntryNavigationHandle() As Double
+    EntryNavigationHandle = CDbl(modUserFormResizeWin.GetUserFormWindowHandle(Me))
+End Function
+Public Function EntryNavigationNotice() As String
+    EntryNavigationNotice = mLblStatus.Caption
+End Function
+'@)
+    $TestModule.CodeModule.AddFromString(@'
+Public Sub EntryNavPrepare(ByVal inner As Boolean, ByVal source As Long)
+    mForm.EntryNavigationPrepare inner, source
+End Sub
+Public Function EntryNavFocus(ByVal inner As Boolean) As Boolean
+    EntryNavFocus = mForm.EntryNavigationFocus(inner)
+End Function
+Public Function EntryNavState(ByVal inner As Boolean) As Long
+    EntryNavState = mForm.EntryNavigationState(inner)
+End Function
+Public Function EntryNavTrace() As String
+    EntryNavTrace = mForm.EntryNavigationTrace()
+End Function
+Public Function EntryNavGeometry(ByVal inner As Boolean) As String
+    EntryNavGeometry = mForm.EntryNavigationGeometry(inner)
+End Function
+Public Function EntryNavHandle() As Double
+    EntryNavHandle = mForm.EntryNavigationHandle()
+End Function
+Public Function EntryNavNotice() As String
+    EntryNavNotice = mForm.EntryNavigationNotice()
+End Function
+Public Sub EntryNavReactivate()
+    mForm.Hide
+    mForm.Show vbModeless
+End Sub
+'@)
+}
+
+function Test-AdminSettingsNavigation($Fixture) {
+    . (Join-Path $PSScriptRoot 'Slice4beActivityAssertions.ps1')
+    . (Join-Path $PSScriptRoot 'Slice4beReceivingNavigation.ps1')
+    Initialize-ReceivingNavigationInput
+    Initialize-SettingsNavigationInput
     [SettingsNavigationCoordinates]::TracePath=Join-Path $reportRoot 'navigation-input-facts.jsonl'
     function Act([string]$Name,[object[]]$Values=@()){Run 'invSys.Admin.xlam' ('TestD5Commands.'+$Name) $Values}
     function Files {@(Get-Slice4beActivityFiles $Fixture)}

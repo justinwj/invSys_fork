@@ -1,15 +1,17 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-guide-transfer-notice-01',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$PolicyOnlyDiagnostic,[switch]$Recorded,[switch]$RecordedOnlyDiagnostic,[switch]$ClosePaths,[string]$DesktopMonitorReport='')
+param([string]$DeployRoot='deploy/validation-guide-transfer-notice-01',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$PolicyOnlyDiagnostic,[switch]$Recorded,[switch]$RecordedOnlyDiagnostic,[switch]$ClosePaths,[switch]$NavigationPaths,[string]$DesktopMonitorReport='')
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if($PolicyOnlyDiagnostic -and $Phase -cne 'RED'){throw 'Policy-only diagnosis cannot claim full GREEN.'}
 if($RecordedOnlyDiagnostic -and (-not $Recorded -or $Phase -cne 'RED')){throw 'Recorded-only diagnosis requires Recorded and RED.'}
 if($Recorded -and $PolicyOnlyDiagnostic){throw 'Recording and policy-only diagnostics are separate.'}
 if($ClosePaths -and (-not $Recorded -or $PolicyOnlyDiagnostic -or $RecordedOnlyDiagnostic)){throw 'Close paths require their separate recorded gate.'}
+if($NavigationPaths -and (-not $Recorded -or $ClosePaths -or $PolicyOnlyDiagnostic -or $RecordedOnlyDiagnostic)){throw 'Navigation paths require their separate recorded gate.'}
 $diagnosticArgs=@()
 if($PolicyOnlyDiagnostic){$diagnosticArgs+='-GeneralSettingsPolicyOnly'}
 if($Recorded){$diagnosticArgs+='-CheckGeneralSettingsRecorded'}
 if($RecordedOnlyDiagnostic){$diagnosticArgs+='-GeneralSettingsRecordedOnly'}
 if($ClosePaths){$diagnosticArgs+='-AdminClosePathsOnly'}
+if($NavigationPaths){$diagnosticArgs+='-AdminNavigationPathsOnly'}
 if($DesktopMonitorReport){$diagnosticArgs+=@('-DesktopMonitorReport',$DesktopMonitorReport)}
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before General Settings validation.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')

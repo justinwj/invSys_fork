@@ -231,8 +231,60 @@ Fresh `admin-entry-refusal-static-01/ratchet-verification.json` retains all28 ca
 326 components/6371 procedures/139227 lines, dynamic9/45 and192 duplicate candidates.
 Three schemas and468 PowerShell scripts validate. No runtime source or package changed.
 
-Require active-capture eligibility, exact publication, independent
-successful/interrupted guides, relevant regressions, layout and visible evidence.
+### Continuous modal recording and independent guides, 2026-10-12 UTC
+
+Unchanged candidate02 passes **125/125** via
+`Test-Slice4beGeneralSettings.ps1 -DeployRoot deploy/validation-admin-entry-02
+-Phase GREEN -Recorded -NavigationPaths`. Controller
+`general-settings-controller/a756345f2585480a9f2921e990dce4f0`, worker
+`slice4be-general-settings/494ef2be0072495eb529051f7bc4c77e`;
+UTC03:16:17.761-03:23:20.681, clean delayed audit through03:23:32.681.
+All43 shared check identities retain prior order; five instrumented compiles pass.
+
+Actual Viewer Start Recording and the default recording policy capture the actual
+modal public Settings launcher, five native tab selections, and native Close in one
+continuous form instance. Source and Observed are independent seven-action sequences.
+The Interrupted fixture signs out after real visible Open, then dismisses the stale
+form: its journal retains only Open and marks SESSION_CHANGED/Incomplete. No test
+fabricates observations, reopens the form modeless, reattaches through COM or uses
+authoring intent as observed execution. Same-helper receipts independently verify
+all13 clicks, exact target/restore coordinates and input/thread desktop matches.
+
+Actual publication and packaged author/evaluator controls bind the exact source
+journal, saved guide, independent observed journal and publication. Successful
+comparison matches seven exact actions; interrupted comparison matches one and
+leaves six missing. Both use local CommandCompleted, never Domain application.
+Reader-role authoring denial, all three presentations, multiline instructions,
+provenance, saved conclusions and immutable source evidence pass. Six captures were
+individually reviewed; scrolling exposes the successful conclusion and match tail.
+Their hashes/review and native-input qualification are stored with the worker.
+
+Authority, saved host, custom canary, other warehouse and older evidence are preserved.
+Settings/packages restore and Excel closes normally with no delayed native failures.
+Existing entry/tab behavioral RED remains the implementation baseline; this is an
+additional existing-contract proof, not a runtime change or new behavioral RED.
+Fresh `admin-navigation-recorded-static-01/ratchet-verification.json` holds all28
+caps and prior metrics; three schemas and469 scripts validate.
+
+The shared guide-helper Close regression passes **123/123**, retaining every prior
+check in exact order on candidate02: controller
+`general-settings-controller/791ca9a322c04f2099c74cfffce1aa1b`, worker
+`slice4be-admin-close-paths/a2210f7a50cb472dbcb87a4068b1a286`,
+UTC03:23:45.193-03:29:36.439; clean delayed audit through03:29:48.439. Five compiles,
+preservation and normal closure pass. Its fixed metadata expectation advances from
+catalog32 to33 without removing a behavioral assertion. Earlier visual evidence
+retains its scope; no runtime or UI change was made.
+
+Retain the remaining coverage audit, relevant regressions, broader layout and human acceptance.
+The extracted native-input helper is byte-equivalent after newline normalization.
+Its full tab regression retains **177/177** in exact prior order: controller
+`admin-entry-controller/666539726145494aa05cc40f4158ac7b`, worker
+`slice4be-admin-navigation/d9b811fea72b4580b8449562143bb1a5`,
+UTC03:29:51.743-03:32:57.445; delayed audit through03:33:09.445. Five compiles,
+preservation and normal closure pass; all60 native clicks verify exact movement/
+restoration and matching input/thread desktops, with no error5. Prior visual
+acceptance retains its scope; no runtime or UI change occurred.
+
 The existing native full-chain Shipping failure is not repaired by this work.
 The [remaining-acceptance index](plan022_slice4be_remaining_acceptance.md) retains
 the wider 4be-A gates and approved early B0 scope.

@@ -104,6 +104,7 @@ param(
     [switch]$CheckGeneralSettingsRecorded,
     [switch]$GeneralSettingsRecordedOnly,
     [switch]$AdminClosePathsOnly,
+    [switch]$AdminNavigationPathsOnly,
     [string]$DesktopMonitorReport='',
     [switch]$CheckSettingsDiagnostics,
     [switch]$SettingsSafetyOnly,
@@ -340,6 +341,7 @@ if($GeneralSettingsPolicyOnly -and (-not $GeneralSettingsOnly -or $Phase -cne 'R
 if($CheckGeneralSettingsRecorded -and (-not $GeneralSettingsOnly -or $GeneralSettingsPolicyOnly)){throw 'General recordings require their General gate, separate from policy-only diagnosis.'}
 if($GeneralSettingsRecordedOnly -and (-not $CheckGeneralSettingsRecorded -or $Phase -cne 'RED')){throw 'Recorded-only diagnosis requires the recorded gate and RED.'}
 if($AdminClosePathsOnly -and (-not $CheckGeneralSettingsRecorded -or $GeneralSettingsPolicyOnly -or $GeneralSettingsRecordedOnly)){throw 'Close paths require the separate compiled General recorded gate.'}
+if($AdminNavigationPathsOnly -and (-not $CheckGeneralSettingsRecorded -or $AdminClosePathsOnly -or $GeneralSettingsPolicyOnly -or $GeneralSettingsRecordedOnly)){throw 'Navigation paths require their separate compiled recorded gate.'}
 if($CheckSettingsEditorActivity){
     if(-not $CompileEvaluationProbesForTest -or -not $CaptureEvidence -or $CheckAdminUomActivity -or $CheckViewerPublishedRead -or $CheckTrackingSettings -or $CheckShippingActivity -or $CheckReceivingActivity -or $CheckActivityFoundation){throw 'Settings editor observations require their separate visible compiled gate.'}
     $CheckActivityEvidence=$true
@@ -1776,6 +1778,10 @@ End Function
         Install-Slice4beShippingCatalogProbe
         Install-SettingsActivityProbe
         if($GeneralSettingsOnly){Install-GeneralSettingsProbe}
+        if($AdminNavigationPathsOnly){
+            . (Join-Path $PSScriptRoot 'Slice4beAdminNavigationRecorded.ps1')
+            Install-AdminNavigationRecordedProbe
+        }
         if($CheckSettingsDiagnostics -or $CheckGeneralSettingsRecorded){
             . (Join-Path $PSScriptRoot 'Slice4beRecordingReader.ps1')
             Test-Slice4beRecordingReader $null $null $true
@@ -2213,7 +2219,9 @@ End Function
     }
     if($CheckSettingsEditorActivity){
         $step='Settings observations through actual packaged callbacks'
-        if($AdminClosePathsOnly){
+        if($AdminNavigationPathsOnly){
+            Test-AdminNavigationRecorded $a $b
+        }elseif($AdminClosePathsOnly){
             . (Join-Path $PSScriptRoot 'Slice4beAdminCloseRecorded.ps1')
             Test-AdminCloseRecorded $a $b
         }elseif($GeneralSettingsOnly){

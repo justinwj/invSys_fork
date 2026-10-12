@@ -1,5 +1,14 @@
 # Slice4be Admin Settings Close observations
 
+Current guide-helper regression,2026-10-12: unchanged `validation-admin-entry-02`
+passes123/123 in exact prior order after adding the Settings navigation guide mode.
+Only the fixed current catalog expectation advances32 ->33; all behavior checks
+remain. Controller `general-settings-controller/791ca9a322c04f2099c74cfffce1aa1b`,
+worker `slice4be-admin-close-paths/a2210f7a50cb472dbcb87a4068b1a286`,
+UTC03:23:45.193-03:29:36.439; delayed audit through03:29:48.439. Five compiles,
+preservation and normal closure pass. No runtime/UI change; prior reviewed visual
+evidence retains its scope. See [entry results](plan022_slice4be_admin_entry_results.md).
+
 Current regression,2026-10-12: `validation-admin-entry-02` retains all70 actual
 Close checks in exact prior order, including user/permission/context/storage cases.
 The historical-policy fixture now uses the exact catalog31 control set; fresh
