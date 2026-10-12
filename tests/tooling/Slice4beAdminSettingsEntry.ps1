@@ -21,15 +21,32 @@ End Function
     $probe=$packages['invSys.Core.xlam'].VBProject.VBComponents.Add(1);$probe.Name='TestAdminEntry'
     $probe.CodeModule.AddFromString(@'
 Option Explicit
-Public Function EnablePolicy() As Boolean
+Public Function EnablePolicy(Optional ByVal mode As String = "Enabled") As Boolean
     Dim context As String, version As Long, request As String, report As String
-    Dim model As Object, row As Variant
+    Dim model As Object, row As Variant, user As Object, users As Collection
     context = modActivity.CaptureContext()
     If Not modTrackingPolicySettings.ReadEditor(context, version, request, report) Then Exit Function
-    Set model = modTrackingPolicyModel.Defaults(True)
-    For Each row In model("Controls"): row("Collect") = True: Next row
+    Set model = modTrackingPolicyModel.Defaults(mode <> "Disabled")
+    If mode <> "Defaults" And mode <> "Disabled" Then
+        For Each row In model("Controls")
+            row("Collect") = Not (mode = "ControlsOff" And Left$(row("ControlId"), 20) = "ADMIN_SETTINGS_PAGE_")
+        Next row
+    End If
+    If mode = "UserOff" Then
+        Set user = CreateObject("Scripting.Dictionary")
+        user.Add "UserId", "config-admin": user.Add "Record", False
+        Set users = model("Users"): users.Add user
+    End If
     request = modTrainingJson.EncodeObject(model)
     EnablePolicy = modTrackingPolicySettings.SavePolicy(context, version, request, report)
+End Function
+Public Function HistoricalPolicyIds() As String
+    HistoricalPolicyIds = Join(modActivityCatalog.ControlIds(32), vbLf)
+End Function
+Public Function ExistingPolicyReadable() As Boolean
+    Dim version As Long, collect As Boolean, visible As Boolean, notice As String
+    ExistingPolicyReadable = modActivityPolicy.ReadPolicy(modNasConnection.GetCurrentTarget(), "ADMIN_SETTINGS_SAVE_VALUE", version, collect, visible, notice)
+    ExistingPolicyReadable = ExistingPolicyReadable And collect
 End Function
 Public Function Definition(ByVal id As String, ByVal version As Long) As String
     Dim value As Object

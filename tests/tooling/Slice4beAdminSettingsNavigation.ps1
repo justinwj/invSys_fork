@@ -44,6 +44,9 @@ End Function
 Public Function EntryNavigationHandle() As Double
     EntryNavigationHandle = CDbl(modUserFormResizeWin.GetUserFormWindowHandle(Me))
 End Function
+Public Function EntryNavigationNotice() As String
+    EntryNavigationNotice = mLblStatus.Caption
+End Function
 '@)
     $TestModule.CodeModule.AddFromString(@'
 Public Sub EntryNavPrepare(ByVal inner As Boolean, ByVal source As Long)
@@ -64,6 +67,13 @@ End Function
 Public Function EntryNavHandle() As Double
     EntryNavHandle = mForm.EntryNavigationHandle()
 End Function
+Public Function EntryNavNotice() As String
+    EntryNavNotice = mForm.EntryNavigationNotice()
+End Function
+Public Sub EntryNavReactivate()
+    mForm.Hide
+    mForm.Show vbModeless
+End Sub
 '@)
 }
 
@@ -97,7 +107,9 @@ public static class SettingsNavigationCoordinates {
    if(!ClientToScreen(form,ref p)||Owner(form)==0||Owner(form)!=Owner(excel)||GetAncestor(WindowFromPoint(p),2)!=form)throw new Exception("Native point is not on the owned Settings form.");
    try{
     if(!SetCursorPos(p.X,p.Y))throw new Exception("SetCursorPos failed; Win32 error "+Marshal.GetLastWin32Error());
-    P actual;if(!GetCursorPos(out actual)||actual.X!=p.X||actual.Y!=p.Y)throw new Exception("Native cursor did not reach the intended Settings point.");
+    P actual;bool read=GetCursorPos(out actual);int readError=read?0:Marshal.GetLastWin32Error();
+    if(!read)throw new Exception("Cursor verification read failed; Win32 error "+readError);
+    if(actual.X!=p.X||actual.Y!=p.Y)throw new Exception("SetCursorPos succeeded; unexpected coordinates. Expected "+p.X+","+p.Y+"; observed "+actual.X+","+actual.Y+" at "+DateTime.UtcNow.ToString("o"));
     if(GetAncestor(WindowFromPoint(actual),2)!=form)throw new Exception("Settings point became covered.");
     try{if(SendInput(1,new[]{new Input{Mouse=new Mouse{Flags=2}}},Marshal.SizeOf(typeof(Input)))!=1)throw new Exception("Mouse press failed; Win32 error "+Marshal.GetLastWin32Error());}
     finally{if(SendInput(1,new[]{new Input{Mouse=new Mouse{Flags=4}}},Marshal.SizeOf(typeof(Input)))!=1)throw new Exception("Mouse release failed; Win32 error "+Marshal.GetLastWin32Error());}

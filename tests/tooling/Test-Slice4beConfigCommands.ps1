@@ -120,6 +120,7 @@ param(
     [switch]$CheckAdminSettingsCloseActivity,
     [switch]$CheckAdminSettingsEntry,
     [switch]$CheckAdminSettingsNavigation,
+    [switch]$CheckAdminSettingsNavigationFailures,
     [switch]$CheckViewerRefreshFailure,
     [switch]$CheckViewerEventDetail,
     [switch]$DetailScrollLockDiagnostic,
@@ -431,6 +432,7 @@ if($AdminSettingsCloseOnly) { $CheckAdminSettingsClose = $true }
 if($CheckAdminSettingsCloseActivity -and (-not $AdminSettingsCloseOnly -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Close observations require the isolated compiled visible Admin close gate.'}
 if($CheckAdminSettingsEntry -and (-not $AdminSettingsCloseOnly -or $CheckAdminSettingsCloseActivity -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Settings entry requires its isolated compiled visible launcher gate.'}
 if($CheckAdminSettingsNavigation -and -not $CheckAdminSettingsEntry){throw 'Settings navigation requires its compiled entry fixture.'}
+if($CheckAdminSettingsNavigationFailures -and -not $CheckAdminSettingsNavigation){throw 'Navigation failures require the baseline native gate.'}
 if($ViewerPublicationOnly) {
     if($Phase -ne 'RED'){throw 'Publication-only diagnosis is not acceptance GREEN.'}
     $CheckViewerPublication = $true
@@ -1849,6 +1851,10 @@ End Function
     if($CheckAdminSettingsClose) {
         $step='real Admin Settings close and reopen'
         if($CheckAdminSettingsNavigation){Test-AdminSettingsNavigation $a}elseif($CheckAdminSettingsEntry){Test-AdminSettingsEntry $a $b}else{Test-AdminSettingsDefaultClose $a}
+        if($CheckAdminSettingsNavigationFailures){
+            . (Join-Path $PSScriptRoot 'Slice4beAdminSettingsNavigationFailures.ps1')
+            Test-AdminSettingsNavigationFailures $a $b
+        }
         if($CheckAdminSettingsCloseActivity){Test-AdminCloseActivity $a $b}
     }
     if($CheckViewerRefreshFailure) {

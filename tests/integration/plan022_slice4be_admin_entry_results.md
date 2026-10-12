@@ -116,6 +116,44 @@ checked and needs no runtime RED.
 
 ## Remaining acceptance
 
+### Native boundary gate under investigation, 2026-10-12 UTC
+
+`Test-Slice4beAdminSettingsEntry.ps1 -Navigation -NavigationFailures` now extends
+the original43 checks with current/default/disabled/user-off/control-off policies,
+repeated activation, changed/signed-out context, same-session permission loss,
+catalog32 policy and unavailable activity storage. It uses the packaged form's
+native tabs and preserves generated authority, older activity and saved host bytes.
+No runtime source, package or architectural contract changed. The expanded gate
+is **not accepted**; do not combine partial runs into a GREEN.
+
+Ignored receipts under `reports/runtime/`:
+
+| Controller under `admin-entry-controller/` | Worker under `slice4be-admin-navigation/` | Result and classification |
+|---|---|---|
+| `55696b67a30e4018a21994cbf07e188e` | `56068fa6d3534fbb998628d0142c1579` | 170 pass/5 fail; the disabled-policy fixture accidentally re-enabled Collect; corrected, not behavioral RED |
+| `6881edd05de540808fe12fa00979cd7b` | `17012b45679c402c96b4526d6bb78785` | 95 pass/1 harness failure; cursor verification prerequisite failed |
+| `3e64ff90cbd14b51a16d1f692db08654` | `170474d84e684d958b8a2575790dcf64` | 58 pass/1 harness failure; improved diagnostic confirms SetCursorPos success followed by unexpected coordinates at02:29:24.9347374Z |
+
+All three controllers retain package/settings preservation, normal Excel closure
+and clean delayed native audits (`fixture-audit.json`). The first ambiguous cursor
+message could mean failed GetCursorPos or unexpected coordinates; the test helper
+now distinguishes them and captures the immediate Win32 error only on API failure.
+That diagnostic-only change does not weaken the exact-position guard or retry input.
+
+A separate bounded cursor diagnostic at02:27:27Z and twelve small/large checks at
+02:30:23-26Z all reach exact targets and restore the original position. The latter
+checks report matching active/thread desktops, unchanged display/clip bounds and no
+error5. Receipts: `navigation-cursor/732392c6c3b54580b0d00df36d0b3d36` and
+`navigation-cursor/f41ded96119d4e73b93e75217e2b48ba`. These separate processes cannot
+prove the failed helper's thread state. Human mouse interference remains unconfirmed.
+Capture same-helper desktop/bounds/immediate-and-delayed cursor evidence before
+another Excel retry; do not infer a lock, API failure or application defect.
+
+Fresh `admin-navigation-boundary-static-01/ratchet-verification.json` retains all
+28 size caps,326 components/6371 procedures/139227 lines, dynamic9/45 and192 duplicate
+candidates. Three schemas and466 PowerShell scripts validate. The original runtime
+candidate remains byte-identical to prior GREEN; no rebuild or promotion occurred.
+
 Require current-policy/default/per-user/older-policy/storage failures, captured
 context and permission loss, repeated activation, exact publication, independent
 successful/interrupted guides, relevant regressions, layout and visible evidence.

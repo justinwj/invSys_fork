@@ -6,6 +6,14 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+The new native Settings boundary extension is not yet accepted: one fixture-only
+failure was corrected, then two runs stopped on cursor prerequisites. The improved
+diagnostic confirms SetCursorPos success with unexpected coordinates at
+2026-10-12T02:29:24.9347374Z. Standalone movement checks pass and no error5 is observed;
+the failed helper's desktop/timing state remains unproven. Preserve the original
+43-check GREEN and do not aggregate partial runs into acceptance. Same-helper
+diagnosis is next; details are in the Settings entry results linked below.
+
 Current candidate: `deploy/validation-admin-entry-02`, catalog33/151. Settings Open
 passes RED17/7 -> GREEN24; all five tab destinations pass native mouse/keyboard
 RED33/10 -> GREEN43. Programmatic/same-tab exclusion, five compiles, preservation,
