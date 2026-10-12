@@ -81,9 +81,10 @@ function Test-AdminSettingsNavigation($Fixture) {
     . (Join-Path $PSScriptRoot 'Slice4beActivityAssertions.ps1')
     . (Join-Path $PSScriptRoot 'Slice4beReceivingNavigation.ps1')
     Initialize-ReceivingNavigationInput
-    Add-Type @'
+    Add-Type -ReferencedAssemblies System.Web.Extensions @'
 using System;using System.Runtime.InteropServices;
 public static class SettingsNavigationCoordinates {
+ public static string TracePath;
  [StructLayout(LayoutKind.Sequential)]public struct R{public int L,T,Right,Bottom;}
  [StructLayout(LayoutKind.Sequential)]public struct P{public int X,Y;}
  [DllImport("user32.dll")]static extern bool GetClientRect(IntPtr h,out R r);
@@ -98,28 +99,75 @@ public static class SettingsNavigationCoordinates {
  [DllImport("user32.dll",SetLastError=true)]static extern bool GetCursorPos(out P p);
  [DllImport("user32.dll",SetLastError=true)]static extern bool SetCursorPos(int x,int y);
  [DllImport("user32.dll",SetLastError=true)]static extern uint SendInput(uint count,Input[] input,int size);
+ [DllImport("kernel32.dll")]static extern uint GetCurrentThreadId();
+ [DllImport("user32.dll",SetLastError=true)]static extern IntPtr GetThreadDesktop(uint thread);
+ [DllImport("user32.dll",SetLastError=true)]static extern IntPtr OpenInputDesktop(uint flags,bool inherit,uint access);
+ [DllImport("user32.dll",SetLastError=true)]static extern bool CloseDesktop(IntPtr desktop);
+ [DllImport("user32.dll",EntryPoint="GetUserObjectInformationW",SetLastError=true)]static extern bool ObjectInput(IntPtr desktop,int index,out int value,uint size,out uint needed);
+ [DllImport("user32.dll",SetLastError=true)]static extern bool GetClipCursor(out R rect);
+ [DllImport("user32.dll")]static extern int GetSystemMetrics(int index);
+ static void State(System.Collections.Generic.Dictionary<string,object> report,string prefix,ref bool error5){
+  uint thread=GetCurrentThreadId();var current=GetThreadDesktop(thread);int currentError=current==IntPtr.Zero?Marshal.GetLastWin32Error():0;
+  report[prefix+"ThreadId"]=thread;report[prefix+"ThreadDesktopError"]=currentError;
+  if(currentError==5){error5=true;return;}
+  var active=OpenInputDesktop(0,false,1);int activeError=active==IntPtr.Zero?Marshal.GetLastWin32Error():0;
+  report[prefix+"InputDesktopError"]=activeError;
+  if(activeError==5){error5=true;return;}
+  try{int value=0;uint needed=0;bool match=current!=IntPtr.Zero&&ObjectInput(current,6,out value,4,out needed);int matchError=current==IntPtr.Zero?currentError:match?0:Marshal.GetLastWin32Error();
+   report[prefix+"DesktopMatchReadSucceeded"]=match;report[prefix+"ThreadDesktopIsInput"]=match?(object)(value!=0):null;report[prefix+"DesktopMatchError"]=matchError;
+   if(!match&&matchError==5){error5=true;return;}
+  }finally{if(active!=IntPtr.Zero){bool closed=CloseDesktop(active);int closeError=closed?0:Marshal.GetLastWin32Error();report[prefix+"CloseDesktopError"]=closeError;if(closeError==5)error5=true;}}
+  if(error5)return;
+  R clip;bool clipped=GetClipCursor(out clip);int clipError=clipped?0:Marshal.GetLastWin32Error();report[prefix+"ClipReadSucceeded"]=clipped;report[prefix+"ClipError"]=clipError;report[prefix+"ClipBounds"]=clipped?(object)clip:null;
+  if(clipError==5){error5=true;return;}
+  report[prefix+"DisplayBounds"]=new R{L=GetSystemMetrics(76),T=GetSystemMetrics(77),Right=GetSystemMetrics(76)+GetSystemMetrics(78),Bottom=GetSystemMetrics(77)+GetSystemMetrics(79)};
+ }
+ static bool Observe(System.Collections.Generic.Dictionary<string,object> report,string name,out P point,ref bool error5){
+  bool ok=GetCursorPos(out point);int error=ok?0:Marshal.GetLastWin32Error();report[name+"Return"]=ok;report[name+"FailureWin32Error"]=ok?null:(object)error;report[name+"Coordinates"]=ok?(object)point:null;
+  if(error==5)error5=true;return ok;
+ }
+ static void MouseInput(System.Collections.Generic.Dictionary<string,object> report,string name,uint flags,ref bool error5){
+  uint sent=SendInput(1,new[]{new Input{Mouse=new Mouse{Flags=flags}}},Marshal.SizeOf(typeof(Input)));int error=sent==1?0:Marshal.GetLastWin32Error();report[name+"Return"]=sent;report[name+"FailureWin32Error"]=sent==1?null:(object)error;
+  if(error==5)error5=true;if(sent!=1)throw new Exception(name+" failed; Win32 error "+error);
+ }
  static uint Owner(IntPtr h){uint p;GetWindowThreadProcessId(h,out p);return p;}
  public static void Click(IntPtr form,IntPtr excel,double x,double y,double w,double height){
+  var process=System.Diagnostics.Process.GetCurrentProcess();bool error5=false;
+  var report=new System.Collections.Generic.Dictionary<string,object>{{"UTC",DateTime.UtcNow.ToString("o")},{"ProcessId",process.Id},{"SessionId",process.SessionId},{"Library","PowerShell Add-Type/.NET PInvoke"},{"MouseApis","user32.dll!SetCursorPos/GetCursorPos/SendInput"},{"Clicked",false}};
   var oldDpi=SetThreadDpiAwarenessContext(new IntPtr(-4));if(oldDpi==IntPtr.Zero)throw new Exception("Native DPI coordinates unavailable.");
   try{R r;P original;if(!GetClientRect(form,out r))throw new Exception("Settings client bounds unavailable.");
-   if(!GetCursorPos(out original))throw new Exception("Cursor read failed; Win32 error "+Marshal.GetLastWin32Error());
+   State(report,"Before",ref error5);if(error5)throw new Exception("Desktop inspection failed; Win32 error 5");
+   if(!Observe(report,"Original",out original,ref error5))throw new Exception("Cursor read failed; Win32 error "+report["OriginalFailureWin32Error"]);
    var p=new P{X=(int)(x*(r.Right-r.L)/w),Y=(int)(y*(r.Bottom-r.T)/height)};
    if(!ClientToScreen(form,ref p)||Owner(form)==0||Owner(form)!=Owner(excel)||GetAncestor(WindowFromPoint(p),2)!=form)throw new Exception("Native point is not on the owned Settings form.");
+   report["Target"]=p;
    try{
-    if(!SetCursorPos(p.X,p.Y))throw new Exception("SetCursorPos failed; Win32 error "+Marshal.GetLastWin32Error());
-    P actual;bool read=GetCursorPos(out actual);int readError=read?0:Marshal.GetLastWin32Error();
-    if(!read)throw new Exception("Cursor verification read failed; Win32 error "+readError);
-    if(actual.X!=p.X||actual.Y!=p.Y)throw new Exception("SetCursorPos succeeded; unexpected coordinates. Expected "+p.X+","+p.Y+"; observed "+actual.X+","+actual.Y+" at "+DateTime.UtcNow.ToString("o"));
+    bool moved=SetCursorPos(p.X,p.Y);int moveError=moved?0:Marshal.GetLastWin32Error();report["SetCursorPosReturn"]=moved;report["SetCursorPosFailureWin32Error"]=moved?null:(object)moveError;
+    if(moveError==5)error5=true;if(!moved)throw new Exception("SetCursorPos failed; Win32 error "+moveError);
+    P actual;if(!Observe(report,"Immediate",out actual,ref error5))throw new Exception("Cursor verification read failed; Win32 error "+report["ImmediateFailureWin32Error"]);
+    if(actual.X!=p.X||actual.Y!=p.Y){
+     report["MismatchUTC"]=DateTime.UtcNow.ToString("o");P delayed;
+     System.Threading.Thread.Sleep(50);Observe(report,"After50ms",out delayed,ref error5);
+     if(!error5){System.Threading.Thread.Sleep(150);Observe(report,"After200ms",out delayed,ref error5);}
+     if(error5)throw new Exception("Cursor diagnostic read failed; Win32 error 5");
+     throw new Exception("SetCursorPos succeeded; unexpected coordinates. Exact helper facts saved; no click sent.");
+    }
     if(GetAncestor(WindowFromPoint(actual),2)!=form)throw new Exception("Settings point became covered.");
-    try{if(SendInput(1,new[]{new Input{Mouse=new Mouse{Flags=2}}},Marshal.SizeOf(typeof(Input)))!=1)throw new Exception("Mouse press failed; Win32 error "+Marshal.GetLastWin32Error());}
-    finally{if(SendInput(1,new[]{new Input{Mouse=new Mouse{Flags=4}}},Marshal.SizeOf(typeof(Input)))!=1)throw new Exception("Mouse release failed; Win32 error "+Marshal.GetLastWin32Error());}
+    try{MouseInput(report,"MousePress",2,ref error5);}
+    finally{if(!error5)MouseInput(report,"MouseRelease",4,ref error5);}
+    report["Clicked"]=true;
     System.Threading.Thread.Sleep(150);
-   }finally{if(!SetCursorPos(original.X,original.Y))throw new Exception("Cursor restore failed; Win32 error "+Marshal.GetLastWin32Error());}
-  }finally{SetThreadDpiAwarenessContext(oldDpi);}
+   }finally{if(!error5){bool restored=SetCursorPos(original.X,original.Y);int restoreError=restored?0:Marshal.GetLastWin32Error();report["RestoreReturn"]=restored;report["RestoreFailureWin32Error"]=restored?null:(object)restoreError;if(restoreError==5)error5=true;if(!restored)throw new Exception("Cursor restore failed; Win32 error "+restoreError);P observed;Observe(report,"Restored",out observed,ref error5);}}
+  }finally{
+   if(!error5)State(report,"After",ref error5);report["Error5Observed"]=error5;SetThreadDpiAwarenessContext(oldDpi);
+   if(!String.IsNullOrEmpty(TracePath))System.IO.File.AppendAllText(TracePath,new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(report)+Environment.NewLine);
+   if(error5)throw new Exception("Native input diagnostic stopped; Win32 error 5");
+  }
  }
  public static string Read(IntPtr h,double x,double y,double w,double height){R r,b;GetClientRect(h,out r);GetWindowRect(h,out b);var p=new P{X=(int)(x*(r.Right-r.L)/w),Y=(int)(y*(r.Bottom-r.T)/height)};ClientToScreen(h,ref p);return (p.X-b.L)+"|"+(p.Y-b.T)+"|"+x+"|"+y+"|"+w+"|"+height;}
 }
 '@
+    [SettingsNavigationCoordinates]::TracePath=Join-Path $reportRoot 'navigation-input-facts.jsonl'
     function Act([string]$Name,[object[]]$Values=@()){Run 'invSys.Admin.xlam' ('TestD5Commands.'+$Name) $Values}
     function Files {@(Get-Slice4beActivityFiles $Fixture)}
     $cases=@(@('GENERAL',$false,1,0,22),@('EVENT_TRACKING',$false,0,1,88),@('TRACKING',$true,1,0,22),@('EVENT_DETAIL',$true,0,1,75),@('ACTION_PATHS',$true,1,2,140))

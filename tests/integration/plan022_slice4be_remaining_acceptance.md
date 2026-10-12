@@ -6,20 +6,22 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
-The new native Settings boundary extension is not yet accepted: one fixture-only
-failure was corrected, then two runs stopped on cursor prerequisites. The improved
-diagnostic confirms SetCursorPos success with unexpected coordinates at
-2026-10-12T02:29:24.9347374Z. Standalone movement checks pass and no error5 is observed;
-the failed helper's desktop/timing state remains unproven. Preserve the original
-43-check GREEN and do not aggregate partial runs into acceptance. Same-helper
-diagnosis is next; details are in the Settings entry results linked below.
+The native Settings boundary extension now passes177/177 with all43 prior checks
+in order. Current/default/disabled/user/control policies, context/permission loss,
+older policy, repeated activation and storage notices pass with preservation and
+clean delayed closure. Same-helper diagnostics verify all60 mouse moves/restorations
+and desktop matches. The earlier cursor mismatch remains unexplained; it does not
+recur in this run. Four captures are reviewed, including readable storage notice;
+General long values remain clipped. Public launcher24 also retains prior order.
+Public-launcher negative cases, active capture, publication and independent guides
+remain open; exact receipts are in the Settings entry results linked below.
 
 Current candidate: `deploy/validation-admin-entry-02`, catalog33/151. Settings Open
 passes RED17/7 -> GREEN24; all five tab destinations pass native mouse/keyboard
 RED33/10 -> GREEN43. Programmatic/same-tab exclusion, five compiles, preservation,
 clean delayed closure and three reviewed default-size captures pass. Static caps
 hold, dynamic/duplicate counts are unchanged and465 scripts parse. This is scoped
-implementation; policy/context failures, publication, independent guides and broader
+implementation; public-launcher negative cases, active capture, publication, independent guides and broader
 acceptance remain open. See [Settings entry results](plan022_slice4be_admin_entry_results.md).
 The corrected existing Close regression retains70 in exact prior order, with five
 compiles, preservation and clean delayed closure; its scope remains separate from

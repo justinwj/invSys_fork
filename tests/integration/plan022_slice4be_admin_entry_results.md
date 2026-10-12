@@ -116,15 +116,15 @@ checked and needs no runtime RED.
 
 ## Remaining acceptance
 
-### Native boundary gate under investigation, 2026-10-12 UTC
+### Native boundary gate and initial prerequisite failures, 2026-10-12 UTC
 
 `Test-Slice4beAdminSettingsEntry.ps1 -Navigation -NavigationFailures` now extends
 the original43 checks with current/default/disabled/user-off/control-off policies,
 repeated activation, changed/signed-out context, same-session permission loss,
 catalog32 policy and unavailable activity storage. It uses the packaged form's
 native tabs and preserves generated authority, older activity and saved host bytes.
-No runtime source, package or architectural contract changed. The expanded gate
-is **not accepted**; do not combine partial runs into a GREEN.
+No runtime source, package or architectural contract changed. The first three
+attempts below were unaccepted; they are not combined into the later GREEN.
 
 Ignored receipts under `reports/runtime/`:
 
@@ -146,16 +146,38 @@ checks report matching active/thread desktops, unchanged display/clip bounds and
 error5. Receipts: `navigation-cursor/732392c6c3b54580b0d00df36d0b3d36` and
 `navigation-cursor/f41ded96119d4e73b93e75217e2b48ba`. These separate processes cannot
 prove the failed helper's thread state. Human mouse interference remains unconfirmed.
-Capture same-helper desktop/bounds/immediate-and-delayed cursor evidence before
-another Excel retry; do not infer a lock, API failure or application defect.
+That checkpoint required same-helper desktop/bounds/immediate-and-delayed cursor
+evidence before another Excel retry, without inferring a lock or application defect.
+
+That diagnostic follow-up is now implemented in the native helper. Each call
+records its own process/session/thread, input-desktop match, virtual-display/clip
+bounds, API return values and immediate failure errors, cursor target/read-back
+and restoration. A mismatch takes50/200ms reads and still fails before clicking;
+actual error5 stops input. It does not retry movement or manufacture owner outcomes.
+
+The complete follow-up passes **177/177**, retaining the original43 checks in order:
+controller `admin-entry-controller/4382abacf92e436aa3238e98f8145a99`, worker
+`slice4be-admin-navigation/ded986080d1743b6bb9347d55e304ea2`,
+UTC02:34:41.308-02:37:47.479, delayed audit through02:37:59.479. All60 native mouse
+operations verify exact movement/restoration and matching input/thread desktops
+before/after. No mismatch, error5 or native failure event occurs. Five instrumented
+compiles, settings/package preservation and normal closure pass. Four captures were
+individually reviewed: General, Event Detail, Action Paths and readable storage
+notice. General long values remain clipped; no broad resize or human acceptance.
+The earlier intermittent cursor failure is not reproduced or explained by this GREEN.
+
+The public-launcher regression retains **24/24** in exact prior order:
+controller `admin-entry-controller/344796ea9fce480eb34d55bd13d4a0a9`, worker
+`slice4be-admin-entry/331ed59e05854eaf9c147516ae0c060f`,
+UTC02:38:11.633-02:39:07.473, delayed audit through02:39:19.473. Five compiles,
+preservation and normal closure pass. This does not close its negative cases.
 
 Fresh `admin-navigation-boundary-static-01/ratchet-verification.json` retains all
 28 size caps,326 components/6371 procedures/139227 lines, dynamic9/45 and192 duplicate
 candidates. Three schemas and466 PowerShell scripts validate. The original runtime
 candidate remains byte-identical to prior GREEN; no rebuild or promotion occurred.
 
-Require current-policy/default/per-user/older-policy/storage failures, captured
-context and permission loss, repeated activation, exact publication, independent
+Require public-launcher negative cases, active-capture eligibility, exact publication, independent
 successful/interrupted guides, relevant regressions, layout and visible evidence.
 The existing native full-chain Shipping failure is not repaired by this work.
 The [remaining-acceptance index](plan022_slice4be_remaining_acceptance.md) retains
