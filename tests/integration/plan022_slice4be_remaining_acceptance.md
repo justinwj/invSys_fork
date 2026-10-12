@@ -13,6 +13,10 @@ blocked by native Excel failures; trace identifies the live-role processor call
 after projection deletion. The compiled-anchor tooling now passes11 focused and74
 existing checks. Narrow traced and read-only inspection controls each pass35;
 the uninstrumented counterpart crashes. Native cause remains unresolved.
+Broader temporary source loading passes full live48 and chain32/live48/Create15,
+while ordinary frozen-console03 loading also fails at the processor. Proposed
+D16-VBA-LOAD-01 requires approval and station-handler D13 before treating this as
+a supported configuration; no permanent setting or acceptance waiver is adopted.
 No new recording ID or acceptance.
 See [directory prerequisite evidence](plan022_slice4be_admin_directory_columns_results.md).
 The accepted console-03 baseline below remains frozen; its clean chain is not

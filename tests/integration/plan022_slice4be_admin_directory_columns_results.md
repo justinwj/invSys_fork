@@ -2,7 +2,7 @@
 
 4be-A prerequisite, 2026-10-12. Governing rule: Architecture v4.11 D14
 header-extension rules and Warehouse Directory enforcement clarification;
-Plan 022; Controls 1.547. This adds no recording ID, warehouse identity,
+Plan 022; Controls 1.548. This adds no recording ID, warehouse identity,
 annotation association, or business authority. Full 4be-A remains incomplete.
 
 ## Contract and implementation
@@ -179,6 +179,51 @@ The older trace01 source copies were sanitized after execution to remove the leg
 fixture credential assignment; `retained-source-redaction.json` records before/after
 hashes. Their lifecycle evidence is unchanged, but retained copies are not the
 original executed bytes. The focused controller transforms credentials before writing.
+
+## Broader controls and pending station proposal
+
+Temporary source-loading **full live48/48**: controller
+`projection-live-control/2431cf4e285041baa999ecdbe06bb248`, option controller
+`projection-source-load/a3d96ff70057490fbbecb6a38003a2c9`. All48 predecessor checks
+retain their exact order, including the13 omitted by earlier focused cuts.
+Normal closure and zero native events through15:25:25.5513872UTC; settings,
+reports and five package pins preserved. Option absence restored15:25:26.1443638UTC.
+
+Ordinary **frozen console-03** full-live comparison, with its original five pins:
+`projection-live-control/c70c0b67a7e6426381df77ea86575402`,32 PASS/1 FAIL at the
+processor after projection deletion. Native owner/start matching confirms
+ntdll/c0000028 at15:27:26.9820905UTC; delayed audit through15:34:55.5737854UTC
+records two events. This failure is not unique to the directory candidate and
+does not erase the predecessor's historical clean runs.
+
+Recovery initially opened multiple windows, including earlier diagnostic copies.
+The first normal-close helper did not recognize NUIDialog prompts;15 WM_CLOSE
+requests preceded its stop. Do not repeat that modal-class omission. Read-only
+recovery metadata established that all19 entries belonged to exactly two generated
+live-test folders. Reviewed UIA actions discarded only those recovered test copies;
+25 saved fixture files retain identical hashes. Excel then closed, without COM
+reattachment or force termination; the live controller restored settings/reports
+and preserved five package pins. Final proof: `recovery-final-preservation.json`.
+No user workbook, recovery entry of unknown origin, or original fixture was deleted.
+
+Temporary source-loading **full chain32/live48/Create15**:
+`admin-directory-source-chain/chain-bb2392bf91194743a82782404d5c9c1d`; option controller
+`chain-source-load/a5b665ae6360484c86a3db28b8a1714b`. Every predecessor check retains
+its original order. Restart reconciliation, five-package runtime inspection and
+the static gate execute; no workflow switch is removed. A derived chain changes
+only fixture credential generation to an ephemeral expression before writing the
+ordered validator. Its synthetic Shipping payload remains available to the original
+chain assertion; only redacted outcomes are committed. Preparation hashes/policy:
+`reports/runtime/source-chain01-preparation.json`.
+
+The chain closes without intervention, restores settings/tracked reports, preserves
+package pins and records zero native events through15:43:20.8613671UTC. The original
+option absence is restored15:43:20.9518291UTC. Two hidden Excel processes observed
+during later gates exited normally; observation alone was not treated as a hang.
+This supports a source-loading hypothesis, not a proven native cause or an adopted
+deployment contract. Proposed **D16-VBA-LOAD-01** is explicit in v4.11/Plan022/
+Controls1.548; it requires approval, station-handler D13 and all normal qualification
+gates before acceptance. No permanent setting, station deployment or gate waiver.
 
 Evidence reuse is scoped by `admin-directory-build-01/reuse-scope.json`: all
 106 other procedures in `modAdminConsole` are unchanged against `504f0de2`;
