@@ -6,14 +6,16 @@ This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
 Continuation: [Shipment Reconcile evidence](plan022_slice4be_admin_reconcile_results.md)
-now passes330/330, retaining the258-check recording prefix under approved D8-RECON-01.
+now passes360/360, retaining the330-check prefix under approved D8-RECON-01.
 Scrollable history, native entry20/Inspect/Escape, resize, window-close and
 confirmation Cancel/typed Submit pass. Catalog34 Open/Inspect/Cancel recording,
 suppression, exact references and original-session binding pass. Actual storage
 failure preserves one command and one warning without invented completion.
 Independent native recording, exact publication, guide authoring and saved
-Concluded/Incomplete CommandCompleted views pass. SourceEventsApplied guide
-proof and local-target recording eligibility remain open.
+Concluded/Incomplete CommandCompleted views pass. SourceEventsApplied evaluates
+the independent correction as Awaiting before exact owning application and
+Concluded after publication, preserving the original Submitted observation and
+earlier saved result. Local-target recording eligibility remains open.
 Earlier31/24 RED covered repeated/multi-entity history,
 actual queued application and Domain association/quantity guards.
 The user approved D14-RECON-01 in v4.11 on2026-10-12. The
@@ -32,7 +34,7 @@ Ignored verification: `reports/runtime/admin-remaining-source-audit-01/ribbon-ve
 ## Actions map
 
 Except for Settings, complete recording/publication/guide proof remains pending;
-Reconcile has the scoped command-conclusion gate described above.
+Reconcile has the scoped command/application-conclusion gates described above.
 Form subactions below are source findings, not a complete live-control census.
 Do not count typing, initialization, programmatic selection or internal refresh
 as deliberate actions merely because an event procedure exists.
@@ -48,7 +50,7 @@ as deliberate actions merely because an event procedure exists.
 | `btnAdminSetupTesterStation` | `modAdmin.Admin_SetupTesterStation_Click` | `frmSetupTesterStation`: path helpers, `modTesterSetup.SetupTesterStation`, open generated Receiving workbook, delete generated setup, cancel. Capture only eligible current-context actions; never use existing operational workbooks as disposable fixtures. |
 | `btnAdminAddInventoryItem` | `modAdmin.Add_InventoryItem` | Captures exact warehouse/station/user and operator workbook, then modal `frmAddInventoryItem`: Add/Edit selection, custom fields, sheet workbench create/upload, accept/delete/cancel. Owner command results occur after form acceptance; retain existing System_Key, unknown columns and workflow gates. |
 | `btnAdminSeedInventory` | `modAdmin.Seed_DemoInventory` | `frmSeedInventory` selects Seed/Delete/Upload Data Set/Delete Data Set; callback confirmations and `modAdminInventorySeed` results follow. Inbox repair has its own form handler. CSV definition changes are not inventory changes. Existing automation result text is not shared activity proof. |
-| `btnAdminShipmentReconcile` | `modAdminShipmentReconcile.OpenShipmentReconcileTool` | `frmShipmentReconcileSelection`/narrative -> `QueueAdminShipmentReconcileEvent` -> Core live-context gate -> provisioned queue API. D14-RECON-01/D8-RECON-01/D18 pass330 checks: native handlers, catalog34 recording, suppression, references, binding, storage failure and independent recording/publication/CommandCompleted guide proof. SourceEventsApplied guide proof and local recording eligibility remain open. |
+| `btnAdminShipmentReconcile` | `modAdminShipmentReconcile.OpenShipmentReconcileTool` | `frmShipmentReconcileSelection`/narrative -> `QueueAdminShipmentReconcileEvent` -> Core live-context gate -> provisioned queue API. D14-RECON-01/D8-RECON-01/D18 pass360 checks: native handlers, catalog34 recording, suppression, references, binding, storage failure and independent recording/publication/CommandCompleted/SourceEventsApplied guide proof. Exact application preserves the other entity, custom values and original Submitted evidence. Local recording eligibility remains open. |
 | `btnAdminHqAggregator` | `modAdmin.Admin_AggregateGlobalSnapshot_Click` | `frmAggregationSources`: discover/add/connect, source selection, `RunHQAggregationFromSourceSet`, Close. Explicit source-set aggregation remains advisory. Connection credentials and source paths are excluded from activity payloads. |
 | `btnAdminDesignLifecycle` | `modAdminDesignLifecycle.Admin_DesignLifecycle_Click` | `frmAdminDesignLifecycle`: refresh, constructed Import Legacy Recipes, Release selected, Obsolete selected, Close. `ExecuteDesignLifecycleCommand` separates queued event, processing and resulting status. A form open is not a release; recipe import is not authority to migrate legacy inventory. |
 | `btnAdminVerifyAddinsPublished` | `modAdmin.Verify_AddinsPublished` | `modAddinsPublish.VerifyAddinsPublished` checks required files/nonzero sizes and shows existing result. Verification is not PublishAddins. Capture fixed result facts, not full diagnostic paths. |
@@ -133,3 +135,23 @@ review; a prior Ribbon gate is not evidence
 of a later write gate. This audit neither changes Auth write ownership nor grants
 a new permission exception. Any material Auth contract change needs an explicit
 architecture decision and approval before implementation.
+
+## Local recording eligibility: source audit, 2026-10-12
+
+Three shared Core gates currently require an allowed NAS target:
+`modActivity.CaptureContext`, `modActivityStore.StoreRoot`, and
+`modRecordingJournal.JournalRoot`. `modNasConnection.IsWarehouseTargetAllowed`
+with True rejects WH_SOURCE_FALLBACK and requires UNC HubRoot or RuntimeRoot.
+WH_SOURCE_LOCAL is distinct from fallback; a non-UNC local target also fails
+that guard. `modActivityPolicy.ReadPolicy` reads the captured ConfigPath rather
+than imposing this NAS guard itself. Do not fix only the context gate and leave
+the stores inconsistent.
+
+D18 names the selected WarehouseRuntimeRoot and prohibits silently using a local
+store when a NAS library is unavailable. That does not by itself settle explicit
+local-target eligibility. D8-RECON-01 preserves permitted local business access;
+it is not evidence that local recording is accepted. Next distinguish a genuine
+explicitly selected local runtime from the existing signed-in fallback fixture
+through the packaged callback, then resolve any needed contract decision before
+changing these shared gates. This source audit approves no exclusion, fallback,
+store policy or business-permission change.

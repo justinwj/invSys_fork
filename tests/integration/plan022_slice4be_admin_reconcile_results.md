@@ -614,3 +614,60 @@ readable. Raw generated fixture captures remain ignored.
 This completes the storage/recording/publication/command-conclusion extension,
 not full Reconcile or4be-A acceptance. SourceEventsApplied guide proof,
 local-target recording eligibility and remaining Admin coverage stay open.
+
+## Exact source-application guide extension — 2026-10-12
+
+Tests only, same unpromoted recording-06 packages. `-CheckAppliedGuide` extends
+the330 gate through packaged Edit guide/Expected conclusion/Evaluate handlers.
+Version2 explicitly requires SourceEventsApplied. It evaluates the independent
+recorded correction before application, applies only that exact queued event
+through the owning Domain bridge, republishes, and evaluates again. The original
+Submitted observation and earlier result must remain immutable. This is recorded
+evidence evaluation, not a Reconcile replay adapter.
+
+Initial controller `admin-reconcile-controller/527d30b9e80e4334bde56c50dbc6fe5f`,
+worker `slice4be-admin-reconcile/eebc7fc7dc1f4fa4b862763151d45754`, ended358/2,
+retaining the exact330 prefix. **Not GREEN or product RED.** The fixture saved
+before its duplicate application call; the owner changes worksheet protection,
+so persistence must be checked after the fixture's final explicit save. The
+display assertion also demanded System_Key in the summary, beyond the existing
+D18 presentation contract. Exact keys and line hashes in saved evidence passed;
+the summary names the source event/status. Corrected the fixture save order,
+checked quantity/attributes after duplicate application, and asserted the exact
+displayed result/event/status while retaining the saved key/hash proof.
+Normal restoration and zero delayed native failures through09:39:51.4126913 pass.
+
+Corrected **360/360 GREEN**: controller
+`admin-reconcile-controller/be08cee5a6bb4dca8d8a72431f278577`; worker
+`slice4be-admin-reconcile/f1b0a80524814c9c81eaf89756815d90`.
+UTC09:41:40.8498881–10:09:13.3441013; clean delayed native audit through10:09:25.3441013.
+Exact330-check prefix, log/JSON agreement, five instrumented compiles, preserved
+settings/packages/tooling and normal Excel closure pass. Run the prior command
+with `-CheckAppliedGuide` appended. Qualification is recorded in the controller's
+ignored `applied-guide-verification.json`.
+
+Actual guide editing appends version2 with an explicit SourceEventsApplied
+expectation, preserving version1 and its original observations/provenance.
+Independent Observed evaluation saves Awaiting/SOURCE_PENDING before application.
+The owning Domain bridge applies only its exact queued correction: the selected
+entity changes from4 to1, the other remains55, and current attributes/custom values
+remain intact. Duplicate application is skipped; exactly one inventory-log and
+one applied-event record are added. The generated-fixture owner saves afterward.
+Fresh publication then supports Concluded/SOURCE_APPLIED, with independently
+checked source-line SHA256 and exact System_Key. The original Submitted record,
+journals/activity and earlier Awaiting result remain immutable; no extra command
+is queued. No replay adapter or product behavior was added.
+
+Directly reviewed final `reconcile-guide-pending-source-result.png` and
+`reconcile-guide-applied-source-result.png`: complete source event/status,
+saved-result identity, provenance and distinct Awaiting/Conclusion observed text
+are readable. Both layouts and read-only view preservation pass. Raw generated
+fixture captures remain ignored.
+
+Static `admin-reconcile-applied-guide-static-01` retains332 components/6399
+procedures/139542 lines, dynamic9/45 and194 duplicate candidates; all28 caps,
+three schemas and481 PowerShell parsers pass. No new bloat exception. All five
+package pins remain identical; reuse the cold compile,86 smoke,202 Settings and
+32 chain/48 live-role/15 Create Warehouse evidence above. This closes the scoped
+SourceEventsApplied guide proof; local recording eligibility and remaining Admin
+coverage remain open, so4be-A is incomplete.

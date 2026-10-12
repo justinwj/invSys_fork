@@ -1,4 +1,5 @@
 # Actual visible Reconcile journeys; shared authoring/evaluation handlers consume their records.
+. (Join-Path $PSScriptRoot 'Slice4beAdminReconcileAppliedGuide.ps1')
 function Install-ReconcileGuideProbe {
     . (Join-Path $PSScriptRoot 'Slice4beViewerPublishedRead.ps1')
     Test-Slice4beViewerPublishedRead $null $null $true
@@ -10,6 +11,7 @@ function Install-ReconcileGuideProbe {
     Install-RecordingEvaluationProbe
     . (Join-Path $PSScriptRoot 'Slice4beGuideDraft.ps1')
     Install-GuideDraftProbe
+    if($AdminReconcileAppliedGuide){Install-ReconcileAppliedGuideProbe}
 }
 
 function Test-ReconcileGuide($Fixture,$Events,$State) {
@@ -70,6 +72,7 @@ function Test-ReconcileGuide($Fixture,$Events,$State) {
         Check 'Reconcile.Recorded.ExactPublishedRecords' $exact
         Test-GeneralSettingsGuidePaths $Fixture $runs $steps -Reconcile
         Check 'Reconcile.Recorded.FinalInventoryAndCanaryPreserved' ((Hash $State.InventoryPath) -ceq $inventoryHash -and [bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.NativeFixturePreserved' @(4)) -and [string]$hostBook.Worksheets.Item(1).Cells.Item(1,1).Value2 -ceq 'Reconcile guide canary')
+        if($AdminReconcileAppliedGuide){Test-ReconcileAppliedGuide $Fixture $runs $Events $State $hostBook}
     }finally{
         $reportRoot=$originalReportRoot;CloseRecordingViewer
         if($null -ne $hostBook){$hostBook.Close($false)}

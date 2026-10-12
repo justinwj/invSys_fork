@@ -123,6 +123,7 @@ param(
     [switch]$AdminReconcileNativePresentation,
     [switch]$AdminReconcileRecording,
     [switch]$AdminReconcileGuidePaths,
+    [switch]$AdminReconcileAppliedGuide,
     [switch]$CheckAdminSettingsCloseActivity,
     [switch]$CheckAdminSettingsEntry,
     [switch]$CheckAdminSettingsNavigation,
@@ -441,6 +442,7 @@ if($AdminReconcileIdentityOnly -and (-not $CompileEvaluationProbesForTest -or $A
 if($AdminReconcileNativePresentation -and -not $AdminReconcileIdentityOnly){throw 'Native Reconcile presentation requires its isolated callback gate.'}
 if($AdminReconcileRecording -and -not $AdminReconcileNativePresentation){throw 'Reconcile recording requires native callback/form coverage.'}
 if($AdminReconcileGuidePaths -and -not $AdminReconcileRecording){throw 'Reconcile guide proof requires recorded callbacks.'}
+if($AdminReconcileAppliedGuide -and -not $AdminReconcileGuidePaths){throw 'Applied Reconcile proof requires the independent guide gate.'}
 if($AdminSettingsCloseOnly) { $CheckAdminSettingsClose = $true }
 if($CheckAdminSettingsCloseActivity -and (-not $AdminSettingsCloseOnly -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Close observations require the isolated compiled visible Admin close gate.'}
 if($CheckAdminSettingsEntry -and (-not $AdminSettingsCloseOnly -or $CheckAdminSettingsCloseActivity -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Settings entry requires its isolated compiled visible launcher gate.'}
