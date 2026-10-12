@@ -1418,7 +1418,7 @@ Private Function RefreshWarehouseDirectory(Optional ByVal adminWb As Workbook = 
     End If
 
     Set lo = wb.Worksheets(SHEET_WAREHOUSE_DIRECTORY).ListObjects(TABLE_WAREHOUSE_DIRECTORY)
-    DeleteAllAdminTableRows lo
+    modWarehouseDirectoryRows.ClearManaged lo
     Set seen = CreateObject("Scripting.Dictionary")
     seen.CompareMode = vbTextCompare
 
@@ -1429,8 +1429,8 @@ Private Function RefreshWarehouseDirectory(Optional ByVal adminWb As Workbook = 
         AddWarehouseConfigsUnderRootToDirectory lo, seen, CStr(scanRoot)
     Next scanRoot
 
-    If lo.ListRows.Count = 0 Then
-        lo.ListRows.Add
+    If seen.Count = 0 Then
+        modWarehouseDirectoryRows.AtIndex lo, 1
         SetTableRowValueAdmin lo, 1, "Status", "No warehouse config workbooks found. Open Users & Roles or Retire / Migrate, connect to the NAS root, then view warehouses again."
     End If
 
@@ -1646,7 +1646,7 @@ Private Sub AddWarehouseDirectoryRow(ByVal loDirectory As ListObject, _
 
     statusText = BuildWarehouseDirectoryStatus(warehouseId, rootPath, configPath, receiveInbox, shipInbox, prodInbox)
 
-    Set r = loDirectory.ListRows.Add
+    Set r = modWarehouseDirectoryRows.AtIndex(loDirectory, seen.Count)
     SetTableRowValueAdmin loDirectory, r.Index, "WarehouseId", warehouseId
     SetTableRowValueAdmin loDirectory, r.Index, "StationId", stationId
     SetTableRowValueAdmin loDirectory, r.Index, "WarehouseName", warehouseName

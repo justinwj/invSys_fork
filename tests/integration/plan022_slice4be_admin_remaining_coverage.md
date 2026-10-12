@@ -231,6 +231,15 @@ scope before optional observation; the root prompt can also remember a local roo
 directory-open result as proof of every possible effect. No new ID, permission,
 exclusion or implementation is approved by this audit.
 
-Next: refine the discovered control under v4.11 D18 and run its actual packaged
-Ribbon/callback missing-record RED on console-03, preserving the owning results,
-original workbook/read scope, unknown columns and saved authority.
+The D14 prerequisite has actual packaged RED26/4 on console-03 -> GREEN31 on
+directory-01. Managed-field-only refresh preserves local text/tail/formulas,
+headers, unrelated workbooks and saved authority through normal/empty/restored
+discovery. Console118, smoke86, compiles, static limits and one visible capture
+pass. Native chain failures keep qualification open. The traced failure is in the
+live-role processor after projection deletion; the narrower probe currently has a
+compiled trace-anchor mismatch. See `plan022_slice4be_admin_directory_columns_results.md`.
+After qualification, continue the discovered-control recording RED. Capture the
+original open-Config/scan-root scope before optional observation while preserving
+the existing optional root prompt. Opening the directory does not prove target
+selection, warehouse creation or exhaustive discovery. No recording control ID
+or result contract has been added.

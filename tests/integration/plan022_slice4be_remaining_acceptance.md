@@ -6,7 +6,17 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
-Current validation candidate: `deploy/validation-admin-console-03`, catalog36/156.
+Pending candidate `deploy/validation-admin-directory-01` corrects View Warehouses
+D14 preservation: RED26/4 -> GREEN31, Console118, smoke86, five compiles, static
+limits and one reviewed local-cell capture pass. Clean chain qualification is
+blocked by native Excel failures; trace identifies the live-role processor call
+after projection deletion. The narrower diagnostic needs a compiled-anchor tooling
+correction before it can test that boundary. No new recording ID or acceptance.
+See [directory prerequisite evidence](plan022_slice4be_admin_directory_columns_results.md).
+The accepted console-03 baseline below remains frozen; its clean chain is not
+evidence that directory-01 has passed this gate.
+
+Prior accepted validation candidate: `deploy/validation-admin-console-03`, catalog36/156.
 Fresh Console118, Verify130, Reconcile258, Settings202, smoke86 and chain32/live-role48/
 Create15 pass. Console guide188/six reviewed captures from02 are reused with
 compiled-component comparison; prior Verify202/Reconcile360 guide proofs retain
