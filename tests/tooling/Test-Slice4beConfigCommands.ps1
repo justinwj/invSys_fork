@@ -118,6 +118,7 @@ param(
     [switch]$CheckOperationsTrackingSettings,
     [switch]$CheckAdminSettingsClose,
     [switch]$AdminSettingsCloseOnly,
+    [switch]$AdminReconcileIdentityOnly,
     [switch]$CheckAdminSettingsCloseActivity,
     [switch]$CheckAdminSettingsEntry,
     [switch]$CheckAdminSettingsNavigation,
@@ -420,7 +421,7 @@ if($CheckProductionDesignerActivity){
 }
 if($CheckProductionDesignerPaths -and -not $CheckProductionDesignerActivity){throw 'Production paths require the designer gate.'}
 if($CaptureProductionDesignerPaths -and -not $CheckProductionDesignerPaths){throw 'Production captures require the path gate.'}
-if($CompileEvaluationProbesForTest -and -not ($CheckAuthReadOnly -or $RecordingEvaluationDiagnostic -or $CheckEvaluationVisualEvidence -or $CheckViewerPublishedRead -or $CheckAdminUomActivity -or $CheckSettingsEditorActivity -or $CheckTrackingSettings -or $CheckProductionDesignerActivity)){
+if($CompileEvaluationProbesForTest -and -not ($AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $RecordingEvaluationDiagnostic -or $CheckEvaluationVisualEvidence -or $CheckViewerPublishedRead -or $CheckAdminUomActivity -or $CheckSettingsEditorActivity -or $CheckTrackingSettings -or $CheckProductionDesignerActivity)){
     throw 'Instrumented project compilation requires a supported focused gate.'
 }
 if($TraceSettingsOpenForTest -and ($Phase -ne 'RED' -or -not $CheckTrackingSettings)) {
@@ -432,6 +433,7 @@ if($TraceReceivingRunCloseForTest -and ($Phase -ne 'RED' -or -not $CheckReceivin
 if($NativeResizeCaptureDiagnostic -and ($Phase -cne 'RED' -or -not $CheckReceivingReplay -or -not $CaptureEvidence -or $TraceReceivingRunCloseForTest)){
     throw 'Native capture diagnosis requires the visible RED replay gate without close tracing.'
 }
+if($AdminReconcileIdentityOnly -and (-not $CompileEvaluationProbesForTest -or $AdminSettingsCloseOnly -or $CheckTrackingSettings -or $CheckActivityEvidence -or $CheckViewerPublishedRead)) { throw 'Reconcile identity requires its separate compiled callback gate.' }
 if($AdminSettingsCloseOnly) { $CheckAdminSettingsClose = $true }
 if($CheckAdminSettingsCloseActivity -and (-not $AdminSettingsCloseOnly -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Close observations require the isolated compiled visible Admin close gate.'}
 if($CheckAdminSettingsEntry -and (-not $AdminSettingsCloseOnly -or $CheckAdminSettingsCloseActivity -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Settings entry requires its isolated compiled visible launcher gate.'}
@@ -704,6 +706,7 @@ if($CheckAdminSettingsCloseActivity){$reportRoot=Join-Path $repo ('reports/runti
 if($AdminClosePathsOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-close-paths/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin Close paths evidence: '+$reportRoot)}
 if($CheckAdminSettingsEntry -and -not $CheckAdminSettingsNavigation){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-entry/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin entry evidence: '+$reportRoot)}
 if($CheckAdminSettingsNavigation){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-navigation/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin navigation evidence: '+$reportRoot)}
+if($AdminReconcileIdentityOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-reconcile/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin reconcile evidence: '+$reportRoot)}
 New-Item -ItemType Directory -Path $runRoot,$reportRoot -Force | Out-Null
 $inputDeploy=$deploy
 if($ViewerStartupPackageStateForTest -ne 'OriginalReadOnly'){
@@ -1173,7 +1176,7 @@ function NewFixture([string]$Suffix) {
     New-Item -ItemType Directory -Path $share -Force | Out-Null
     [void](Run 'invSys.Core.xlam' 'modRuntimeWorkbooks.SetCoreDataRootOverride' @($root))
     $creationArgs=@($wh,'Config command fixture','S1','config-admin',$root,$share)
-    if($CheckReceivingReplay -and $Suffix -ceq 'a'){$creationArgs+='Training'}
+    if(($CheckReceivingReplay -or $AdminReconcileIdentityOnly) -and $Suffix -ceq 'a'){$creationArgs+='Training'}
     $created=[bool](Run 'invSys.Admin.xlam' 'modAdminConsole.BootstrapWarehouseLocalAdmin' $creationArgs)
     if(-not $created){throw 'Admin Generate Warehouse fixture failed.'}
     $secret=[guid]::NewGuid().ToString('N')
@@ -1812,6 +1815,12 @@ End Function
         . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
         Compile-Slice4beEvaluationProbes
     }
+    if($AdminReconcileIdentityOnly){
+        . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileIdentity.ps1')
+        Install-AdminReconcileIdentityProbe
+        . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
+        Compile-Slice4beEvaluationProbes
+    }
     $templateRoot=Join-Path $repo 'deploy/current/templates'
     if($CheckReceivingReplay){$templateRoot=Join-Path $inputDeploy 'templates'}
     [void](Run 'invSys.Core.xlam' 'modWarehouseBootstrap.SetWarehouseBootstrapTemplateRootOverride' @($templateRoot))
@@ -1962,7 +1971,11 @@ End Function
         }
         }
     }
-    if(-not $AdminSettingsCloseOnly -and -not $CheckViewerRefreshFailure -and -not $CheckViewerEventDetail -and -not $CheckViewerEventGroups -and -not $CheckViewerPublishedRead -and $PrintSeedBoundaryForTest -notin @('FreshSeed','BareSeed')) {
+    if($AdminReconcileIdentityOnly){
+        $step='packaged Shipment Reconcile exact identity'
+        Test-AdminReconcileIdentity $a $b
+    }
+    if(-not $AdminReconcileIdentityOnly -and -not $AdminSettingsCloseOnly -and -not $CheckViewerRefreshFailure -and -not $CheckViewerEventDetail -and -not $CheckViewerEventGroups -and -not $CheckViewerPublishedRead -and $PrintSeedBoundaryForTest -notin @('FreshSeed','BareSeed')) {
     $step='unauthenticated command'
     [void](Run 'invSys.Core.xlam' 'modAuth.SignOut')
     $before=(Get-FileHash -LiteralPath $a.Config).Hash

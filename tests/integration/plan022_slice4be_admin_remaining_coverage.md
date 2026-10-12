@@ -5,6 +5,12 @@ Source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+Continuation: [Shipment Reconcile packaged RED](plan022_slice4be_admin_reconcile_results.md)
+now verifies15 pass/3 fail: missing selected key, legacy Row payload and inventory
+dirtied. D14-RECON-01 quantity clarification is pending approval in v4.11. The
+source audit below remains useful; its original no-behavioral-RED status is superseded
+for this callback only. Auth and remaining tracking coverage are still open.
+
 The packaged Admin Ribbon contains exactly14 Actions buttons. All use
 `RibbonOnActionAdmin` and `RibbonRequiredCapabilityGetEnabledAdmin`; their IDs
 match `tools/build-xlam.ps1`. The generator checks `ADMIN_MAINT` before each

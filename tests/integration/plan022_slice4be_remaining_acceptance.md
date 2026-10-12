@@ -275,9 +275,11 @@ It also finds a concrete D14 conflict in reachable Shipment Reconcile: selected
 history and quantity logic use SKU, `ResolveRowForSku` reads prohibited `ROW`, and
 the queue owner emits a legacy Row/SKU payload. A Users and Roles Refresh path also
 enters Auth schema maintenance; its effects and D8-A boundary require runtime proof.
-These are source findings, not behavioral RED or new exclusions. Prioritize a
-packaged exact-System_Key correction test before instrumenting that action; retain
-the separate Auth read-only prerequisite and the rest of the coverage map.
+The [new packaged Reconcile test](plan022_slice4be_admin_reconcile_results.md) now
+has15 pass/3 fail: missing exact key, legacy Row and inventory dirtied. No fix or
+new exclusion is accepted. D14-RECON-01 quantity clarification is pending approval;
+protect repeated/multi-entity and Domain cases before implementing it. Retain the
+separate Auth read-only prerequisite and the rest of the coverage map.
 
 ## Historical checkpoints (candidate-specific)
 
