@@ -2,6 +2,7 @@
 # Prompt answers are supplied at the presentation seam; the callback, lookup,
 # payload builder and queue writer remain unchanged. No native-input claim.
 . (Join-Path $PSScriptRoot 'Slice4beAdminReconcileHistory.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beAdminReconcileAuthority.ps1')
 function Install-AdminReconcileIdentityProbe {
     $project=$packages['invSys.Admin.xlam'].VBProject
     $probe=$project.VBComponents.Add(1);$probe.Name='TestReconcileIdentity'
@@ -57,20 +58,21 @@ Public Function PromptAnswer(ByVal title As String, ByVal prompt As String) As S
     mPrompts = mPrompts + 1
     Select Case title
         Case "invSys Admin - Shipment Reconcile"
-            mListPrompt = prompt: PromptAnswer = CStr(mSelection)
+            mListPrompt = prompt: PromptAnswer = AuthoritySelectionAnswer()
         Case "invSys Admin - Confirm Shipment Reconcile"
-            mConfirmPrompt = prompt: PromptAnswer = "Generated training identity correction"
+            mConfirmPrompt = prompt: PromptAnswer = AuthorityNarrativeAnswer()
         Case Else: Err.Raise 5, , "Unexpected reconcile prompt title"
     End Select
 End Function
 
 Public Function ObserveNotice(ByVal text As String) As VbMsgBoxResult
+    mBoundaryNotice = text
     If InStr(1, text, "Shipment reconcile event queued.", vbBinaryCompare) = 1 Then mQueuedNotice = True
     ObserveNotice = vbOK
 End Function
 
 Public Function InvokeCallback() As Boolean
-    mPrompts = 0: mQueuedNotice = False: mListPrompt = "": mConfirmPrompt = ""
+    mPrompts = 0: mQueuedNotice = False: mListPrompt = "": mConfirmPrompt = "": mBoundaryNotice = ""
     modAdminShipmentReconcile.OpenShipmentReconcileTool
     InvokeCallback = (mPrompts = 2 And mQueuedNotice)
 End Function
@@ -165,6 +167,7 @@ Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgB
 End Function
 '@)
     Install-AdminReconcileHistoryProbe $probe.CodeModule
+    Install-AdminReconcileAuthorityProbe $probe.CodeModule
 }
 
 function Test-AdminReconcileIdentity($Fixture,$OtherFixture) {
@@ -217,6 +220,7 @@ function Test-AdminReconcileIdentity($Fixture,$OtherFixture) {
     Check 'Reconcile.Preservation.UnknownColumn' ([bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.CanaryPreserved'))
     Check 'Reconcile.Preservation.OtherWarehouseConfig' ((Hash $OtherFixture.Config) -ceq $otherBefore)
     Test-AdminReconcileHistory $events $inventory $state
+    Test-AdminReconcileAuthority $events $state $Fixture $OtherFixture
     if($openedHere){$inbox.Close($false)}
     } finally {
         [void](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.ReleaseFixture')

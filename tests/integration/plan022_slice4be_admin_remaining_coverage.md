@@ -70,6 +70,12 @@ exact history/queue/Domain application and unknown-column preservation. See
 [Reconcile evidence](plan022_slice4be_admin_reconcile_results.md). Recording,
 native dialogs, role and authority edge gates remain open.
 
+The subsequent130-check authority gate retains those55, passes closed/missing/
+invalid/borrowed-edit/cancellation and reader-denial cases, but queues from a
+signed-out stale provisioned user-ID hint:128 pass/2 fail. D8-RECON-01 proposes
+the interactive Core authentication boundary; approval is pending in v4.11.
+Do not silently change headless processor authorization or Admin local-target policy.
+
 ### Historical identity conflict
 
 Normative v4.11 D14 requires opaque exact `System_Key`, prohibits managed `ROW`

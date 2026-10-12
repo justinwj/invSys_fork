@@ -1,6 +1,7 @@
 # Slice4be-A: Shipment Reconcile identity prerequisite
 
-2026-10-12. **Scoped GREEN 55/55; 4be-A remains incomplete.**
+2026-10-12. **Original55 GREEN retained; expanded authority gate128/2 RED.**
+D8-RECON-01 awaits approval;4be-A remains incomplete. See the final section.
 The implementation/evidence section below supersedes the historical RED status.
 Initial candidate `deploy/validation-admin-entry-02`; expanded RED uses
 `deploy/validation-admin-auth-read-01`, whose Reconcile/Core/Domain code is unchanged.
@@ -174,3 +175,56 @@ This qualifies the candidate's existing full-chain regression, not all4be-A gate
 or a root-cause resolution of earlier intermittent Shipping/native failures.
 Legacy source tests with SKU/ROW fixtures and broader Reconcile native/role/
 authority cases are not claimed as covered by this run.
+
+## Authority preservation and interactive authentication follow-up
+
+`Slice4beAdminReconcileAuthority.ps1` extends the same callback test on unchanged
+`validation-admin-reconcile-01`. No runtime implementation/package changes.
+Generated fixture changes and credential material stay private; reports contain
+only check identities/counts/booleans. Only prompt answers/notices and an unsaved
+Domain read-lease observer are instrumented; lookup, queue and authorization run
+through their actual owners.
+
+Final **128 PASS /2 behavioral FAIL**,130 checks, retains the original55 checks
+in order. Passes cover closed read-only lease/closure, missing file not recreated,
+invalid schema and duplicate key refusal, exact memory/formula/shape and saved-state
+preservation of borrowed clean/dirty workbooks, cancellation, fractional selection,
+reader denial, inventory bytes and unrelated warehouse Config. Exact fixed refusal
+messages distinguish intended rejection from a caught generic exception.
+
+The final fixture explicitly sets a signed-out Reader user-ID hint, which is denied
+because it lacks ADMIN_MAINT. That alone is insufficient: the next case signs out, sets only the
+local user-ID hint to a generated provisioned Admin, independently asserts
+`modAuth.IsSignedIn=False`, then submits through the actual callback. It queues an
+event and reports queue success. Failing checks:
+- `Reconcile.Authority.SignedOutStaleIdentity.ExpectedCallbackConclusion`
+- `Reconcile.Authority.SignedOutStaleIdentity.NoQueuedEvent`
+
+Cause: Admin uses `ResolveCurrentUserId` → `QueuePayloadEvent` → `QueueEventCore`,
+which calls `HasProvisionedCapabilityForSystem` without authenticating the live
+interactive actor. Do not change the generic headless API to satisfy this UI test.
+v4.11 D8-RECON-01 proposes a captured interactive session/user/target Core gate,
+preserving Admin local target policy, read-only inspection and processor behavior.
+Approval is pending; no correction is implemented. After approval, align the
+ordinary signed-out notice assertion with the approved interactive gate before
+implementation; do not preserve the current fallback merely to retain that text.
+
+- Controller: `reports/runtime/admin-reconcile-controller/8946a114524e4cd6b61462e637735fae`.
+- Worker: `reports/runtime/slice4be-admin-reconcile/7bdf6fa0cdcd452f839e88dd56b04231/red.json`.
+- UTC05:09:35.9621962–05:10:41.6647610; clean delayed audit through05:10:53.6647610.
+  Five instrumented compiles, exact log/receipt agreement, normal unassisted closure,
+  settings/tooling/package preservation; no native failures.
+
+Two preliminary authority runs passed112, the second with exact refusal notices.
+The123/1 permission diagnostic assumed a signed-out-session notice, but the old
+API actually checks capability for a fallback identity. It is not the final RED;
+the stale provisioned-hint case above proves the actual queued-write failure.
+Reuse prior cold compile/smoke86/chain32-live48-create15 evidence for the unchanged
+candidate; no new native UI, comprehensive role/binding or4be-A acceptance follows.
+The earlier130-check run (`711215bbddf6424b87d3a90452c3d23e` controller) has identical
+check order/outcomes; the final fixture pins both signed-out hints to avoid any
+dependency on the Windows account name. The controller now defaults to the same
+current candidate used by the explicit deployment argument in these runs.
+Static `reports/runtime/admin-reconcile-authority-static-02` holds all28 caps,
+unchanged328/6379/139222 component/procedure/line counts, dynamic9/45 and duplicates192;
+three schemas and474 PowerShell scripts validate. No runtime rebuild was needed.

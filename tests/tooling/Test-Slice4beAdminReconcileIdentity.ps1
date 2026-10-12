@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-admin-entry-02',[ValidateSet('RED','GREEN')][string]$Phase='RED')
+param([string]$DeployRoot='deploy/validation-admin-reconcile-01',[ValidateSet('RED','GREEN')][string]$Phase='RED')
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before Reconcile identity validation.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
