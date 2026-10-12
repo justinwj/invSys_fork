@@ -82,6 +82,9 @@ Public Function LoadForTest(ByVal expectedPath As String) As Boolean
     Load frmCreateDeleteUser
     LoadForTest = (StrComp(frmCreateDeleteUser.SelectedPathForTest(), expectedPath, vbTextCompare) = 0)
 End Function
+Public Function SelectedPathForTest() As String
+    SelectedPathForTest = frmCreateDeleteUser.SelectedPathForTest()
+End Function
 Public Sub Observe(ByVal wb As Workbook)
     If wb Is Nothing Then Exit Sub
     mSeen = True: mReadOnly = wb.ReadOnly: mSaved = wb.Saved

@@ -6,6 +6,7 @@ param(
     [switch]$CaptureEvidence,
     [switch]$CheckAuthReadOnly,
     [switch]$CheckAdminAuthRefresh,
+    [switch]$AdminAuthWriteDiagnostic,
     [switch]$CheckActivityEvidence,
     [switch]$CheckActivityFoundation,
     [switch]$CheckAdminUomActivity,
@@ -714,6 +715,7 @@ if($CheckProductionDesignerActivity){
     . (Join-Path $PSScriptRoot 'Slice4beProductionDesignerActivity.ps1')
 }
 if($CheckAdminAuthRefresh -and -not $CheckAuthReadOnly){throw 'Admin Auth Refresh requires the compiled Auth regression gate.'}
+if($AdminAuthWriteDiagnostic -and -not $CheckAdminAuthRefresh){throw 'Auth write diagnostic requires the existing Admin Auth gate.'}
 if($CheckAuthReadOnly){
     if(-not $CompileEvaluationProbesForTest -or $CheckActivityEvidence -or $CheckTrackingSettings -or $CheckViewerPublishedRead -or $CheckViewerEventDetail -or $CheckViewerEventGroups -or $CheckViewerRefreshFailure -or $CheckAdminSettingsClose){throw 'Auth reads require the separate compiled Core/caller gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-auth-read/'+[guid]::NewGuid().ToString('N'))
@@ -1928,6 +1930,10 @@ End Function
         if($CheckAdminAuthRefresh){
             $step='packaged Users and Roles Refresh read separation'
             Test-AdminAuthRefresh $a $b
+            if($AdminAuthWriteDiagnostic){
+                . (Join-Path $PSScriptRoot 'Slice4beAdminAuthWriteDiagnostic.ps1')
+                Test-AdminAuthWriteDiagnostic $a $b
+            }
         }
     }
     if($CheckAdminSettingsClose) {

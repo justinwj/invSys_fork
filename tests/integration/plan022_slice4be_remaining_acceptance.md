@@ -6,6 +6,12 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+Independent [Users & Roles diagnostic](plan022_slice4be_admin_auth_write_diagnostic.md)
+retains111 checks and confirms nine writes after loss of original-target Admin
+authority. Diagnostic139 establishes the fixture/results, not authorization GREEN.
+D8-USERS-01 is proposed in v4.11/Plan022/Controls1.550; approval and command-boundary
+D13 are pending. This introduces no product change or recording control.
+
 Current visual candidate `deploy/validation-detail-glyph-01` corrects final-line
 glyph clipping under existing D18: packaged RED89/1 -> GREEN90, retaining88 prior
 checks,14 principal captures, five cold compiles and329 unchanged other compiled

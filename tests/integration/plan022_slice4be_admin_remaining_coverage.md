@@ -119,6 +119,14 @@ underspecified correction semantics in v4.11 before changing them.
 
 ## Auth refresh prerequisite and separate write review
 
+The separate [write diagnostic](plan022_slice4be_admin_auth_write_diagnostic.md)
+now confirms the gap: all three real write handlers persist after sign-out,
+Reader switch and warehouse switch even though Core denies Admin capability for
+the original target. Diagnostic139 retains111 checks; its passing fixture checks
+are not authorization acceptance. v4.11 D8-USERS-01 proposes a captured live Core
+command boundary and exact Auth ownership; approval is pending. Product behavior
+and recording catalog36/156 remain unchanged.
+
 `frmCreateDeleteUser.mBtnRefreshUsers_Click` calls `RefreshUsersForm`, which calls
 `OpenSelectedAuthWorkbookForm`. An already-open Auth workbook is borrowed, but a
 closed one in candidate02 is opened writable and passed to `modAuth.EnsureAuthSchema`.
