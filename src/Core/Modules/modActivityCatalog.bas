@@ -2,10 +2,18 @@ Attribute VB_Name = "modActivityCatalog"
 Option Explicit
 Option Private Module
 
-Public Const CATALOG_VERSION As Long = 32
+Public Const CATALOG_VERSION As Long = 33
 
 Public Function ControlIds(Optional ByVal version As Long = CATALOG_VERSION) As Variant
     Dim ids As Variant, added As Variant, index As Long, offset As Long
+    If version = 33 Then
+        ids = ControlIds(32): added = modSettingsNavigationCodes.ControlIds()
+        offset = UBound(ids) + 1
+        ReDim Preserve ids(LBound(ids) To UBound(ids) + UBound(added) + 1)
+        For index = LBound(added) To UBound(added): ids(offset + index) = added(index): Next index
+        ControlIds = ids
+        Exit Function
+    End If
     If version = 32 Then
         ids = ControlIds(31)
         ReDim Preserve ids(LBound(ids) To UBound(ids) + 1)
@@ -223,6 +231,10 @@ End Function
 Public Function Control(ByVal controlId As String, Optional ByVal version As Long = CATALOG_VERSION) As Object
     Dim record As Object
     If version < 1 Or version > CATALOG_VERSION Then Exit Function
+    If version >= 33 Then
+        Set record = modSettingsNavigationCodes.Control(controlId)
+        If Not record Is Nothing Then Set Control = record: Exit Function
+    End If
     If version >= 32 Then
         Set record = modFormCloseCodes.Control(controlId)
         If Not record Is Nothing Then Set Control = record: Exit Function
@@ -405,6 +417,11 @@ Public Function Outcome(ByVal controlId As String, ByVal outcomeCode As String) 
     Dim record As Object, definition As Object, message As String
     Set definition = Control(controlId)
     If definition Is Nothing Then Exit Function
+    Set record = modSettingsNavigationCodes.Control(controlId)
+    If Not record Is Nothing Then
+        Set Outcome = modSettingsNavigationCodes.Outcome(controlId, outcomeCode)
+        Exit Function
+    End If
     If controlId = "ADMIN_SETTINGS_CLOSE" Then
         Set Outcome = modFormCloseCodes.Outcome(controlId, outcomeCode)
         Exit Function

@@ -94,20 +94,9 @@ Sub Open_WarehouseDirectory()
 End Sub
 
 Sub Open_Settings()
-    Dim report As String
-    Dim targetWb As Workbook
-
-    If Not modRoleUiAccess.RequireCurrentUserCapabilityCached("ADMIN_MAINT", "", report) Then Exit Sub
-    Set targetWb = ResolveInteractiveAdminWorkbook()
-    Call modRoleWorkbookSurfaces.EnsureAdminLegacyWorkbookSurface(targetWb, report)
-    If Not modConfig.IsLoaded() Then
-        If Not modConfig.LoadConfig("", "") Then
-            MsgBox "Canonical config could not be loaded." & vbCrLf & vbCrLf & _
-                   modConfig.Validate(), vbExclamation, "invSys Settings"
-            Exit Sub
-        End If
-    End If
-    frmAdminSettings.Show
+    Dim observation As cAdminSettingsEntry
+    Set observation = New cAdminSettingsEntry
+    observation.OpenSettings
 End Sub
 
 Public Function AdminSettingsFormInitializeSmokeForWorkbook(ByVal operatorWb As Workbook) As String

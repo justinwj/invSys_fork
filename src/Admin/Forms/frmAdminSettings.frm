@@ -48,6 +48,13 @@ Private mTracking As cAdminTrackingPolicy
 Private mDetail As cAdminEventDetail
 Private mPreference As cAdminActionPathPreference
 Private mTrackingSections As MSForms.MultiPage
+Private mEntry As cAdminSettingsEntry
+Private mPageNavigation As cAdminSettingsNavigation
+Private mSectionNavigation As cAdminSettingsNavigation
+
+Public Sub ObservePublicEntry(ByVal observation As cAdminSettingsEntry)
+    Set mEntry = observation
+End Sub
 
 Private Sub UserForm_Initialize()
     CaptureTargetContext
@@ -63,9 +70,18 @@ Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     Set mTracking = Nothing
     Set mDetail = Nothing
     Set mPreference = Nothing
+    If Not mPageNavigation Is Nothing Then mPageNavigation.Detach
+    If Not mSectionNavigation Is Nothing Then mSectionNavigation.Detach
+    Set mPageNavigation = Nothing: Set mSectionNavigation = Nothing
 End Sub
 
 Private Sub UserForm_Activate()
+    Dim notice As String
+    If Not mEntry Is Nothing Then
+        mEntry.Presented mActivityContext, Me.Visible
+        notice = mEntry.TakeNotice()
+        If notice <> "" Then ShowStatus notice
+    End If
     If mResizeInitialized Then Exit Sub
     On Error Resume Next
     modUserFormResizeWin.EnableResizableUserForm Me, True, True
@@ -179,6 +195,10 @@ Private Sub BuildLayout()
     Set mControlParent = Me
     Set mBtnClose = AddButton("btnClose", "Close", 654, 614, 66, 28)
     Set mLblStatus = AddLabel("lblStatus", "", 12, 614, 626, 36, False)
+    Set mPageNavigation = New cAdminSettingsNavigation
+    mPageNavigation.Attach mPages, mLblStatus, mActivityContext, False
+    Set mSectionNavigation = New cAdminSettingsNavigation
+    mSectionNavigation.Attach mTrackingSections, mLblStatus, mActivityContext, True
     Set mControlParent = Nothing
 End Sub
 

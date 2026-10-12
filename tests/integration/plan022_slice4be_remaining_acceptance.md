@@ -6,14 +6,29 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+Current candidate: `deploy/validation-admin-entry-02`, catalog33/151. Settings Open
+passes RED17/7 -> GREEN24; all five tab destinations pass native mouse/keyboard
+RED33/10 -> GREEN43. Programmatic/same-tab exclusion, five compiles, preservation,
+clean delayed closure and three reviewed default-size captures pass. Static caps
+hold, dynamic/duplicate counts are unchanged and465 scripts parse. This is scoped
+implementation; policy/context failures, publication, independent guides and broader
+acceptance remain open. See [Settings entry results](plan022_slice4be_admin_entry_results.md).
+The corrected existing Close regression retains70 in exact prior order, with five
+compiles, preservation and clean delayed closure; its scope remains separate from
+the new entry/tab failure cases.
+Packaged smoke retains86 in exact prior order with both unassisted exits,
+preservation and clean delayed audit.
+Settings202 also retains exact prior order, including preference restart and
+Operations Settings binding/layout, with five compiles and clean preserved closure.
+
 This replaces the stale catalog20/current-candidate labels in the historical
-checkpoints below. Current Close candidate runtime catalog is32; General Settings
+checkpoints below. Prior Close candidate runtime catalog is32; General Settings
 GREEN871 uses unchanged `deploy/validation-general-settings-02`. The frozen transfer
 candidate is `deploy/validation-guide-transfer-notice-01`; the preceding Print candidate
 is `deploy/validation-print-recorded-01`, code checkpoint `89674af1`.
 Do not equate control registration, a scoped GREEN or a diagnostic with full acceptance.
 
-Current candidate: `deploy/validation-run-scale-success-02`, catalog32. Existing D14
+Prior candidate: `deploy/validation-run-scale-success-02`, catalog32. Existing D14
 now has successful worksheet Scale RED66/3 to GREEN69, extended GREEN86 for repeated
 reload with inserted custom columns, normalized headers, exact input key and
 non-compounding quantities. Chooser/palette values/formulas and output custom
@@ -51,7 +66,7 @@ reviewed captures. The intermittent native fault remains unresolved. Successful
 worksheet reload/general rebuild preservation and independent worksheet guides remain open.
 Exact receipts: [Run results](plan022_slice4be_production_run_local_results.md).
 
-Current independent Close candidate: `validation-admin-close-02`, catalog32/145
+Prior independent Close candidate: `validation-admin-close-02`, catalog32/145
 controls. [Admin Close](plan022_slice4be_admin_close_results.md) passes actual-handler
 RED34/19 to GREEN53, retaining discard/reopen and internal cleanup exclusion.
 Disabled tracking, stale/signed-out context and same-session permission loss cannot

@@ -34,6 +34,12 @@ End Function
 Public Function Concludes(ByVal wire As String) As Boolean
     Concludes = modEvaluationMatches.CommandCompleted(modTrainingJson.DecodeObject(wire))
 End Function
+Public Function CurrentCatalog() As Long
+    CurrentCatalog = modActivityCatalog.CATALOG_VERSION
+End Function
+Public Function HistoricalPolicyIds() As String
+    HistoricalPolicyIds = Join(modActivityCatalog.ControlIds(31), vbLf)
+End Function
 Public Function ExistingPolicyReadable() As Boolean
     Dim version As Long, collect As Boolean, visible As Boolean, notice As String
     ExistingPolicyReadable = modActivityPolicy.ReadPolicy(modNasConnection.GetCurrentTarget(), "ADMIN_SETTINGS_SAVE_VALUE", version, collect, visible, notice)
@@ -81,7 +87,7 @@ function Test-AdminCloseActivity($Fixture,$Other) {
         $attempt=@($rows|Where-Object OutcomeCode -ceq 'REQUESTED');$closed=@($rows|Where-Object OutcomeCode -ceq 'CLOSED')
         $pair=$rows.Count -eq 2 -and $attempt.Count -eq 1 -and $closed.Count -eq 1
         $facts=$pair;$safe=$pair;$integrity=$pair;$linked=$false;$terminal=$false
-        foreach($row in $rows){$facts=$facts -and $row.ControlId -ceq 'ADMIN_SETTINGS_CLOSE' -and $row.OwnerId -ceq 'ADMIN_SETTINGS_UI' -and $row.UserId -ceq 'config-admin' -and $row.WarehouseId -ceq $Fixture.Warehouse -and $row.CatalogVersion -eq 32 -and @($row.SourceEventRefs).Count -eq 0}
+        foreach($row in $rows){$facts=$facts -and $row.ControlId -ceq 'ADMIN_SETTINGS_CLOSE' -and $row.OwnerId -ceq 'ADMIN_SETTINGS_UI' -and $row.UserId -ceq 'config-admin' -and $row.WarehouseId -ceq $Fixture.Warehouse -and $row.CatalogVersion -eq $currentCatalog -and @($row.SourceEventRefs).Count -eq 0}
         foreach($text in $raw){
             foreach($value in @($Fixture.Secret,(CredentialHash $Fixture.Secret),$Fixture.Root,$canary,'PinHash','mBtn')){if($text.Contains($value)){$safe=$false}}
             $match=[regex]::Match($text,',"ContentSha256":"([a-f0-9]{64})"\}$')
@@ -103,6 +109,7 @@ function Test-AdminCloseActivity($Fixture,$Other) {
         Check ($label+'.OnlyDismissalConcludes') $terminal
     }
     $book=$null;$canary='CLOSE'+[guid]::NewGuid().ToString('N')
+    $currentCatalog=[int](Run 'invSys.Core.xlam' 'TestAdminClose.CurrentCatalog')
     try {
         $excel.Visible=$true;$book=$excel.Workbooks.Add();$book.Worksheets.Item(1).Cells.Item(1,1).Value2=$canary
         $book.SaveAs((Join-Path $runRoot 'admin-close-operator.xlsm'),52);$book.Activate()
@@ -196,12 +203,13 @@ function Test-AdminCloseActivity($Fixture,$Other) {
             [void](Act 'AdminCloseButtonForTest');return (Dismissed)
         }
         $configBytes=[IO.File]::ReadAllBytes($Fixture.Config);$configHash=(Get-FileHash $Fixture.Config).Hash
+        $legacyIds=([string](Run 'invSys.Core.xlam' 'TestAdminClose.HistoricalPolicyIds')).Split("`n")
         try {
             $cfg=$excel.Workbooks.Open($Fixture.Config,0,$false)
             try {
                 (Table $cfg 'tblEventTrackingPolicies').ListColumns.Item('CatalogVersion').DataBodyRange.Value2=31.0
                 $controls=Table $cfg 'tblEventTrackingControls'
-                for($i=$controls.ListRows.Count;$i -ge 1;$i--){if($controls.ListRows.Item($i).Range.Cells.Item(1,$controls.ListColumns.Item('ControlId').Index).Value2 -ceq 'ADMIN_SETTINGS_CLOSE'){$controls.ListRows.Item($i).Delete()}}
+                for($i=$controls.ListRows.Count;$i -ge 1;$i--){if($controls.ListRows.Item($i).Range.Cells.Item(1,$controls.ListColumns.Item('ControlId').Index).Value2 -cnotin $legacyIds){$controls.ListRows.Item($i).Delete()}}
                 $cfg.Save()
             } finally {$cfg.Close($false);$cfg=$null}
             Check 'AdminCloseActivity.OlderPolicy.ExistingControlReadable' ([bool](Run 'invSys.Core.xlam' 'TestAdminClose.ExistingPolicyReadable'))

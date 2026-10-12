@@ -1,6 +1,15 @@
 # Slice4be Admin Settings Close observations
 
-Current regression,2026-10-12: the new worksheet Scale guide mode leaves Close
+Current regression,2026-10-12: `validation-admin-entry-02` retains all70 actual
+Close checks in exact prior order, including user/permission/context/storage cases.
+The historical-policy fixture now uses the exact catalog31 control set; fresh
+records must carry the exact current catalog33. Initial69/1 was that stale fixture,
+not accepted evidence. Corrected controller `admin-close-controller/9936f8de659f4c6ebb87612d227f6404`,
+worker `slice4be-admin-close/c40929a1b4114d1a9fcd4adcfdfdbff7`,
+UTC02:05:09.325–02:08:37.807 passes five compiles, preservation and normal closure;
+delayed audit is clear through02:08:49.807. See [entry results](plan022_slice4be_admin_entry_results.md).
+
+Prior regression,2026-10-12: the new worksheet Scale guide mode leaves Close
 behavior unchanged. On `validation-run-scale-success-02`, all123 checks retain
 their exact prior order. Controller `reports/runtime/general-settings-controller/9a203d9b8af84999b79948c704a8214e`,
 worker `reports/runtime/slice4be-admin-close-paths/6f38d63307ac40ea9d728b27ae4dbbdc`,

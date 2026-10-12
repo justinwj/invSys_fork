@@ -118,6 +118,8 @@ param(
     [switch]$CheckAdminSettingsClose,
     [switch]$AdminSettingsCloseOnly,
     [switch]$CheckAdminSettingsCloseActivity,
+    [switch]$CheckAdminSettingsEntry,
+    [switch]$CheckAdminSettingsNavigation,
     [switch]$CheckViewerRefreshFailure,
     [switch]$CheckViewerEventDetail,
     [switch]$DetailScrollLockDiagnostic,
@@ -427,6 +429,8 @@ if($NativeResizeCaptureDiagnostic -and ($Phase -cne 'RED' -or -not $CheckReceivi
 }
 if($AdminSettingsCloseOnly) { $CheckAdminSettingsClose = $true }
 if($CheckAdminSettingsCloseActivity -and (-not $AdminSettingsCloseOnly -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Close observations require the isolated compiled visible Admin close gate.'}
+if($CheckAdminSettingsEntry -and (-not $AdminSettingsCloseOnly -or $CheckAdminSettingsCloseActivity -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Settings entry requires its isolated compiled visible launcher gate.'}
+if($CheckAdminSettingsNavigation -and -not $CheckAdminSettingsEntry){throw 'Settings navigation requires its compiled entry fixture.'}
 if($ViewerPublicationOnly) {
     if($Phase -ne 'RED'){throw 'Publication-only diagnosis is not acceptance GREEN.'}
     $CheckViewerPublication = $true
@@ -690,6 +694,8 @@ if($CheckGuideTransfer){
 }
 if($CheckAdminSettingsCloseActivity){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-close/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin Close evidence: '+$reportRoot)}
 if($AdminClosePathsOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-close-paths/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin Close paths evidence: '+$reportRoot)}
+if($CheckAdminSettingsEntry -and -not $CheckAdminSettingsNavigation){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-entry/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin entry evidence: '+$reportRoot)}
+if($CheckAdminSettingsNavigation){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-navigation/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin navigation evidence: '+$reportRoot)}
 New-Item -ItemType Directory -Path $runRoot,$reportRoot -Force | Out-Null
 $inputDeploy=$deploy
 if($ViewerStartupPackageStateForTest -ne 'OriginalReadOnly'){
@@ -1334,6 +1340,14 @@ End Function
     if($CheckAdminSettingsClose){
         . (Join-Path $PSScriptRoot 'Slice4beAdminSettingsClose.ps1')
         Install-AdminSettingsDefaultCloseProbe $testModule $formCode
+        if($CheckAdminSettingsEntry){
+            . (Join-Path $PSScriptRoot 'Slice4beAdminSettingsEntry.ps1')
+            Install-AdminSettingsEntryProbe $testModule $formCode
+            if($CheckAdminSettingsNavigation){
+                . (Join-Path $PSScriptRoot 'Slice4beAdminSettingsNavigation.ps1')
+                Install-AdminSettingsNavigationProbe $testModule $formCode
+            }
+        }
         if($CheckAdminSettingsCloseActivity){
             . (Join-Path $PSScriptRoot 'Slice4beActivityAssertions.ps1')
             . (Join-Path $PSScriptRoot 'Slice4beProductionCloseProbe.ps1')
@@ -1834,7 +1848,7 @@ End Function
     }
     if($CheckAdminSettingsClose) {
         $step='real Admin Settings close and reopen'
-        Test-AdminSettingsDefaultClose $a
+        if($CheckAdminSettingsNavigation){Test-AdminSettingsNavigation $a}elseif($CheckAdminSettingsEntry){Test-AdminSettingsEntry $a $b}else{Test-AdminSettingsDefaultClose $a}
         if($CheckAdminSettingsCloseActivity){Test-AdminCloseActivity $a $b}
     }
     if($CheckViewerRefreshFailure) {
