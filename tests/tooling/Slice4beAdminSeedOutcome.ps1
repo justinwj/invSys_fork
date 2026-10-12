@@ -4,6 +4,7 @@
 . (Join-Path $PSScriptRoot 'Slice4beAdminSeedWorkflow.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beAdminSeedRecording.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beAdminSeedBoundaries.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beAdminSeedGuide.ps1')
 function Install-AdminSeedOutcomeProbe {
     $probe=$packages['invSys.Admin.xlam'].VBProject.VBComponents.Add(1)
     $probe.Name='TestSeedOutcome'
@@ -139,6 +140,7 @@ End Function
     if($AdminSeedRecordingBoundaries){
         Install-AdminSeedBoundariesProbe $probe.CodeModule
     }
+    if($AdminSeedGuidePaths){Install-AdminSeedGuideProbe}
 }
 
 function Test-AdminSeedOutcome($Fixture,$Other) {
@@ -215,4 +217,5 @@ function Test-AdminSeedOutcome($Fixture,$Other) {
     if($AdminSeedWorkflowEdges){Test-AdminSeedWorkflow $Other}
     if($AdminSeedRecording){Test-AdminSeedRecording $Fixture}
     if($AdminSeedRecordingBoundaries){Test-AdminSeedBoundaries $Fixture $Other}
+    if($AdminSeedGuidePaths){Test-AdminSeedGuide $Fixture $Other}
 }

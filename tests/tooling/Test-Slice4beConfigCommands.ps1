@@ -131,6 +131,7 @@ param(
     [switch]$AdminSeedWorkflowEdges,
     [switch]$AdminSeedRecording,
     [switch]$AdminSeedRecordingBoundaries,
+    [switch]$AdminSeedGuidePaths,
     [switch]$AdminConsoleOnly,
     [switch]$AdminDirectoryColumnsOnly,
     [switch]$AdminConsoleGuidePaths,
@@ -463,6 +464,7 @@ if($AdminSeedNativeFeedback -and (-not $AdminSeedOutcomeOnly -or $Phase -cne 'GR
 if($AdminSeedWorkflowEdges -and (-not $AdminSeedOutcomeOnly -or $Phase -cne 'GREEN')){throw 'Seed workflow edges require the focused GREEN callback gate.'}
 if($AdminSeedRecording -and (-not $AdminSeedOutcomeOnly -or $Phase -cne 'GREEN')){throw 'Seed recording retains the focused GREEN completion gate.'}
 if($AdminSeedRecordingBoundaries -and -not $AdminSeedRecording){throw 'Seed boundaries require the recording probe.'}
+if($AdminSeedGuidePaths -and -not $AdminSeedRecordingBoundaries){throw 'Seed guides require the boundary probe.'}
 if($AdminVerifyAddinsOnly -and (-not $CompileEvaluationProbesForTest -or $AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $AdminSettingsCloseOnly -or $CheckTrackingSettings -or $CheckActivityEvidence -or $CheckViewerPublishedRead)){throw 'Verify Add-ins requires its separate compiled callback gate.'}
 if($AdminVerifyGuidePaths -and -not $AdminVerifyAddinsOnly){throw 'Verify guide proof requires its isolated callback gate.'}
 if($AdminVerifyExpectationChoicesOnly -and -not $AdminVerifyGuidePaths){throw 'Expectation choices require the recording/form probes.'}
@@ -1256,7 +1258,7 @@ function NewFixture([string]$Suffix) {
             $row.Range.Cells.Item(1,$caps.ListColumns.Item($pair.Key).Index).Value2=$pair.Value
         }
     }
-    if($AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
+    if($AdminSeedGuidePaths -or $AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
         # Explicit fixture grant: Admin bootstrap does not imply guide maintenance.
         $row=$caps.ListRows.Add()
         foreach($pair in @{UserId='config-admin';Capability='ACTION_PATH_MAINT';WarehouseId=$wh;StationId='S1';Status='Active'}.GetEnumerator()){
