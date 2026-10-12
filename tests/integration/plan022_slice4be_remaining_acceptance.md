@@ -268,6 +268,17 @@ excluded. Start with `modAdmin.Admin_Click` -> `modAdminConsole.OpenAdminConsole
 and its actual worksheet presentation/result. Preserve pre-sign-in/nonexistent-target
 exclusions and keep scheduled/internal calls separate from deliberate operator actions.
 
+The [completed entry map](plan022_slice4be_admin_remaining_coverage.md) now verifies
+all14 Actions IDs against the packaged Ribbon and separately identifies its three
+Session entries. It traces the other13 macros to their owners and form subactions.
+It also finds a concrete D14 conflict in reachable Shipment Reconcile: selected
+history and quantity logic use SKU, `ResolveRowForSku` reads prohibited `ROW`, and
+the queue owner emits a legacy Row/SKU payload. A Users and Roles Refresh path also
+enters Auth schema maintenance; its effects and D8-A boundary require runtime proof.
+These are source findings, not behavioral RED or new exclusions. Prioritize a
+packaged exact-System_Key correction test before instrumenting that action; retain
+the separate Auth read-only prerequisite and the rest of the coverage map.
+
 ## Historical checkpoints (candidate-specific)
 
 **Current output-regulation candidate,2026-09-30:** catalog20 registers105 global
