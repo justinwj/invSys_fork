@@ -1676,6 +1676,7 @@ End Function
 ' ===== System 3: Recipe Chooser =====
 Public Function LoadRecipeChooser(ByVal recipeId As String) As Boolean
     On Error GoTo ErrHandler
+    Dim preserved As New cProductionStagingReload
     If Trim$(recipeId) = "" Then Exit Function
     Dim wsProd As Worksheet: Set wsProd = SheetExists(SHEET_PRODUCTION)
     If wsProd Is Nothing Then Exit Function
@@ -1732,7 +1733,7 @@ Public Function LoadRecipeChooser(ByVal recipeId As String) As Boolean
     Dim recipeName As String
     Dim recipeDesc As String
     Dim recipeDept As String
-    GetRecipeSummary wsRec, recipeId, recipeName, recipeDesc, recipeDept
+    preserved.ReadSummary wsRec, recipeId, recipeName, recipeDesc, recipeDept
 
     Dim cRec As Long: cRec = ColumnIndex(loChooser, "RECIPE")
     If cRec = 0 Then cRec = ColumnIndex(loChooser, "RECIPE_NAME")
@@ -1767,15 +1768,15 @@ Public Function LoadRecipeChooser(ByVal recipeId As String) As Boolean
         On Error GoTo 0
     End If
 
-    DeleteRecipeChooserProcessTables wsProd
-    DeleteInventoryPaletteTables wsProd
+    preserved.Prepare wsProd, RecipeChooserHeaderList(), InventoryPaletteHeaderList()
+    ClearPaletteTableMeta
 
     Dim procTables As Collection
-    Set procTables = BuildRecipeChooserProcessTablesFromRecipes(recipeId, wsProd, wsRec, chooserStyle)
+    Set procTables = BuildRecipeChooserProcessTablesFromRecipes(recipeId, wsProd, wsRec, chooserStyle, preserved)
     RenderProcessSelectorCheckboxes wsProd, procTables
-    BuildPaletteTablesForRecipeChooser recipeId, wsProd, wsRec, procTables, paletteStyle
+    BuildPaletteTablesForRecipeChooser recipeId, wsProd, wsRec, procTables, paletteStyle, preserved
     RenderPaletteKeepCheckboxes wsProd
-    ApplyProductionOutputTemplates recipeId, wsProd
+    ApplyProductionOutputTemplates recipeId, wsProd, preserved
     RenderOutputRowCheckboxes wsProd
     LoadRecipeChooser = True
 CleanExit:
@@ -5199,38 +5200,9 @@ Private Function TrimIngredientPaletteRows(ByVal result As Variant, ByVal rowCou
 End Function
 
 ' ===== System 3: Recipe Chooser - data helpers =====
-Private Sub GetRecipeSummary(ByVal wsRec As Worksheet, ByVal recipeId As String, _
-    ByRef recipeName As String, ByRef recipeDesc As String, ByRef recipeDept As String)
-
-    recipeName = ""
-    recipeDesc = ""
-    recipeDept = ""
-    If wsRec Is Nothing Then Exit Sub
-
-    Dim lo As ListObject: Set lo = GetListObject(wsRec, "Recipes")
-    If lo Is Nothing Then Exit Sub
-    If lo.DataBodyRange Is Nothing Then Exit Sub
-
-    Dim cRecId As Long: cRecId = ColumnIndex(lo, "RECIPE_ID")
-    Dim cRec As Long: cRec = ColumnIndex(lo, "RECIPE")
-    Dim cDesc As Long: cDesc = ColumnIndex(lo, "DESCRIPTION")
-    Dim cDept As Long: cDept = ColumnIndex(lo, "DEPARTMENT")
-    If cRecId = 0 Or cRec = 0 Then Exit Sub
-
-    Dim arr As Variant: arr = lo.DataBodyRange.value
-    Dim r As Long
-    For r = 1 To UBound(arr, 1)
-        If NzStr(arr(r, cRecId)) = recipeId Then
-            recipeName = NzStr(arr(r, cRec))
-            If cDesc > 0 Then recipeDesc = NzStr(arr(r, cDesc))
-            If cDept > 0 Then recipeDept = NzStr(arr(r, cDept))
-            Exit Sub
-        End If
-    Next r
-End Sub
-
 Private Function BuildRecipeChooserProcessTablesFromRecipes(ByVal recipeId As String, _
-    ByVal wsProd As Worksheet, ByVal wsRec As Worksheet, Optional ByVal baseStyle As String = "") As Collection
+    ByVal wsProd As Worksheet, ByVal wsRec As Worksheet, Optional ByVal baseStyle As String = "", _
+    Optional ByVal preserved As cProductionStagingReload = Nothing) As Collection
 
     Dim created As New Collection
     If wsProd Is Nothing Or wsRec Is Nothing Then
@@ -5303,7 +5275,7 @@ Private Function BuildRecipeChooserProcessTablesFromRecipes(ByVal recipeId As St
 
     Dim procKey As Variant
     Dim nextSeq As Long
-    nextSeq = NextRecipeChooserSequence(wsProd)
+    If preserved Is Nothing Then nextSeq = NextRecipeChooserSequence(wsProd) Else nextSeq = 1
     Dim idxProc As Long
     idxProc = 0
     For Each procKey In procOrder
@@ -5314,13 +5286,12 @@ Private Function BuildRecipeChooserProcessTablesFromRecipes(ByVal recipeId As St
 
         Dim tableRange As Range
         Set tableRange = wsProd.Range(wsProd.Cells(startRow, startCol), wsProd.Cells(startRow + dataCount, startCol + colCount - 1))
-        If RangeHasListObjectCollisionStrict(wsProd, tableRange) Then
+        Dim reuse As Boolean: reuse = False
+        If Not preserved Is Nothing Then Set tableRange = preserved.ReuseRange(tableRange, IIf(idxProc = 1, TABLE_RECIPE_CHOOSER_GENERATED, BuildRecipeChooserProcessTableName(CStr(nextSeq))), dataCount, reuse)
+        If RangeHasListObjectCollisionStrict(wsProd, tableRange) And Not reuse Then
             Set tableRange = FindAvailableRecipeChooserRange(wsProd, startRow, startCol, dataCount + 1, colCount)
             If tableRange Is Nothing Then Exit For
         End If
-
-        tableRange.Clear
-        tableRange.rows(1).value = HeaderRowArray(headerNames)
 
         Dim dataArr() As Variant
         ReDim dataArr(1 To dataCount, 1 To colCount)
@@ -5353,10 +5324,15 @@ Private Function BuildRecipeChooserProcessTablesFromRecipes(ByVal recipeId As St
             Next c
         Next i
 
-        tableRange.Offset(1, 0).Resize(dataCount, colCount).value = dataArr
-
         Dim newLo As ListObject
-        Set newLo = wsProd.ListObjects.Add(xlSrcRange, tableRange, , xlYes)
+        If reuse Then
+            Set newLo = preserved.WriteRows(tableRange, headerNames, dataArr)
+        Else
+            tableRange.Clear
+            tableRange.Rows(1).Value = HeaderRowArray(headerNames)
+            tableRange.Offset(1, 0).Resize(dataCount, colCount).Value = dataArr
+            Set newLo = wsProd.ListObjects.Add(xlSrcRange, tableRange, , xlYes)
+        End If
         If idxProc = 1 Then
             On Error Resume Next
             newLo.Name = TABLE_RECIPE_CHOOSER_GENERATED
@@ -5366,7 +5342,7 @@ Private Function BuildRecipeChooserProcessTablesFromRecipes(ByVal recipeId As St
             Err.Clear
             On Error GoTo 0
         Else
-            newLo.Name = UniqueListObjectName(wsProd, BuildRecipeChooserProcessTableName(CStr(nextSeq)))
+            If Not reuse Then newLo.Name = UniqueListObjectName(wsProd, BuildRecipeChooserProcessTableName(CStr(nextSeq)))
             nextSeq = nextSeq + 1
         End If
         If baseStyle <> "" Then
@@ -5392,7 +5368,7 @@ NextProc:
 End Function
 
 Private Sub BuildPaletteTablesForRecipeChooser(ByVal recipeId As String, ByVal wsProd As Worksheet, ByVal wsRec As Worksheet, _
-    ByVal procTables As Collection, Optional ByVal baseStyle As String = "")
+    ByVal procTables As Collection, Optional ByVal baseStyle As String = "", Optional ByVal preserved As cProductionStagingReload = Nothing)
 
     If wsProd Is Nothing Or wsRec Is Nothing Then Exit Sub
     If Trim$(recipeId) = "" Then Exit Sub
@@ -5594,13 +5570,12 @@ NextEntry:
 
             Dim tableRange As Range
             Set tableRange = wsProd.Range(wsProd.Cells(currentRow, startCol), wsProd.Cells(currentRow + dataCount, startCol + colCount - 1))
-            If RangeHasListObjectCollisionStrict(wsProd, tableRange) Then
+            Dim reuse As Boolean: reuse = False
+            If Not preserved Is Nothing Then Set tableRange = preserved.ReuseRange(tableRange, "proc_" & CStr(nextSeq) & "_palette", dataCount, reuse)
+            If RangeHasListObjectCollisionStrict(wsProd, tableRange) And Not reuse Then
                 Set tableRange = FindAvailablePaletteRange(wsProd, currentRow, startCol, dataCount + 1, colCount)
                 If tableRange Is Nothing Then Exit For
             End If
-
-            tableRange.Clear
-            tableRange.Rows(1).Value = HeaderRowArray(headerNames)
 
             Dim dataArr() As Variant
             ReDim dataArr(1 To dataCount, 1 To colCount)
@@ -5637,11 +5612,16 @@ NextEntry:
                     End If
                 End If
             Next r2
-            tableRange.Offset(1, 0).Resize(dataCount, colCount).Value = dataArr
-
             Dim newLo As ListObject
-            Set newLo = wsProd.ListObjects.Add(xlSrcRange, tableRange, , xlYes)
-            newLo.Name = UniqueListObjectName(wsProd, "proc_" & CStr(nextSeq) & "_palette")
+            If reuse Then
+                Set newLo = preserved.WriteRows(tableRange, headerNames, dataArr)
+            Else
+                tableRange.Clear
+                tableRange.Rows(1).Value = HeaderRowArray(headerNames)
+                tableRange.Offset(1, 0).Resize(dataCount, colCount).Value = dataArr
+                Set newLo = wsProd.ListObjects.Add(xlSrcRange, tableRange, , xlYes)
+                newLo.Name = UniqueListObjectName(wsProd, "proc_" & CStr(nextSeq) & "_palette")
+            End If
             nextSeq = nextSeq + 1
             If baseStyle <> "" Then
                 On Error Resume Next
@@ -5663,13 +5643,13 @@ NextProcOrder:
     Next orderIdx
 End Sub
 
-Private Sub ApplyProductionOutputTemplates(ByVal recipeId As String, ByVal wsProd As Worksheet)
+Private Sub ApplyProductionOutputTemplates(ByVal recipeId As String, ByVal wsProd As Worksheet, ByVal preserved As cProductionStagingReload)
     If wsProd Is Nothing Then Exit Sub
     If Trim$(recipeId) = "" Then Exit Sub
     Dim loOut As ListObject
     Set loOut = FindListObjectByNameOrHeaders(wsProd, "ProductionOutput", Array("PROCESS", "OUTPUT"))
     If loOut Is Nothing Then Exit Sub
-    ClearListObjectFormulas loOut
+    preserved.ClearOutputFormulas loOut
     ApplyProductionTemplates loOut, TEMPLATE_SCOPE_PROD_RUN, "", "ProductionOutput", recipeId
 End Sub
 

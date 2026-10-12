@@ -10,6 +10,95 @@ loading, before subsequent scaling/output preparation/refresh, and display
 "Recipe could not be loaded. Scale was not applied." Scoped implementation follows;
 FAILED retains Unknown data effect and makes no owner-rollback claim.
 
+## Successful worksheet reload preserves custom fields, 2026-10-12
+
+Unpromoted `deploy/validation-run-scale-success-02` corrects existing D14 violations
+in `mProduction.LoadRecipeChooser`: unconditional chooser/palette deletion lost
+unknown columns, and output template preparation cleared custom formulas.
+`cProductionStagingReload` holds only the captured worksheet for one reload, reuses
+explicitly named tables with custom columns, writes managed fields by normalized
+header and clears only managed output formulas. Unknown columns retain their
+positions/content/formulas. The existing no-custom rebuild and successful Scale
+wording remain; no new contract or approval is introduced.
+
+The real packaged Apply Scale handler reaches successful worksheet loading, scaling
+and output preparation. Qualified D13 RED66 PASS/3 FAIL becomes GREEN69/69 in the
+same order: chooser/palette columns and output formulas are the only RED failures.
+Extended GREEN86 retains all69 checks and adds17 for repeated reload with custom
+columns inserted between managed fields, distinct row formulas and a normalized
+amount header. Quantities remain4 rather than compounding to8; the exact seeded
+input key survives, output staging has no prematurely allocated key, and each
+deliberate action records its own STAGED pair without invented helper actions.
+Saved authority, source tables, older events, the other warehouse and operator
+bytes are preserved. Observers count actual boundaries without replacing results.
+
+Ignored receipts under `reports/runtime/`: RED controller
+`production-run-local-controller/d551672f38d94acebc1c3abe34c6bb0e`, worker
+`slice4be-production-run-scale-success/eb28830178a74b5ab3e6e1138470aa8a`,
+UTC00:24:36.453--00:26:17.803; GREEN69 controller
+`production-run-local-controller/60b86df671f44defaf4961b58b856f97`, worker
+`slice4be-production-run-scale-success/5d5fe1aeadee4cada326e038ef0eba45`,
+UTC00:31:05.675--00:32:53.231; expanded86 controller
+`production-run-local-controller/dcefc12c6e494887bef3e445fb1009ac`, worker
+`slice4be-production-run-scale-success/0ee1ac4441f54776a11b83f61c2d3a8f`,
+UTC00:33:59.280--00:35:45.406. Each qualifies five instrumented compiles,
+preservation, normal closure and zero delayed Excel failures.
+Two earlier40/1 fixture failures and a64/5 diagnostic with two incorrect test
+expectations are not the protecting RED. They were corrected before runtime edits.
+
+Build `run-scale-success-build-02/verification.json`, UTC00:29:44.431--00:30:22.089,
+passes five cold compiles and Operations cold start. Only mProduction changes,
+cProductionStagingReload is added and314 packaged components match the frozen
+Scale-stop candidate. The extracted summary helper had one reviewed callsite;
+other formula-clearing callers remain. Static `run-scale-success-static-02` records
+323 components/6355 procedures/138982 lines, dynamic9/45 and192 duplicate candidates.
+mProduction shrinks20 lines, other27 oversized caps remain unchanged, three schemas
+validate and461 PowerShell scripts parse. Both original success captures were
+reviewed individually: expected quantities/output and full existing status are
+readable, controls remain reachable, and long recipe descriptions still clip.
+Agent review does not establish human or multiline acceptance.
+
+Enabled-Designs218/218 retains exact prior check order: controller
+`production-run-local-controller/6db2570ae1e64be3819b7139a67babc1`, worker
+`slice4be-production-run-worksheet-scale/f7956bc0000d453da66a36d4ffac6a89`,
+UTC00:36:33.374--00:38:36.968. Five compiles, preservation, normal closure and
+zero delayed faults qualify through00:38:48.968 UTC. Missing-definition64/64 retains
+exact prior order: controller `production-run-local-controller/1ccf09b3467c497b9b62aa9da00c3ab6`,
+worker `slice4be-production-run-scale-reload/3059148ca75c4a54906e8159f2cdd715`,
+UTC00:39:01.559--00:40:46.571. Refusal/caught-failure162/162 also retains prior order:
+controller `production-run-local-controller/19e69f5b4684405ba48b869ffb1f1f24`, worker
+`slice4be-production-run-scale-disabled/74af402458544fd0b4767ce2e83f3b3f`,
+UTC00:41:02.821--00:42:55.189. Both qualify five compiles, preservation, normal closure
+and zero delayed native faults.
+
+The ordinary full chain fails at Shipping's
+`modTS_Shipments.RunShipmentsSentFormActionForTest`, HRESULT0x800706BE: chain5/1,
+live-role40/1 and warehouse15/15. Both Production batches and Boxing passed before
+this boundary, but later phases were not reached. Controller
+`run-scale-success-regression/chain-0518429fa5d44e81b2063b699d3c5c5e`,
+UTC00:43:17.718--00:48:28.190, records Application1000 `ntdll.dll/c0000028` at
+00:45:36.699 UTC and Application1001 afterward. A verified crash-reporter child
+closed after a normal native close request; no recovery prompt was observed,
+COM was not reattached and no process was force-killed. Settings, packages and
+tracked reports were restored; delayed audit ends00:48:40.190 UTC. This is failed
+diagnostic evidence with assisted closure, not chain acceptance. The prior native
+signature remains unresolved at a newly observed call; do not repeat the same
+chain just to obtain a pass.
+
+Independent smoke86/86 retains exact prior order and both unassisted exits at
+`run-scale-success-regression/smoke-a2bb163c29cb447db119712c0161cd59`,
+UTC00:48:45.640--00:49:10.627. Layout at
+`run-scale-success-regression/layout-334c2f324bdc46f195de4350f6ac2acc`,
+UTC00:49:25.874--00:49:50.019, passes18 requested size/page pairs, six maximized
+pages and five native transitions. Saved captures show readable reachable controls.
+Five are directly reviewed; the settings-default preview renders black, but its
+SHA256 is identical to the directly reviewed settings-minimum original. No Excel
+rerun was used to resolve that preview issue. Both gates preserve packages/settings,
+close normally and have zero delayed faults. This empty-fixture layout evidence
+does not prove populated long-value or human acceptance.
+General rebuild coverage and independent worksheet guides remain open; this is
+neither comprehensive D14 nor4be-A acceptance.
+
 ## Stop Scale after failed worksheet loading, 2026-10-11
 
 Approval was recorded and pushed in docs `72225bb` before implementation.

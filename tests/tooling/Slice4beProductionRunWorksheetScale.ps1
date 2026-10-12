@@ -15,7 +15,8 @@ function Install-ProductionRunWorksheetScaleProbe {
     if($RunScaleDesignsDisabledForTest){Scale-Seam 'TestProductionDesigner.RunScaleOwnerResolved wsProd' '    TestProductionDesigner.RunFaultBoundary "WORKSHEET_SCALE"' $true}
     Scale-Seam 'Set stagingWb = BuildReleasedDesignRecipeStagingWorkbook(recipeId, syncReport)' '        TestProductionDesigner.RunScaleReadReturned (Not stagingWb Is Nothing)' $true
     Scale-Seam 'If Not LocalProductionRecipeRowsExist(wsProd.Parent, recipeId) Then' '        TestProductionDesigner.RunScaleLegacyEntered'
-    Scale-Seam 'DeleteRecipeChooserProcessTables wsProd' '    TestProductionDesigner.RunScaleRebuildEntered'
+    $rebuildAnchor=if($owner.Lines($owner.ProcStartLine('LoadRecipeChooser',0),$owner.ProcCountLines('LoadRecipeChooser',0)).Contains('preserved.Prepare wsProd')){'preserved.Prepare wsProd, RecipeChooserHeaderList(), InventoryPaletteHeaderList()'}else{'DeleteRecipeChooserProcessTables wsProd'}
+    Scale-Seam $rebuildAnchor '    TestProductionDesigner.RunScaleRebuildEntered'
     $owner.AddFromString(@'
 Public Function RunScaleLocalRecipeExistsForTest(ByVal wb As Workbook, ByVal recipeId As String) As Boolean
     RunScaleLocalRecipeExistsForTest = LocalProductionRecipeRowsExist(wb, recipeId)
@@ -296,6 +297,7 @@ function Test-ProductionRunWorksheetScale($Fixture) {
 
 # Refusals and a caught owner exception; successful worksheet reload remains a separate gate.
 function Test-ProductionRunScaleDisabled($Fixture) {
+    if($RunScaleSuccessForTest){Test-ProductionRunScaleSuccess $Fixture;return}
     if($RunScaleReloadForTest){Test-ProductionRunScaleReload $Fixture;return}
     Check 'RunScaleDisabled.SupportedSurfaceAndSeedIdentity' $true
     $key=[string](Probe 'RunWorksheetKey')

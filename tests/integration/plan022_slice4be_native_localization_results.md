@@ -1,6 +1,6 @@
 # Slice 4be-A native-failure localization
 
-Last verified: 2026-10-11 UTC. Diagnostic tooling only, under Architecture v4.11
+Last verified: 2026-10-12 UTC. Diagnostic tooling only, under Architecture v4.11
 D13 and Plan022. Earlier localization below uses frozen General02, runtime
 `6f583238`, catalog31. UI01 subsequently has a clean ordinary chain recorded in
 [Run results](plan022_slice4be_production_run_local_results.md). Scale01 also has
@@ -8,6 +8,19 @@ a clean ordinary chain and full reusable regression there; neither establishes
 a native repair. No 4be-A completion is claimed.
 
 ## Current chain interruption and dismissal ownership
+
+The D14 successful worksheet reload candidate `validation-run-scale-success-02`
+has focused GREEN86 and retained enabled218/missing64/refusal162, but its ordinary
+chain fails at `modTS_Shipments.RunShipmentsSentFormActionForTest`, COM0x800706BE.
+Application1000 records `ntdll.dll/c0000028` at2026-10-12T00:45:36.699Z. Warehouse15
+passes, live-role stops40/1 and chain5/1; both Production batches and Boxing passed
+before Shipping. Controller `run-scale-success-regression/chain-0518429fa5d44e81b2063b699d3c5c5e`
+retains a sanitized failed-verification receipt, exact candidate pins and preserved
+settings/reports. A verified crash-reporter child closed after a normal native close
+request; no prompt was observed, no COM reattachment or forced termination occurred.
+Closure was assisted and the run is not acceptance. This extends the observed
+failing-call set; it does not establish a different root cause or prove the new
+Production helper innocent. Do not repeat unchanged chains to chase a pass.
 
 On 2026-10-11, the ordinary Designs-disabled Scale candidate chain stopped at
 `mProduction.ProductionFormTwoBatchActionReportForTest` with COM0x800706BE.

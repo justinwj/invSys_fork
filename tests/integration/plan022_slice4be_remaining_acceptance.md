@@ -13,7 +13,21 @@ candidate is `deploy/validation-guide-transfer-notice-01`; the preceding Print c
 is `deploy/validation-print-recorded-01`, code checkpoint `89674af1`.
 Do not equate control registration, a scoped GREEN or a diagnostic with full acceptance.
 
-Current candidate: `deploy/validation-run-scale-stop-01`, catalog32. Approved
+Current candidate: `deploy/validation-run-scale-success-02`, catalog32. Existing D14
+now has successful worksheet Scale RED66/3 to GREEN69, extended GREEN86 for repeated
+reload with inserted custom columns, normalized headers, exact input key and
+non-compounding quantities. Chooser/palette values/formulas and output custom
+formulas survive. Five cold/instrumented compiles and static ratchets pass;
+both success captures are reviewed, with long recipe descriptions still clipped.
+Enabled-Designs218, missing-definition64 and refusal162 retain prior order with clean
+preserved closure and delayed audits. The ordinary chain fails at Shipping's Sent
+handler with COM0x800706BE/ntdll c0000028 (chain5/1, live40/1, warehouse15/15).
+Recovery closure was assisted; full-chain acceptance is blocked. Independent smoke86
+and six-page layout pass with clean preserved closure and reviewed capture evidence in
+[Run results](plan022_slice4be_production_run_local_results.md). General rebuild
+coverage and independent worksheet guides remain open; no comprehensive acceptance.
+
+Prior candidate: `deploy/validation-run-scale-stop-01`, catalog32. Approved
 RUN-SCALE-02 stops after failed worksheet loading, before subsequent scaling,
 output preparation/refresh, and displays the approved failure message. Missing
 definition RED61/3 to GREEN64 and caught-failure RED159/3 to GREEN162 preserve
@@ -162,7 +176,7 @@ Shipping7, Boxing2 and Viewer4. These are registration counts, not coverage scor
 
 | Surface | Concrete outstanding work |
 | --- | --- |
-| Production | The existing census still accounts for68 constructed buttons on six pages,14 unconstructed legacy buttons and34 non-button handlers. `PRODUCTION_RUN_SCALE` now records loaded-run actions and the approved Designs-enabled load-first refusal on Scale01; Independent Load/Scale guidance passes104; Designs-disabled refusal/failure recording passes160; successful worksheet reload, D14 preservation and independent worksheet guidance remain open. The non-button audit has only two registered Assignment selections; distinguish remaining deliberate selections from excluded text/programmatic events. Deliberate tab changes and launcher coverage also remain open. Do not call all28 remaining handlers required new events. |
+| Production | The existing census still accounts for68 constructed buttons on six pages,14 unconstructed legacy buttons and34 non-button handlers. `PRODUCTION_RUN_SCALE` records loaded-run actions and the approved Designs-enabled load-first refusal; independent Load/Scale guidance passes104. Approved failure-stop64/162 and successful worksheet custom-field preservation86 have scoped proof above. General D14 rebuild coverage and independent worksheet guidance remain open. The non-button audit has only two registered Assignment selections; distinguish remaining deliberate selections from excluded text/programmatic events. Deliberate tab changes and launcher coverage also remain open. Do not call all28 remaining handlers required new events. |
 | Shipping/Boxing | Catalog29 includes the seven shipment mutation commands and Make/Unbox. Refresh, history/export, form lifecycle, Box Designer commands, deliberate tabs/selections and other reachable controls in the source map still need individual coverage/exclusion evidence. The old catalog7 map is historical discovery, not current registration status. |
 | Admin | The prior28 IDs cover Settings Save Value, three UOM commands, Tracking12, Detail8 and personal preference4. Nine General controls have catalog31 GREEN871 including policy/storage, permission-loss and independent guide proof; Settings202/user-policy104/observations548 are refreshed. Navigation/lifecycle and eligible warehouse/user/processor/publication/maintenance commands still need actual-handler coverage. Pre-sign-in and nonexistent-target exclusions remain mandatory. Canonical audit alone does not prove shared user-activity capture. |
 | Replay setup/editor/runner | `frmActionPathLibrary` Configure execution/Run How-To and the new `frmActionPathExecution`/`frmActionPathRun` controls have no registered observation IDs. D18-REPLAY-01 boundary5 explicitly prevents inferring observation exclusion from replay exclusion. Review each owner/result; retain the older explicit authoring/evaluation exclusions only where applicable. Actual replayed Receiving actions already have fresh activity proof. |
