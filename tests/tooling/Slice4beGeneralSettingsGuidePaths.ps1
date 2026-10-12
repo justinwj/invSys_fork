@@ -1,11 +1,12 @@
 # Authored intent compared with independent recordings through packaged controls.
-function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps,[switch]$CloseActions,[switch]$WorksheetScale,[switch]$SettingsNavigation) {
-    if(@($CloseActions,$WorksheetScale,$SettingsNavigation|Where-Object{$_}).Count -gt 1){throw 'Choose one independent guide fixture.'}
+function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps,[switch]$CloseActions,[switch]$WorksheetScale,[switch]$SettingsNavigation,[switch]$Reconcile) {
+    if(@($CloseActions,$WorksheetScale,$SettingsNavigation,$Reconcile|Where-Object{$_}).Count -gt 1){throw 'Choose one independent guide fixture.'}
     function Delivered([string]$Value){if($Value -cne 'DELIVERED'){throw 'Actual General guide control unavailable; not product RED.'}}
     function Author([string]$Name,[string]$Action,[string]$Value=''){BoundControl $Name $Action $Value 'frmActionPathGuide'}
     function View([string]$Name,[string]$Action,[string]$Value=''){BoundControl $Name $Action $Value 'frmActionPathView'}
-    $prefix=if($SettingsNavigation){'SettingsNavigationGuide'}elseif($WorksheetScale){'WorksheetScaleGuide'}elseif($CloseActions){'AdminCloseGuide'}else{'GeneralGuide'}
-    $capturePrefix=if($SettingsNavigation){'settings-navigation-guide-'}elseif($WorksheetScale){'worksheet-scale-guide-'}elseif($CloseActions){'admin-close-guide-'}else{'general-guide-'}
+    function Retained($Before,$After){foreach($path in $Before.Keys){if(-not $After.ContainsKey($path) -or $After[$path] -cne $Before[$path]){return $false}};return $true}
+    $prefix=if($Reconcile){'ReconcileGuide'}elseif($SettingsNavigation){'SettingsNavigationGuide'}elseif($WorksheetScale){'WorksheetScaleGuide'}elseif($CloseActions){'AdminCloseGuide'}else{'GeneralGuide'}
+    $capturePrefix=if($Reconcile){'reconcile-guide-'}elseif($SettingsNavigation){'settings-navigation-guide-'}elseif($WorksheetScale){'worksheet-scale-guide-'}elseif($CloseActions){'admin-close-guide-'}else{'general-guide-'}
     function Pass([string]$Name,[bool]$Value){Check ($prefix+'.'+$Name) $Value|Out-Host}
     $source=@($Runs|Where-Object Kind -CEQ 'Source')[0]
     $observed=@($Runs|Where-Object Kind -CEQ 'Observed')[0]
@@ -16,15 +17,16 @@ function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps,[switch]$CloseActi
     if($CloseActions){$instruction="Dismiss Settings with Close, reopen it, then use the window close button.`r`nUnsaved form edits are discarded. Dismissal proves neither a settings save nor Domain application.`r`nBoth gestures record the same Close control; the recording does not identify the gesture. Interrupted actions cannot borrow completion from this guide."}
     if($WorksheetScale){$instruction="With Designs disabled and the local worksheet recipe available, select the recipe and enter 200 percent. Click Apply Scale and inspect the prepared rows.`r`nClick Apply Scale again. The recipe quantity remains four, not eight; existing System_Key and custom fields are preserved.`r`nThis concludes two local staging commands, not inventory application. An interrupted recording cannot borrow completion from this guide."}
     if($SettingsNavigation){$instruction="Open Settings, select Event Tracking, Event Detail, Action Paths, Tracking, and General, then Close.`r`nKeep Settings open throughout the tab changes. These observations prove presentation and dismissal, not a settings save or Domain application.`r`nAn interrupted recording cannot borrow completion from this guide."}
+    if($Reconcile){$instruction="Open Shipment Reconcile in the training warehouse and inspect the selected exact inventory entity's shipment.`r`nRead the current quantity, balance after shipment and proposed correction. Supply a repair narrative and confirm only the intended correction.`r`nA queued correction proves command completion, not inventory application. An interrupted recording cannot borrow completion from this guide."}
     try {
         Pass 'IndependentSourceAndObservedRun' ($source.Journal.ActionPathId -cne $observed.Journal.ActionPathId -and @($observed.Records|Where-Object {$_.ActivityId -cin @($source.Records.ActivityId)}).Count -eq 0)
         CloseRecordingViewer;SelectTarget $Fixture 'config-admin';OpenRecordingViewer
         Delivered (BoundLibrary 'Open')
         if((BoundLibrary 'Select' $source.Journal.ActionPathId) -cne 'SELECTED'){throw 'Exact General guide source unavailable.'}
         Delivered (BoundControl 'btnCreateGuide' 'Click' '' 'frmActionPaths')
-        Delivered (Author 'txtGuideName' 'Write' $(if($SettingsNavigation){'Settings navigation training'}elseif($WorksheetScale){'Worksheet Scale training'}elseif($CloseActions){'Settings Close training'}else{'General Settings training'}))
+        Delivered (Author 'txtGuideName' 'Write' $(if($Reconcile){'Shipment Reconcile training'}elseif($SettingsNavigation){'Settings navigation training'}elseif($WorksheetScale){'Worksheet Scale training'}elseif($CloseActions){'Settings Close training'}else{'General Settings training'}))
         Delivered (Author 'txtGuideInstructions' 'Write' $instruction)
-        Pass $(if($SettingsNavigation){'SevenObservedGuideSteps'}elseif($CloseActions -or $WorksheetScale){'TwoObservedGuideSteps'}else{'NineObservedGuideSteps'}) ((Author 'lstGuideSteps' 'Rows') -ceq [string]$Steps.Count)
+        Pass $(if($SettingsNavigation){'SevenObservedGuideSteps'}elseif($CloseActions -or $WorksheetScale -or $Reconcile){'TwoObservedGuideSteps'}else{'NineObservedGuideSteps'}) ((Author 'lstGuideSteps' 'Rows') -ceq [string]$Steps.Count)
         for($index=0;$index -lt $Steps.Count;$index++){
             if((Author 'lstGuideSteps' 'Select' ([string]$index)) -cne 'SELECTED'){throw 'General guide step unavailable.'}
             Delivered (Author 'txtGuideStepInstruction' 'Write' ('Use '+$Steps[$index][0]+'. Read the owner result before continuing.'))
@@ -54,7 +56,7 @@ function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps,[switch]$CloseActi
         Pass 'ExactSourceAndAuthoredIntent' $exact
         CloseRecordingViewer;SelectTarget $Fixture 'config-reader';OpenRecordingViewer
         Pass 'ReaderCannotAuthor' (-not [bool](Run 'invSys.Core.xlam' 'modAuth.CanPerform' @('ACTION_PATH_MAINT','config-reader',$Fixture.Warehouse,'S1')))
-        $kinds=if($CloseActions -or $WorksheetScale -or $SettingsNavigation){@('Observed','Interrupted')}else{@('Observed','Interrupted','Denied')}
+        $kinds=if($CloseActions -or $WorksheetScale -or $SettingsNavigation -or $Reconcile){@('Observed','Interrupted')}else{@('Observed','Interrupted','Denied')}
         foreach($kind in $kinds){
             $run=@($Runs|Where-Object Kind -CEQ $kind)[0];$journal=$run.Journal
             Delivered (BoundLibrary 'Open')
@@ -83,7 +85,13 @@ function Test-GeneralSettingsGuidePaths($Fixture,$Runs,$Steps,[switch]$CloseActi
                 if($expected.Count -eq 1 -and $matches.Count -eq 1){$exactMatches=$exactMatches -and $matches[0].ActivityId -ceq $expected[0].ActivityId -and $matches[0].StepId -ceq $guide.ExpectedConclusion.Steps[$ordinal-1].StepId}
             }
             Pass ($kind+'.OnlyObservedRunCanMatch') $exactMatches
-            Pass ($kind+'.ExactUnmatchedSteps') (@($result.MissingSteps).Count -eq $(if($run.Incomplete){$Steps.Count-1}else{0}) -and @($result.FailedSteps).Count -eq $(if(-not $run.Success -and -not $run.Incomplete){5}else{0}) -and @($result.UnavailableSteps).Count -eq 0)
+            # Reconcile loses CONFIRMED after REQUESTED was saved; the attempted
+            # terminal step has an unmatched outcome. Capture remains Incomplete.
+            $missing=if($run.Incomplete -and -not $Reconcile){$Steps.Count-1}else{0}
+            $failed=if($Reconcile -and $run.Incomplete){1}elseif(-not $run.Success -and -not $run.Incomplete){5}else{0}
+            $unmatched=@($result.MissingSteps).Count -eq $missing -and @($result.FailedSteps).Count -eq $failed -and @($result.UnavailableSteps).Count -eq 0
+            if($Reconcile -and $run.Incomplete){$unmatched=$unmatched -and $result.FailedSteps[0] -ceq $guide.ExpectedConclusion.TerminalStepId -and 'REQUIRED_OUTCOME_MISMATCH' -cin @($result.ReasonCodes)}
+            Pass ($kind+'.ExactUnmatchedSteps') $unmatched
             $pins=BoundPins $journalRoot
             Delivered (BoundControl 'btnViewActionPath' 'Click' '' 'frmActionPaths')
             $pair=View 'lblActionPathPair' 'Label';$how=View 'txtActionPathHowTo' 'Text';$diagnostic=View 'txtActionPathDiagnostic' 'Text'

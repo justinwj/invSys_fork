@@ -1,11 +1,29 @@
 # D18 observations of the existing five native workflows. No activity is fabricated.
 . (Join-Path $PSScriptRoot 'Slice4beActivityAssertions.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beAdminReconcileGuide.ps1')
 function Install-AdminReconcileRecordingProbe {
     $module=$packages['invSys.Core.xlam'].VBProject.VBComponents.Add(1)
     $module.Name='TestReconcileRecording'
     $module.CodeModule.AddFromString(@'
 Option Explicit
 Private mEntrySecret As String, mEntryChanged As Boolean
+Private mFaultMode As String, mFaultCalls As Long
+Public Sub ArmStoreFailure(ByVal mode As String)
+    mFaultMode = mode: mFaultCalls = 0
+End Sub
+Public Sub StoreWritePath(ByVal body As String, ByRef pending As String)
+    Dim record As Object
+    If mFaultMode = "" Then Exit Sub
+    Set record = modTrainingJson.DecodeObject(body)
+    If Left$(CStr(record("ControlId")), 16) <> "ADMIN_RECONCILE_" Then Exit Sub
+    If CStr(record("OutcomeCode")) <> mFaultMode Then Exit Sub
+    mFaultCalls = mFaultCalls + 1
+    ' The real Open statement fails on a nonexistent directory beneath the generated path.
+    pending = pending & "\unavailable.pending"
+End Sub
+Public Function StoreFaultCalls() As Long
+    StoreFaultCalls = mFaultCalls
+End Function
 Public Sub ArmEntryChange(ByVal secret As String)
     mEntrySecret = secret: mEntryChanged = False
 End Sub
@@ -29,6 +47,7 @@ Public Function EnablePolicy(Optional ByVal mode As String = "Enabled") As Boole
     If context = "" Or Not modNasConnection.IsCurrentTargetAllowed(True) Then Exit Function
     If Not modTrackingPolicySettings.ReadEditor(context, version, request, report) Then Exit Function
     Set model = modTrackingPolicyModel.Defaults(mode <> "Disabled")
+    model("ViewerActionPathCaptureEnabled") = (mode = "Capture")
     For Each row In model("Controls")
         row("Collect") = (mode <> "Disabled") And Not (mode = "ControlsOff" And Left$(row("ControlId"), 16) = "ADMIN_RECONCILE_")
     Next row
@@ -71,7 +90,19 @@ End Function
     $line=$activity.ProcBodyLine('BeginAction',0)
     while($activity.Lines($line,1).Trim() -cne 'notice = ""'){$line++;if($line -gt $activity.CountOfLines){throw 'Recording entry seam missing'}}
     $activity.InsertLines($line,'    TestReconcileRecording.ChangeAtEntry controlId')
-    $packages['invSys.Admin.xlam'].VBProject.VBComponents.Item('TestReconcileIdentity').CodeModule.AddFromString(@'
+    $store=$packages['invSys.Core.xlam'].VBProject.VBComponents.Item('modActivityStore').CodeModule
+    $line=$store.ProcBodyLine('Append',0)
+    while($store.Lines($line,1).Trim() -cne 'Open pending For Binary Access Write Lock Read Write As #file'){$line++;if($line -gt $store.CountOfLines){throw 'Store write seam missing'}}
+    $store.InsertLines($line,'    TestReconcileRecording.StoreWritePath body, pending')
+    $admin=$packages['invSys.Admin.xlam'].VBProject.VBComponents.Item('TestReconcileIdentity').CodeModule
+    $admin.InsertLines($admin.CountOfDeclarationLines+1,'Private mLastTrackingNotice As String')
+    $line=$admin.ProcBodyLine('ObserveNotice',0)
+    while($admin.Lines($line,1).Trim() -cne 'mTrackingNotices = mTrackingNotices + 1'){$line++;if($line -gt $admin.CountOfLines){throw 'Tracking notice seam missing'}}
+    $admin.InsertLines($line+1,'        mLastTrackingNotice = text')
+    $admin.AddFromString(@'
+Public Function ExactStoreWarning() As Boolean
+    ExactStoreWarning = (mTrackingNotices = 1 And mLastTrackingNotice = "Tracking unavailable: the training record could not be saved.")
+End Function
 Public Function RecordingContextRefused() As Boolean
     RecordingContextRefused = (mBoundaryNotice = "The invSys session or warehouse changed. Reopen Shipment Reconcile." And Not mQueuedNotice)
 End Function
@@ -80,6 +111,9 @@ Public Function RecordingSubmission() As Boolean
     RecordingSubmission = InvokeCallback()
 End Function
 '@)
+    if($AdminReconcileGuidePaths){
+        Install-ReconcileGuideProbe
+    }
 }
 
 function Test-AdminReconcileRecording($Fixture,[string[]]$Before,$Events,$State) {
@@ -163,4 +197,25 @@ function Test-AdminReconcileRecording($Fixture,[string[]]$Before,$Events,$State)
     Check 'Reconcile.Recording.EntryChange.OriginalContextRefused' ([bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.RecordingContextRefused'))
     Check 'Reconcile.Recording.EntryChange.NoLaterAttribution' (@(Get-Slice4beActivityFiles $Fixture).Count -eq $before.Count)
     Check 'Reconcile.Recording.EntryChange.InventoryPreserved' (((Hash $State.InventoryPath) -ceq $bytes) -and [bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.NativeFixturePreserved' @(4)))
+    foreach($mode in @('REQUESTED','CONFIRMED')){
+        $before=@(Get-Slice4beActivityFiles $Fixture);$prior=@{};foreach($path in $before){$prior[$path]=Hash $path}
+        $rows=$Events.ListRows.Count
+        Probe 'ArmStoreFailure' @($mode)
+        try{
+            $queued=[bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.RecordingSubmission')
+            $faults=[int](Probe 'StoreFaultCalls')
+        }finally{Probe 'ArmStoreFailure' @('')}
+        if($faults -eq 0){throw 'Store fault did not reach the real write boundary; not behavioral RED.'}
+        Check ('Reconcile.Recording.StoreFailure.'+$mode+'.NoCommandRetry') ($queued -and $Events.ListRows.Count -eq $rows+1 -and $faults -eq $(if($mode -ceq 'REQUESTED'){2}else{1}))
+        Check ('Reconcile.Recording.StoreFailure.'+$mode+'.ExactWarningOnce') ([bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.ExactStoreWarning'))
+        $new=@(Get-Slice4beActivityFiles $Fixture|Where-Object {$_ -cnotin $before}|ForEach-Object {Get-Content $_ -Raw|ConvertFrom-Json})
+        $honest=if($mode -ceq 'REQUESTED'){$new.Count -eq 0}else{
+            $new.Count -eq 2 -and @($new|Where-Object {$_.ControlId -ceq 'ADMIN_RECONCILE_OPEN' -and $_.OutcomeCode -ceq 'REQUESTED'}).Count -eq 1 -and
+            @($new|Where-Object {$_.ControlId -ceq 'ADMIN_RECONCILE_INSPECT' -and $_.OutcomeCode -ceq 'REQUESTED'}).Count -eq 1 -and @($new|Where-Object {@($_.SourceEventRefs).Count -ne 0}).Count -eq 0
+        }
+        Check ('Reconcile.Recording.StoreFailure.'+$mode+'.NoInventedCompletion') $honest
+        Check ('Reconcile.Recording.StoreFailure.'+$mode+'.PriorRecordsImmutable') (@($prior.Keys|Where-Object {(Hash $_) -cne $prior[$_]}).Count -eq 0)
+        Check ('Reconcile.Recording.StoreFailure.'+$mode+'.InventoryPreserved') (((Hash $State.InventoryPath) -ceq $bytes) -and [bool](Run 'invSys.Admin.xlam' 'TestReconcileIdentity.NativeFixturePreserved' @(4)))
+    }
+    if($AdminReconcileGuidePaths){Test-ReconcileGuide $Fixture $Events $State}
 }

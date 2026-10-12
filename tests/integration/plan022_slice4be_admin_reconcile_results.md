@@ -542,3 +542,75 @@ earlier intermittent Excel crash.
 Local-target recording eligibility, active capture/publication/guide proof and
 remaining Admin coverage stay open. No local business permission restriction,
 recording exclusion, package promotion or complete4be-A acceptance is claimed.
+
+## Recording storage failure and guide acceptance extension — 2026-10-12
+
+Acceptance tests extend the unchanged, unpromoted `validation-admin-reconcile-recording-06`.
+No runtime behavior or architecture changes; existing implementation RED/GREEN
+remains above. New passing coverage does not manufacture another product RED.
+
+Storage failure: **258/258 GREEN**, exact prior248-check prefix, five instrumented
+compiles and normal preserved closure. Controller
+`admin-reconcile-controller/f9e3e8ba5c6f4a8a8b2cdf3a8972f397`; worker
+`slice4be-admin-reconcile/d294321895b0422283eab2479ba31d8b`.
+UTC08:12:21.7209335–08:15:16.8407147; clean delayed native audit through08:15:28.8407147.
+The disposable probe changes only the actual activity-store pending path so its
+real file-open fails on a nonexistent directory. REQUESTED and CONFIRMED failure
+each preserve one business execution, exactly one fixed tracking warning,
+previous records, inventory bytes/quantities, exact keys and custom values.
+Missing completion records never become invented success.
+
+Harness corrections, neither product RED nor acceptance:
+
+- Controller `b05fd9cb6dee471789648e2dbe4cb80e` ended257/1 because the deterministic
+  selection seam does not show the form, so it cannot emit OPENED. Corrected
+  expectation requires only the two actual REQUESTED records, then reran GREEN.
+- Controller `045bbd1e354f4a199e1793bbefd46168` ended287/1 at guide authoring.
+  Its new fixture omitted the explicit ACTION_PATH_MAINT grant. Recording and
+  exact publication passed; guide acceptance requires the corrected rerun.
+  Admin bootstrap alone must not imply guide-maintenance authority.
+- Controller `9864c4c59f194763bc2f742fcea1a154`, worker
+  `slice4be-admin-reconcile/734b1b8e00964250b6a0426ce9b2f975`, ended327/2. The interrupted run had a saved
+  REQUESTED but no CONFIRMED outcome: zero missing steps, one terminal outcome
+  mismatch and overall Incomplete/CAPTURE_INCOMPLETE. The reused Settings oracle
+  wrongly expected an absent action. The final preservation check also depended
+  on a caller-defined Retained helper. Corrected the Reconcile-only expectation
+  and made that preservation helper local; no product change. All other view
+  checks passed, but the run is not GREEN. Normal preservation and a clean
+  delayed native audit through08:44:42.0301671 pass.
+
+Static `admin-reconcile-guide-static-01` is regenerated and verified: all metrics
+match recording-static-04 exactly (332 components,6399 procedures,139542 lines,
+dynamic9/45,duplicates194), all28 caps and all three schemas pass. Final parsing
+after harness corrections passes480 PowerShell files with zero errors. No new
+bloat exception. Build, prior full-chain and current gate pins match all five
+XLAMs; retain the same-candidate cold compile,86 smoke,202 Settings and
+32 chain/48 live-role/15 Create Warehouse evidence above.
+
+Final **330/330 GREEN**: controller
+`admin-reconcile-controller/b984a1b8640d41e5a480b385a1acb998`; worker
+`slice4be-admin-reconcile/6919b5a7216f4500bb462a24b0fe04f7`.
+UTC08:44:58.0335704–09:02:46.9402452; clean delayed native audit through09:02:58.9402452.
+Exact258-check prefix, log/JSON agreement, five instrumented compiles, preserved
+settings/packages/tooling and normal Excel closure pass. Run with
+`Test-Slice4beAdminReconcileIdentity.ps1 -DeployRoot deploy/validation-admin-reconcile-recording-06 -Phase GREEN -NativePresentation -CheckRecording -CheckGuidePaths`.
+
+Three independent native callback/confirmation journeys generate their own
+immutable journals and exact new correction references. Actual Admin publication
+preserves every observation. Packaged guide controls author two ordered steps
+from Source, then evaluate distinct Observed and Interrupted runs. Their saved
+results are Concluded/COMMAND_COMPLETED and Incomplete/CAPTURE_INCOMPLETE, bound
+to the exact guide, observed journal and publication. Neither claims Domain
+application or borrows source-run success. The interrupted terminal attempt has
+an unmatched outcome, not an absent action. Original journals/activity/publication,
+inventory bytes, exact keys, custom values and operator canary are preserved.
+
+All three presentation modes retain identical evidence and pass layout checks.
+Directly reviewed six final `reconcile-guide-*.png` captures in the worker:
+Observed How-To/Diagnostic/Compare/conclusion and Interrupted Compare/conclusion.
+Full provenance, multiline instructions, saved conclusions and scrolling are
+readable. Raw generated fixture captures remain ignored.
+
+This completes the storage/recording/publication/command-conclusion extension,
+not full Reconcile or4be-A acceptance. SourceEventsApplied guide proof,
+local-target recording eligibility and remaining Admin coverage stay open.

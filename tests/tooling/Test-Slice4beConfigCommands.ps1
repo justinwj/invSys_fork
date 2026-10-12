@@ -122,6 +122,7 @@ param(
     [switch]$AdminReconcileIdentityOnly,
     [switch]$AdminReconcileNativePresentation,
     [switch]$AdminReconcileRecording,
+    [switch]$AdminReconcileGuidePaths,
     [switch]$CheckAdminSettingsCloseActivity,
     [switch]$CheckAdminSettingsEntry,
     [switch]$CheckAdminSettingsNavigation,
@@ -439,6 +440,7 @@ if($NativeResizeCaptureDiagnostic -and ($Phase -cne 'RED' -or -not $CheckReceivi
 if($AdminReconcileIdentityOnly -and (-not $CompileEvaluationProbesForTest -or $AdminSettingsCloseOnly -or $CheckTrackingSettings -or $CheckActivityEvidence -or $CheckViewerPublishedRead)) { throw 'Reconcile identity requires its separate compiled callback gate.' }
 if($AdminReconcileNativePresentation -and -not $AdminReconcileIdentityOnly){throw 'Native Reconcile presentation requires its isolated callback gate.'}
 if($AdminReconcileRecording -and -not $AdminReconcileNativePresentation){throw 'Reconcile recording requires native callback/form coverage.'}
+if($AdminReconcileGuidePaths -and -not $AdminReconcileRecording){throw 'Reconcile guide proof requires recorded callbacks.'}
 if($AdminSettingsCloseOnly) { $CheckAdminSettingsClose = $true }
 if($CheckAdminSettingsCloseActivity -and (-not $AdminSettingsCloseOnly -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Close observations require the isolated compiled visible Admin close gate.'}
 if($CheckAdminSettingsEntry -and (-not $AdminSettingsCloseOnly -or $CheckAdminSettingsCloseActivity -or -not $CompileEvaluationProbesForTest -or -not $CaptureEvidence)){throw 'Settings entry requires its isolated compiled visible launcher gate.'}
@@ -1210,7 +1212,7 @@ function NewFixture([string]$Suffix) {
             $row.Range.Cells.Item(1,$caps.ListColumns.Item($pair.Key).Index).Value2=$pair.Value
         }
     }
-    if($RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
+    if($AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
         # Explicit fixture grant: Admin bootstrap does not imply guide maintenance.
         $row=$caps.ListRows.Add()
         foreach($pair in @{UserId='config-admin';Capability='ACTION_PATH_MAINT';WarehouseId=$wh;StationId='S1';Status='Active'}.GetEnumerator()){
