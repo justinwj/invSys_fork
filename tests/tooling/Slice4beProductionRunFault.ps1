@@ -147,6 +147,11 @@ function Test-ProductionRunFault($Fixture,$Other,[switch]$YieldOnly,[switch]$Sto
             Check 'RunStock.OwningReceiveCreatesTwoExactEntities' $true
         }
         if(-not [bool](Run 'invSys.Core.xlam' 'TestShippingCatalog.RunPresentationPolicy' @($true))){throw 'Authorized Run fault policy unavailable; not product RED.'}
+        if($RunScalePathsForTest){
+            . (Join-Path $PSScriptRoot 'Slice4beRecordingFixture.ps1')
+            if(-not [bool](Run 'invSys.Core.xlam' 'modAuth.CanPerform' @('ACTION_PATH_MAINT','config-admin',$Fixture.Warehouse,'S1'))){throw 'Explicit guide-maintenance fixture grant unavailable; not product RED.'}
+            SetRecordingPolicy $true
+        }
         SelectTarget $Fixture 'config-producer'
         $book=$excel.Workbooks.Add();$sheet=$book.Worksheets.Item(1)
         $sheet.Cells.Item(1,1).Value2='Operator Extra';$sheet.Cells.Item(2,1).Value2=$canary;$sheet.Cells.Item(2,2).Formula='=1+2'
@@ -157,7 +162,11 @@ function Test-ProductionRunFault($Fixture,$Other,[switch]$YieldOnly,[switch]$Sto
         if(-not [bool](Probe 'ReadPrepare' @($canary))){throw 'Released Run fault definitions unavailable; not product RED.'}
         if($YieldOnly){[void](Probe 'RunLocalRememberFixture')}
         foreach($root in @($Fixture.Root,$Other.Root)){
-            foreach($file in Get-ChildItem -LiteralPath $root -Recurse -File|Where-Object{$_.Extension -in '.xlsb','.xlsm' -and $_.Name -notlike '~$*'}){$pins[$file.FullName]=Hash $file.FullName}
+            foreach($file in Get-ChildItem -LiteralPath $root -Recurse -File|Where-Object{$_.Extension -in '.xlsb','.xlsm' -and $_.Name -notlike '~$*'}){
+                # The guide fixture explicitly publishes this warehouse's derived snapshots.
+                if($RunScalePathsForTest -and $root -ceq $Fixture.Root -and $file.Name -like '*.Snapshot.*'){continue}
+                $pins[$file.FullName]=Hash $file.FullName
+            }
         }
         foreach($file in Files){$recordPins[$file]=Hash $file};$otherBefore=@(Get-Slice4beActivityFiles $Other)
         $modes=if($YieldOnly -or $StockOnly -or $WorksheetOnly -or $WorksheetOwnerOnly -or $WorksheetScaleOnly){@()}else{@('Exception','Nested')}

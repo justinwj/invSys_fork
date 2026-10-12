@@ -10,6 +10,54 @@ loading, before subsequent scaling/output preparation/refresh, and display
 "Recipe could not be loaded. Scale was not applied." Scoped implementation follows;
 FAILED retains Unknown data effect and makes no owner-rollback claim.
 
+## Independent worksheet Scale guide proof, 2026-10-12
+
+Unchanged `deploy/validation-run-scale-success-02` passes **197/197** through the
+real packaged Apply Scale, recording, authoring, evaluation and view handlers.
+Two separate two-action recordings retain distinct identities; a third signs out
+after its first action. Every completed Scale reaches the captured worksheet owner,
+prepares quantity four without compounding, and preserves exact input identity,
+custom values/formulas and canonical source data. Exact activity pairs, ordinals,
+immutable journals, published records and Event Detail references are verified.
+
+An authorized Admin authors the two-step CommandCompleted expectation. A reader
+without maintenance rights evaluates the independent recordings: the successful
+run concludes with two exact matches; the interrupted run remains Incomplete with
+one match and one missing step. Neither borrows source-run success or claims Domain
+application. How-To, Diagnostic and Compare preserve identical evidence, with six
+layout checks. Six original captures were individually reviewed: multiline guidance,
+provenance, conclusions and matches are readable; scrolling reveals the successful
+comparison's tail. This is agent review, not human or comprehensive long-value acceptance.
+
+Controller `reports/runtime/production-run-local-controller/877a7e1f26f04f4cacb94ec184d84195`,
+worker `reports/runtime/slice4be-production-run-scale-paths/f8db66c4a6974ecfad3d9c604b48618c`,
+UTC01:15:30.643--01:23:50.788. Five instrumented compiles, exact candidate pins,
+settings/authority/operator/older-evidence preservation, normal unassisted closure
+and delayed zero Excel failures qualify through01:24:02.788 UTC. All48 shared
+checks retain order; the original86-check owner proof retains its separate scope.
+
+This adds coverage under existing D14/D18, with no runtime or contract change and
+no manufactured behavioral RED. Two preliminary fixture failures are retained:
+73/62 (`d7f9794bf1c14899b3dd8b358e393c33`, worker `10c096c9ac8f4f60b3c210365860d18f`)
+reauthenticated after form context capture;146/1 (`36fdec0b89344feb8b57cd7d15cae26d`,
+worker `e72bd286df9645159df409cb9007ae7c`) omitted the explicit guide-maintenance
+grant. Both closed normally with preserved settings/packages and zero delayed
+native failures. The fixture now configures policy and grants before opening
+Production, preserving its captured session until the deliberate final sign-out.
+
+Fresh static evidence `reports/runtime/worksheet-scale-paths-static-02` retains
+323 components/6355 procedures/138982 lines, dynamic9/45,192 duplicate candidates
+and all28 oversized caps; three schemas validate and462 PowerShell scripts parse.
+No runtime package changed; this test-only checkpoint did not repeat the full chain.
+The shared-helper Settings Close regression retains **123/123** in exact prior
+order on the same candidate: controller `general-settings-controller/9a203d9b8af84999b79948c704a8214e`,
+worker `slice4be-admin-close-paths/6f38d63307ac40ea9d728b27ae4dbbdc`, under reports/runtime.
+UTC01:24:07.800--01:29:52.218; five compiles, preservation, unassisted closure and
+zero delayed native failures qualify through01:30:04.218. Prior visual review
+retains its scope; the six newly reviewed captures above belong to worksheet Scale.
+The Shipping native fault, general D14 rebuild coverage, remaining action families
+and human/comprehensive4be-A acceptance remain open.
+
 ## Successful worksheet reload preserves custom fields, 2026-10-12
 
 Unpromoted `deploy/validation-run-scale-success-02` corrects existing D14 violations

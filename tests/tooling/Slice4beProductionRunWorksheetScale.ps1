@@ -297,6 +297,7 @@ function Test-ProductionRunWorksheetScale($Fixture) {
 
 # Refusals and a caught owner exception; successful worksheet reload remains a separate gate.
 function Test-ProductionRunScaleDisabled($Fixture) {
+    if($RunScalePathsForTest){. (Join-Path $PSScriptRoot 'Slice4beProductionRunScalePaths.ps1');Test-ProductionRunScalePaths $Fixture;return}
     if($RunScaleSuccessForTest){Test-ProductionRunScaleSuccess $Fixture;return}
     if($RunScaleReloadForTest){Test-ProductionRunScaleReload $Fixture;return}
     Check 'RunScaleDisabled.SupportedSurfaceAndSeedIdentity' $true

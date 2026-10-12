@@ -1,5 +1,13 @@
 # Slice4be Admin Settings Close observations
 
+Current regression,2026-10-12: the new worksheet Scale guide mode leaves Close
+behavior unchanged. On `validation-run-scale-success-02`, all123 checks retain
+their exact prior order. Controller `reports/runtime/general-settings-controller/9a203d9b8af84999b79948c704a8214e`,
+worker `reports/runtime/slice4be-admin-close-paths/6f38d63307ac40ea9d728b27ae4dbbdc`,
+UTC01:24:07.800--01:29:52.218. Five compiles, package/settings/authority/host/evidence
+preservation and normal unassisted closure pass; delayed audit is clear through
+01:30:04.218. Existing visual acceptance retains its scope; no runtime changed.
+
 Architecture v4.11 D18 catalog32 registers ADMIN_SETTINGS_CLOSE under approved
 comprehensive recording/semantic inheritance. This preserves the existing Close
 workflow; RUN-SCALE-02 was separately approved2026-10-11 and implemented in
