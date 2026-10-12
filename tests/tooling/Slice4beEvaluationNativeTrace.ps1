@@ -102,6 +102,11 @@ function Compile-Slice4beEvaluationProbes(
             Start-Sleep -Milliseconds 500
             $control=$excel.VBE.CommandBars.FindControl(1,578)
             if($null -eq $control -or $null -eq $control.Enabled -or $control.Enabled){
+                # Fixed source identifiers/coordinates only; no workbook data or code text.
+                $pane=$excel.VBE.ActiveCodePane
+                $sl=0;$sc=0;$el=0;$ec=0
+                $pane.GetSelection([ref]$sl,[ref]$sc,[ref]$el,[ref]$ec)
+                [pscustomobject]@{Package=$name;Component=$pane.CodeModule.Parent.Name;StartLine=$sl;StartColumn=$sc;EndLine=$el;EndColumn=$ec}|ConvertTo-Json|Set-Content (Join-Path $reportRoot 'instrumented-compile-location.json')
                 throw ('Instrumented compilation did not finish: '+$name)
             }
             Check ($CheckPrefix+$name) $true

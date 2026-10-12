@@ -7,6 +7,8 @@ param(
     [switch]$CheckAuthReadOnly,
     [switch]$CheckAdminAuthRefresh,
     [switch]$AdminAuthWriteDiagnostic,
+    [switch]$RequireAdminAuthWriteAuthority,
+    [switch]$CheckAdminUsersAuthority,
     [switch]$CheckActivityEvidence,
     [switch]$CheckActivityFoundation,
     [switch]$CheckAdminUomActivity,
@@ -724,6 +726,8 @@ if($CheckProductionDesignerActivity){
 }
 if($CheckAdminAuthRefresh -and -not $CheckAuthReadOnly){throw 'Admin Auth Refresh requires the compiled Auth regression gate.'}
 if($AdminAuthWriteDiagnostic -and -not $CheckAdminAuthRefresh){throw 'Auth write diagnostic requires the existing Admin Auth gate.'}
+if($RequireAdminAuthWriteAuthority -and -not $AdminAuthWriteDiagnostic){throw 'Write authority assertions require the existing diagnostic cases.'}
+if($CheckAdminUsersAuthority -and -not $RequireAdminAuthWriteAuthority){throw 'Direct Core authority tests require the handler authority gate.'}
 if($CheckAuthReadOnly){
     if(-not $CompileEvaluationProbesForTest -or $CheckActivityEvidence -or $CheckTrackingSettings -or $CheckViewerPublishedRead -or $CheckViewerEventDetail -or $CheckViewerEventGroups -or $CheckViewerRefreshFailure -or $CheckAdminSettingsClose){throw 'Auth reads require the separate compiled Core/caller gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-auth-read/'+[guid]::NewGuid().ToString('N'))
@@ -1855,6 +1859,10 @@ End Function
         if($CheckAdminAuthRefresh){
             . (Join-Path $PSScriptRoot 'Slice4beAdminAuthRefresh.ps1')
             Install-AdminAuthRefreshProbe
+            if($CheckAdminUsersAuthority){
+                . (Join-Path $PSScriptRoot 'Slice4beAdminUsersAuthority.ps1')
+                Install-AdminUsersAuthorityProbe
+            }
         }
         . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
         Compile-Slice4beEvaluationProbes
@@ -1948,6 +1956,7 @@ End Function
             if($AdminAuthWriteDiagnostic){
                 . (Join-Path $PSScriptRoot 'Slice4beAdminAuthWriteDiagnostic.ps1')
                 Test-AdminAuthWriteDiagnostic $a $b
+                if($CheckAdminUsersAuthority){Test-AdminUsersAuthority $a $b}
             }
         }
     }

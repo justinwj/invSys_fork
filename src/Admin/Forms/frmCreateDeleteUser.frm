@@ -52,6 +52,7 @@ Private mWarehousePathById As Object
 Private mAnchors As Object
 Private mBusy As Boolean
 Private mResizeInitialized As Boolean
+Private mWriteContext As String
 
 Private Const COLOR_INFO As Long = 0
 Private Const COLOR_SUCCESS As Long = 32768
@@ -102,6 +103,7 @@ Private Declare Function WNetCancelConnection2 Lib "mpr.dll" Alias "WNetCancelCo
 #End If
 
 Private Sub UserForm_Initialize()
+    mWriteContext = modAuthUserCommands.CaptureContext()
     Randomize
     mBusy = True
     Me.Caption = "Users & Roles"
@@ -727,173 +729,58 @@ CleanExit:
 End Sub
 
 Private Sub SaveUserAndRolesForm()
-    Dim wb As Workbook
-    Dim openedTransient As Boolean
-    Dim report As String
-    Dim loUsers As ListObject
-    Dim loCaps As ListObject
-    Dim userId As String
-    Dim displayName As String
-    Dim pinText As String
-    Dim whId As String
-    Dim stId As String
-    Dim userRow As Long
-
-    userId = Trim$(CStr(mTxtUserId.Value))
-    displayName = Trim$(CStr(mTxtDisplayName.Value))
-    pinText = CStr(mTxtPin.Value)
-    whId = Trim$(CStr(mTxtWarehouseId.Value))
-    stId = Trim$(CStr(mTxtStationId.Value))
-    If CBool(mChkRoamingStation.Value) Then stId = "*"
-    If stId = "" Then stId = "*"
-
-    If userId = "" Then
-        ShowStatusForm "User ID is required.", COLOR_ERROR
-        Exit Sub
-    End If
-    If displayName = "" Then displayName = userId
-    If whId = "" Then
-        ShowStatusForm "Warehouse scope is required.", COLOR_ERROR
-        Exit Sub
-    End If
-
-    Set wb = OpenSelectedAuthWorkbookForm(openedTransient, report, True)
-    If wb Is Nothing Then
+    Dim report As String, station As String, mask As Long
+    station = Trim$(CStr(mTxtStationId.Value))
+    If CBool(mChkRoamingStation.Value) Or station = "" Then station = "*"
+    If CBool(mChkAdmin.Value) Then mask = mask Or 1
+    If CBool(mChkReceivePost.Value) Then mask = mask Or 2
+    If CBool(mChkReceiveView.Value) Then mask = mask Or 4
+    If CBool(mChkShipPost.Value) Then mask = mask Or 8
+    If CBool(mChkProdPost.Value) Then mask = mask Or 16
+    If CBool(mChkInboxProcess.Value) Then mask = mask Or 32
+    If Not modAuthUserCommands.SaveUser(mWriteContext, NormalizePathForm(CStr(mTxtAuthPath.Value)), _
+        CStr(mTxtUserId.Value), CStr(mTxtDisplayName.Value), CStr(mTxtPin.Value), _
+        CStr(mTxtWarehouseId.Value), station, mask, report) Then
         ShowStatusForm report, COLOR_ERROR
         Exit Sub
     End If
-    If wb.ReadOnly Then
-        ShowStatusForm "Auth workbook is read-only; users and roles were not saved.", COLOR_ERROR
-        GoTo CleanExit
-    End If
-
-    Set loUsers = FindListObjectForm(wb, "tblUsers")
-    Set loCaps = FindListObjectForm(wb, "tblCapabilities")
-    If loUsers Is Nothing Or loCaps Is Nothing Then
-        ShowStatusForm "Auth tables were not available after schema ensure.", COLOR_ERROR
-        GoTo CleanExit
-    End If
-
-    userRow = EnsureUserRowForm(loUsers, userId)
-    If SafeTextForm(GetCellByColumnForm(loUsers, userRow, "PinHash")) = "" And pinText = "" Then
-        ShowStatusForm "PIN/password is required for a new auth user.", COLOR_ERROR
-        GoTo CleanExit
-    End If
-
-    SetCellByColumnForm loUsers, userRow, "UserId", userId
-    SetCellByColumnForm loUsers, userRow, "DisplayName", displayName
-    If pinText <> "" Then SetCellByColumnForm loUsers, userRow, "PinHash", modAuth.HashUserCredential(pinText)
-    SetCellByColumnForm loUsers, userRow, "Status", "ACTIVE"
-
-    SaveCapabilityChoiceForm loCaps, userId, "ADMIN_MAINT", whId, stId, CBool(mChkAdmin.Value)
-    SaveCapabilityChoiceForm loCaps, userId, "RECEIVE_POST", whId, stId, CBool(mChkReceivePost.Value)
-    SaveCapabilityChoiceForm loCaps, userId, "RECEIVE_VIEW", whId, stId, CBool(mChkReceiveView.Value)
-    SaveCapabilityChoiceForm loCaps, userId, "SHIP_POST", whId, stId, CBool(mChkShipPost.Value)
-    SaveCapabilityChoiceForm loCaps, userId, "PROD_POST", whId, stId, CBool(mChkProdPost.Value)
-    SaveCapabilityChoiceForm loCaps, userId, "INBOX_PROCESS", whId, stId, CBool(mChkInboxProcess.Value)
-
-    wb.Save
-    On Error Resume Next
-    modAuth.LoadAuth whId
-    modRibbonRuntimeStatus.InvalidateCurrentUserRibbons
-    On Error GoTo 0
     ShowStatusForm "User and role assignments saved. Store the visible PIN/password now; it cannot be recovered later.", COLOR_SUCCESS
     RefreshUsersForm
-
-CleanExit:
-    CloseTransientWorkbookForm wb, openedTransient
 End Sub
 
 Private Sub SetUserStatusForm(ByVal statusText As String)
-    Dim wb As Workbook
-    Dim openedTransient As Boolean
     Dim report As String
-    Dim loUsers As ListObject
-    Dim rowIndex As Long
-    Dim userId As String
-
-    userId = Trim$(CStr(mTxtUserId.Value))
-    If userId = "" Then
+    If Trim$(CStr(mTxtUserId.Value)) = "" Then
         ShowStatusForm "Select or enter a user first.", COLOR_ERROR
         Exit Sub
     End If
-
-    Set wb = OpenSelectedAuthWorkbookForm(openedTransient, report, True)
-    If wb Is Nothing Then
-        ShowStatusForm report, COLOR_ERROR
+    If Not modAuthUserCommands.DeactivateUser(mWriteContext, NormalizePathForm(CStr(mTxtAuthPath.Value)), _
+        CStr(mTxtUserId.Value), report) Then
+        If report = "User was not found." Then ShowStatusForm report, COLOR_WARNING Else ShowStatusForm report, COLOR_ERROR
         Exit Sub
     End If
-    If wb.ReadOnly Then
-        ShowStatusForm "Auth workbook is read-only; user status was not changed.", COLOR_ERROR
-        GoTo CleanExit
-    End If
-
-    Set loUsers = FindListObjectForm(wb, "tblUsers")
-    rowIndex = FindUserRowForm(loUsers, userId)
-    If rowIndex = 0 Then
-        ShowStatusForm "User was not found.", COLOR_WARNING
-        GoTo CleanExit
-    End If
-
-    SetCellByColumnForm loUsers, rowIndex, "Status", UCase$(statusText)
-    wb.Save
-    ShowStatusForm "User status set to " & UCase$(statusText) & ".", COLOR_SUCCESS
+    ShowStatusForm "User status set to INACTIVE.", COLOR_SUCCESS
     RefreshUsersForm
-
-CleanExit:
-    CloseTransientWorkbookForm wb, openedTransient
 End Sub
 
 Private Sub DeleteUserForm()
-    Dim wb As Workbook
-    Dim openedTransient As Boolean
-    Dim report As String
-    Dim loUsers As ListObject
-    Dim loCaps As ListObject
-    Dim rowIndex As Long
-    Dim i As Long
-    Dim userId As String
-
+    Dim userId As String, report As String
     userId = Trim$(CStr(mTxtUserId.Value))
     If userId = "" Then
         ShowStatusForm "Select or enter a user first.", COLOR_ERROR
         Exit Sub
     End If
     If MsgBox("Delete user '" & userId & "' and all assigned capabilities?", vbQuestion + vbYesNo, "Users & Roles") <> vbYes Then Exit Sub
-
-    Set wb = OpenSelectedAuthWorkbookForm(openedTransient, report, True)
-    If wb Is Nothing Then
+    If Not modAuthUserCommands.DeleteUser(mWriteContext, NormalizePathForm(CStr(mTxtAuthPath.Value)), userId, report) Then
         ShowStatusForm report, COLOR_ERROR
         Exit Sub
     End If
-    If wb.ReadOnly Then
-        ShowStatusForm "Auth workbook is read-only; user was not deleted.", COLOR_ERROR
-        GoTo CleanExit
-    End If
-
-    Set loUsers = FindListObjectForm(wb, "tblUsers")
-    Set loCaps = FindListObjectForm(wb, "tblCapabilities")
-    rowIndex = FindUserRowForm(loUsers, userId)
-    If rowIndex > 0 Then loUsers.ListRows(rowIndex).Delete
-
-    If Not loCaps Is Nothing Then
-        For i = loCaps.ListRows.Count To 1 Step -1
-            If StrComp(SafeTextForm(GetCellByColumnForm(loCaps, i, "UserId")), userId, vbTextCompare) = 0 Then
-                loCaps.ListRows(i).Delete
-            End If
-        Next i
-    End If
-
-    wb.Save
     ClearUserFieldsForm
     ShowStatusForm "User deleted.", COLOR_SUCCESS
     RefreshUsersForm
-
-CleanExit:
-    CloseTransientWorkbookForm wb, openedTransient
 End Sub
 
-Private Function OpenSelectedAuthWorkbookForm(ByRef openedTransient As Boolean, ByRef report As String, Optional ByVal forWrite As Boolean = False) As Workbook
+Private Function OpenSelectedAuthWorkbookForm(ByRef openedTransient As Boolean, ByRef report As String) As Workbook
     Dim authPath As String
     Dim wb As Workbook
 
@@ -915,13 +802,11 @@ Private Function OpenSelectedAuthWorkbookForm(ByRef openedTransient As Boolean, 
         End If
     Next wb
 
-    Set wb = Application.Workbooks.Open(Filename:=authPath, UpdateLinks:=0, ReadOnly:=Not forWrite, AddToMru:=False)
+    Set wb = Application.Workbooks.Open(Filename:=authPath, UpdateLinks:=0, ReadOnly:=True, AddToMru:=False)
     openedTransient = True
-    If forWrite Then
-        If Not modAuth.EnsureAuthSchema(wb, Trim$(CStr(mTxtWarehouseId.Value)), "svc_processor", report) Then GoTo FailSoft
-    End If
+
 ValidateRead:
-    If Not forWrite And Not modRuntimeWorkbooks.RuntimeWorkbookSchemaPresentForRead(wb, "AUTH") Then
+    If Not modRuntimeWorkbooks.RuntimeWorkbookSchemaPresentForRead(wb, "AUTH") Then
         report = "Auth workbook has missing required tables or columns."
         GoTo FailSoft
     End If
@@ -941,37 +826,9 @@ Private Sub CloseTransientWorkbookForm(ByVal wb As Workbook, ByVal openedTransie
     On Error GoTo 0
 End Sub
 
-Private Function EnsureUserRowForm(ByVal loUsers As ListObject, ByVal userId As String) As Long
-    Dim rowIndex As Long
-    Dim newRow As ListRow
 
-    rowIndex = FindUserRowForm(loUsers, userId)
-    If rowIndex > 0 Then
-        EnsureUserRowForm = rowIndex
-        Exit Function
-    End If
 
-    Set newRow = loUsers.ListRows.Add
-    EnsureUserRowForm = newRow.Index
-End Function
 
-Private Sub SaveCapabilityChoiceForm(ByVal loCaps As ListObject, ByVal userId As String, _
-                                     ByVal capability As String, ByVal warehouseId As String, _
-                                     ByVal stationId As String, ByVal selected As Boolean)
-    Dim rowIndex As Long
-
-    rowIndex = FindCapabilityRowForm(loCaps, userId, capability, warehouseId, stationId)
-    If selected Then
-        If rowIndex = 0 Then rowIndex = loCaps.ListRows.Add.Index
-        SetCellByColumnForm loCaps, rowIndex, "UserId", userId
-        SetCellByColumnForm loCaps, rowIndex, "Capability", capability
-        SetCellByColumnForm loCaps, rowIndex, "WarehouseId", warehouseId
-        SetCellByColumnForm loCaps, rowIndex, "StationId", stationId
-        SetCellByColumnForm loCaps, rowIndex, "Status", "ACTIVE"
-    ElseIf rowIndex > 0 Then
-        SetCellByColumnForm loCaps, rowIndex, "Status", "INACTIVE"
-    End If
-End Sub
 
 Private Function FindUserRowForm(ByVal loUsers As ListObject, ByVal userId As String) As Long
     Dim i As Long
@@ -986,23 +843,7 @@ Private Function FindUserRowForm(ByVal loUsers As ListObject, ByVal userId As St
     Next i
 End Function
 
-Private Function FindCapabilityRowForm(ByVal loCaps As ListObject, ByVal userId As String, _
-                                       ByVal capability As String, ByVal warehouseId As String, _
-                                       ByVal stationId As String) As Long
-    Dim i As Long
-    If loCaps Is Nothing Then Exit Function
-    If loCaps.DataBodyRange Is Nothing Then Exit Function
 
-    For i = 1 To loCaps.ListRows.Count
-        If StrComp(SafeTextForm(GetCellByColumnForm(loCaps, i, "UserId")), userId, vbTextCompare) <> 0 Then GoTo ContinueLoop
-        If StrComp(SafeTextForm(GetCellByColumnForm(loCaps, i, "Capability")), capability, vbTextCompare) <> 0 Then GoTo ContinueLoop
-        If StrComp(SafeTextForm(GetCellByColumnForm(loCaps, i, "WarehouseId")), warehouseId, vbTextCompare) <> 0 Then GoTo ContinueLoop
-        If StrComp(SafeTextForm(GetCellByColumnForm(loCaps, i, "StationId")), stationId, vbTextCompare) <> 0 Then GoTo ContinueLoop
-        FindCapabilityRowForm = i
-        Exit Function
-ContinueLoop:
-    Next i
-End Function
 
 Private Function HasActiveCapabilityForm(ByVal loCaps As ListObject, ByVal userId As String, _
                                          ByVal capability As String, ByVal warehouseId As String, _
@@ -1061,13 +902,7 @@ Private Function GetCellByColumnForm(ByVal lo As ListObject, ByVal rowIndex As L
     GetCellByColumnForm = lo.DataBodyRange.Cells(rowIndex, colIndex).Value
 End Function
 
-Private Sub SetCellByColumnForm(ByVal lo As ListObject, ByVal rowIndex As Long, _
-                                ByVal columnName As String, ByVal valueText As Variant)
-    Dim colIndex As Long
-    colIndex = ColumnIndexForm(lo, columnName)
-    If colIndex = 0 Then Exit Sub
-    lo.DataBodyRange.Cells(rowIndex, colIndex).Value = valueText
-End Sub
+
 
 Private Sub ClearUserFieldsForm()
     mTxtUserId.Value = ""

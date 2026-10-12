@@ -1,6 +1,7 @@
 # Observes existing form write handlers after authorization-context changes.
 # Counts/booleans only; no credentials, account values or paths in observations.
-# Diagnostic completion is not authorization or recording acceptance.
+# Diagnostic completion is not authorization or recording acceptance. The opt-in
+# D8-USERS-01 assertions require the nine observed unauthorized writes to stop.
 function Test-AdminAuthWriteDiagnostic($Fixture,$Other) {
     $owned=[IO.Path]::GetFullPath($runRoot).TrimEnd('\')+'\'
     $authPath=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb')
@@ -57,6 +58,9 @@ function Test-AdminAuthWriteDiagnostic($Fixture,$Other) {
                 $otherPreserved=(Get-AuthReadFixtureHash $otherPath) -ceq $otherHash
                 Check ('AdminAuthWriteDiagnostic.'+$state+'.'+$action+'.OtherAuthorityPreserved') $otherPreserved
                 if($state -ceq 'Admin'){Check ('AdminAuthWriteDiagnostic.Admin.'+$action+'.BaselinePersists') ($changed -and $persisted)}
+                if($RequireAdminAuthWriteAuthority -and $state -cne 'Admin'){
+                    Check ('AdminAuthWriteAuthority.'+$state+'.'+$action+'.DeniedWithoutMutation') (-not $changed -and -not $persisted)
+                }
                 $observations.Add([pscustomobject]@{Case=$state;Action=$action;OpenedAsAdmin=$initialAdmin;SignedInBeforeWrite=$signedIn;CurrentTargetMatchesOriginal=$originalTarget;CurrentTargetAdmin=$canAdminCurrent;OriginalTargetAdmin=$canAdminOriginal;FormRetainedOriginalTarget=$selectedOriginal;AuthBytesChanged=$changed;RequestedMutationPersisted=[bool]$persisted;OtherAuthorityPreserved=$otherPreserved})
                 [void](Run 'invSys.Admin.xlam' 'TestAdminAuthRefresh.CloseForTest')
             }
@@ -68,5 +72,5 @@ function Test-AdminAuthWriteDiagnostic($Fixture,$Other) {
     }
     SelectTarget $Fixture
     Check 'AdminAuthWriteDiagnostic.FixturesRestored' ((Get-AuthReadFixtureHash $authPath) -ceq $originalHash -and (Get-AuthReadFixtureHash $otherPath) -ceq $otherHash)
-    [pscustomobject]@{DiagnosticOnly=$true;AuthorizationAccepted=$false;Cases=$observations.ToArray()}|ConvertTo-Json -Depth 4|Set-Content (Join-Path $reportRoot 'admin-auth-write-diagnostic.json')
+    [pscustomobject]@{DiagnosticOnly=(-not $RequireAdminAuthWriteAuthority);AuthorizationAssertionsEnabled=[bool]$RequireAdminAuthWriteAuthority;AuthorizationAccepted=$false;Cases=$observations.ToArray()}|ConvertTo-Json -Depth 4|Set-Content (Join-Path $reportRoot 'admin-auth-write-diagnostic.json')
 }
