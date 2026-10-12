@@ -405,6 +405,8 @@ End Function
     Install-Slice4beBoxingPublishedReadProbe
     . (Join-Path $PSScriptRoot 'Slice4beDetailMultiline.ps1')
     Install-Slice4beDetailMultilineProbe
+    . (Join-Path $PSScriptRoot 'Slice4beDetailGlyphEvidence.ps1')
+    Install-DetailGlyphProbe
     . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
     Compile-Slice4beEvaluationProbes
     [void](Run 'invSys.Operations.xlam' 'modInventoryViewer.OpenInventoryViewer')
@@ -468,7 +470,9 @@ public static class DetailNativeLayout {
         if(thickness<=0 || rect.Right-rect.Left<4*thickness || rect.Bottom-rect.Top<4*thickness ||
             rect.Left<origin.X || rect.Top<origin.Y || rect.Right>origin.X+client.Right || rect.Bottom>origin.Y+client.Bottom)
             throw new Exception("Detail list scrollbar geometry is unavailable.");
-        var point=new Point {X=rect.Right-2*thickness,Y=rect.Bottom-thickness/2-1};
+        // Leave room for both the vertical scrollbar and the horizontal right
+        // arrow. Their boundary can deliver only a line step at 96 DPI.
+        var point=new Point {X=rect.Right-3*thickness,Y=rect.Bottom-thickness/2-1};
         if(GetAncestor(WindowFromPoint(point),2)!=form)throw new Exception("Detail scroll point is outside the owned form.");
         if(!SetCursorPos(point.X,point.Y))throw new Exception("Detail scroll cursor positioning failed.");
         if(GetForegroundWindow()!=form || GetAncestor(WindowFromPoint(point),2)!=form)throw new Exception("Detail scroll point became covered.");

@@ -6,6 +6,14 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+Current visual candidate `deploy/validation-detail-glyph-01` corrects final-line
+glyph clipping under existing D18: packaged RED89/1 -> GREEN90, retaining88 prior
+checks,14 principal captures, five cold compiles and329 unchanged other compiled
+components. Viewer98, smoke86, static limits, preservation and delayed native audit
+pass. It inherits
+the directory candidate's unresolved chain qualification and recording work below.
+See [glyph rendering evidence](plan022_slice4be_detail_glyph_results.md).
+
 Pending candidate `deploy/validation-admin-directory-01` corrects View Warehouses
 D14 preservation: RED26/4 -> GREEN31, Console118, smoke86, five compiles, static
 limits and one reviewed local-cell capture pass. Clean chain qualification is
@@ -224,9 +232,9 @@ lifecycle; retain the transfer499 checkpoint at its frozen candidate.
 | Required outcome | Verified evidence / remaining action |
 | --- | --- |
 | Approved shared A/B contract | D18-REPLAY-01 was approved2026-10-04. Preserve the A finish line and early B0 requirement; broader replay/results management belongs to B. RUN-SCALE-01/RUN-UI-01 were explicitly approved2026-10-11 and have scoped implementation/proof above; broader acceptance remains open. |
-| Comprehensive Operations/Admin recording | Catalog33 declares151 IDs; Settings entry/tab boundaries98/177 and continuous recording/guide125 now cover its six added controls. Admin Close retains its separately scoped evidence; nine General controls now have GREEN871, retaining647 and adding224 independent recording/guide checks. Recorded transfer GREEN499 retains all79 observation checks and adds420 recording/comparison checks at its frozen candidate. The source audit below identifies remaining gaps; registration alone is insufficient. |
+| Comprehensive Operations/Admin recording | Current catalog36 declares156 IDs; Reconcile360, Verify202 and Console188 have the scoped recording/guide evidence above. Settings entry/tab boundaries98/177 and continuous recording/guide125 cover its six added controls. Admin Close retains its separately scoped evidence; nine General controls have GREEN871, retaining647 and adding224 independent recording/guide checks. Recorded transfer GREEN499 retains all79 observation checks and adds420 recording/comparison checks at its frozen candidate. The source audit below identifies remaining gaps; registration alone is insufficient. |
 | Per-action/per-user Admin policy | [Policy evidence](plan022_slice4be_user_tracking_policy_results.md) reaches104/104; General02 refresh retains all104, five compiles, four reviewed captures, preservation and clean delayed closure. Historical/version, rights and required-audit evidence retain their documented scope. |
-| Viewer and configurable Detail | [Multiline](plan022_slice4be_multiline_results.md) has88/88 with14 reviewed images and separate98-check captured Viewer regression; [overflow](plan022_slice4be_detail_overflow_results.md) has50/50. Preserve their exact candidate/source scope and reconcile later changed dependencies; human acceptance is separate. |
+| Viewer and configurable Detail | [Glyph correction](plan022_slice4be_detail_glyph_results.md) has RED89/1 -> GREEN90, retaining the original88, with14 reviewed principal images and separate98-check captured Viewer regression on glyph-01. [Overflow](plan022_slice4be_detail_overflow_results.md) retains its50-check scope. Broader chain qualification and human acceptance remain separate. |
 | Versioned guide authoring/transfer | [Guide transfer](plan022_slice4be_guide_transfer_results.md) retains policy/storage RED423/1 -> GREEN429, transfer71 and native-edit58. Test-only GREEN499 proves20 actual recordings/evaluations and independent successful/incomplete/denied guide comparisons for Export and Import. Five instrumented compiles,12 reviewed captures, preservation, normal closure, delayed zero Excel failures and unchanged static ratchets pass. Runtime/packages are unchanged; broader acceptance remains open. |
 | How-To/Diagnostic/Compare and preferences | [Print comparison](plan022_slice4be_production_print_results.md) passes full320 with five reviewed captures and normal closure; its earlier view-session failure remains unexplained. Existing presentation/restart evidence remains scoped. Reconcile visible Operations and Admin comparisons, incomplete evidence and restart/isolation proof. |
 | Early B0 Receiving proof | [Receiving replay](plan022_slice4be_receiving_replay_results.md) passes121/121 on unchanged General02, retaining117 and adding four capture-settling checks. Five compiles, preservation and clean delayed closure pass. Native maximize/restore and intact restored captures are verified; the earlier clipped transition images remain recorded. Observation accounting, broader gates and human acceptance remain open. |

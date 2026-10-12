@@ -133,6 +133,7 @@ function Test-Slice4beDetailMultiline([string]$Role) {
         }
         if($present -and $CaptureEvidence){
             Invoke-DetailMultilineNativeScroll $window
+            Test-DetailGlyphRendering $window
         }
         if($CaptureEvidence){
             Check 'EventDetail.Multiline.NativeVerticalReachability' ($present -and [bool](Run 'invSys.Operations.xlam' 'modInventoryViewer.DetailMultilineFactForTest' @('Bottom')))

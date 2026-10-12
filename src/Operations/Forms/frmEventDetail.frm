@@ -111,6 +111,8 @@ Private Function AddMultilineLabel(ByVal name As String, ByVal text As String, B
     label.Font.Name = mFields.Font.Name: label.Font.Size = mFields.Font.Size: label.Font.Bold = bold
     label.Left = 8: label.Top = top
     label.Accelerator = "": label.WordWrap = False: label.AutoSize = True: label.Caption = text
+    ' AutoSize can round the final glyph below the label boundary at 96 DPI.
+    label.AutoSize = False: label.Height = label.Height + 2
     If label.Left + label.Width + 24 > mMultiline.ScrollWidth Then mMultiline.ScrollWidth = label.Left + label.Width + 24
     If label.Top + label.Height + 24 > mMultiline.ScrollHeight Then mMultiline.ScrollHeight = label.Top + label.Height + 24
     Set AddMultilineLabel = label
