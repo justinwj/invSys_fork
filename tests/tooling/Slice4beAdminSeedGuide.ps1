@@ -10,6 +10,10 @@ function Install-AdminSeedGuideProbe {
     Install-RecordingEvaluationProbe
     . (Join-Path $PSScriptRoot 'Slice4beGuideDraft.ps1')
     Install-GuideDraftProbe
+    if($AdminSeedGuideTimingOnly){
+        . (Join-Path $PSScriptRoot 'Slice4beAdminSeedGuideTiming.ps1')
+        Install-AdminSeedGuideTiming
+    }
 }
 
 function Test-AdminSeedGuide($Fixture,$Other) {
@@ -44,7 +48,8 @@ function Test-AdminSeedGuide($Fixture,$Other) {
         Check 'SeedRecorded.ExplicitGuidePermission' $true
         if(-not [bool](Run 'invSys.Core.xlam' 'TestSeedRecording.EnablePolicy' @('Capture'))){throw 'Capture policy unavailable.'}
         if(-not [bool](Run 'invSys.Admin.xlam' 'modAdminConsole.PublishReadFixtureForTest')){throw 'Initial publication unavailable.'}
-        foreach($kind in @('Source','Observed','Interrupted')){
+        $kinds=if($AdminSeedGuideTimingOnly){@('Source')}else{@('Source','Observed','Interrupted')}
+        foreach($kind in $kinds){
             CloseRecordingViewer;SelectTarget $Fixture
             PrepareSeed
             try{
@@ -114,9 +119,15 @@ function Test-AdminSeedGuide($Fixture,$Other) {
         foreach($run in $runs){foreach($record in $run.Records){$matches=@($lines|Where-Object RecordId -CEQ $record.RecordId);$exact=$exact -and $matches.Count -eq 1;if($matches.Count -eq 1){$exact=$exact -and $matches[0].ActivityId -ceq $record.ActivityId -and $matches[0].OutcomeCode -ceq $record.OutcomeCode}}}
         Check 'SeedRecorded.ExactPublishedActivity' $exact
         $domain=$true;foreach($run in $runs){foreach($id in $run.EventIds){$domain=$domain -and @($publication.Groups|Where-Object {$_.Source -ceq 'Inventory' -and $_.SourceId -ceq $id}).Count -eq 1}}
-        Check 'SeedRecorded.AllSixExactDomainEventsPublished' $domain
-        $anchor.Activate();Test-GeneralSettingsGuidePaths $Fixture $runs $steps -Seed
-        Test-AdminSeedAppliedGuide $Fixture $runs $inventory
+        Check $(if($AdminSeedGuideTimingOnly){'SeedTiming.ExactDomainEventsPublished'}else{'SeedRecorded.AllSixExactDomainEventsPublished'}) $domain
+        $anchor.Activate()
+        if($AdminSeedGuideTimingOnly){
+            . (Join-Path $PSScriptRoot 'Slice4beAdminSeedGuideTiming.ps1')
+            Test-AdminSeedGuideTiming $Fixture $runs[0]
+        }else{
+            Test-GeneralSettingsGuidePaths $Fixture $runs $steps -Seed
+            Test-AdminSeedAppliedGuide $Fixture $runs $inventory
+        }
         Check 'SeedRecorded.AuthoritiesInventoryAndHostPreserved' ((Hash $auth) -ceq $authHash -and (Hash $otherAuth) -ceq $otherHash -and (Hash $inventory) -ceq $inventoryHash -and (Hash $hostPath) -ceq $hostHash -and [string]$anchor.Worksheets.Item(1).Cells.Item(1,1).Value2 -ceq 'Seed guide canary')
     }finally{
         [void](Run 'invSys.Core.xlam' 'TestSeedBoundary.Arm' @('',''))

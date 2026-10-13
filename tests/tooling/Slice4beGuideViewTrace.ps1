@@ -1,7 +1,7 @@
 # Fixed procedure labels and clock readings only, in disposable compiled packages.
 # No arguments, operational values, DoEvents, extra refreshes or policy bypasses.
-function Install-Slice4beGuideViewTrace {
-    $targets=@{
+function Install-Slice4beGuideViewTrace([hashtable]$Targets=$null) {
+    if($null -eq $Targets){$Targets=@{
         Operations=@{
             frmActionPathView=@('RefreshView','ApplyLayout','UserForm_Activate','UserForm_Layout')
             frmActionPaths=@('ReadSelection','ReadViewEvaluation','UserForm_Activate')
@@ -12,7 +12,7 @@ function Install-Slice4beGuideViewTrace {
             modActivityPolicy=@('ReadPolicy')
             modConfig=@('LoadConfig','CloseTransientConfigAfterLoad')
         }
-    }
+    }}
     foreach($role in @('Operations','Core')){
         $book=$packages['invSys.'+$role+'.xlam']
         if($book.ReadOnly -or -not [string]::Equals($book.FullName,(Join-Path $probeDeploy ('invSys.'+$role+'.xlam')),[StringComparison]::OrdinalIgnoreCase)){

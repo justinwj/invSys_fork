@@ -1,8 +1,9 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-detail-glyph-01',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$NativeFeedback,[switch]$WorkflowEdges,[switch]$Recording,[switch]$RecordingBoundaries,[switch]$GuidePaths)
+param([string]$DeployRoot='deploy/validation-detail-glyph-01',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$NativeFeedback,[switch]$WorkflowEdges,[switch]$Recording,[switch]$RecordingBoundaries,[switch]$GuidePaths,[switch]$GuideTiming)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if($RecordingBoundaries -and -not $Recording){throw 'Recording boundaries require the retained recording gate.'}
 if($GuidePaths -and -not $RecordingBoundaries){throw 'Seed guides require the qualified boundary probes.'}
+if($GuideTiming -and -not $GuidePaths){throw 'Guide timing requires the Seed guide fixture.'}
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Admin Seed outcome gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
 $snapshot=Get-InvSysTestSettingsSnapshot
@@ -21,6 +22,7 @@ try{
     if($Recording){$extra+='-AdminSeedRecording'}
     if($RecordingBoundaries){$extra+='-AdminSeedRecordingBoundaries'}
     if($GuidePaths){$extra+='-AdminSeedGuidePaths';$extra+='-CaptureEvidence'}
+    if($GuideTiming){$extra+='-AdminSeedGuideTimingOnly';$extra+='-ViewerStartupPackageStateForTest';$extra+='SavedCopies'}
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1') -DeployRoot $DeployRoot -Phase $Phase -AdminSeedOutcomeOnly -CompileEvaluationProbesForTest -WaitForExcelReadyForTest -ExcelReadyReadLimitForTest 40 @extra *> (Join-Path $root 'worker.log')
     $code=$LASTEXITCODE
 }finally{
