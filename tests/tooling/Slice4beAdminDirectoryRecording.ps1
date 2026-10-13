@@ -58,6 +58,9 @@ End Sub
     $gate.CodeModule.AddFromString(@'
 Option Explicit
 Public DenialMessages As Long
+Public Function CurrentCatalogVersion() As Long
+    CurrentCatalogVersion = modActivityCatalog.CATALOG_VERSION
+End Function
 Public Function SetPolicy(ByVal mode As String) As Boolean
     Dim context As String, version As Long, wire As String, notice As String
     Dim model As Object, row As Variant, users As Collection, user As Object
@@ -113,6 +116,7 @@ End Function
 function Test-AdminDirectoryRecording($Fixture,$Other) {
     function Probe([string]$Name,[object[]]$Values=@()){Run 'invSys.Core.xlam' ('TestDirectoryActivity.'+$Name) $Values}
     function Invoke([string]$Name,[object[]]$Values=@()){Run 'invSys.Admin.xlam' ('TestDirectoryColumns.'+$Name) $Values}
+    $catalogVersion=[int](Probe 'CurrentCatalogVersion')
     function Pins([string]$Root){$result=@{};Get-ChildItem -LiteralPath $Root -Recurse -File|ForEach-Object {$s=[IO.File]::Open($_.FullName,'Open','Read','ReadWrite');try{$result[$_.FullName]=(Get-FileHash -InputStream $s).Hash}finally{$s.Dispose()}};return $result}
     function Retained($Before){foreach($path in $Before.Keys){if(-not(Test-Path -LiteralPath $path)){return $false};$s=[IO.File]::Open($path,'Open','Read','ReadWrite');try{$hash=(Get-FileHash -InputStream $s).Hash}finally{$s.Dispose()};if($hash -cne $Before[$path]){return $false}};return $true}
     SelectTarget $Fixture
@@ -164,7 +168,7 @@ function Test-AdminDirectoryRecording($Fixture,$Other) {
             Check ($prefix+'ExactCorrelatedPair') ($pair -and $requests[0].ActivityId -ceq $outcomes[0].ActivityId -and $requests[0].RecordId -cne $outcomes[0].RecordId)
             $owned=$pair;$safe=$pair;$conclusion=$pair
             foreach($record in $records){
-                $owned=$owned -and $record.OwnerId -ceq 'ADMIN_WAREHOUSE_DIRECTORY' -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.StationId -ceq 'S1' -and $record.CatalogVersion -eq 39 -and $record.DataEffect -ceq 'Unknown'
+                $owned=$owned -and $record.OwnerId -ceq 'ADMIN_WAREHOUSE_DIRECTORY' -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.StationId -ceq 'S1' -and $record.CatalogVersion -eq $catalogVersion -and $record.DataEffect -ceq 'Unknown'
                 $json=$record|ConvertTo-Json -Depth 20 -Compress
                 $safe=$safe -and @($record.SourceEventRefs).Count -eq 0
                 foreach($value in @($Fixture.Root,$Other.Root,$Fixture.Secret,'Keep this local note')){$safe=$safe -and $json.IndexOf($value,[StringComparison]::OrdinalIgnoreCase) -lt 0}

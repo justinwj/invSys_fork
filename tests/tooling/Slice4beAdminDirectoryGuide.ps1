@@ -1,5 +1,6 @@
 # Independent real Directory journeys feed the existing guide/evaluation handlers.
 function Test-AdminDirectoryGuide($Fixture,$HostBook) {
+    $catalogVersion=[int](Probe 'CurrentCatalogVersion')
     function HostFacts([string]$Stage){
         [pscustomobject]@{Stage=$Stage;AppVisible=[bool]$excel.Visible;ArgumentWindows=[int]$HostBook.Windows.Count;ArgumentIsAddin=[bool]$HostBook.IsAddin;OwnerFacts=[string](Invoke 'HostWindowFacts')}|
             ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'directory-guide-host-facts.jsonl')
@@ -48,7 +49,7 @@ function Test-AdminDirectoryGuide($Fixture,$HostBook) {
             }
             $records=@(Get-Slice4beActivityFiles $Fixture|Where-Object {$_ -cnotin $before}|ForEach-Object {Get-Content $_ -Raw|ConvertFrom-Json}|Where-Object ControlId -CEQ 'ADMIN_DIRECTORY_OPEN')
             $count=if($success){4}else{3};$valid=$records.Count -eq $count
-            foreach($record in $records){$valid=$valid -and $record.SequenceId -ceq $sequence -and $record.CatalogVersion -eq 39 -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.DataEffect -ceq 'Unknown' -and @($record.SourceEventRefs).Count -eq 0}
+            foreach($record in $records){$valid=$valid -and $record.SequenceId -ceq $sequence -and $record.CatalogVersion -eq $catalogVersion -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.DataEffect -ceq 'Unknown' -and @($record.SourceEventRefs).Count -eq 0}
             foreach($ordinal in 1,2){$expected=if(-not $success -and $ordinal -eq 2){1}else{2};$part=@($records|Where-Object Ordinal -EQ $ordinal);$valid=$valid -and $part.Count -eq $expected -and @($part|Where-Object OutcomeCode -CEQ 'REQUESTED').Count -eq 1 -and @($part|Where-Object OutcomeCode -CEQ 'OPENED').Count -eq ($expected-1)}
             Check ('AdminDirectory.Recorded.'+$kind+'.ExactActionsAndContext') $valid
             if($success){Check ('AdminDirectory.Recorded.'+$kind+'.ActualStop') ((RecordingControl 'Stop Recording' 'Click') -ceq 'DELIVERED')}

@@ -144,9 +144,10 @@ End Function
     # Restrict discovery to generated files; retain the real directory reader/rebuild.
     $owner=$project.VBComponents.Item('modAdminConsole').CodeModule
     $start=$owner.ProcStartLine('GetWarehouseDirectoryScanRoots',0);$count=$owner.ProcCountLines('GetWarehouseDirectoryScanRoots',0)
+    $script:OriginalRootScanForTest=$owner.Lines($start,$count)
     $owner.DeleteLines($start,$count)
     $owner.InsertLines($start,@'
-Public Function GetWarehouseDirectoryScanRoots() As Collection
+Public Function GetWarehouseDirectoryScanRoots(Optional ByVal inputs As Object = Nothing) As Collection
     Set GetWarehouseDirectoryScanRoots = TestDirectoryColumns.ReadRoots()
 End Function
 '@)
@@ -193,13 +194,15 @@ function Test-AdminDirectoryColumns($Fixture,$Other) {
             Initialize-SettingsCapture
             [void][InvSysSettingsCapture]::SetForegroundWindow([IntPtr]$excel.Hwnd)
             # False means the owned window was already foreground; input failures throw.
-            [void][InvSysSettingsCapture]::ActivateByCaptionClick([IntPtr]$excel.Hwnd,[IntPtr]$excel.Hwnd)
+            [void][InvSysSettingsCapture]::ActivateWorksheetByCaptionClick([IntPtr]$excel.Hwnd,[IntPtr]$excel.Hwnd)
+            $cursor=[InvSysSettingsCapture]::ParkCaptureCursor([IntPtr]$excel.Hwnd,[IntPtr]$excel.Hwnd)
             $captured=$false
-            try{CaptureFormEvidence 'Directory local columns' 'directory-local-columns.png' ([long]$excel.Hwnd);$captured=$true}
+            try{Start-Sleep -Milliseconds 350;CaptureFormEvidence 'Directory local columns' 'directory-local-columns.png' ([long]$excel.Hwnd);$captured=$true}
             catch{
                 if($_.Exception.GetBaseException().Message -cnotin @('Requested form content is obscured.','Requested form is not in the foreground.')){throw}
                 [InvSysSettingsCapture]::CaptionFacts()|Set-Content (Join-Path $reportRoot 'directory-capture-window-facts.txt')
             }
+            finally{[InvSysSettingsCapture]::RestoreCaptureCursor($cursor)}
             Check 'Directory.Visible.GeneratedLocalColumns' ($captured -and (Test-Path (Join-Path $reportRoot 'directory-local-columns.png')))
         }
         if($AdminWarehouseRootWriteDiagnostic){Test-AdminWarehouseRootWrite $Fixture $Other $hostBook $otherBook}

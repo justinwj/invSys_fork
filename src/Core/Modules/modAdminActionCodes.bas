@@ -5,6 +5,8 @@ Option Private Module
 Public Function Control(ByVal id As String) As Object
     Dim record As Object, owner As String, actionClass As String, caption As String
     Select Case id
+        Case "ADMIN_WAREHOUSE_ROOT_ADD"
+            owner = "ADMIN_WAREHOUSE_ROOT_PREFERENCE": actionClass = "Command": caption = "Add Warehouse Root"
         Case "ADMIN_VERIFY_ADDINS"
             owner = "ADMIN_ADDINS_VERIFY": actionClass = "Command": caption = "Verify Add-ins Published"
         Case "ADMIN_CONSOLE_OPEN"
@@ -34,6 +36,17 @@ Public Function Outcome(ByVal id As String, ByVal code As String) As Object
     Dim record As Object, severity As String, message As String, effect As String
     severity = "Info": effect = "Unknown"
     Select Case id
+        Case "ADMIN_WAREHOUSE_ROOT_ADD"
+            Select Case code
+                Case "REQUESTED": message = "Add Warehouse Root requested."
+                Case "CANCELLED": effect = "Unchanged": message = "Add Warehouse Root was cancelled before writing or refreshing."
+                Case "REMEMBERED_REFRESHED": message = "The root preference was confirmed and the directory refreshed. Warehouse creation and target selection are not asserted."
+                Case "REMEMBERED_REFRESH_FAILED": severity = "Error": message = "The root preference was confirmed, but the directory could not be refreshed."
+                Case "UNCONFIRMED_REFRESHED": severity = "Warning": message = "The root preference could not be confirmed. The directory refreshed."
+                Case "UNCONFIRMED_REFRESH_FAILED": severity = "Error": message = "The root preference could not be confirmed and the directory could not be refreshed. Inspect the current state before retrying."
+                Case "FAILED": message = "Add Warehouse Root could not finish. Inspect the current state before retrying."
+                Case Else: Exit Function
+            End Select
         Case "ADMIN_USER_SAVE", "ADMIN_USER_DEACTIVATE", "ADMIN_USER_DELETE"
             Select Case code
                 Case "REQUESTED": message = "Users & Roles command requested."

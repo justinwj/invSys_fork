@@ -1,10 +1,10 @@
 # Faults occur at optional logging entry or the actual activity-store Open.
-function Install-AdminDirectoryBoundaries($CoreModule,$AdminProbe) {
+function Install-AdminDirectoryBoundaries($CoreModule,$AdminProbe,[string]$ControlId='ADMIN_DIRECTORY_OPEN',[string]$Outcome='OPENED',[string]$ProbeName='TestDirectoryActivity',[switch]$RootAction) {
     $CoreModule.InsertLines($CoreModule.CountOfDeclarationLines+1,@'
 Private mMode As String, mOtherRoot As String, mOtherSecret As String, mOtherBook As String
 Private mEntryObserved As Boolean, mWriteFailures As Long
 '@)
-    $CoreModule.AddFromString(@'
+    $boundarySource=@'
 Public Sub ArmBoundary(ByVal mode As String, ByVal root As String, ByVal secret As String, ByVal book As String)
     mMode = mode: mOtherRoot = root: mOtherSecret = secret: mOtherBook = book
     mEntryObserved = False: mWriteFailures = 0
@@ -43,17 +43,19 @@ End Function
 Public Function WriteFailures() As Long
     WriteFailures = mWriteFailures
 End Function
-'@)
+'@
+    $CoreModule.AddFromString($boundarySource.Replace('ADMIN_DIRECTORY_OPEN',$ControlId).Replace('"OPENED"',('"'+$Outcome+'"')))
     $project=$packages['invSys.Core.xlam'].VBProject
     $activity=$project.VBComponents.Item('modActivity').CodeModule
     $start=$activity.ProcStartLine('BeginAction',0);$end=$start+$activity.ProcCountLines('BeginAction',0)
     $lines=@(for($line=$start;$line -lt $end;$line++){if($activity.Lines($line,1).Trim() -ceq 'notice = ""'){$line}})
     if($lines.Count -ne 1){throw 'Directory observation entry boundary changed.'}
-    $activity.InsertLines($lines[0],'    TestDirectoryActivity.AtEntry controlId')
+    $activity.InsertLines($lines[0],('    '+$ProbeName+'.AtEntry controlId'))
     $store=$project.VBComponents.Item('modActivityStore').CodeModule
     $lines=@(for($line=1;$line -le $store.CountOfLines;$line++){if($store.Lines($line,1).Trim() -ceq 'Open pending For Binary Access Write Lock Read Write As #file'){$line}})
     if($lines.Count -ne 1){throw 'Directory actual store-write boundary unavailable.'}
-    $store.InsertLines($lines[0],'    TestDirectoryActivity.AtWrite body, pending')
+    $store.InsertLines($lines[0],('    '+$ProbeName+'.AtWrite body, pending'))
+    if($RootAction){return}
     $AdminProbe.InsertLines($AdminProbe.CountOfDeclarationLines+1,'Private mTrackingNotices As Long')
     $AdminProbe.AddFromString(@'
 Public Function TrackingNotices() As Long

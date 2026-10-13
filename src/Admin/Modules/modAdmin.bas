@@ -124,30 +124,7 @@ FailSmoke:
 End Function
 
 Sub Add_WarehouseDirectoryRoot()
-    Dim report As String, remembered As Boolean, opened As Boolean
-    Dim targetWb As Workbook
-    Dim rootPath As String
-
-    rootPath = InputBox("Enter a NAS/server warehouse hub folder or a specific warehouse runtime folder to include in Admin warehouse scans.", _
-                        "invSys Admin - Warehouse Root", _
-                        "\\100.84.136.19\invSysWH1")
-    rootPath = Trim$(rootPath)
-    If rootPath = "" Then Exit Sub
-
-    remembered = modAdminConsole.RememberWarehouseScanRoot(rootPath)
-    Set targetWb = ResolveInteractiveAdminWorkbook()
-    Call modRoleWorkbookSurfaces.EnsureAdminLegacyWorkbookSurface(targetWb, report)
-    opened = modAdminConsole.OpenWarehouseDirectory(targetWb, report)
-    If opened Then
-        report = "Warehouse root remembered and directory refreshed."
-    Else
-        If Len(Trim$(report)) = 0 Then report = "Warehouse directory could not be opened."
-    End If
-    If Not remembered Then
-        If opened Then report = "Warehouse directory refreshed."
-        report = "Warehouse root preference could not be confirmed." & vbCrLf & report
-    End If
-    MsgBox report, IIf(remembered And opened, vbInformation, vbExclamation), "invSys Admin"
+    modAdminRootActivity.AddFromRibbon
 End Sub
 
 Sub Seed_DemoInventory()

@@ -10,8 +10,12 @@ Public Function Status(ByVal context As String, ByRef active As Boolean, ByRef c
     Status = modRecordingSession.ReadStatus(context, active, canStart)
 End Function
 
-Public Sub ContextClosed(ByVal context As String)
-    modRecordingSession.InterruptContext context, "VIEWER_CLOSED"
+' Optional observation setup can close capture before an action is registered.
+Public Sub ContextClosed(ByVal context As String, Optional ByVal trackingUnavailable As Boolean = False)
+    Dim reason As String
+    reason = "VIEWER_CLOSED"
+    If trackingUnavailable Then reason = "TRACKING_UNAVAILABLE"
+    modRecordingSession.InterruptContext context, reason
 End Sub
 
 ' EXPECTATION1 projection: header marker/draft/sequence/terminal StepId/kind;

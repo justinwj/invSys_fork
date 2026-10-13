@@ -9,13 +9,20 @@ Add Warehouse Root: [RED53/1](plan022_slice4be_admin_root_write_results.md) prov
 false remembered feedback after a refused local write. D18-ROOT-01 is approved
 (2026-10-13); expanded RED96/15 -> GREEN120 qualifies the owner correction, with
 native warnings, directory149, smoke86, chain32/live48/Create15 and static gates.
-Observation remains unimplemented. All30 prior preservation checks pass.
+All30 prior preservation checks pass. The separate
+[Root recording increment](plan022_slice4be_admin_root_recording_results.md) is now
+scoped-qualified: focused370, independent successful/incomplete/failed guide
+results,11 reviewed captures, directory219, Settings202, recording80, smoke86,
+chain32/live48/Create15 and compile/static/preservation gates.
 
-Current candidate is root-feedback-01, catalog39/161. Preceding directory-recording-01 has
+Current unpromoted candidate is root-recording-04, catalog40/162. Next audit the
+Create New Warehouse callback/form handlers and protect their existing owner
+outcomes before adding observations.4be-A remains incomplete.
+Preceding directory-recording-01 has
 [View Warehouses RED79/9 -> GREEN101 -> boundary149 -> guide219](plan022_slice4be_admin_directory_recording_results.md).
 Cold compiles/static limits, seven reviewed captures, Settings202, smoke86,
 chain32/live-role48/Create15 and Console188/six captures pass with clean preserved
-native closure. The root-feedback decision above precedes further root recording.
+native closure. Its Directory/guide gate is also fresh on root-recording-04.
 
 Preceding qualified checkpoint: catalog38/160, with scoped
 [Users context GREEN493](plan022_slice4be_admin_users_context_results.md),

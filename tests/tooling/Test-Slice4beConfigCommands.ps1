@@ -136,6 +136,8 @@ param(
     [switch]$AdminConsoleOnly,
     [switch]$AdminDirectoryColumnsOnly,
     [switch]$AdminWarehouseRootWriteDiagnostic,
+    [switch]$AdminWarehouseRootRecording,
+    [switch]$AdminWarehouseRootGuidePaths,
     [switch]$AdminDirectoryRecording,
     [switch]$AdminDirectoryGuidePaths,
     [switch]$AdminConsoleGuidePaths,
@@ -478,6 +480,8 @@ if($AdminConsoleOnly -and (-not $CompileEvaluationProbesForTest -or $AdminVerify
 if($AdminDirectoryColumnsOnly -and (-not $CompileEvaluationProbesForTest -or $AdminConsoleOnly -or $AdminVerifyAddinsOnly -or $AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $AdminSettingsCloseOnly -or $CheckTrackingSettings -or $CheckActivityEvidence -or $CheckViewerPublishedRead)){throw 'Directory preservation requires its separate compiled callback gate.'}
 if($AdminDirectoryRecording -and -not $AdminDirectoryColumnsOnly){throw 'Directory recording requires the isolated directory callback gate.'}
 if($AdminWarehouseRootWriteDiagnostic -and (-not $AdminDirectoryColumnsOnly -or $AdminDirectoryRecording -or $AdminDirectoryGuidePaths)){throw 'Root-write diagnosis requires its separate directory callback gate.'}
+if($AdminWarehouseRootRecording -and -not $AdminWarehouseRootWriteDiagnostic){throw 'Root recording requires the protected root owner gate.'}
+if($AdminWarehouseRootGuidePaths -and -not $AdminWarehouseRootRecording){throw 'Root guides require the protected recording gate.'}
 if($AdminDirectoryGuidePaths -and -not $AdminDirectoryRecording){throw 'Directory guide proof requires its recording gate.'}
 if($AdminConsoleDenialSurfaceForTest -and (-not $AdminConsoleOnly -or $Phase -cne 'RED')){throw 'Pre-dispatch surface diagnosis is a separate Admin Console RED observation.'}
 if($AdminConsoleGuidePaths -and (-not $AdminConsoleOnly -or $AdminConsoleDenialSurfaceForTest)){throw 'Console guide proof requires its isolated callback gate.'}
@@ -848,8 +852,8 @@ public static class InvSysSettingsCapture {
     [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr hwnd);
     [DllImport("user32.dll")] static extern IntPtr WindowFromPoint(Point point);
     [DllImport("user32.dll")] static extern IntPtr MonitorFromPoint(Point point,uint flags);
-    [DllImport("user32.dll")] static extern bool GetCursorPos(out Point point);
-    [DllImport("user32.dll")] static extern bool SetCursorPos(int x,int y);
+    [DllImport("user32.dll",SetLastError=true)] static extern bool GetCursorPos(out Point point);
+    [DllImport("user32.dll",SetLastError=true)] static extern bool SetCursorPos(int x,int y);
     [DllImport("user32.dll")] static extern uint SendInput(uint count,Input[] inputs,int size);
     [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr window,IntPtr after,int x,int y,int width,int height,uint flags);
     [DllImport("user32.dll",EntryPoint="GetWindowLongPtrW")] static extern IntPtr GetWindowLong64(IntPtr window,int index);
@@ -934,6 +938,16 @@ public static class InvSysSettingsCapture {
         return facts.ToArray();
     }
     public static bool ActivateByCaptionClick(IntPtr form,IntPtr excel) {
+        return ActivateByCaptionClick(form,excel,false);
+    }
+    public static bool ActivateWorksheetByCaptionClick(IntPtr form,IntPtr excel) {
+        var kind=new System.Text.StringBuilder(128);GetClassName(form,kind,kind.Capacity);
+        Rect rect;
+        if(kind.ToString()!="XLMAIN" || !GetWindowRect(form,out rect) || rect.Right-rect.Left<1000)
+            throw new Exception("Expected wide worksheet window unavailable for capture.");
+        return ActivateByCaptionClick(form,excel,true);
+    }
+    static bool ActivateByCaptionClick(IntPtr form,IntPtr excel,bool worksheet) {
         using(var pixels=new PhysicalPixels()) {
         captionFacts.Clear();captionFacts.Add("BeforeRaise|"+WindowFact(form));
         Rect rect;uint formProcess,excelProcess;
@@ -948,7 +962,9 @@ public static class InvSysSettingsCapture {
                 raised=true;
             }
             captionFacts.Add("AfterRaise|"+WindowFact(form));
-            foreach(int offset in new int[] {36,(rect.Right-rect.Left)/3,(rect.Right-rect.Left)/2}) {
+            // A worksheet's system-menu icon occupies the left caption corner.
+            int[] offsets=worksheet ? new int[] {(rect.Right-rect.Left)/4} : new int[] {36,(rect.Right-rect.Left)/3,(rect.Right-rect.Left)/2};
+            foreach(int offset in offsets) {
                 var point=new Point {X=rect.Left+offset,Y=rect.Top+15};
                 bool onMonitor=MonitorFromPoint(point,0)!=IntPtr.Zero;
                 captionFacts.Add("Candidate|"+point.X+","+point.Y+"|OnMonitor="+onMonitor);
@@ -981,6 +997,34 @@ public static class InvSysSettingsCapture {
     static bool IsTopmost(IntPtr window) {
         long style=IntPtr.Size==8 ? GetWindowLong64(window,-20).ToInt64() : GetWindowLong32(window,-20);
         return (style & 8)!=0;
+    }
+    static void MoveCaptureCursor(Point point) {
+        if(!SetCursorPos(point.X,point.Y)) {
+            int error=Marshal.GetLastWin32Error();throw new Exception("Capture cursor move failed; Win32 "+error);
+        }
+        Point actual;
+        if(!GetCursorPos(out actual)) {
+            int error=Marshal.GetLastWin32Error();throw new Exception("Capture cursor read failed; Win32 "+error);
+        }
+        if(actual.X!=point.X || actual.Y!=point.Y)throw new Exception("Capture cursor did not reach the verified owned point.");
+    }
+    public static Point ParkCaptureCursor(IntPtr form,IntPtr excel) {
+        using(var pixels=new PhysicalPixels()) {
+            uint owner,expected;GetWindowThreadProcessId(form,out owner);GetWindowThreadProcessId(excel,out expected);
+            Rect client;Point original;
+            if(owner==0 || owner!=expected || !GetClientRect(form,out client))throw new Exception("Owned capture content unavailable.");
+            var point=new Point {X=(client.Left+client.Right)/2,Y=(client.Top+client.Bottom)/2};
+            if(!ClientToScreen(form,ref point) || MonitorFromPoint(point,0)==IntPtr.Zero || GetAncestor(WindowFromPoint(point),2)!=form)
+                throw new Exception("Owned capture content is covered.");
+            if(!GetCursorPos(out original)) {
+                int error=Marshal.GetLastWin32Error();throw new Exception("Capture cursor origin unavailable; Win32 "+error);
+            }
+            try {MoveCaptureCursor(point);} catch {SetCursorPos(original.X,original.Y);throw;}
+            return original;
+        }
+    }
+    public static void RestoreCaptureCursor(Point original) {
+        using(var pixels=new PhysicalPixels()) {MoveCaptureCursor(original);}
     }
     public static void Save(string title, string path) {
         SaveWindow(FindWindow(null,title),path);
@@ -1288,7 +1332,7 @@ function NewFixture([string]$Suffix) {
             $row.Range.Cells.Item(1,$caps.ListColumns.Item($pair.Key).Index).Value2=$pair.Value
         }
     }
-    if($AdminDirectoryGuidePaths -or $AdminReconcileLocalDiagnostic -or $AdminSeedGuidePaths -or $AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
+    if($AdminWarehouseRootGuidePaths -or $AdminDirectoryGuidePaths -or $AdminReconcileLocalDiagnostic -or $AdminSeedGuidePaths -or $AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
         # Explicit fixture grant: Admin bootstrap does not imply guide maintenance.
         $row=$caps.ListRows.Add()
         foreach($pair in @{UserId='config-admin';Capability='ACTION_PATH_MAINT';WarehouseId=$wh;StationId='S1';Status='Active'}.GetEnumerator()){

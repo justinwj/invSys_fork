@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-admin-console-03',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$Recording,[switch]$GuidePaths,[switch]$RootWriteDiagnostic)
+param([string]$DeployRoot='deploy/validation-admin-console-03',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$Recording,[switch]$GuidePaths,[switch]$RootWriteDiagnostic,[switch]$RootRecording,[switch]$RootGuidePaths)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Admin directory columns gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
@@ -15,7 +15,9 @@ $start=[DateTimeOffset]::UtcNow;$code=1
 Write-Output ('Admin directory columns controller: '+$root)
 try{
     $extra=@();if($Recording -or $GuidePaths){$extra+='-AdminDirectoryRecording'};if($GuidePaths){$extra+='-AdminDirectoryGuidePaths'}
-    if($RootWriteDiagnostic){$extra+='-AdminWarehouseRootWriteDiagnostic'}
+    if($RootWriteDiagnostic -or $RootRecording -or $RootGuidePaths){$extra+='-AdminWarehouseRootWriteDiagnostic'}
+    if($RootRecording -or $RootGuidePaths){$extra+='-AdminWarehouseRootRecording'}
+    if($RootGuidePaths){$extra+='-AdminWarehouseRootGuidePaths'}
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1') -DeployRoot $DeployRoot -Phase $Phase -AdminDirectoryColumnsOnly -CompileEvaluationProbesForTest -WaitForExcelReadyForTest -ExcelReadyReadLimitForTest 40 @extra *> (Join-Path $root 'worker.log')
     $code=$LASTEXITCODE
 }finally{

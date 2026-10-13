@@ -1415,7 +1415,13 @@ Public Function RefreshWarehouseDirectory(Optional ByVal adminWb As Workbook = N
 
     AddOpenWarehouseConfigsToDirectory lo, seen, readScope
 
-    If readScope Is Nothing Then Set scanRoots = GetWarehouseDirectoryScanRoots() Else Set scanRoots = readScope("Roots")
+    If readScope Is Nothing Then
+        Set scanRoots = GetWarehouseDirectoryScanRoots()
+    ElseIf readScope.Exists("Inputs") Then
+        Set scanRoots = GetWarehouseDirectoryScanRoots(readScope("Inputs"))
+    Else
+        Set scanRoots = readScope("Roots")
+    End If
     For Each scanRoot In scanRoots
         AddWarehouseConfigsUnderRootToDirectory lo, seen, CStr(scanRoot)
     Next scanRoot
@@ -1434,32 +1440,18 @@ FailRefresh:
     report = "RefreshWarehouseDirectory failed: " & Err.Description
 End Function
 
-Public Function GetWarehouseDirectoryScanRoots() As Collection
-    Dim roots As Collection
-    Dim rememberedRoots As Collection
-    Dim knownTargetRoots As Collection
-    Dim item As Variant
-
-    Set roots = New Collection
-    AddWarehouseDirectoryScanRoot roots, GetAdminRuntimeScanRoot()
-    AddWarehouseDirectoryScanRoot roots, Trim$(modConfig.GetString("PathDataRoot", ""))
-    AddWarehouseDirectoryScanRoot roots, modRuntimeWorkbooks.GetCoreDataRootOverride()
-
-    Set knownTargetRoots = modNasConnection.GetKnownWarehouseTargetRoots()
-    For Each item In knownTargetRoots
-        AddWarehouseDirectoryScanRoot roots, CStr(item)
-    Next item
-
-    Set rememberedRoots = GetRememberedWarehouseScanRoots()
-    For Each item In rememberedRoots
-        AddWarehouseDirectoryScanRoot roots, CStr(item)
-    Next item
-
-    AddWarehouseDirectoryScanRoot roots, modDeploymentPaths.DefaultRuntimeHubRootPath(False)
-    Set GetWarehouseDirectoryScanRoots = roots
+Public Function CaptureWarehouseDirectoryInputs() As Object
+    Set CaptureWarehouseDirectoryInputs = modAdminDirectoryScope.Capture(GetAdminRuntimeScanRoot(), _
+        Trim$(modConfig.GetString("PathDataRoot", "")), modRuntimeWorkbooks.GetCoreDataRootOverride(), _
+        modNasConnection.GetKnownWarehouseTargetRoots(), modDeploymentPaths.DefaultRuntimeHubRootPath(False))
 End Function
 
-Private Sub AddWarehouseDirectoryScanRoot(ByVal roots As Collection, ByVal rootPath As String)
+Public Function GetWarehouseDirectoryScanRoots(Optional ByVal inputs As Object = Nothing) As Collection
+    If inputs Is Nothing Then Set inputs = CaptureWarehouseDirectoryInputs()
+    Set GetWarehouseDirectoryScanRoots = modAdminDirectoryScope.Roots(inputs, GetRememberedWarehouseScanRoots())
+End Function
+
+Public Sub AddWarehouseDirectoryScanRoot(ByVal roots As Collection, ByVal rootPath As String)
     Dim normalizedRoot As String
     Dim parentPath As String
     Dim item As Variant

@@ -1,5 +1,6 @@
 # Test-only fault at the actual local preference write; no operational registry faults.
 . (Join-Path $PSScriptRoot 'Slice4beAdminRootFeedbackNative.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beAdminRootRecording.ps1')
 function Install-AdminWarehouseRootWriteProbe {
     $project=$packages['invSys.Admin.xlam'].VBProject
     $probe=$project.VBComponents.Item('TestDirectoryColumns').CodeModule
@@ -10,6 +11,7 @@ Private mRootInput As String, mRootFault As Boolean, mRootSuccess As Long
 Private mRootWrites As Long, mRootFailures As Long
 Private mRootReadMode As String, mRootReads As Long, mRootDirectoryFault As Boolean
 Private mRootFeedback As String, mRootStyle As Long, mRootMessages As Long
+Private mRootTracking As Long
 '@)
     $probe.AddFromString(@'
 Public Sub SetRootPreference(ByVal value As String)
@@ -21,6 +23,9 @@ End Function
 Public Sub NativeRootFeedback(ByVal enabled As Boolean)
     RootNative = enabled
 End Sub
+Public Function RootTrackingNotices() As Long
+    RootTrackingNotices = mRootTracking
+End Function
 Public Function RootReadback(ByVal actual As String) As String
     RootReadback = actual
     If Not RootAction Or mRootWrites = 0 Then Exit Function
@@ -54,6 +59,7 @@ Public Function InvokeRoot(ByVal enteredRoot As String, ByVal failWrite As Boole
     mRootWrites = 0: mRootFailures = 0: mCalls = 0: mOpened = False
     mRootReadMode = readMode: mRootReads = 0: mRootDirectoryFault = failDirectory
     mRootFeedback = "": mRootStyle = 0: mRootMessages = 0
+    mRootTracking = 0
     mSuccess = 0: mOther = 0: mPrompts = 0
     before = VBA.GetSetting("invSys", "Admin", "WarehouseScanRoots", "")
     RootAction = True
@@ -77,6 +83,9 @@ End Function
     $start=$probe.ProcStartLine('ObserveMessage',0);$count=$probe.ProcCountLines('ObserveMessage',0)
     $source=$probe.Lines($start,$count)
     $changed=$source.Replace('ByVal text As String)', 'ByVal text As String, Optional ByVal style As Long = 0)').Replace('    If text = "Warehouse directory refreshed." Then',@'
+    If RootAction And Left$(text, 21) = "Tracking unavailable:" Then
+        mRootTracking = mRootTracking + 1: ObserveMessage = vbOK: Exit Function
+    End If
     If RootAction Then
         mRootMessages = mRootMessages + 1: mRootStyle = style
         mRootFeedback = Replace(Replace(text, vbCrLf, " "), vbLf, " ")
@@ -101,6 +110,15 @@ End Function
     $start=$admin.ProcStartLine('MsgBox',0);$count=$admin.ProcCountLines('MsgBox',0)
     $source=$admin.Lines($start,$count).Replace('ObserveMessage(Prompt)','ObserveMessage(Prompt, Buttons)')
     $admin.DeleteLines($start,$count);$admin.InsertLines($start,$source)
+    $rootOwner=@($project.VBComponents|Where-Object Name -CEQ 'modAdminRootActivity')
+    if($rootOwner.Count){$rootOwner[0].CodeModule.AddFromString(@'
+Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgBoxStyle = vbOKOnly, Optional ByVal Title As String = "") As VbMsgBoxResult
+    MsgBox = TestDirectoryColumns.ObserveMessage(Prompt, Buttons)
+End Function
+Private Function InputBox(ByVal Prompt As String, Optional ByVal Title As String = "", Optional ByVal Default As String = "") As String
+    InputBox = TestDirectoryColumns.ObservePrompt()
+End Function
+'@)}
     $owner=$project.VBComponents.Item('modAdminDirectoryActivity').CodeModule
     $start=$owner.ProcStartLine('OpenView',0);$count=$owner.ProcCountLines('OpenView',0)
     $source=$owner.Lines($start,$count)
@@ -119,9 +137,13 @@ Private Sub SaveSetting(ByVal app As String, ByVal section As String, ByVal key 
     VBA.SaveSetting app, section, key, setting
 End Sub
 '@)
+    Install-AdminRootRecordingProbe
 }
 
 function Test-AdminWarehouseRootWrite($Fixture,$Other,$HostBook,$OtherBook) {
+    # Keep the strict original file-set proof independent of optional activity writes.
+    SelectTarget $Fixture
+    if(-not [bool](Run 'invSys.Core.xlam' 'TestRootActivity.SetPolicy' @('Disabled'))){throw 'Owner-only recording suppression prerequisite failed'}
     $before=Pins $Fixture.Root;$otherBefore=Pins $Other.Root
     $faultRoot=Join-Path $runRoot 'unremembered-root'
     New-Item -ItemType Directory -Path $faultRoot|Out-Null
@@ -144,7 +166,7 @@ function Test-AdminWarehouseRootWrite($Fixture,$Other,$HostBook,$OtherBook) {
             $result=if($opened){'Warehouse directory refreshed.'}else{'Generated directory refresh failure.'}
             if($confirmed){$result}else{'Warehouse root preference could not be confirmed. '+$result}
         }
-        Check ($prefix+'NoUnexpectedFeedback') ($facts[13] -ceq $message -and $facts[11] -ceq $(if($cancel){'0'}else{'1'}) -and $facts[12] -ceq $(if($cancel){'0'}elseif($confirmed -and $opened){'64'}else{'48'}))
+        Check ($prefix+'NoUnexpectedFeedback') ($facts[13] -ceq $message -and $facts[11] -ceq $(if($cancel){'0'}else{'1'}) -and $facts[12] -ceq $(if($cancel){'0'}elseif($confirmed -and $opened){'64'}else{'48'}) -and [int](Invoke 'RootTrackingNotices') -eq 0)
         Check ($prefix+'ActualReadbackBoundary') ($facts[10] -ceq $(if($cancel -or $fault){'0'}else{'1'}))
         $preserved=$true;foreach($part in @('Managed','Headers','Text','Formula','Tail','Notes')){$preserved=$preserved -and [bool](Invoke 'Preserved' @($part))}
         Check ($prefix+'CapturedWorkbookAndCustomColumnsPreserved') ($preserved -and [string]$OtherBook.Worksheets.Item(1).Cells.Item(1,1).Value2 -ceq 'Other workbook canary')
@@ -163,4 +185,5 @@ function Test-AdminWarehouseRootWrite($Fixture,$Other,$HostBook,$OtherBook) {
             Invoke-AdminRootFeedbackNative $mode (Join-Path $faultRoot $mode)
         }
     }
+    if($AdminWarehouseRootRecording){Test-AdminRootRecording $Fixture $Other $HostBook $OtherBook}
 }

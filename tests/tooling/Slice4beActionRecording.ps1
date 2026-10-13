@@ -154,7 +154,7 @@ End Function
         $ordinary=SaveRecordedSetting '611'
         Check 'Recording.OutsideSequenceRetainsOrdinaryActivity' ($ordinary.Attempt.SequenceId -ceq '' -and $ordinary.Outcome.SequenceId -ceq '' -and $ordinary.Attempt.Ordinal -eq 0 -and $ordinary.Outcome.Ordinal -eq 0)
         CloseRecordingViewer
-        SetRecordingPolicy $true
+        SetRecordingPolicy $true -SaveValueOnly
         OpenRecordingViewer
         Check 'Recording.StartUsesActualControl' ((RecordingControl 'Start Recording' 'Click') -ceq 'DELIVERED')
         Check 'Recording.StartShowsZeroCounter' ((RecordingStatus) -match '(?i)recording.*0\s*/\s*256')
@@ -204,12 +204,13 @@ End Function
         Check 'Recording.PolicyChangeClosesIncomplete' ((JournalFact $policyRun.Attempt.SequenceId 'Close' 3 'Incomplete') -and
             (JournalChain $policyRun.Attempt.SequenceId 7) -and $exactPolicyFacts)
         CloseRecordingViewer
-        SetRecordingPolicy $true
+        SetRecordingPolicy $true -SaveValueOnly
         OpenRecordingViewer
         [void](RecordingControl 'Start Recording' 'Click')
         $bindingRun=SaveRecordedSetting '617'
         CloseRecordingViewer
-        Check 'Recording.ViewerClosureMarksIncomplete' (JournalFact $bindingRun.Attempt.SequenceId 'Close' 1 'Incomplete')
+        $bindingClosure=@(RecordingJournal $bindingRun.Attempt.SequenceId|Where-Object RecordType -CEQ 'Close')
+        Check 'Recording.ViewerClosureMarksIncomplete' ((JournalFact $bindingRun.Attempt.SequenceId 'Close' 1 'Incomplete') -and $bindingClosure.Count -eq 1 -and $bindingClosure[0].ReasonCode -ceq 'VIEWER_CLOSED')
         OpenRecordingViewer
         Check 'Recording.ReopenDoesNotResumeOldSequence' ((RecordingControl 'Stop Recording') -ceq 'True|False')
         [void](RecordingControl 'Start Recording' 'Click')
