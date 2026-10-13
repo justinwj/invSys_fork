@@ -9,7 +9,7 @@ Private mActions As Object
 Public Function CaptureContext() As String
     Dim target As WarehouseTarget
     On Error GoTo Unavailable
-    If Not modAuth.IsSignedIn() Or Not modNasConnection.IsCurrentTargetAllowed(True) Then Exit Function
+    If Not modAuth.IsSignedIn() Or Not modNasConnection.IsCurrentTargetAllowed(False) Then Exit Function
     Set target = modNasConnection.GetCurrentTarget()
     CaptureContext = modTrainingJson.Quote(target.WarehouseId) & modTrainingJson.Quote(target.StationId) & _
         modTrainingJson.Quote(target.RuntimeRoot) & modTrainingJson.Quote(target.ConfigPath) & _
@@ -93,7 +93,7 @@ Public Function FinishAction(ByVal activityId As String, ByVal outcomeCode As St
                              Optional ByRef notice As String = "", _
                              Optional ByVal sourceReferencesJson As String = "[]") As Boolean
     Dim action As Object, target As WarehouseTarget, definition As Object, outcome As Object
-    Dim version As Long, collect As Boolean, visible As Boolean, ignored As String, permitted As Boolean
+    Dim version As Long, collect As Boolean, visible As Boolean, permitted As Boolean
     Dim references As Collection, canonicalReferences As String
     On Error GoTo Failed
     If activityId = "" Then Exit Function
@@ -122,12 +122,15 @@ Public Function FinishAction(ByVal activityId As String, ByVal outcomeCode As St
                 definition("OwnerId") = "CORE_PERSONAL_PREFERENCE" And _
                 modSettingsActivityCodes.PersonalControl(CStr(action("ControlId"))))
         Else
-            permitted = modRoleUiAccess.CanCurrentUserPerformCapabilityCached(definition("Capability"), ignored)
+            permitted = modAuth.CanPerform(CStr(definition("Capability")), CStr(action("UserId")), _
+                target.WarehouseId, target.StationId, "ACTIVITY", activityId)
             If Not permitted And definition("Role") = "Production" Then _
-                permitted = modRoleUiAccess.CanCurrentUserPerformCapabilityCached("ADMIN_MAINT", ignored)
+                permitted = modAuth.CanPerform("ADMIN_MAINT", CStr(action("UserId")), _
+                    target.WarehouseId, target.StationId, "ACTIVITY", activityId)
         End If
         If Not permitted Then notice = "Tracking unavailable: completion is not authorized.": GoTo CleanExit
     End If
+    If action("Context") <> CaptureContext() Then notice = "Tracking unavailable: the action context is no longer current.": GoTo CleanExit
     If action.Exists("OutcomeBody") Then
         If action("OutcomeCode") <> outcomeCode Or action("ReferencesJson") <> canonicalReferences Then
             notice = "Tracking unavailable: conflicting completion.": GoTo CleanExit

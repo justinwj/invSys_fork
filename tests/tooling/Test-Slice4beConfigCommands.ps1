@@ -911,6 +911,22 @@ public static class InvSysSettingsCapture {
         },IntPtr.Zero);
         return count==1 ? found : IntPtr.Zero;
     }
+    public static string[] OwnedCaptionIdentity(string expected,IntPtr ownerWindow) {
+        uint owner;GetWindowThreadProcessId(ownerWindow,out owner);
+        var facts=new System.Collections.Generic.List<string>();
+        EnumWindows((window,state)=>{
+            uint process;GetWindowThreadProcessId(window,out process);
+            if(process==owner && IsWindowVisible(window)) {
+                var text=new System.Text.StringBuilder(512);GetWindowText(window,text,text.Capacity);
+                string label="Other";
+                foreach(string known in new string[]{"Action Path guide","Action Paths","Published guides","Inventory Viewer"})
+                    if(String.Equals(text.ToString(),known,StringComparison.Ordinal))label=known;
+                facts.Add(WindowFact(window)+"|ExpectedCaption="+String.Equals(text.ToString(),expected,StringComparison.Ordinal)+"|KnownCaption="+label+"|Root="+GetAncestor(window,2).ToInt64());
+            }
+            return true;
+        },IntPtr.Zero);
+        return facts.ToArray();
+    }
     public static bool ActivateByCaptionClick(IntPtr form,IntPtr excel) {
         using(var pixels=new PhysicalPixels()) {
         captionFacts.Clear();captionFacts.Add("BeforeRaise|"+WindowFact(form));
@@ -922,7 +938,7 @@ public static class InvSysSettingsCapture {
         bool wasTopmost=IsTopmost(form),raised=false;
         try {
             if(!wasTopmost) {
-                if(!SetWindowPos(form,new IntPtr(-1),0,0,0,0,0x13))throw new Exception("Owned capture form could not be raised.");
+                if(!SetWindowPos(form,new IntPtr(-1),0,0,0,0,0x213))throw new Exception("Owned capture form could not be raised.");
                 raised=true;
             }
             captionFacts.Add("AfterRaise|"+WindowFact(form));
@@ -951,7 +967,7 @@ public static class InvSysSettingsCapture {
             try {RecordCaptionFailure(form);} catch(Exception failure) {captionFacts.Add("DiagnosticUnavailable|"+failure.GetType().Name);}
             throw new Exception("No uncovered owned form caption point is available.");
         } finally {
-            if(raised && (!SetWindowPos(form,new IntPtr(-2),0,0,0,0,0x13) || IsTopmost(form)!=wasTopmost))
+            if(raised && (!SetWindowPos(form,new IntPtr(-2),0,0,0,0,0x213) || IsTopmost(form)!=wasTopmost))
                 throw new Exception("Capture form topmost state could not be restored.");
         }
         }
@@ -1064,6 +1080,8 @@ function CaptureOwnedFormEvidence([string]$Title,[string]$FileName,[long]$Window
         try {$clicked=[InvSysSettingsCapture]::ActivateByCaptionClick([IntPtr]$WindowHandle,[IntPtr]$excel.Hwnd)}
         catch {
             # Read-only failure facts: no captions, workbook values or input fallback.
+            [pscustomobject]@{Image=$FileName;RefoundHandle=[InvSysSettingsCapture]::OwnedVisibleForm($Title,[IntPtr]$excel.Hwnd).ToInt64();OwnedCaptionIdentity=[InvSysSettingsCapture]::OwnedCaptionIdentity($Title,[IntPtr]$excel.Hwnd)}|
+                ConvertTo-Json -Compress -Depth 3|Add-Content (Join-Path $reportRoot 'capture-owned-window-identity.jsonl')
             $bounds=New-Object InvSysSettingsCapture+Rect
             $haveBounds=[InvSysSettingsCapture]::GetWindowRect([IntPtr]$WindowHandle,[ref]$bounds)
             [pscustomobject]@{Image=$FileName;Attempt=$attempt;Identity=[InvSysSettingsCapture]::ForegroundIdentity([IntPtr]$WindowHandle);BoundsAvailable=$haveBounds;CallerDpiBounds=$bounds;Enabled=[InvSysSettingsCapture]::IsWindowEnabled([IntPtr]$WindowHandle);Minimized=[InvSysSettingsCapture]::IsIconic([IntPtr]$WindowHandle);PhysicalCaptionFacts=[InvSysSettingsCapture]::CaptionFacts()}|
@@ -1261,7 +1279,7 @@ function NewFixture([string]$Suffix) {
             $row.Range.Cells.Item(1,$caps.ListColumns.Item($pair.Key).Index).Value2=$pair.Value
         }
     }
-    if($AdminSeedGuidePaths -or $AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
+    if($AdminReconcileLocalDiagnostic -or $AdminSeedGuidePaths -or $AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
         # Explicit fixture grant: Admin bootstrap does not imply guide maintenance.
         $row=$caps.ListRows.Add()
         foreach($pair in @{UserId='config-admin';Capability='ACTION_PATH_MAINT';WarehouseId=$wh;StationId='S1';Status='Active'}.GetEnumerator()){

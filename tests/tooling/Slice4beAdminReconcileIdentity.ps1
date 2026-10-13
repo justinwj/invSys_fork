@@ -250,7 +250,7 @@ function Test-AdminReconcileIdentity($Fixture,$OtherFixture) {
     Check 'Reconcile.Preservation.OtherWarehouseConfig' ((Hash $OtherFixture.Config) -ceq $otherBefore)
     Test-AdminReconcileHistory $events $inventory $state
     Test-AdminReconcileAuthority $events $state $Fixture $OtherFixture
-    if($AdminReconcileLocalDiagnostic){Test-ReconcileLocalDiagnostic $Fixture $events $state}
+    if($AdminReconcileLocalDiagnostic){Test-ReconcileLocalDiagnostic $Fixture $events $state $OtherFixture}
     if($AdminReconcileNativePresentation){
         if($AdminReconcileRecording){
             SelectTarget $Fixture

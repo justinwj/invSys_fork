@@ -12,8 +12,12 @@ Current checkpoint,2026-10-13 UTC: catalog38/160, with scoped
 The [guide responsiveness correction](plan022_slice4be_seed_guide_timing_results.md)
 records current-candidate regression evidence. These supersede the older pending
 Users write and Seed publication/guide statements below; other controls remain open.
-D18-LOCAL-01 was approved2026-10-12 Pacific. Its shared local context/store/library
-implementation still requires packaged RED/GREEN; do not request approval again.
+D18-LOCAL-01 was approved2026-10-12 Pacific. Its
+[local recording candidate](plan022_slice4be_local_recording_results.md) has
+focused RED210/24 -> GREEN285, with scoped completion authorization,48 additional
+boundary checks and three reviewed saved-guide captures. NAS/native360, Settings202,
+per-user104, smoke86 and chain32/live-role48/Create15 pass on the same unpromoted
+candidate, with preservation and clean native audits. Do not request approval again.
 
 Continuation: [Shipment Reconcile evidence](plan022_slice4be_admin_reconcile_results.md)
 now passes360/360, retaining the330-check prefix under approved D8-RECON-01.

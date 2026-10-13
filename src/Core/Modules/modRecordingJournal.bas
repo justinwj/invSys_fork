@@ -76,7 +76,7 @@ End Function
 
 Public Function JournalRoot(ByVal target As WarehouseTarget, ByVal create As Boolean) As String
     Dim root As String, part As Variant, fso As Object
-    If Not modNasConnection.IsWarehouseTargetAllowed(target, True) Then Exit Function
+    If Not modNasConnection.IsWarehouseTargetAllowed(target, False) Then Exit Function
     If Not modTrainingWire.ValidSegment(target.WarehouseId) Then Exit Function
     Set fso = CreateObject("Scripting.FileSystemObject")
     root = target.RuntimeRoot

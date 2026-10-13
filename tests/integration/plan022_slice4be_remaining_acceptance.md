@@ -17,8 +17,11 @@ RED202/1 -> GREEN203 (118234ms -> 4186ms), Settings202, GuideDraft76, fresh Seed
 per-user104, smoke86 and chain32/live48/Create15, retaining their prior checks.
 See the [timing receipt](plan022_slice4be_seed_guide_timing_results.md) for
 compile/static, visible evidence, preservation and clean delayed native audits.
-D18-LOCAL-01 is approved by the user on2026-10-12 Pacific; its local-recording
-implementation and packaged RED/GREEN remain next. Broader Admin/Operations and
+D18-LOCAL-01 is approved by the user on2026-10-12 Pacific; its
+[local recording candidate](plan022_slice4be_local_recording_results.md) passes
+focused RED210/24 -> GREEN285, with local policy/context/storage boundaries and
+three reviewed captures. NAS/native360, Settings202, per-user104, smoke86 and
+chain32/live-role48/Create15 qualify the same unpromoted candidate. Broader Admin/Operations and
 early B0 acceptance remain open. The entries below are candidate-specific history,
 not the current approval or package status.
 
