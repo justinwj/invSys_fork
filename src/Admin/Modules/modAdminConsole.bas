@@ -161,20 +161,9 @@ Public Function OpenUserManagement(Optional ByVal adminWb As Workbook = Nothing,
 End Function
 
 Public Function OpenWarehouseDirectory(Optional ByVal adminWb As Workbook = Nothing, _
-                                       Optional ByRef report As String = "") As Boolean
-    Dim wb As Workbook
-
-    Set wb = ResolveAdminWorkbook(adminWb)
-    If wb Is Nothing Then
-        report = "Admin workbook not resolved."
-        Exit Function
-    End If
-
-    If Not EnsureAdminSchema(wb, report) Then Exit Function
-    If Not RefreshWarehouseDirectory(wb, report) Then Exit Function
-
-    wb.Worksheets(SHEET_WAREHOUSE_DIRECTORY).Activate
-    OpenWarehouseDirectory = True
+                                       Optional ByRef report As String = "", _
+                                       Optional ByVal readScope As Object = Nothing) As Boolean
+    OpenWarehouseDirectory = modAdminDirectoryActivity.OpenView(adminWb, report, readScope)
 End Function
 
 Public Function GetWarehouseDirectoryOptions(Optional ByVal adminWb As Workbook = Nothing, _
@@ -1391,8 +1380,9 @@ Private Function HasListColumnAdmin(ByVal lo As ListObject, ByVal columnName As 
     HasListColumnAdmin = (GetColumnIndexAdmin(lo, columnName) > 0)
 End Function
 
-Private Function RefreshWarehouseDirectory(Optional ByVal adminWb As Workbook = Nothing, _
-                                           Optional ByRef report As String = "") As Boolean
+Public Function RefreshWarehouseDirectory(Optional ByVal adminWb As Workbook = Nothing, _
+                                           Optional ByRef report As String = "", _
+                                           Optional ByVal readScope As Object = Nothing) As Boolean
     On Error GoTo FailRefresh
 
     Dim wb As Workbook
@@ -1422,9 +1412,9 @@ Private Function RefreshWarehouseDirectory(Optional ByVal adminWb As Workbook = 
     Set seen = CreateObject("Scripting.Dictionary")
     seen.CompareMode = vbTextCompare
 
-    AddOpenWarehouseConfigsToDirectory lo, seen
+    AddOpenWarehouseConfigsToDirectory lo, seen, readScope
 
-    Set scanRoots = GetWarehouseDirectoryScanRoots()
+    If readScope Is Nothing Then Set scanRoots = GetWarehouseDirectoryScanRoots() Else Set scanRoots = readScope("Roots")
     For Each scanRoot In scanRoots
         AddWarehouseConfigsUnderRootToDirectory lo, seen, CStr(scanRoot)
     Next scanRoot
@@ -1443,7 +1433,7 @@ FailRefresh:
     report = "RefreshWarehouseDirectory failed: " & Err.Description
 End Function
 
-Private Function GetWarehouseDirectoryScanRoots() As Collection
+Public Function GetWarehouseDirectoryScanRoots() As Collection
     Dim roots As Collection
     Dim rememberedRoots As Collection
     Dim knownTargetRoots As Collection
@@ -1510,11 +1500,14 @@ Private Function GetRememberedWarehouseScanRoots() As Collection
     Set GetRememberedWarehouseScanRoots = roots
 End Function
 
-Private Sub AddOpenWarehouseConfigsToDirectory(ByVal loDirectory As ListObject, ByVal seen As Object)
+Private Sub AddOpenWarehouseConfigsToDirectory(ByVal loDirectory As ListObject, ByVal seen As Object, _
+                                               Optional ByVal readScope As Object = Nothing)
     Dim wb As Workbook
     Dim loWh As ListObject
+    Dim books As Object
 
-    For Each wb In Application.Workbooks
+    If readScope Is Nothing Then Set books = Application.Workbooks Else Set books = readScope("Books")
+    For Each wb In books
         Set loWh = FindListObjectByNameAdmin(wb, "tblWarehouseConfig")
         If IsConfigWorkbookNameAdmin(wb.Name) Or Not loWh Is Nothing Then
             AddConfigWorkbookToWarehouseDirectory loDirectory, seen, wb, Trim$(wb.FullName)

@@ -9,6 +9,8 @@ Public Function Control(ByVal id As String) As Object
             owner = "ADMIN_ADDINS_VERIFY": actionClass = "Command": caption = "Verify Add-ins Published"
         Case "ADMIN_CONSOLE_OPEN"
             owner = "ADMIN_CONSOLE": actionClass = "Navigation": caption = "Admin Console"
+        Case "ADMIN_DIRECTORY_OPEN"
+            owner = "ADMIN_WAREHOUSE_DIRECTORY": actionClass = "Navigation": caption = "View Warehouses"
         Case "ADMIN_DEMO_SEED"
             owner = "ADMIN_DEMO_INVENTORY": actionClass = "Command": caption = "Seed Demo Inventory"
         Case "ADMIN_USER_SAVE", "ADMIN_USER_DEACTIVATE", "ADMIN_USER_DELETE"
@@ -56,6 +58,13 @@ Public Function Outcome(ByVal id As String, ByVal code As String) As Object
                 Case "REQUESTED": message = "Admin Console opening requested."
                 Case "OPENED": message = "Admin Console opened. Processing and Domain application are not asserted."
                 Case "FAILED": message = "Admin Console could not be opened."
+                Case Else: Exit Function
+            End Select
+        Case "ADMIN_DIRECTORY_OPEN"
+            Select Case code
+                Case "REQUESTED": message = "Warehouse directory opening requested."
+                Case "OPENED": message = "Warehouse directory opened. Warehouse creation and target selection are not asserted."
+                Case "FAILED": message = "Warehouse directory could not be opened."
                 Case Else: Exit Function
             End Select
         Case "ADMIN_DEMO_SEED"

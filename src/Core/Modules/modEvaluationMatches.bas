@@ -112,6 +112,7 @@ Public Function CommandCompleted(ByVal record As Object) As Boolean
     ' Explicit owner facts; severity and data effect are deliberately not classifiers.
     Select Case CStr(record("ControlId"))
         Case "ADMIN_CONSOLE_OPEN": CommandCompleted = (code = "OPENED")
+        Case "ADMIN_DIRECTORY_OPEN": CommandCompleted = (code = "OPENED")
         Case "ADMIN_DEMO_SEED": CommandCompleted = (code = "APPLIED" Or code = "UNCHANGED")
         Case "ADMIN_USER_SAVE", "ADMIN_USER_DEACTIVATE", "ADMIN_USER_DELETE": CommandCompleted = (code = "SAVED")
         Case "ADMIN_VERIFY_ADDINS": CommandCompleted = (code = "VERIFIED")

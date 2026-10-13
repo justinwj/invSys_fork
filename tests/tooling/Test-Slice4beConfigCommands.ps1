@@ -135,6 +135,8 @@ param(
     [switch]$AdminSeedGuideTimingOnly,
     [switch]$AdminConsoleOnly,
     [switch]$AdminDirectoryColumnsOnly,
+    [switch]$AdminDirectoryRecording,
+    [switch]$AdminDirectoryGuidePaths,
     [switch]$AdminConsoleGuidePaths,
     [switch]$AdminConsoleDenialSurfaceForTest,
     [switch]$AdminVerifyAddinsOnly,
@@ -473,6 +475,8 @@ if($AdminVerifyGuidePaths -and -not $AdminVerifyAddinsOnly){throw 'Verify guide 
 if($AdminVerifyExpectationChoicesOnly -and -not $AdminVerifyGuidePaths){throw 'Expectation choices require the recording/form probes.'}
 if($AdminConsoleOnly -and (-not $CompileEvaluationProbesForTest -or $AdminVerifyAddinsOnly -or $AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $AdminSettingsCloseOnly -or $CheckTrackingSettings -or $CheckActivityEvidence -or $CheckViewerPublishedRead)){throw 'Admin Console requires its separate compiled callback gate.'}
 if($AdminDirectoryColumnsOnly -and (-not $CompileEvaluationProbesForTest -or $AdminConsoleOnly -or $AdminVerifyAddinsOnly -or $AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $AdminSettingsCloseOnly -or $CheckTrackingSettings -or $CheckActivityEvidence -or $CheckViewerPublishedRead)){throw 'Directory preservation requires its separate compiled callback gate.'}
+if($AdminDirectoryRecording -and -not $AdminDirectoryColumnsOnly){throw 'Directory recording requires the isolated directory callback gate.'}
+if($AdminDirectoryGuidePaths -and -not $AdminDirectoryRecording){throw 'Directory guide proof requires its recording gate.'}
 if($AdminConsoleDenialSurfaceForTest -and (-not $AdminConsoleOnly -or $Phase -cne 'RED')){throw 'Pre-dispatch surface diagnosis is a separate Admin Console RED observation.'}
 if($AdminConsoleGuidePaths -and (-not $AdminConsoleOnly -or $AdminConsoleDenialSurfaceForTest)){throw 'Console guide proof requires its isolated callback gate.'}
 if($AdminReconcileNativePresentation -and -not $AdminReconcileIdentityOnly){throw 'Native Reconcile presentation requires its isolated callback gate.'}
@@ -1003,7 +1007,10 @@ public static class InvSysSettingsCapture {
         if(!SetWindowPos(hwnd,IntPtr.Zero,0,0,0,0,0x213))throw new Exception("Requested form could not be raised.");
         System.Threading.Thread.Sleep(200);
         if(GetAncestor(GetForegroundWindow(),2)!=GetAncestor(hwnd,2)) throw new Exception("Requested form is not in the foreground.");
-        if(!ContentUncovered(hwnd))throw new Exception("Requested form content is obscured.");
+        if(!ContentUncovered(hwnd)) {
+            RecordCaptionFailure(hwnd);
+            throw new Exception("Requested form content is obscured.");
+        }
         if(!GetWindowRect(hwnd,out r)) throw new Exception("Requested form window unavailable.");
         using(var bitmap=new Bitmap(r.Right-r.Left,r.Bottom-r.Top)) {
             using(var graphics=Graphics.FromImage(bitmap)) { graphics.CopyFromScreen(r.Left,r.Top,0,0,bitmap.Size); }
@@ -1279,7 +1286,7 @@ function NewFixture([string]$Suffix) {
             $row.Range.Cells.Item(1,$caps.ListColumns.Item($pair.Key).Index).Value2=$pair.Value
         }
     }
-    if($AdminReconcileLocalDiagnostic -or $AdminSeedGuidePaths -or $AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
+    if($AdminDirectoryGuidePaths -or $AdminReconcileLocalDiagnostic -or $AdminSeedGuidePaths -or $AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
         # Explicit fixture grant: Admin bootstrap does not imply guide maintenance.
         $row=$caps.ListRows.Add()
         foreach($pair in @{UserId='config-admin';Capability='ACTION_PATH_MAINT';WarehouseId=$wh;StationId='S1';Status='Active'}.GetEnumerator()){

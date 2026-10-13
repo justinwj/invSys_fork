@@ -1,4 +1,5 @@
 # D14 prerequisite: actual View Warehouses callback, generated read scope only.
+. (Join-Path $PSScriptRoot 'Slice4beAdminDirectoryRecording.ps1')
 function Install-AdminDirectoryColumnsProbe {
     $project=$packages['invSys.Admin.xlam'].VBProject
     $ribbon=$project.VBComponents.Add(2);$ribbon.Name='TestDirectoryRibbon'
@@ -125,20 +126,30 @@ Private Function InputBox(ByVal Prompt As String, Optional ByVal Title As String
     InputBox = TestDirectoryColumns.ObservePrompt()
 End Function
 '@)
-    $owner=$project.VBComponents.Item('modAdminConsole').CodeModule
-    $start=$owner.ProcStartLine('OpenWarehouseDirectory',0);$count=$owner.ProcCountLines('OpenWarehouseDirectory',0)
+    $newOwner=@($project.VBComponents|Where-Object Name -CEQ 'modAdminDirectoryActivity')
+    $owner=if($newOwner.Count){$newOwner[0].CodeModule}else{$project.VBComponents.Item('modAdminConsole').CodeModule}
+    $method=if($newOwner.Count){'OpenView'}else{'OpenWarehouseDirectory'}
+    $resolve=if($newOwner.Count){'    Set wb = modAdminWorkbookTarget.ResolveAdminTargetWorkbook(adminWb, ThisWorkbook, True)'}else{'    Set wb = ResolveAdminWorkbook(adminWb)'}
+    if($newOwner.Count){$owner.AddFromString(@'
+Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgBoxStyle = vbOKOnly, Optional ByVal Title As String = "") As VbMsgBoxResult
+    MsgBox = TestDirectoryColumns.ObserveMessage(Prompt)
+End Function
+'@)}
+    $start=$owner.ProcStartLine($method,0);$count=$owner.ProcCountLines($method,0)
     $source=$owner.Lines($start,$count)
-    $changed=$source.Replace('    Set wb = ResolveAdminWorkbook(adminWb)',"    TestDirectoryColumns.OwnerEntered`r`n    Set wb = ResolveAdminWorkbook(adminWb)").Replace('    OpenWarehouseDirectory = True',"    OpenWarehouseDirectory = True`r`n    TestDirectoryColumns.OwnerOpened")
+    $changed=$source.Replace($resolve,"    TestDirectoryColumns.OwnerEntered`r`n"+$resolve).Replace(('    '+$method+' = True'),('    '+$method+" = True`r`n    TestDirectoryColumns.OwnerOpened"))
     if($source -ceq $changed){throw 'Directory owner observation seam changed.'}
     $owner.DeleteLines($start,$count);$owner.InsertLines($start,$changed)
     # Restrict discovery to generated files; retain the real directory reader/rebuild.
+    $owner=$project.VBComponents.Item('modAdminConsole').CodeModule
     $start=$owner.ProcStartLine('GetWarehouseDirectoryScanRoots',0);$count=$owner.ProcCountLines('GetWarehouseDirectoryScanRoots',0)
     $owner.DeleteLines($start,$count)
     $owner.InsertLines($start,@'
-Private Function GetWarehouseDirectoryScanRoots() As Collection
+Public Function GetWarehouseDirectoryScanRoots() As Collection
     Set GetWarehouseDirectoryScanRoots = TestDirectoryColumns.ReadRoots()
 End Function
 '@)
+    if($AdminDirectoryRecording){Install-AdminDirectoryRecordingProbe}
 }
 
 function Test-AdminDirectoryColumns($Fixture,$Other) {
@@ -175,8 +186,17 @@ function Test-AdminDirectoryColumns($Fixture,$Other) {
             $hostBook.Activate();$sheet.Activate();$excel.Visible=$true;$excel.WindowState=-4137
             $excel.ActiveWindow.ScrollRow=1;$excel.ActiveWindow.ScrollColumn=1;$excel.ActiveWindow.Zoom=100
             $table.ListColumns.Item('Operator_note').DataBodyRange.Cells.Item(1,1).Select()
-            CaptureFormEvidence 'Directory local columns' 'directory-local-columns.png' ([long]$excel.Hwnd)
-            Check 'Directory.Visible.GeneratedLocalColumns' (Test-Path (Join-Path $reportRoot 'directory-local-columns.png'))
+            Initialize-SettingsCapture
+            # False means the owned window was already foreground; input failures throw.
+            [void][InvSysSettingsCapture]::ActivateByCaptionClick([IntPtr]$excel.Hwnd,[IntPtr]$excel.Hwnd)
+            $captured=$false
+            try{CaptureFormEvidence 'Directory local columns' 'directory-local-columns.png' ([long]$excel.Hwnd);$captured=$true}
+            catch{
+                if($_.Exception.GetBaseException().Message -cnotin @('Requested form content is obscured.','Requested form is not in the foreground.')){throw}
+                [InvSysSettingsCapture]::CaptionFacts()|Set-Content (Join-Path $reportRoot 'directory-capture-window-facts.txt')
+            }
+            Check 'Directory.Visible.GeneratedLocalColumns' ($captured -and (Test-Path (Join-Path $reportRoot 'directory-local-columns.png')))
         }
     }finally{$hostBook.Close($false);$otherBook.Close($false)}
+    if($AdminDirectoryRecording){Test-AdminDirectoryRecording $Fixture $Other}
 }

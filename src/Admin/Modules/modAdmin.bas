@@ -80,12 +80,7 @@ Sub Open_WarehouseDirectory()
     Set targetWb = ResolveInteractiveAdminWorkbook()
     Call modRoleWorkbookSurfaces.EnsureAdminLegacyWorkbookSurface(targetWb, report)
     PromptForWarehouseDirectoryRootIfNeeded
-    If modAdminConsole.OpenWarehouseDirectory(targetWb, report) Then
-        MsgBox "Warehouse directory refreshed.", vbInformation, "invSys Admin"
-    Else
-        If Len(Trim$(report)) = 0 Then report = "Warehouse directory could not be opened."
-        MsgBox report, vbExclamation, "invSys Admin"
-    End If
+    modAdminDirectoryActivity.OpenFromRibbon targetWb
 End Sub
 
 Sub Open_Settings()

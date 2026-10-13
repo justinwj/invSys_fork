@@ -6,7 +6,15 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
-Catalog38/160 is current. [Users context GREEN493](plan022_slice4be_admin_users_context_results.md)
+Current unpromoted candidate is directory-recording-01, catalog39/161.
+[View Warehouses recording](plan022_slice4be_admin_directory_recording_results.md)
+has RED79/9 -> GREEN101 -> boundary149 -> independent-guide219, preserving prior
+checks. Cold compiles, static limits, seven reviewed captures, Settings202,
+smoke86, chain32/live-role48/Create15 and Console188 with six reviewed captures
+pass with clean preserved native closure. This control is scoped-qualified;
+next audit Add Warehouse Root before its specification and packaged RED.
+
+Preceding catalog38/160: [Users context GREEN493](plan022_slice4be_admin_users_context_results.md)
 and [independent Users guide GREEN129](plan022_slice4be_admin_users_guide_results.md)
 supersede the pending Users-write statements in the older checkpoints below.
 [Seed guide GREEN283](plan022_slice4be_admin_seed_guide_results.md) supersedes the

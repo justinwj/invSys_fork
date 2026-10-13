@@ -5,7 +5,13 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
-Current checkpoint,2026-10-13 UTC: catalog38/160, with scoped
+Current candidate,2026-10-13 UTC: directory-recording-01, catalog39/161, with
+[View Warehouses RED79/9 -> GREEN101 -> boundary149 -> guide219](plan022_slice4be_admin_directory_recording_results.md).
+Cold compiles/static limits, seven reviewed captures, Settings202, smoke86,
+chain32/live-role48/Create15 and Console188/six captures pass with clean preserved
+native closure. Next audit Add Warehouse Root before its specification/packaged RED.
+
+Preceding qualified checkpoint: catalog38/160, with scoped
 [Users context GREEN493](plan022_slice4be_admin_users_context_results.md),
 [Users guide GREEN129](plan022_slice4be_admin_users_guide_results.md) and
 [Seed guide GREEN283](plan022_slice4be_admin_seed_guide_results.md).
