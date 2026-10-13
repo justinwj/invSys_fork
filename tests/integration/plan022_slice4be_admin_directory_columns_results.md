@@ -5,6 +5,25 @@ header-extension rules and Warehouse Directory enforcement clarification;
 Plan 022; Controls 1.548. This adds no recording ID, warehouse identity,
 annotation association, or business authority. Full 4be-A remains incomplete.
 
+## Current-candidate qualification, 2026-10-13 UTC
+
+Unpromoted `deploy/validation-local-recording-02` retains **31/31**, exact prior
+order, five instrumented compiles, exact log/JSON and package/tooling/settings
+preservation. Controller `admin-directory-columns-controller/27b556b464194d29a2a5507a4d6c389a`;
+worker `slice4be-admin-directory-columns/e6633c2c7e9444f68bc72415775fb312`.
+UTC03:25:19.532--03:26:03.006; normal closure and clean delayed native audit
+through03:26:23.006. Reviewed `directory-local-columns.png` shows the preserved
+note, formula result and tail; runtime paths are hidden.
+
+The same candidate's [local-recording receipt](plan022_slice4be_local_recording_results.md)
+records clean chain32/live-role48/Create15, smoke86 and static/compile gates.
+This qualifies the inherited preservation correction on that candidate. It does
+not repair or erase the earlier native failures below, qualify a permanent VBA
+loading change, or supply missing directory recording/native Ribbon evidence.
+Next: actual-handler recording RED, preserving the original workbook and existing
+open-Config/scan-root read scope before optional observation. No new recording
+definition or implementation has yet been added.
+
 ## Contract and implementation
 
 The actual `btnAdminWarehouses` / `modAdmin.Open_WarehouseDirectory` callback

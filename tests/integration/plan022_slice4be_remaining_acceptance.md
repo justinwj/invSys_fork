@@ -25,6 +25,11 @@ chain32/live-role48/Create15 qualify the same unpromoted candidate. Broader Admi
 early B0 acceptance remain open. The entries below are candidate-specific history,
 not the current approval or package status.
 
+The same candidate retains the [directory preservation31](plan022_slice4be_admin_directory_columns_results.md)
+gate, five compiles, reviewed capture and clean preserved native closure. The next
+scoped gap is directory recording through the actual View Warehouses callback;
+preserve its original workbook and read scope before optional observation.
+
 ### Earlier completion checkpoints
 
 New unpromoted `deploy/validation-admin-seed-recording-02` adds catalog37/157

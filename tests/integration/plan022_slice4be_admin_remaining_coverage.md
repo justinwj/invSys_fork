@@ -19,6 +19,13 @@ boundary checks and three reviewed saved-guide captures. NAS/native360, Settings
 per-user104, smoke86 and chain32/live-role48/Create15 pass on the same unpromoted
 candidate, with preservation and clean native audits. Do not request approval again.
 
+The [directory preservation gate](plan022_slice4be_admin_directory_columns_results.md)
+also retains31/31 on this candidate, with five compiles, one reviewed capture,
+preservation and clean native closure. Combined with its clean chain, the inherited
+D14 correction is qualified here; directory recording remains the next scoped proof.
+Earlier directory-01 native failures below remain historical evidence, not a
+current-candidate failure or proof that their underlying cause was repaired.
+
 Continuation: [Shipment Reconcile evidence](plan022_slice4be_admin_reconcile_results.md)
 now passes360/360, retaining the330-check prefix under approved D8-RECON-01.
 Scrollable history, native entry20/Inspect/Escape, resize, window-close and
