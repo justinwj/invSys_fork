@@ -1,5 +1,6 @@
 # D14 prerequisite: actual View Warehouses callback, generated read scope only.
 . (Join-Path $PSScriptRoot 'Slice4beAdminDirectoryRecording.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beAdminWarehouseRootWrite.ps1')
 function Install-AdminDirectoryColumnsProbe {
     $project=$packages['invSys.Admin.xlam'].VBProject
     $ribbon=$project.VBComponents.Add(2);$ribbon.Name='TestDirectoryRibbon'
@@ -150,6 +151,9 @@ Public Function GetWarehouseDirectoryScanRoots() As Collection
 End Function
 '@)
     if($AdminDirectoryRecording){Install-AdminDirectoryRecordingProbe}
+    if($AdminWarehouseRootWriteDiagnostic){
+        Install-AdminWarehouseRootWriteProbe
+    }
 }
 
 function Test-AdminDirectoryColumns($Fixture,$Other) {
@@ -197,6 +201,7 @@ function Test-AdminDirectoryColumns($Fixture,$Other) {
             }
             Check 'Directory.Visible.GeneratedLocalColumns' ($captured -and (Test-Path (Join-Path $reportRoot 'directory-local-columns.png')))
         }
+        if($AdminWarehouseRootWriteDiagnostic){Test-AdminWarehouseRootWrite $Fixture $Other $hostBook $otherBook}
     }finally{$hostBook.Close($false);$otherBook.Close($false)}
     if($AdminDirectoryRecording){Test-AdminDirectoryRecording $Fixture $Other}
 }

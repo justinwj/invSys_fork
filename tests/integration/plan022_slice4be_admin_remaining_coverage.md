@@ -5,11 +5,15 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+Add Warehouse Root: [RED53/1](plan022_slice4be_admin_root_write_results.md) proves
+false remembered feedback after a refused local write. Proposed D18-ROOT-01 awaits
+approval; observation remains unimplemented. All30 prior preservation checks pass.
+
 Current candidate,2026-10-13 UTC: directory-recording-01, catalog39/161, with
 [View Warehouses RED79/9 -> GREEN101 -> boundary149 -> guide219](plan022_slice4be_admin_directory_recording_results.md).
 Cold compiles/static limits, seven reviewed captures, Settings202, smoke86,
 chain32/live-role48/Create15 and Console188/six captures pass with clean preserved
-native closure. Next audit Add Warehouse Root before its specification/packaged RED.
+native closure. The root-feedback decision above precedes further root recording.
 
 Preceding qualified checkpoint: catalog38/160, with scoped
 [Users context GREEN493](plan022_slice4be_admin_users_context_results.md),

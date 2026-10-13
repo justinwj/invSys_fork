@@ -6,13 +6,18 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+Add Warehouse Root now has [packaged diagnostic RED53/1](plan022_slice4be_admin_root_write_results.md):
+an unpersisted root is reported remembered. D18-ROOT-01 proposes confirmed local
+persistence feedback while retaining the existing refresh attempt; approval is
+pending. No runtime/catalog change. This is the next prerequisite before recording.
+
 Current unpromoted candidate is directory-recording-01, catalog39/161.
 [View Warehouses recording](plan022_slice4be_admin_directory_recording_results.md)
 has RED79/9 -> GREEN101 -> boundary149 -> independent-guide219, preserving prior
 checks. Cold compiles, static limits, seven reviewed captures, Settings202,
 smoke86, chain32/live-role48/Create15 and Console188 with six reviewed captures
 pass with clean preserved native closure. This control is scoped-qualified;
-next audit Add Warehouse Root before its specification and packaged RED.
+the root-feedback decision above precedes further Add Warehouse Root recording.
 
 Preceding catalog38/160: [Users context GREEN493](plan022_slice4be_admin_users_context_results.md)
 and [independent Users guide GREEN129](plan022_slice4be_admin_users_guide_results.md)

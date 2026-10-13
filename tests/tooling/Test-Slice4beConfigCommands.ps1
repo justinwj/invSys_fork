@@ -135,6 +135,7 @@ param(
     [switch]$AdminSeedGuideTimingOnly,
     [switch]$AdminConsoleOnly,
     [switch]$AdminDirectoryColumnsOnly,
+    [switch]$AdminWarehouseRootWriteDiagnostic,
     [switch]$AdminDirectoryRecording,
     [switch]$AdminDirectoryGuidePaths,
     [switch]$AdminConsoleGuidePaths,
@@ -476,6 +477,7 @@ if($AdminVerifyExpectationChoicesOnly -and -not $AdminVerifyGuidePaths){throw 'E
 if($AdminConsoleOnly -and (-not $CompileEvaluationProbesForTest -or $AdminVerifyAddinsOnly -or $AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $AdminSettingsCloseOnly -or $CheckTrackingSettings -or $CheckActivityEvidence -or $CheckViewerPublishedRead)){throw 'Admin Console requires its separate compiled callback gate.'}
 if($AdminDirectoryColumnsOnly -and (-not $CompileEvaluationProbesForTest -or $AdminConsoleOnly -or $AdminVerifyAddinsOnly -or $AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $AdminSettingsCloseOnly -or $CheckTrackingSettings -or $CheckActivityEvidence -or $CheckViewerPublishedRead)){throw 'Directory preservation requires its separate compiled callback gate.'}
 if($AdminDirectoryRecording -and -not $AdminDirectoryColumnsOnly){throw 'Directory recording requires the isolated directory callback gate.'}
+if($AdminWarehouseRootWriteDiagnostic -and (-not $AdminDirectoryColumnsOnly -or $AdminDirectoryRecording -or $AdminDirectoryGuidePaths)){throw 'Root-write diagnosis requires its separate directory callback gate.'}
 if($AdminDirectoryGuidePaths -and -not $AdminDirectoryRecording){throw 'Directory guide proof requires its recording gate.'}
 if($AdminConsoleDenialSurfaceForTest -and (-not $AdminConsoleOnly -or $Phase -cne 'RED')){throw 'Pre-dispatch surface diagnosis is a separate Admin Console RED observation.'}
 if($AdminConsoleGuidePaths -and (-not $AdminConsoleOnly -or $AdminConsoleDenialSurfaceForTest)){throw 'Console guide proof requires its isolated callback gate.'}
