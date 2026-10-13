@@ -191,6 +191,7 @@ function Test-AdminDirectoryColumns($Fixture,$Other) {
             $excel.ActiveWindow.ScrollRow=1;$excel.ActiveWindow.ScrollColumn=1;$excel.ActiveWindow.Zoom=100
             $table.ListColumns.Item('Operator_note').DataBodyRange.Cells.Item(1,1).Select()
             Initialize-SettingsCapture
+            [void][InvSysSettingsCapture]::SetForegroundWindow([IntPtr]$excel.Hwnd)
             # False means the owned window was already foreground; input failures throw.
             [void][InvSysSettingsCapture]::ActivateByCaptionClick([IntPtr]$excel.Hwnd,[IntPtr]$excel.Hwnd)
             $captured=$false

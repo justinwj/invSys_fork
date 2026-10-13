@@ -6,10 +6,12 @@ This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
 Add Warehouse Root: [RED53/1](plan022_slice4be_admin_root_write_results.md) proves
-false remembered feedback after a refused local write. Proposed D18-ROOT-01 awaits
-approval; observation remains unimplemented. All30 prior preservation checks pass.
+false remembered feedback after a refused local write. D18-ROOT-01 is approved
+(2026-10-13); expanded RED96/15 -> GREEN120 qualifies the owner correction, with
+native warnings, directory149, smoke86, chain32/live48/Create15 and static gates.
+Observation remains unimplemented. All30 prior preservation checks pass.
 
-Current candidate,2026-10-13 UTC: directory-recording-01, catalog39/161, with
+Current candidate is root-feedback-01, catalog39/161. Preceding directory-recording-01 has
 [View Warehouses RED79/9 -> GREEN101 -> boundary149 -> guide219](plan022_slice4be_admin_directory_recording_results.md).
 Cold compiles/static limits, seven reviewed captures, Settings202, smoke86,
 chain32/live-role48/Create15 and Console188/six captures pass with clean preserved

@@ -300,7 +300,7 @@ Private Function IsUncPathAdmin(ByVal pathText As String) As Boolean
     IsUncPathAdmin = (Left$(NormalizePathAdmin(pathText), 2) = "\\")
 End Function
 
-Public Sub RememberWarehouseScanRoot(ByVal rootPath As String)
+Public Function RememberWarehouseScanRoot(ByVal rootPath As String) As Boolean
     Dim normalizedRoot As String
     Dim roots As Collection
     Dim persistedText As String
@@ -308,7 +308,7 @@ Public Sub RememberWarehouseScanRoot(ByVal rootPath As String)
     Dim countWritten As Long
 
     normalizedRoot = NormalizePathAdmin(rootPath)
-    If normalizedRoot = "" Then Exit Sub
+    If normalizedRoot = "" Then Exit Function
 
     Set roots = GetRememberedWarehouseScanRoots()
     persistedText = normalizedRoot
@@ -322,10 +322,11 @@ Public Sub RememberWarehouseScanRoot(ByVal rootPath As String)
         End If
     Next item
 
-    On Error Resume Next
+    On Error GoTo Unconfirmed
     SaveSetting SETTINGS_APP, SETTINGS_SECTION_ADMIN, SETTINGS_WAREHOUSE_SCAN_ROOTS, persistedText
-    On Error GoTo 0
-End Sub
+    RememberWarehouseScanRoot = (StrComp(GetSetting(SETTINGS_APP, SETTINGS_SECTION_ADMIN, SETTINGS_WAREHOUSE_SCAN_ROOTS, ""), persistedText, vbBinaryCompare) = 0)
+Unconfirmed:
+End Function
 
 Public Function HasRememberedWarehouseScanRoots() As Boolean
     Dim roots As Collection

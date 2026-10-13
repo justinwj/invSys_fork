@@ -124,7 +124,7 @@ FailSmoke:
 End Function
 
 Sub Add_WarehouseDirectoryRoot()
-    Dim report As String
+    Dim report As String, remembered As Boolean, opened As Boolean
     Dim targetWb As Workbook
     Dim rootPath As String
 
@@ -134,15 +134,20 @@ Sub Add_WarehouseDirectoryRoot()
     rootPath = Trim$(rootPath)
     If rootPath = "" Then Exit Sub
 
-    modAdminConsole.RememberWarehouseScanRoot rootPath
+    remembered = modAdminConsole.RememberWarehouseScanRoot(rootPath)
     Set targetWb = ResolveInteractiveAdminWorkbook()
     Call modRoleWorkbookSurfaces.EnsureAdminLegacyWorkbookSurface(targetWb, report)
-    If modAdminConsole.OpenWarehouseDirectory(targetWb, report) Then
-        MsgBox "Warehouse root remembered and directory refreshed.", vbInformation, "invSys Admin"
+    opened = modAdminConsole.OpenWarehouseDirectory(targetWb, report)
+    If opened Then
+        report = "Warehouse root remembered and directory refreshed."
     Else
         If Len(Trim$(report)) = 0 Then report = "Warehouse directory could not be opened."
-        MsgBox report, vbExclamation, "invSys Admin"
     End If
+    If Not remembered Then
+        If opened Then report = "Warehouse directory refreshed."
+        report = "Warehouse root preference could not be confirmed." & vbCrLf & report
+    End If
+    MsgBox report, IIf(remembered And opened, vbInformation, vbExclamation), "invSys Admin"
 End Sub
 
 Sub Seed_DemoInventory()
