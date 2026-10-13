@@ -1,91 +1,128 @@
-# Create New Warehouse owner diagnostic
+# Create New Warehouse authority and reopened publication
 
-4be-A / Admin prerequisite,2026-10-13. **D8-CREATE-01 is proposed; not approved.**
-Production code and unpromoted `deploy/validation-root-recording-04` are unchanged,
-catalog40/162. This is owner characterization and authorization RED, not recording
-or4be-A acceptance.
+4be-A / Admin prerequisite,2026-10-13. **D8-CREATE-01 is approved, implemented and
+scoped-qualified.** Unpromoted candidate:
+`deploy/validation-create-authority-03`; recording catalog remains40/162.
+Create recording, guide conclusions and comprehensive4be-A acceptance remain open.
 
-## Finding and protecting test
+## Contract and implementation
 
-The actual generated `btnAdminCreateWarehouse` Ribbon callback opens the actual
-`frmCreateWarehouse` under an authenticated Admin. The test signs out via Core,
-proves `IsSignedIn=False`, and invokes the form's own `btnOK_Click`. A new Config
-is saved and the form reports local completion. The two failing assertions are
-`Create.SignedOut.DoesNotCreateRuntime` and `Create.SignedOut.NoCompletionClaim`.
-Ribbon authorization alone does not protect the later form write. Admin calls
-the separately available headless bootstrap without a captured live-session gate.
+The real Admin Ribbon/form handlers call typed, headless Core commands. Each
+write checks the live session generation and ADMIN_MAINT at the captured source
+warehouse/station. Sign-out, new session, changed warehouse, reader rights and
+persisted revocation refuse writes; a local user-ID hint cannot replace sign-in.
+Authorization is repeated after read-only publication validation. No confirmation
+exists in these current handlers; any future confirmation must precede that check.
 
-The normative station-setup paragraph requires signed-in ADMIN_MAINT; D8-A keeps
-explicit provisioning separate and D8-USERS-01 concerns Users only. Proposed
-D8-CREATE-01 defines the interactive captured-context boundary for approval.
-No production authorization or bootstrap behavior has been changed.
+Local creation and publication retain separate results. **Publish Existing
+Warehouse** opens the recovery path in a new form/session, reads saved identity
+from the selected existing runtime and ignores new-warehouse entry fields. It
+makes zero bootstrap calls and preserves local Config/Auth/inventory bytes.
+Missing/invalid runtime refuses without repair. Ordinary Create still rejects
+duplicates. Downstream diagnostic sinks receive fixed text during these commands,
+not entered paths/fields. No new recording IDs or replay authority are introduced.
+
+The first candidate exposed an existing side effect: inventory-path resolution
+selected the destination interactively during bootstrap, signing out the source.
+The inventory bridge and processor now prefer their explicit transaction root
+before asking for an interactive target. This preserves the approved source
+context without reauthentication or restoring a stale session. Existing headless
+bootstrap remains separate. Headless test follow-up Seed explicitly binds its
+own generated runtime rather than relying on that removed selection side effect.
+
+Summary formatting moved unchanged into an Admin helper to keep the Create form
+small. The new footer button remains inside the form at minimum/expanded sizes.
+
+## D13 evidence
+
+All roots below are ignored `reports/runtime/`; no runtime payload is committed.
+
+- Historical owner RED45/2: controller
+  `admin-create-owner-controller/bc3531d7e5b04df3af169524d0c2b3f1`.
+- Expanded RED63/23 before product edits: controller
+  `admin-create-owner-controller/54c4bc6167674e66a36d24891740e3a8`.
+  Repeated with counters at actual Core calls:
+  `admin-create-owner-controller/0a637996150d49f48a314969490389ee`, worker
+  `slice4be-admin-create-owner/24468886a8e949fcaab7333015217ae3`.
+- Diagnostic sink RED106/4 on candidate02: controller
+  `admin-create-owner-controller/abd69e0b5eae4355810c82d3cf6cacff`, worker
+  `slice4be-admin-create-owner/3b0f1dc78a2c440fb0dc9a02974e265e`.
+  Observation at the actual file write exposed entered identity in PerfBegin/Mark
+  run IDs. Moving redaction into the shared writer protects every performance entry.
+- Final focused GREEN110/110 on candidate03: controller
+  `admin-create-owner-controller/1defae167b5a4a8282fc2ecb56d7ec36`, worker
+  `slice4be-admin-create-owner/fb1b42520e7c4242bf50338c074af48c`.
+  Every original45 pass and all86 expanded RED check identities are now GREEN;
+  `create-authority-check-comparison-02.json` and `-03.json` record preservation.
+  Five instrumented compiles pass. Packages/tooling/settings are preserved;
+  Excel exits normally. Delayed native audit through22:02:21.454UTC finds zero
+  Excel error/hang events.
+  Three reviewed final-candidate captures show denied retry and successful
+  reopened publication at minimum/expanded sizes.
+- Purpose/layout GREEN36/36:
+  `warehouse-purpose/f21f240cf9a44fabadba3af4375e69fc`, with two reviewed captures.
+  All35 prior checks remain; one added check establishes a real source Admin.
+  The disposable fixture credentials are never emitted and are removed after
+  Excel exits. Source initialization reuses the existing credential helper.
+- Candidate03 passes Operations cold start and all five cold compiles:
+  `create-authority-compile-03.log`, `create-authority-compiled-03.json`.
+  Compared with qualified root-recording-04,333 compiled components are unchanged,
+  five are changed and three are added. Operations and both Domains are unchanged.
+
+Focused coverage includes actual callback entry, Operational/Training creation,
+exact generated Receiving opening, duplicate/invalid/cancel refusal, successful
+publication, real partial publication failure and retry, four stale-context retry
+cases, reopened saved identity, direct Core source-vs-destination authorization,
+context loss after the read, missing/invalid runtime, saved rights revocation,
+source-session preservation and non-vacuous diagnostic redaction.
+
+Reproduction:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/tooling/Test-Slice4beAdminCreateWarehouseOwner.ps1 -DeployRoot deploy/validation-root-recording-04 -Phase RED
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/tooling/Test-Slice4beAdminCreateWarehouseOwner.ps1 -DeployRoot deploy/validation-create-authority-03 -Phase GREEN -CaptureEvidence
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/tooling/Test-Slice4beWarehousePurpose.ps1 -DeployRoot deploy/validation-create-authority-03 -Phase GREEN -CaptureEvidence -CheckLayout
 ```
 
-Test adapters are in-memory only: an Office.IRibbonControl selects the real
-callback, its existing Show becomes modeless to allow subsequent handler calls,
-and fixed facts/counters expose outcomes. Bootstrap/publication results are real.
-The partial-publication case uses a regular file inside the generated destination
-to block its warehouse folder; retry uses a fresh generated destination. No ACL
-changes, operational workbooks or fabricated owner returns are involved. Credentials
-stay in the shared harness's disposable fixtures and are never emitted.
+## Qualification and exclusions
 
-## Scope and evidence
+Final candidate03 regression:
 
-Initial valid worker `slice4be-admin-create-owner/c6c219f5afad4fc0b39e11c1630d72cf`
-finishes **45 PASS / 2 expected FAIL**, including all five instrumented compiles.
-Passed behavior: Operational and Training local creation with saved purpose;
-Config/Auth/Inventory/inbox artifacts; opening the exact generated Receiving
-workbook; duplicate refusal with Config bytes preserved; invalid input and Cancel
-without provisioning; complete publication; retained local success after failed
-publication; retry without rebootstrap or changing local Config bytes; unchanged
-source/other Config bytes. The signed-out precondition itself passes.
+- Chain32/32, live-role48/48 and Create15/15:
+  `create-authority-regression-03/chain-81338c93b9b8465b95e60449d6f0f17f`.
+- Packaged smoke86/86:
+  `create-authority-regression-03/smoke-d82ab71cf100403b80aaa68c38594d45`.
+- Recording/Viewer80/80:
+  `create-authority-regression-03/recording-fc267ad13bfc47b5970fc985f1c07d91`.
 
-Closure-qualified controller `admin-create-owner-controller/bc3531d7e5b04df3af169524d0c2b3f1`,
-worker `slice4be-admin-create-owner/226ea78b479541ec9fed157b8f988dfc`, repeats **45/2**.
-All47 log check IDs/results exactly match JSON. UTC18:11:46.444--18:13:46.253;
-settings, five package pins and tooling pins are preserved; Excel closes normally.
-Delayed native audit through18:14:06.275UTC finds zero Excel error/hang events and
-no Excel process. No forced termination or recovery attachment was used.
-Ignored evidence roots are under `reports/runtime/`; no runtime payload is committed.
+Chain, smoke and recording retain the preceding qualified check identities/results, with
+normal unassisted closure and preserved packages/settings/tracked reports.
+The delayed final audit through22:15:04.999UTC finds zero Excel1000/1001/1002
+events and Excel closed (`create-authority-native-audit-02.json`). Passive desktop
+monitoring reports no error5; visible captures passed their input guards. Earlier
+owned-window cleanup is excluded below, not attributed to the final chain.
+Static `create-authority-maintenance-04` reports348 components,6445 procedures,
+140438 lines; literal/dynamic calls9/45 and duplicate groups196 are unchanged.
+All28 oversized modules stay within their existing limits. The Create form shrinks
+664 ->588 lines; new helpers meet module/procedure limits. Three JSON schemas and
+524 PowerShell parses pass. No code deletion or growth exception is introduced.
+Final diff cleanup removes one trailing blank line from the presentation helper
+(final source140437 lines); no executable code changed after these gates.
 
-All522 PowerShell files parse. The desktop monitor runs18:06:00.552--18:14:37.806UTC,
-103 samples with zero cursor/desktop/capture/error5 failures, and stops normally.
-Separate `navigation-cursor/61123cc91dd8430080b6a60216ca5842` verifies actual
-SetCursorPos movement to the exact target and original-position restoration.
-This is input availability evidence, not native Create form acceptance.
+Candidate01's49/9 runs localized lost source context; they are not acceptance.
+Candidate02's104/2 attempt had an adapter error: a bare handler name before a
+colon became a VBA label. Explicit `Call` invokes the actual reopened-publication
+handler. Candidate02's later110 observed only Diagnostic/End call sites and did
+not establish complete log redaction; the sink RED and candidate03 GREEN supersede it.
 
-Regenerated `create-owner-maintenance-01` retains345 components,6437 procedures,
-140271 lines, dynamic calls9/45 and duplicate candidates196. Production source
-has no diff, so all28 existing oversized-module limits remain unchanged. The
-reviewed-backlog schema passes; no static exception or code deletion is introduced.
+The first chain controller `chain-3f836ba1bff4423dabdea56b8a644b46` failed in the
+source integration harness, whose explicit imports omitted the new Core command
+and dependencies. Native inspection identified the undefined module in modPerfLog.
+The owned compile/quit dialogs were acknowledged and VBA Reset allowed cleanup;
+no force kill or recovery COM attachment was used. This assisted attempt is excluded.
+The import list is corrected. The next chain exposed headless Seed fixtures relying
+on implicit target selection; both fixtures now bind their generated runtime.
+No inventory assertion or authorization guard was relaxed.
 
-Excluded harness attempts: an unsupported visible-Excel switch stopped before
-Excel launch; worker `10b882866f3041fab0d08a31eb8d0b07` stopped before compile because
-the counter adapter expected an assignment instead of the actual If-call boundary.
-The adapter was corrected without product edits. Neither attempt is product RED.
-
-Not yet covered: recording/catalog/policy/guide conclusions, native Ribbon clicks,
-ordinary modal interaction, folder-helper dialogs, context/right-change cases,
-post-sign-out publication retry or direct interactive Core commands. Existing
-full-chain/live-role/static/layout/visible results remain scoped prior evidence;
-they are not fresh acceptance of this diagnostic or a new implementation.
-
-## Contract review follow-up (proposal only)
-
-Revised D8-CREATE-01 explicitly adds reopened **Publish Existing Warehouse**,
-authorization against the captured source warehouse after any confirmation,
-no Windows/Office identity substitute, typed calls/primitive envelopes and
-redaction across recording/activity/all logs, including downstream helpers.
-Approval and new D13 coverage remain pending;45/2 is unchanged historical evidence.
-The owner test already calls `modAuth.SignOut` before Create and verifies the
-signed-out state. It has no broader context matrix or confirmation-time hook.
-Reuse `Slice4beAdminAuthWriteDiagnostic.ps1`'s `SignedOut` state and
-`Slice4beAdminCloseActivity.ps1`'s `SignedOut` mode for the expanded cases. Protect
-reopened publication under a new session, zero bootstrap calls, unchanged local
-Config/Auth/inventory, duplicate refusal, invalid/missing runtime, source-vs-
-destination authority, stale/post-confirmation context and sanitized outputs.
-This documentation revision changes no test or product code; no new runtime
-RED/GREEN, packaged build or visible acceptance is claimed.
+Manual/native Ribbon clicking, ordinary modal interactions and folder-helper
+acceptance are not established by these programmatic-handler captures. They remain
+part of the wider release acceptance;4be-A and early Receiving B0 are not complete.

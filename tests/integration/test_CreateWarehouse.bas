@@ -60,6 +60,10 @@ Public Function TestCreateWarehouse_EndToEndLifecycle() As Long
     RecordCreateWarehouseCheck "Bootstrap.Local", bootstrapOk, modWarehouseBootstrap.GetLastWarehouseBootstrapReport()
     If Not bootstrapOk Then GoTo CleanExit
 
+    ' Headless follow-up work binds its generated runtime explicitly. Bootstrap
+    ' must not select a different interactive warehouse or sign out its caller.
+    modRuntimeWorkbooks.SetCoreDataRootOverride spec.PathLocal
+
     RecordCreateWarehouseCheck "LocalStructure.Exists", _
         AssertLocalStructureCreateWarehouse(spec, detail), detail
 

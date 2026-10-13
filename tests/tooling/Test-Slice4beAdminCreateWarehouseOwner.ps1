@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-root-recording-04',[ValidateSet('RED','GREEN')][string]$Phase='RED')
+param([string]$DeployRoot='deploy/validation-root-recording-04',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$CaptureEvidence)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Create Warehouse owner gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
@@ -14,7 +14,8 @@ $testPins|ConvertTo-Json|Set-Content (Join-Path $root 'tooling-pins.json')
 $start=[DateTimeOffset]::UtcNow;$code=1
 Write-Output ('Create Warehouse owner controller: '+$root)
 try {
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1') -DeployRoot $DeployRoot -Phase $Phase -AdminCreateWarehouseOwnerOnly -CompileEvaluationProbesForTest -WaitForExcelReadyForTest -ExcelReadyReadLimitForTest 40 *> (Join-Path $root 'worker.log')
+    $extra=@();if($CaptureEvidence){$extra+='-CaptureEvidence'}
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1') -DeployRoot $DeployRoot -Phase $Phase -AdminCreateWarehouseOwnerOnly -CompileEvaluationProbesForTest -WaitForExcelReadyForTest -ExcelReadyReadLimitForTest 40 @extra *> (Join-Path $root 'worker.log')
     $code=$LASTEXITCODE
 } finally {
     Wait-RecordingCleanup -Creator $null -Worker $null

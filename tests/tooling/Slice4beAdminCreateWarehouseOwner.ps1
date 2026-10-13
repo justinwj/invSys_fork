@@ -1,5 +1,6 @@
 # Packaged callback/form-handler diagnostic. Only generated warehouses are written.
 # Test adapters change modal presentation and expose fixed facts, not owner results.
+. (Join-Path $PSScriptRoot 'Slice4beAdminCreateAuthority.ps1')
 function Install-AdminCreateWarehouseOwnerProbe {
     $project=$packages['invSys.Admin.xlam'].VBProject
     $control=$project.VBComponents.Add(2);$control.Name='TestCreateRibbon'
@@ -19,11 +20,10 @@ End Property
     $probe=$project.VBComponents.Add(1);$probe.Name='TestCreateOwner'
     $probe.CodeModule.AddFromString(@'
 Option Explicit
-Public Bootstraps As Long, Publications As Long
 Public Function OpenForm(ByVal hostName As String) As Boolean
     Dim control As New TestCreateRibbon, item As Object
     Application.Workbooks(hostName).Activate
-    Bootstraps = 0: Publications = 0
+    TestCreateCalls.Reset
     RibbonOnActionAdmin control
     For Each item In VBA.UserForms
         If TypeName(item) = "frmCreateWarehouse" Then OpenForm = item.Visible
@@ -42,7 +42,7 @@ Public Sub CloseForm()
     Next item
 End Sub
 Public Function Facts() As String
-    Facts = frmCreateWarehouse.OwnerFactsForTest & "|" & CStr(Bootstraps) & "|" & CStr(Publications)
+    Facts = frmCreateWarehouse.OwnerFactsForTest & "|" & CStr(TestCreateCalls.Bootstraps()) & "|" & CStr(TestCreateCalls.Publications())
 End Function
 Public Sub SetShare(ByVal share As String)
     frmCreateWarehouse.OwnerShareForTest share
@@ -83,21 +83,13 @@ Public Function OwnerReceivingForTest() As Boolean
     OwnerReceivingForTest = (StrComp(Application.ActiveWorkbook.FullName, mCreatedOperatorWorkbookPath, vbBinaryCompare) = 0)
 End Function
 '@)
-    $start=$form.ProcStartLine('btnOK_Click',0);$count=$form.ProcCountLines('btnOK_Click',0)
-    $source=$form.Lines($start,$count)
-    foreach($pair in @(@('BootstrapWarehouseLocalAdmin','Bootstraps'),@('PublishInitialArtifactsAdmin','Publications'))){
-        $pattern='(?m)^([ \t]*)If (?:Not )?modAdminConsole\.'+[regex]::Escape($pair[0])+'\('
-        $expected=if($pair[1] -ceq 'Bootstraps'){1}else{2}
-        if([regex]::Matches($source,$pattern).Count -ne $expected){throw 'Create handler owner boundary changed.'}
-        $source=[regex]::Replace($source,$pattern,('$1TestCreateOwner.'+$pair[1]+' = TestCreateOwner.'+$pair[1]+' + 1'+"`r`n"+'$0'))
-    }
-    $form.DeleteLines($start,$count);$form.InsertLines($start,$source)
     $owner=$project.VBComponents.Item('modAdmin').CodeModule
     $start=$owner.ProcStartLine('Open_CreateWarehouse',0);$count=$owner.ProcCountLines('Open_CreateWarehouse',0)
     $source=$owner.Lines($start,$count)
     if([regex]::Matches($source,'frmCreateWarehouse.Show\b').Count -ne 1){throw 'Create callback presentation boundary changed.'}
     $source=$source.Replace('frmCreateWarehouse.Show','frmCreateWarehouse.Show vbModeless')
     $owner.DeleteLines($start,$count);$owner.InsertLines($start,$source)
+    Install-CreateAuthorityProbe $project $form $probe.CodeModule
 }
 
 function Test-AdminCreateWarehouseOwner($Fixture,$Other) {
@@ -125,6 +117,9 @@ function Test-AdminCreateWarehouseOwner($Fixture,$Other) {
         foreach($purpose in @('Operational','Training')){
             $case=New-CreateCase $purpose $purpose
             [void](Invoke-Create 'Create')
+            if($script:CreateCoreAvailable){
+                Check ('Create.'+$purpose+'.SourceSessionPreserved') (([string](Run 'invSys.Core.xlam' 'TestCreateCalls.ContextFacts')) -ceq 'SignedIn=True|VersionChanged=False|TargetMissing=False|RootChanged=False|HubChanged=False|StationChanged=False')
+            }
             $facts=[string](Invoke-Create 'Facts')
             Check ('Create.'+$purpose+'.LocalOnlyCompleted') ($facts -ceq 'True|True|Close|True|1|0')
             if($facts -cne 'True|True|Close|True|1|0'){throw 'Real local creation unavailable; no valid owner baseline.'}
@@ -187,6 +182,7 @@ function Test-AdminCreateWarehouseOwner($Fixture,$Other) {
         [void](Invoke-Create 'CloseForm')
         Check 'Create.SourceConfigBytesPreserved' ((Get-FileHash -LiteralPath $Fixture.Config).Hash -ceq $sourceBefore)
         Check 'Create.OtherConfigBytesPreserved' ((Get-FileHash -LiteralPath $Other.Config).Hash -ceq $otherBefore)
+        Test-CreateAuthority $Fixture $Other $hostBook
     } finally {
         [void](Invoke-Create 'CloseForm')
         $hostBook.Close($false)

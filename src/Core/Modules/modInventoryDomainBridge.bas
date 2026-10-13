@@ -854,8 +854,8 @@ Private Function BuildCanonicalInventoryPathLocal(ByVal warehouseId As String) A
     If resolvedWh = "" Then resolvedWh = SafeTrim(modConfig.GetString("WarehouseId", "WH1"))
     If resolvedWh = "" Then resolvedWh = "WH1"
 
-    rootPath = CurrentTargetRuntimeRootForWarehouseLocal(resolvedWh)
-    If rootPath = "" Then rootPath = SafeTrim(GetCoreDataRootOverride())
+    rootPath = SafeTrim(GetCoreDataRootOverride())
+    If rootPath = "" Then rootPath = CurrentTargetRuntimeRootForWarehouseLocal(resolvedWh)
     If rootPath = "" Then rootPath = SafeTrim(modConfig.GetString("PathDataRoot", ""))
     If rootPath = "" Then rootPath = DefaultInventoryRootLocal(resolvedWh)
 

@@ -319,6 +319,12 @@ function Invoke-AdminEntryGate {
         Add-Result "GenerateFreshWarehouse" $bootstrap `
             "Packaged Admin created a fresh greenfield warehouse runtime."
 
+        # Headless Seed owns an explicit runtime; bootstrap preserves the caller's selection.
+        [void](Run-WorkbookMacro -Excel $localExcel `
+            -WorkbookName $packageMap["invSys.Core.xlam"].Name `
+            -MacroName "modRuntimeWorkbooks.SetCoreDataRootOverride" `
+            -Arguments @($warehouseRoot))
+
         $seedReport = [string](Run-WorkbookMacro -Excel $localExcel `
             -WorkbookName $packageMap["invSys.Admin.xlam"].Name `
             -MacroName "modAdminConsole.SeedDemoInventoryForAutomation" `

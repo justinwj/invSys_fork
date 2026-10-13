@@ -336,8 +336,8 @@ Private Function ResolveInventoryWorkbookPathProcessor(ByVal warehouseId As Stri
     If resolvedWh = "" Then resolvedWh = modConfig.GetString("WarehouseId", "")
     If resolvedWh = "" Then resolvedWh = "WH1"
 
-    rootPath = ResolveCurrentTargetRuntimeRootForWarehouseProcessor(resolvedWh)
-    If rootPath = "" Then rootPath = Trim$(modRuntimeWorkbooks.GetCoreDataRootOverride())
+    rootPath = Trim$(modRuntimeWorkbooks.GetCoreDataRootOverride())
+    If rootPath = "" Then rootPath = ResolveCurrentTargetRuntimeRootForWarehouseProcessor(resolvedWh)
     If rootPath = "" Then rootPath = Trim$(modConfig.GetString("PathDataRoot", ""))
     If rootPath = "" Then rootPath = modDeploymentPaths.DefaultWarehouseRuntimeRootPath(resolvedWh, True)
     If Right$(rootPath, 1) <> "\" Then rootPath = rootPath & "\"

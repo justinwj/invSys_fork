@@ -15,13 +15,15 @@ scoped-qualified: focused370, independent successful/incomplete/failed guide
 results,11 reviewed captures, directory219, Settings202, recording80, smoke86,
 chain32/live48/Create15 and compile/static/preservation gates.
 
-Current unpromoted candidate is root-recording-04, catalog40/162. The
-[Create New Warehouse owner diagnostic](plan022_slice4be_admin_create_owner_results.md)
-passes45 checks but fails two authorization expectations: after opening through
-the authorized Ribbon and signing out, Create saves a runtime and reports
-completion. D8-CREATE-01 is proposed in v4.11; approval is required before the
-captured-form Core write contract. Creation/publication/retry are protected
-separately. No production change or recording acceptance;4be-A remains incomplete.
+Qualified recording baseline is root-recording-04, catalog40/162. Approved
+[D8-CREATE-01 owner implementation](plan022_slice4be_admin_create_owner_results.md)
+is scoped-qualified on unpromoted create-authority-03. Expanded RED63/23 and
+diagnostic-sink RED106/4 become focused GREEN110, retaining all45 original passes.
+Purpose/layout36, five reviewed captures, recording80, smoke86, chain32/live48/Create15,
+compile/static/preservation and native-closure gates pass. Reopened publication uses saved identity, with
+zero bootstrap calls and unchanged local Config/Auth/inventory. Source-session,
+rights, partial-result and diagnostic-redaction gates pass. Create recording and
+guide conclusions remain next; catalog40/162 and4be-A acceptance are unchanged.
 Preceding directory-recording-01 has
 [View Warehouses RED79/9 -> GREEN101 -> boundary149 -> guide219](plan022_slice4be_admin_directory_recording_results.md).
 Cold compiles/static limits, seven reviewed captures, Settings202, smoke86,

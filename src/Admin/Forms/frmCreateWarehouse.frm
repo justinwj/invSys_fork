@@ -21,6 +21,9 @@ Private WithEvents mBtnSharePointHelper As MSForms.CommandButton
 Attribute mBtnSharePointHelper.VB_VarHelpID = -1
 Private WithEvents mBtnOpenReceiving As MSForms.CommandButton
 Attribute mBtnOpenReceiving.VB_VarHelpID = -1
+Private WithEvents mBtnPublishExisting As MSForms.CommandButton
+Attribute mBtnPublishExisting.VB_VarHelpID = -1
+Private mWriteContext As String
 
 Private mPathLocalTouched As Boolean
 Private mLastSuggestedLocalPath As String
@@ -51,6 +54,7 @@ Private mResizeInitialized As Boolean
 Private mWarehousePurpose As MSForms.ComboBox
 
 Private Sub UserForm_Initialize()
+    mWriteContext = modAuthUserCommands.CaptureContext()
     Me.Caption = "Create Warehouse"
     Me.Width = 620
     Me.Height = 470
@@ -69,6 +73,7 @@ Private Sub UserForm_Initialize()
     ConfigureSharePointHelperButton
     ConfigureOpenReceivingButton
     ConfigureWarehousePurpose
+    ConfigurePublishExistingButton
     Me.btnOK.Caption = "Create"
     Me.btnCancel.Caption = "Cancel"
     Me.chkPublishInitial.Value = True
@@ -190,8 +195,9 @@ Private Sub btnOK_Click()
     Dim pathSharePoint As String
     Dim addinsFolder As String
     Dim summaryText As String
+    Dim commandReport As String
 
-    If mLocalBootstrapComplete And StrComp(Me.btnOK.Caption, "Close", vbTextCompare) = 0 Then
+    If StrComp(Me.btnOK.Caption, "Close", vbTextCompare) = 0 Then
         Unload Me
         Exit Sub
     End If
@@ -216,14 +222,13 @@ Private Sub btnOK_Click()
             Exit Sub
         End If
 
-        If modAdminConsole.PublishInitialArtifactsAdmin(mCreatedWarehouseId, mCreatedWarehouseName, mCreatedStationId, mCreatedAdminUser, mCreatedPathLocal, mCreatedPathSharePoint) Then
+        If modWarehouseCreateCommands.PublishExisting(mWriteContext, mCreatedPathLocal, mCreatedPathSharePoint, commandReport, mCreatedWarehouseId) Then
             summaryText = "Warehouse hub already existed from this session." & vbCrLf & _
-                          "Initial SharePoint publish complete." & vbCrLf & _
-                          modWarehouseBootstrap.GetLastWarehouseBootstrapReport()
+                          commandReport
             MarkFormComplete summaryText, True
         Else
             summaryText = "Warehouse hub was created, but SharePoint publish still failed." & vbCrLf & _
-                          modWarehouseBootstrap.GetLastWarehouseBootstrapReport()
+                          commandReport
             Me.btnOK.Caption = "Retry Publish"
             Me.btnCancel.Caption = "Close"
             ShowSummary summaryText, COLOR_ERROR
@@ -237,8 +242,8 @@ Private Sub btnOK_Click()
         Exit Sub
     End If
 
-    If Not modAdminConsole.BootstrapWarehouseLocalAdmin(warehouseId, warehouseName, stationId, adminUser, pathLocal, pathSharePoint, CStr(mWarehousePurpose.Value)) Then
-        ShowSummary "Warehouse hub bootstrap failed:" & vbCrLf & modWarehouseBootstrap.GetLastWarehouseBootstrapReport(), COLOR_ERROR
+    If Not modWarehouseCreateCommands.CreateWarehouse(mWriteContext, warehouseId, warehouseName, stationId, adminUser, pathLocal, pathSharePoint, CStr(mWarehousePurpose.Value), commandReport, mCreatedOperatorWorkbookPath) Then
+        ShowSummary commandReport, COLOR_ERROR
         Exit Sub
     End If
 
@@ -248,7 +253,6 @@ Private Sub btnOK_Click()
     mCreatedAdminUser = adminUser
     mCreatedPathLocal = pathLocal
     mCreatedPathSharePoint = pathSharePoint
-    mCreatedOperatorWorkbookPath = modWarehouseBootstrap.GetLastWarehouseOperatorWorkbookPath()
     mLocalBootstrapComplete = True
     mWarehousePurpose.Enabled = False
     summaryText = "Warehouse hub bootstrap complete for " & warehouseId & "."
@@ -261,15 +265,13 @@ Private Sub btnOK_Click()
     End If
 
     If CBool(Me.chkPublishInitial.Value) Then
-        If modAdminConsole.PublishInitialArtifactsAdmin(warehouseId, warehouseName, stationId, adminUser, pathLocal, pathSharePoint) Then
-            summaryText = summaryText & vbCrLf & "Initial SharePoint publish complete." & vbCrLf & _
-                          modWarehouseBootstrap.GetLastWarehouseBootstrapReport()
+        If modWarehouseCreateCommands.PublishExisting(mWriteContext, pathLocal, pathSharePoint, commandReport, mCreatedWarehouseId) Then
+            summaryText = summaryText & vbCrLf & commandReport
             MarkFormComplete summaryText, True
         Else
             mCreatedPathSharePoint = pathSharePoint
-            summaryText = summaryText & vbCrLf & "Initial SharePoint publish failed." & vbCrLf & _
-                          modWarehouseBootstrap.GetLastWarehouseBootstrapReport() & vbCrLf & _
-                          "Correct the SharePoint path or connectivity, then click Retry Publish."
+            summaryText = summaryText & vbCrLf & commandReport & vbCrLf & _
+                          "Use Retry Publish, or reopen and choose Publish Existing Warehouse."
             Me.btnOK.Caption = "Retry Publish"
             Me.btnCancel.Caption = "Close"
             ShowSummary summaryText, COLOR_ERROR
@@ -278,6 +280,26 @@ Private Sub btnOK_Click()
         summaryText = summaryText & vbCrLf & "Initial SharePoint publish skipped."
         MarkFormComplete summaryText, True
     End If
+End Sub
+
+Private Sub mBtnPublishExisting_Click()
+    Dim report As String
+    If modWarehouseCreateCommands.PublishExisting(mWriteContext, CStr(Me.txtPathLocal.Value), CStr(Me.txtPathSharePoint.Value), report) Then
+        MarkFormComplete report, True
+    Else
+        ShowSummary report, COLOR_ERROR
+    End If
+End Sub
+
+Private Sub ConfigurePublishExistingButton()
+    Set mBtnPublishExisting = Me.Controls.Add("Forms.CommandButton.1", "btnPublishExisting", True)
+    With mBtnPublishExisting
+        .Caption = "Publish Existing Warehouse"
+        .ControlTipText = "Publish the saved warehouse in the hub folder without creating it again."
+        .Left = 150: .Top = Me.btnOK.Top: .Width = 186: .Height = Me.btnOK.Height
+    End With
+    Me.btnOK.Left = Me.InsideWidth - 216: Me.btnOK.Width = 96
+    Me.btnCancel.Left = Me.InsideWidth - 108: Me.btnCancel.Width = 96
 End Sub
 
 Private Sub mBtnOpenReceiving_Click()
@@ -391,7 +413,7 @@ Private Sub SetErrorCaption(ByVal lbl As MSForms.Label, ByVal messageText As Str
 End Sub
 
 Private Sub ShowSummary(ByVal messageText As String, ByVal foreColor As Long)
-    Me.lblSummary.Caption = FormatSummaryMessage(messageText)
+    Me.lblSummary.Caption = modCreateWarehousePresentation.FormatSummaryMessage(messageText)
     Me.lblSummary.foreColor = foreColor
     Me.Repaint
 End Sub
@@ -448,6 +470,7 @@ Private Sub InitializeCreateWarehouseAnchors()
     If Not mBtnHubPathHelper Is Nothing Then mAnchors.Add mBtnHubPathHelper, ANCHOR_RIGHT Or ANCHOR_TOP
     If Not mBtnSharePointHelper Is Nothing Then mAnchors.Add mBtnSharePointHelper, ANCHOR_RIGHT Or ANCHOR_TOP
     If Not mBtnOpenReceiving Is Nothing Then mAnchors.Add mBtnOpenReceiving, ANCHOR_LEFT Or ANCHOR_BOTTOM
+    mAnchors.Add mBtnPublishExisting, ANCHOR_LEFT Or ANCHOR_BOTTOM
 End Sub
 
 Private Sub ConfigureWarehousePurpose()
@@ -481,105 +504,6 @@ Private Sub ConfigureWarehousePurpose()
         .ListIndex = 0
         .ControlTipText = "Automatic How-To replay requires a separately generated Training warehouse."
     End With
-End Sub
-
-Private Function FormatSummaryMessage(ByVal messageText As String) As String
-    Dim lines As Collection
-    Dim parsed As String
-    Dim lineValue As Variant
-
-    messageText = Trim$(messageText)
-    If messageText = "" Then Exit Function
-
-    parsed = FormatBootstrapReportForSummary(messageText)
-    If parsed <> "" Then
-        FormatSummaryMessage = parsed
-        Exit Function
-    End If
-
-    Set lines = New Collection
-    AppendWrappedSummaryLine lines, messageText, 92
-
-    For Each lineValue In lines
-        If FormatSummaryMessage <> "" Then FormatSummaryMessage = FormatSummaryMessage & vbCrLf
-        FormatSummaryMessage = FormatSummaryMessage & CStr(lineValue)
-    Next lineValue
-End Function
-
-Private Function FormatBootstrapReportForSummary(ByVal reportText As String) As String
-    Dim parts() As String
-    Dim i As Long
-    Dim keyText As String
-    Dim valueText As String
-    Dim lines As Collection
-    Dim lineValue As Variant
-    Dim eqPos As Long
-
-    reportText = Trim$(reportText)
-    If reportText = "" Then Exit Function
-    If InStr(1, reportText, "|", vbBinaryCompare) = 0 Then Exit Function
-
-    parts = Split(reportText, "|")
-    Set lines = New Collection
-
-    If UBound(parts) >= 0 Then
-        If StrComp(Trim$(parts(0)), "OK", vbTextCompare) = 0 Then
-            AppendWrappedSummaryLine lines, "Status: OK", 92
-        Else
-            AppendWrappedSummaryLine lines, Trim$(parts(0)), 92
-        End If
-    End If
-
-    For i = 1 To UBound(parts)
-        eqPos = InStr(1, parts(i), "=", vbBinaryCompare)
-        If eqPos > 1 Then
-            keyText = Trim$(Left$(parts(i), eqPos - 1))
-            valueText = Trim$(Mid$(parts(i), eqPos + 1))
-            If valueText <> "" Then
-                valueText = Replace$(valueText, "COPIED:", "copied to ", 1, 1, vbTextCompare)
-                valueText = Replace$(valueText, "SKIPPED", "already current", 1, 1, vbTextCompare)
-                AppendWrappedSummaryLine lines, FriendlySummaryLabel(keyText) & ": " & valueText, 92
-            End If
-        ElseIf Trim$(parts(i)) <> "" Then
-            AppendWrappedSummaryLine lines, Trim$(parts(i)), 92
-        End If
-    Next i
-
-    For Each lineValue In lines
-        If FormatBootstrapReportForSummary <> "" Then FormatBootstrapReportForSummary = FormatBootstrapReportForSummary & vbCrLf
-        FormatBootstrapReportForSummary = FormatBootstrapReportForSummary & CStr(lineValue)
-    Next lineValue
-End Function
-
-Private Function FriendlySummaryLabel(ByVal keyText As String) As String
-    Select Case UCase$(Trim$(keyText))
-        Case "CONFIG"
-            FriendlySummaryLabel = "Config artifact"
-        Case "DISCOVERY"
-            FriendlySummaryLabel = "Discovery file"
-        Case Else
-            FriendlySummaryLabel = Trim$(keyText)
-    End Select
-End Function
-
-Private Sub AppendWrappedSummaryLine(ByVal lines As Collection, ByVal textLine As String, ByVal maxChars As Long)
-    Dim working As String
-    Dim breakPos As Long
-
-    working = Trim$(textLine)
-    If working = "" Then
-        lines.Add vbNullString
-        Exit Sub
-    End If
-
-    Do While Len(working) > maxChars
-        breakPos = InStrRev(Left$(working, maxChars), " ")
-        If breakPos <= 0 Then breakPos = maxChars
-        lines.Add Trim$(Left$(working, breakPos))
-        working = Trim$(Mid$(working, breakPos + 1))
-    Loop
-
-    If working <> "" Then lines.Add working
 End Sub
 
 Private Function ResolveDefaultAdminUserForm() As String

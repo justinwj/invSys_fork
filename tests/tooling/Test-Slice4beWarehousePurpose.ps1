@@ -50,8 +50,38 @@ function Run([string]$Book, [string]$Macro, [object[]]$Arguments = @()) {
         0 { return $excel.Run($entry) }
         1 { return $excel.Run($entry, $Arguments[0]) }
         3 { return $excel.Run($entry, $Arguments[0], $Arguments[1], $Arguments[2]) }
+        4 { return $excel.Run($entry, $Arguments[0], $Arguments[1], $Arguments[2], $Arguments[3]) }
+        6 { return $excel.Run($entry, $Arguments[0], $Arguments[1], $Arguments[2], $Arguments[3], $Arguments[4], $Arguments[5]) }
         default { throw 'Unsupported test argument count.' }
     }
+}
+function Initialize-PurposeSource {
+    # Reuse the shared disposable-fixture credential transformation; never emit it.
+    $tokens=$null;$errors=$null
+    $tree=[Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1'),[ref]$tokens,[ref]$errors)
+    if($errors.Count){throw 'Shared fixture helper must parse.'}
+    $hashFunction=$tree.Find({param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -ceq 'CredentialHash'},$true)
+    if($null -eq $hashFunction){throw 'Shared credential helper unavailable.'}
+    Invoke-Expression $hashFunction.Extent.Text
+    $source=Join-Path $fixture 'source';$id='WS'+[guid]::NewGuid().ToString('N').Substring(0,8)
+    [void](Run 'invSys.Core.xlam' 'modRuntimeWorkbooks.SetCoreDataRootOverride' @($source))
+    if(-not [bool](Run 'invSys.Admin.xlam' 'modAdminConsole.BootstrapWarehouseLocalAdmin' @($id,'Purpose source','S1','purpose-tester',$source,''))){throw 'Authorized source fixture failed.'}
+    $secret=[guid]::NewGuid().ToString('N')
+    $auth=$excel.Workbooks.Open((Join-Path $source ($id+'.invSys.Auth.xlsb')),0,$false)
+    try{
+        $users=$auth.Worksheets.Item('Users').ListObjects.Item('tblUsers')
+        $users.ListColumns.Item('PinHash').Range.NumberFormat='@'
+        foreach($row in $users.ListRows){
+            if([string]$row.Range.Cells.Item(1,$users.ListColumns.Item('UserId').Index).Value2 -ceq 'purpose-tester'){
+                $row.Range.Cells.Item(1,$users.ListColumns.Item('PinHash').Index).Value2=CredentialHash $secret
+            }
+        }
+        $auth.Save()
+    } finally {$auth.Close($false)}
+    $selected=[string](Run 'invSys.Core.xlam' 'modNasConnection.SelectWarehouseTargetForAutomation' @($source,$source,'S1',$false))
+    $signed=[string](Run 'invSys.Core.xlam' 'modAuth.SignInCurrentTargetForAutomation' @('purpose-tester',$secret,''))
+    if(-not $selected.StartsWith('OK|') -or -not $signed.StartsWith('OK|')){throw 'Source Admin session unavailable.'}
+    Check 'Source.SignedInAdmin' $true
 }
 function Read-Purpose([string]$Path) {
     $book = $excel.Workbooks.Open($Path, 0, $true)
@@ -187,6 +217,7 @@ End Sub
 '@)
     [void](Run 'invSys.Core.xlam' 'modWarehouseBootstrap.SetWarehouseBootstrapTemplateRootOverride' @((Join-Path $deploy 'templates')))
     [void](Run 'invSys.Core.xlam' 'modWarehouseBootstrap.SetLocalOperatorRootOverrideForAutomation' @((Join-Path $fixture 'operators')))
+    Initialize-PurposeSource
     foreach ($case in @('Default','Training')) {
         $warehouseId = 'WP' + [guid]::NewGuid().ToString('N').Substring(0,8).ToUpperInvariant()
         $target = Join-Path $fixture $case
@@ -249,6 +280,13 @@ End Sub
         if ($null -ne $owned -and -not $owned.WaitForExit(15000)) { Wait-RecordingCleanup -Creator $null -Worker $null }
     }
     $restored = Restore-InvSysTestSettingsSnapshot $snapshot
+    # Only this run's generated temporary authority may be removed, after closure.
+    if(-not (Get-Process EXCEL -ErrorAction SilentlyContinue)){
+        $ownedFixture=[IO.Path]::GetFullPath($fixture)
+        $tempParent=[IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\')
+        if([IO.Path]::GetDirectoryName($ownedFixture) -ine $tempParent -or [IO.Path]::GetFileName($ownedFixture) -notlike 'invSys-purpose-*'){throw 'Unsafe fixture cleanup target.'}
+        Remove-Item -LiteralPath $ownedFixture -Recurse -Force
+    }
     $preserved = @($pins | Where-Object { (Get-FileHash -LiteralPath $_.File).Hash -cne $_.Hash }).Count -eq 0
     $failed = @($checks | Where-Object { -not $_.Pass }).Count
     [pscustomobject]@{
