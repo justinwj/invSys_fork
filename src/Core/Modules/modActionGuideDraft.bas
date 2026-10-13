@@ -141,6 +141,30 @@ Failed:
     Discard
 End Function
 
+Public Function ReadEditor(ByVal context As String, ByVal draftId As String, ByRef selectedStep As String, _
+                           ByRef rows As String, ByRef source As String, ByRef evidence As String, _
+                           ByRef name As String, ByRef tags As String, ByRef instructions As String, _
+                           ByRef instruction As String, ByRef summary As String, ByRef notice As String) As Boolean
+    Dim step As Object
+    On Error GoTo Failed
+    name = "": tags = "": instructions = "": instruction = "": summary = ""
+    If Not ReadDraft(context, draftId, rows, source, evidence, notice) Then Exit Function
+    Set step = FindStep(selectedStep)
+    If step Is Nothing And mSteps.Count > 0 Then Set step = mSteps(1)
+    selectedStep = ""
+    If Not step Is Nothing Then
+        selectedStep = CStr(step("StepId")): instruction = CStr(step("Instruction"))
+    End If
+    name = CStr(mText("Name")): tags = CStr(mText("Tags")): instructions = CStr(mText("Instructions"))
+    summary = ExpectationSummary()
+    ReadEditor = True
+    Exit Function
+Failed:
+    rows = "": source = "": evidence = "": selectedStep = ""
+    name = "": tags = "": instructions = "": instruction = "": summary = ""
+    notice = "Unavailable: the guide draft could not be read.": Discard
+End Function
+
 Public Function ReadText(ByVal context As String, ByVal draftId As String, ByVal field As String, _
                          ByVal stepId As String, ByRef value As String, ByRef notice As String) As Boolean
     Dim records As Collection, visible As Object, step As Object
@@ -221,7 +245,7 @@ End Sub
 ' Primitive/serialized projection; mutable expectation objects stay in Core.
 Public Function ReadExpectation(ByVal context As String, ByVal draftId As String, ByRef sequenceId As String, _
                                 ByRef definition As String, ByRef summary As String, ByRef notice As String) As Boolean
-    Dim records As Collection, visible As Object, count As Long
+    Dim records As Collection, visible As Object
     On Error GoTo Failed
     sequenceId = "": definition = "": summary = ""
     If Not Guard(context, draftId, records, visible, notice) Then Exit Function
@@ -233,14 +257,19 @@ Public Function ReadExpectation(ByVal context As String, ByVal draftId As String
         sequenceId = CStr(mHeader("SourceRun")("SequenceId"))
     End If
     definition = modTrainingJson.EncodeObject(mExpectation)
-    count = mExpectation("Steps").Count
-    summary = "Guide expectation: None"
-    If count > 0 Then summary = "Guide expectation: " & CStr(count) & " expected step(s)."
+    summary = ExpectationSummary()
     ReadExpectation = True
     Exit Function
 Failed:
     sequenceId = "": definition = "": summary = ""
     notice = "Unavailable: the guide expectation could not be read."
+End Function
+
+Private Function ExpectationSummary() As String
+    Dim count As Long
+    count = mExpectation("Steps").Count
+    ExpectationSummary = "Guide expectation: None"
+    If count > 0 Then ExpectationSummary = "Guide expectation: " & CStr(count) & " expected step(s)."
 End Function
 
 Public Function StageExpectation(ByVal context As String, ByVal draftId As String, ByVal serialized As String, ByRef notice As String) As Boolean

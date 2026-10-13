@@ -17,7 +17,6 @@ Public Sub OpenForRun(ByVal context As String, ByVal pathId As String, ByVal lib
         End If
         CloseEditor
     End If
-    If Not modActionGuideDraft.CanCreate(context, pathId) Then Exit Sub
     Set mEditor = New frmActionPathGuide
     Set mLibrary = library: mContext = context: mPathId = pathId
     If mEditor.BindContext(context, pathId) Then mEditor.Show vbModeless Else CloseEditor

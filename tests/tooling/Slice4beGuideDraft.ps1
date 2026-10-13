@@ -166,7 +166,9 @@ function Test-GuideDraftEntry($Fixture,$Other) {
     SelectTarget $Fixture 'config-admin'
     $allowed=Run 'invSys.Core.xlam' 'modAuth.CanPerform' @('ACTION_PATH_MAINT','config-admin',$Fixture.Warehouse,'S1')
     if($allowed -isnot [bool] -or -not $allowed){throw 'Guide-author capability fixture unavailable; not product RED.'}
-    SetRecordingPolicy $true
+    # This two-save source excludes the separately registered config-selection
+    # action through the actual policy controls, before recording begins.
+    SetRecordingPolicy $true -SaveValueOnly
     OpenRecordingViewer
     if((RecordingControl 'Start Recording' 'Click') -cne 'DELIVERED'){throw 'Existing recorder entry unavailable; not guide RED.'}
     $first=SaveRecordedSetting '630'

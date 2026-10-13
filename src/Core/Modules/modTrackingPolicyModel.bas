@@ -98,16 +98,24 @@ End Function
 Public Sub Project(ByVal headers As ListObject, ByVal controls As ListObject, _
                    ByVal selected As Long, ByVal version As Long, ByVal output As Object, ByVal users As Collection)
     Dim model As Object, row As Variant, index As Long, key As Variant, field As Variant
+    Dim values As Variant, count As Long, versionColumn As Long, controlColumn As Long
     Set model = Defaults(headers Is Nothing)
     Set model("Users") = users
     If Not headers Is Nothing Then
         For Each field In Array("DefaultView", "ViewerActionPathCaptureEnabled", "AdminViewerEventLoggingEnabled")
             model(field) = TableValue(headers, selected, CStr(field))
         Next field
+        count = controls.ListRows.Count
+        If count > 0 Then
+            versionColumn = TableColumn(controls, "PolicyVersion")
+            controlColumn = TableColumn(controls, "ControlId")
+            ' Fresh per-call values avoid repeated worksheet reads across the catalog.
+            values = controls.DataBodyRange.Value2
+        End If
         For Each row In model("Controls")
-            For index = 1 To controls.ListRows.Count
-                If TableValue(controls, index, "PolicyVersion") = version And _
-                   TableValue(controls, index, "ControlId") = row("ControlId") Then
+            For index = 1 To count
+                If values(index, versionColumn) = version And _
+                   values(index, controlColumn) = row("ControlId") Then
                     For Each field In Array("Collect", "Visible", "SequenceEligible")
                         row(field) = TableValue(controls, index, CStr(field))
                     Next field

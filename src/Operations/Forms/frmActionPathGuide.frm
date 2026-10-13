@@ -119,14 +119,12 @@ End Function
 
 Private Function LoadDraft() As Boolean
     Dim rows As String, source As String, evidence As String, notice As String, selected As String, row As Variant, fields As Variant
-    Dim field As Variant, value As String, fieldNotice As String
+    Dim name As String, tags As String, instructions As String, instruction As String, summary As String
     selected = SelectedStep()
-    If Not modActionGuideDraft.ReadDraft(mContext, mDraftId, rows, source, evidence, notice) Then Invalidate notice: Exit Function
+    If Not modActionGuideDraft.ReadEditor(mContext, mDraftId, selected, rows, source, evidence, _
+        name, tags, instructions, instruction, summary, notice) Then Invalidate notice: Exit Function
     mLoading = True: mSteps.Clear
-    For Each field In Array("Name", "Tags", "Instructions")
-        If Not modActionGuideDraft.ReadText(mContext, mDraftId, CStr(field), "", value, fieldNotice) Then Invalidate fieldNotice: Exit Function
-        Me.Controls("txtGuide" & CStr(field)).Value = value
-    Next field
+    mName.Value = name: mTags.Value = tags: mInstructions.Value = instructions
     For Each row In Split(rows, vbCrLf)
         If CStr(row) <> "" Then
             fields = Split(CStr(row), vbTab)
@@ -137,9 +135,10 @@ Private Function LoadDraft() As Boolean
     Next row
     If mSteps.ListIndex < 0 And mSteps.ListCount > 0 Then mSteps.ListIndex = 0
     mSource.Caption = source: mEvidence.Value = evidence: mStatus.Caption = notice
+    mStepInstruction.Value = instruction
+    mStepInstruction.Enabled = (SelectedStep() <> "" And mDraftId <> "")
+    mExpectationSummary.Caption = summary
     mLoading = False
-    ReadStepInstruction
-    RefreshExpectation
     LoadDraft = (mDraftId <> "")
 End Function
 

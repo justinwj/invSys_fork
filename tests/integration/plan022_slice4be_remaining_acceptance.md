@@ -1,10 +1,28 @@
 # Slice 4be remaining acceptance checklist
 
-Last reviewed: 2026-10-12 UTC. **4be-A remains incomplete.** Architecture v4.11,
+Last reviewed: 2026-10-13 UTC. **4be-A remains incomplete.** Architecture v4.11,
 the designated Plan022 and the controls catalog govern; this index records evidence
 and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
+
+Catalog38/160 is current. [Users context GREEN493](plan022_slice4be_admin_users_context_results.md)
+and [independent Users guide GREEN129](plan022_slice4be_admin_users_guide_results.md)
+supersede the pending Users-write statements in the older checkpoints below.
+[Seed guide GREEN283](plan022_slice4be_admin_seed_guide_results.md) supersedes the
+earlier Seed publication/conclusion gaps. Coverage remains scoped to those controls.
+
+Current unpromoted `deploy/validation-policy-projection-02` has Create Guide timing
+RED202/1 -> GREEN203 (118234ms -> 4186ms), Settings202, GuideDraft76, fresh Seed283,
+per-user104, smoke86 and chain32/live48/Create15, retaining their prior checks.
+See the [timing receipt](plan022_slice4be_seed_guide_timing_results.md) for
+compile/static, visible evidence, preservation and clean delayed native audits.
+D18-LOCAL-01 is approved by the user on2026-10-12 Pacific; its local-recording
+implementation and packaged RED/GREEN remain next. Broader Admin/Operations and
+early B0 acceptance remain open. The entries below are candidate-specific history,
+not the current approval or package status.
+
+### Earlier completion checkpoints
 
 New unpromoted `deploy/validation-admin-seed-recording-02` adds catalog37/157
 `ADMIN_DEMO_SEED`: [recording RED37/6 -> GREEN114](plan022_slice4be_admin_seed_recording_results.md)
@@ -32,8 +50,8 @@ Independent [Users & Roles diagnostic](plan022_slice4be_admin_auth_write_diagnos
 retains111 checks and confirms nine writes after loss of original-target Admin
 authority. Diagnostic139 establishes the fixture/results, not authorization GREEN.
 D8-USERS-01 was explicitly approved2026-10-12 in v4.11/Plan022/the controls catalog;
-command-boundary D13 implementation and acceptance are pending. This approval alone
-introduces no product change or recording control.
+its command-boundary implementation is now covered by the Users receipts above.
+Broader Users control/native acceptance remains open.
 
 Current visual candidate `deploy/validation-detail-glyph-01` corrects final-line
 glyph clipping under existing D18: packaged RED89/1 -> GREEN90, retaining88 prior
@@ -68,7 +86,7 @@ and delayed native audits pass. No station deployment is promoted.
 See [Console evidence](plan022_slice4be_admin_console_results.md). Prior accepted
 Reconcile360 and Verify202 remain scoped baselines, not claims of complete4be-A.
 [Remaining Admin coverage](plan022_slice4be_admin_remaining_coverage.md) tracks
-uncovered entries. D18-LOCAL-01 remains proposed and requires approval.
+uncovered entries. D18-LOCAL-01 is approved; implementation/acceptance remain open.
 
 ### Prior Settings entry checkpoint
 
@@ -358,7 +376,8 @@ focused checks and118 context/storage checks on console-02; guide/visible and
 current-package regression acceptance is still pending. See the maintained
 [Admin coverage map](plan022_slice4be_admin_remaining_coverage.md) and
 [Console receipt](plan022_slice4be_admin_console_results.md). Local-recording
-eligibility still requires D18-LOCAL-01 approval, and broader Admin coverage is open.
+eligibility has D18-LOCAL-01 approval; implementation and broader Admin coverage
+remain open.
 
 ## Historical checkpoints (candidate-specific)
 

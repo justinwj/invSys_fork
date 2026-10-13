@@ -75,25 +75,42 @@ End Function
 '@)
     $policy=$packages['invSys.Admin.xlam'].VBProject.VBComponents.Item('cAdminTrackingPolicy').CodeModule
     $policy.AddFromString(@'
-Public Function RecordingCapturePolicyForTest(ByVal enabled As Boolean) As Boolean
+Public Function RecordingCapturePolicyForTest(ByVal enabled As Boolean, Optional ByVal saveValueOnly As Boolean = False) As Boolean
+    Dim index As Long, selected As Boolean
+    If saveValueOnly Then
+        For index = 0 To mRows.ListCount - 1
+            If mRows.List(index, 0) = "ADMIN_SETTINGS_SELECT_CONFIG" Then
+                mLoading = True: mRows.ListIndex = index: mLoading = False
+                mRows_Click
+                mLoading = True: mCollect.Value = False: mLoading = False
+                mCollect_Click
+                mLoading = True: mSequence.Value = False: mLoading = False
+                mSequence_Click
+                selected = True: Exit For
+            End If
+        Next index
+        If Not selected Then Exit Function
+    End If
     mLoading = True
     mCapture.Value = enabled
     mLoading = False
     mCapture_Click
     mSave_Click
     RecordingCapturePolicyForTest = (InStr(1, mStatus.Caption, " saved.", vbBinaryCompare) > 0)
+    If saveValueOnly Then RecordingCapturePolicyForTest = RecordingCapturePolicyForTest And _
+        Not CBool(mRows.List(index, 3)) And Not CBool(mRows.List(index, 5))
 End Function
 '@)
     $settings=$packages['invSys.Admin.xlam'].VBProject.VBComponents.Item('frmAdminSettings').CodeModule
     $settings.AddFromString(@'
-Public Function RecordingCapturePolicyForTest(ByVal enabled As Boolean) As Boolean
-    RecordingCapturePolicyForTest = mTracking.RecordingCapturePolicyForTest(enabled)
+Public Function RecordingCapturePolicyForTest(ByVal enabled As Boolean, Optional ByVal saveValueOnly As Boolean = False) As Boolean
+    RecordingCapturePolicyForTest = mTracking.RecordingCapturePolicyForTest(enabled, saveValueOnly)
 End Function
 '@)
     $commands=$packages['invSys.Admin.xlam'].VBProject.VBComponents.Item('TestD5Commands').CodeModule
     $commands.AddFromString(@'
-Public Function RecordingCapturePolicyForTest(ByVal enabled As Boolean) As Boolean
-    RecordingCapturePolicyForTest = mForm.RecordingCapturePolicyForTest(enabled)
+Public Function RecordingCapturePolicyForTest(ByVal enabled As Boolean, Optional ByVal saveValueOnly As Boolean = False) As Boolean
+    RecordingCapturePolicyForTest = mForm.RecordingCapturePolicyForTest(enabled, saveValueOnly)
 End Function
 '@)
     $script:RecordingProbeInstalled=$true

@@ -8,10 +8,10 @@ function OpenRecordingViewer {
     [void](Run 'invSys.Operations.xlam' 'modInventoryViewer.PublishedReadActionForTest' @('Events',''))
 }
 function CloseRecordingViewer { [void](Run 'invSys.Operations.xlam' 'modInventoryViewer.CloseInventoryViewerForTest') }
-function SetRecordingPolicy([bool]$Enabled) {
+function SetRecordingPolicy([bool]$Enabled,[switch]$SaveValueOnly) {
     try {
         [void](Run 'invSys.Admin.xlam' 'TestD5Commands.OpenSettings')
-        if(-not [bool](Run 'invSys.Admin.xlam' 'TestD5Commands.RecordingCapturePolicyForTest' @($Enabled))) {
+        if(-not [bool](Run 'invSys.Admin.xlam' 'TestD5Commands.RecordingCapturePolicyForTest' @($Enabled,[bool]$SaveValueOnly))) {
             throw 'Actual recording policy fixture save failed; not behavioral RED.'
         }
     } finally { [void](Run 'invSys.Admin.xlam' 'TestD5Commands.CloseSettings') }
@@ -42,6 +42,10 @@ function SaveRecordedSetting([string]$Value) {
     if($records.Count -ne 2 -or $attempts.Count -ne 1 -or $outcomes.Count -ne 1 -or
         $attempts[0].ControlId -cne 'ADMIN_SETTINGS_SAVE_VALUE' -or
         $attempts[0].ActivityId -cne $outcomes[0].ActivityId) {
+        # Diagnose fixture drift without entered values, identities or payloads.
+        @($records|Group-Object ControlId,OutcomeCode|ForEach-Object {
+            [pscustomobject]@{ControlId=$_.Group[0].ControlId;OutcomeCode=$_.Group[0].OutcomeCode;Count=$_.Count}
+        })|ConvertTo-Json|Set-Content (Join-Path $reportRoot 'recording-fixture-outcome-counts.json')
         throw 'Existing Admin activity fixture is invalid; not recording RED.'
     }
     [pscustomobject]@{Attempt=$attempts[0];Outcome=$outcomes[0]}

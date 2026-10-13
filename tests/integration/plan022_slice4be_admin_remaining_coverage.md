@@ -5,6 +5,16 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+Current checkpoint,2026-10-13 UTC: catalog38/160, with scoped
+[Users context GREEN493](plan022_slice4be_admin_users_context_results.md),
+[Users guide GREEN129](plan022_slice4be_admin_users_guide_results.md) and
+[Seed guide GREEN283](plan022_slice4be_admin_seed_guide_results.md).
+The [guide responsiveness correction](plan022_slice4be_seed_guide_timing_results.md)
+records current-candidate regression evidence. These supersede the older pending
+Users write and Seed publication/guide statements below; other controls remain open.
+D18-LOCAL-01 was approved2026-10-12 Pacific. Its shared local context/store/library
+implementation still requires packaged RED/GREEN; do not request approval again.
+
 Continuation: [Shipment Reconcile evidence](plan022_slice4be_admin_reconcile_results.md)
 now passes360/360, retaining the330-check prefix under approved D8-RECON-01.
 Scrollable history, native entry20/Inspect/Escape, resize, window-close and
@@ -37,8 +47,9 @@ Catalog37/157 now adds the first Demo Inventory observation:
 [Seed recording GREEN114](plan022_slice4be_admin_seed_recording_results.md), following
 RED37/6. The actual callback supplies honest outcomes and exact references; the
 prior156 definitions remain unchanged. Full recording/guide acceptance and all
-other Demo Inventory controls remain open. D8-USERS-01 is now approved for the
-separate Users & Roles command-boundary correction; its D13 implementation is pending.
+other Demo Inventory controls remain open. D8-USERS-01's separate Users & Roles
+command-boundary correction is implemented and qualified by the current receipts
+above; broader control coverage is still pending.
 
 Seed/Delete now have a measured completion prerequisite: the
 [exact-outcome gate](plan022_slice4be_admin_seed_outcome_results.md) gives RED27/2
