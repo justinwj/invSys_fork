@@ -15,51 +15,53 @@ End Function
 Public Function CreateWarehouse(ByVal context As String, ByVal warehouseId As String, _
     ByVal warehouseName As String, ByVal stationId As String, ByVal adminUser As String, _
     ByVal localRoot As String, ByVal publishRoot As String, ByVal purpose As String, _
-    ByRef report As String, ByRef operatorPath As String) As Boolean
+    ByRef report As String, ByRef operatorPath As String, Optional ByRef outcome As String = "") As Boolean
     On Error GoTo Failed
-    report = "Another warehouse command is still running.": operatorPath = ""
+    report = "Another warehouse command is still running.": operatorPath = "": outcome = "FAILED"
     If mWriting Then Exit Function
     mWriting = True
-    If Not Authorize(context, report) Then GoTo Finished
+    If Not Authorize(context, report) Then outcome = "DENIED": GoTo Finished
     If Not modWarehouseBootstrap.BootstrapWarehouseLocalValues(warehouseId, warehouseName, _
             stationId, adminUser, localRoot, publishRoot, purpose) Then
         report = "Warehouse creation could not finish. No rollback is claimed.": GoTo Finished
     End If
     operatorPath = modWarehouseBootstrap.GetLastWarehouseOperatorWorkbookPath()
-    CreateWarehouse = True: report = "Warehouse hub creation complete."
+    CreateWarehouse = True: report = "Warehouse hub creation complete.": outcome = "CREATED_LOCAL"
 Finished:
     mWriting = False
     Exit Function
 Failed:
-    report = "Warehouse creation could not finish. No rollback is claimed."
+    report = "Warehouse creation could not finish. No rollback is claimed.": outcome = "FAILED"
     Resume Finished
 End Function
 
 ' Both same-instance retry and explicit reopened publication use saved identity.
 Public Function PublishExisting(ByVal context As String, ByVal localRoot As String, _
-    ByVal publishRoot As String, ByRef report As String, Optional ByVal expectedId As String = "") As Boolean
+    ByVal publishRoot As String, ByRef report As String, Optional ByVal expectedId As String = "", _
+    Optional ByRef outcome As String = "") As Boolean
     Dim spec As WarehouseSpec
     On Error GoTo Failed
-    report = "Another warehouse command is still running."
+    report = "Another warehouse command is still running.": outcome = "FAILED"
     If mWriting Then Exit Function
     mWriting = True
-    If Not Authorize(context, report) Then GoTo Finished
-    report = "Select an existing valid warehouse hub and a publication destination."
+    If Not Authorize(context, report) Then outcome = "DENIED": GoTo Finished
+    report = "Select an existing valid warehouse hub and a publication destination.": outcome = "REJECTED"
     If Trim$(publishRoot) = "" Then GoTo Finished
     If Not modWarehousePublishSource.ReadExisting(localRoot, spec) Then GoTo Finished
     If expectedId <> "" And StrComp(expectedId, spec.WarehouseId, vbBinaryCompare) <> 0 Then GoTo Finished
     spec.PathSharePoint = publishRoot
     ' Selection/validation cannot extend the life of the captured authorization.
-    If Not Authorize(context, report) Then GoTo Finished
+    If Not Authorize(context, report) Then outcome = "DENIED": GoTo Finished
+    outcome = "FAILED"
     If Not modWarehouseBootstrap.PublishInitialArtifacts(spec) Then
         report = "Initial publication could not finish. The existing warehouse remains created.": GoTo Finished
     End If
-    PublishExisting = True: report = "Initial publication complete."
+    PublishExisting = True: report = "Initial publication complete.": outcome = "PUBLISHED"
 Finished:
     mWriting = False
     Exit Function
 Failed:
-    report = "Initial publication could not finish. No rollback is claimed."
+    report = "Initial publication could not finish. No rollback is claimed.": outcome = "FAILED"
     Resume Finished
 End Function
 

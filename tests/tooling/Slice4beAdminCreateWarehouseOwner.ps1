@@ -25,6 +25,7 @@ Public Function OpenForm(ByVal hostName As String) As Boolean
     Application.Workbooks(hostName).Activate
     TestCreateCalls.Reset
     RibbonOnActionAdmin control
+    DoEvents ' Modeless adapter must deliver real activation before inspecting observations.
     For Each item In VBA.UserForms
         If TypeName(item) = "frmCreateWarehouse" Then OpenForm = item.Visible
     Next item
@@ -83,12 +84,34 @@ Public Function OwnerReceivingForTest() As Boolean
     OwnerReceivingForTest = (StrComp(Application.ActiveWorkbook.FullName, mCreatedOperatorWorkbookPath, vbBinaryCompare) = 0)
 End Function
 '@)
-    $owner=$project.VBComponents.Item('modAdmin').CodeModule
-    $start=$owner.ProcStartLine('Open_CreateWarehouse',0);$count=$owner.ProcCountLines('Open_CreateWarehouse',0)
+    $entryName='modAdmin';$procedure='Open_CreateWarehouse'
+    if(@($project.VBComponents|Where-Object Name -CEQ 'modAdminCreateEntry').Count){$entryName='modAdminCreateEntry';$procedure='OpenFromRibbon'}
+    $owner=$project.VBComponents.Item($entryName).CodeModule
+    $start=$owner.ProcStartLine($procedure,0);$count=$owner.ProcCountLines($procedure,0)
     $source=$owner.Lines($start,$count)
     if([regex]::Matches($source,'frmCreateWarehouse.Show\b').Count -ne 1){throw 'Create callback presentation boundary changed.'}
     $source=$source.Replace('frmCreateWarehouse.Show','frmCreateWarehouse.Show vbModeless')
     $owner.DeleteLines($start,$count);$owner.InsertLines($start,$source)
+    $probe.CodeModule.InsertLines($probe.CodeModule.CountOfDeclarationLines+1,'Private mTrackingNotices As Long')
+    $probe.CodeModule.AddFromString(@'
+Public Sub ObserveTrackingNotice(ByVal text As String)
+    If Left$(text, 21) = "Tracking unavailable:" Then mTrackingNotices = mTrackingNotices + 1
+End Sub
+Public Function TrackingNotices() As Long
+    TrackingNotices = mTrackingNotices
+End Function
+Public Sub ResetTrackingNotices()
+    mTrackingNotices = 0
+End Sub
+'@)
+    if(@($project.VBComponents|Where-Object Name -CEQ 'cCreateWarehouseActivity').Count){
+        $project.VBComponents.Item('cCreateWarehouseActivity').CodeModule.AddFromString(@'
+Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgBoxStyle = vbOKOnly, Optional ByVal Title As String = "") As VbMsgBoxResult
+    TestCreateOwner.ObserveTrackingNotice Prompt
+    MsgBox = vbOK
+End Function
+'@)
+    }
     Install-CreateAuthorityProbe $project $form $probe.CodeModule
 }
 

@@ -136,6 +136,10 @@ param(
     [switch]$AdminConsoleOnly,
     [switch]$AdminDirectoryColumnsOnly,
     [switch]$AdminCreateWarehouseOwnerOnly,
+    [switch]$AdminCreateRecording,
+    [switch]$AdminCreateOpeningOnly,
+    [switch]$AdminCreateRecordingOnly,
+    [switch]$AdminCreateGuidePaths,
     [switch]$AdminWarehouseRootWriteDiagnostic,
     [switch]$AdminWarehouseRootRecording,
     [switch]$AdminWarehouseRootGuidePaths,
@@ -1338,7 +1342,7 @@ function NewFixture([string]$Suffix) {
             $row.Range.Cells.Item(1,$caps.ListColumns.Item($pair.Key).Index).Value2=$pair.Value
         }
     }
-    if($AdminWarehouseRootGuidePaths -or $AdminDirectoryGuidePaths -or $AdminReconcileLocalDiagnostic -or $AdminSeedGuidePaths -or $AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
+    if($AdminCreateGuidePaths -or $AdminWarehouseRootGuidePaths -or $AdminDirectoryGuidePaths -or $AdminReconcileLocalDiagnostic -or $AdminSeedGuidePaths -or $AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
         # Explicit fixture grant: Admin bootstrap does not imply guide maintenance.
         $row=$caps.ListRows.Add()
         foreach($pair in @{UserId='config-admin';Capability='ACTION_PATH_MAINT';WarehouseId=$wh;StationId='S1';Status='Active'}.GetEnumerator()){
@@ -1980,6 +1984,14 @@ End Function
     if($AdminCreateWarehouseOwnerOnly){
         . (Join-Path $PSScriptRoot 'Slice4beAdminCreateWarehouseOwner.ps1')
         Install-AdminCreateWarehouseOwnerProbe
+        if($AdminCreateRecording){
+            . (Join-Path $PSScriptRoot 'Slice4beAdminCreateRecording.ps1')
+            Install-AdminCreateRecordingProbe
+            if($AdminCreateGuidePaths){
+                . (Join-Path $PSScriptRoot 'Slice4beAdminVerifyGuide.ps1')
+                Install-AdminVerifyGuideProbe
+            }
+        }
         . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
         Compile-Slice4beEvaluationProbes
     }
@@ -2193,7 +2205,8 @@ End Function
     }
     if($AdminCreateWarehouseOwnerOnly){
         $step='packaged Create Warehouse owner outcomes'
-        Test-AdminCreateWarehouseOwner $a $b
+        if(-not ($AdminCreateOpeningOnly -or $AdminCreateRecordingOnly)){Test-AdminCreateWarehouseOwner $a $b}
+        if($AdminCreateRecording){Test-AdminCreateRecording $a $b}
     }
     if(-not $AdminCreateWarehouseOwnerOnly -and -not $AdminSeedOutcomeOnly -and -not $AdminDirectoryColumnsOnly -and -not $AdminConsoleOnly -and -not $AdminVerifyAddinsOnly -and -not $AdminReconcileIdentityOnly -and -not $AdminSettingsCloseOnly -and -not $CheckViewerRefreshFailure -and -not $CheckViewerEventDetail -and -not $CheckViewerEventGroups -and -not $CheckViewerPublishedRead -and $PrintSeedBoundaryForTest -notin @('FreshSeed','BareSeed')) {
     $step='unauthenticated command'

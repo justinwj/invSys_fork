@@ -15,15 +15,25 @@ scoped-qualified: focused370, independent successful/incomplete/failed guide
 results,11 reviewed captures, directory219, Settings202, recording80, smoke86,
 chain32/live48/Create15 and compile/static/preservation gates.
 
-Qualified recording baseline is root-recording-04, catalog40/162. Approved
+Current qualified recording candidate is unpromoted create-recording-02,
+catalog41/172. [Create recording and guide conclusions](plan022_slice4be_admin_create_recording_results.md)
+pass focused381, retaining all110 owner checks, with four independent recordings,
+truthful Concluded/Incomplete/Failed results and13 reviewed captures. Purpose/layout36,
+Settings202, recording80, smoke86, chain32/live48/Create15 and compile/static/
+preservation gates pass. The prior162 control definitions are unchanged.
+Next: audit Setup Tester Station's actual callback/handlers under D8/D18 and protect
+the discovered contract with packaged RED before implementation. Overall4be-A,
+remaining Admin coverage and early B0 remain open; replay is separate4be-B work.
+
+The preceding recording candidate was root-recording-04, catalog40/162. Approved
 [D8-CREATE-01 owner implementation](plan022_slice4be_admin_create_owner_results.md)
 is scoped-qualified on unpromoted create-authority-03. Expanded RED63/23 and
 diagnostic-sink RED106/4 become focused GREEN110, retaining all45 original passes.
 Purpose/layout36, five reviewed captures, recording80, smoke86, chain32/live48/Create15,
 compile/static/preservation and native-closure gates pass. Reopened publication uses saved identity, with
 zero bootstrap calls and unchanged local Config/Auth/inventory. Source-session,
-rights, partial-result and diagnostic-redaction gates pass. Create recording and
-guide conclusions remain next; catalog40/162 and4be-A acceptance are unchanged.
+rights, partial-result and diagnostic-redaction gates pass. That owner checkpoint
+retained catalog40/162; its recording follow-up is qualified above.
 Preceding directory-recording-01 has
 [View Warehouses RED79/9 -> GREEN101 -> boundary149 -> guide219](plan022_slice4be_admin_directory_recording_results.md).
 Cold compiles/static limits, seven reviewed captures, Settings202, smoke86,
@@ -112,7 +122,7 @@ as deliberate actions merely because an event procedure exists.
 | `btnAdminSettings` | `modAdmin.Open_Settings` | Existing catalog33 Open/five tabs plus catalog32 Close; launcher98, native177 and continuous recording/guide125 have scoped evidence. General/editor/policy controls retain their separate records. |
 | `btnAdminWarehouses` | `modAdmin.Open_WarehouseDirectory` | Optional root prompt, `modAdminConsole.OpenWarehouseDirectory`, directory refresh/activation and existing success/failure notice. Do not log discovered paths or assume directory viewing changes the trusted target. |
 | `btnAdminWarehouseRoot` | `modAdmin.Add_WarehouseDirectoryRoot` | Explicit root prompt and `RememberWarehouseScanRoot`; local remembered-root change, then directory presentation. Cancellation, remembering and refresh are distinct facts; no new warehouse is created. |
-| `btnAdminCreateWarehouse` | `modAdmin.Open_CreateWarehouse` | `frmCreateWarehouse`: folder helpers, Operational/Training choice, validation/bootstrap, optional/retried initial publication, Open Receiving and Close. Local bootstrap can succeed before publication fails. No existing trusted runtime means no warehouse activity store. |
+| `btnAdminCreateWarehouse` | `modAdmin.Open_CreateWarehouse` | Qualified owner and ten recorded controls: folder helpers, purpose, Create, initial/retried/reopened publication, exact generated Receiving opening and Close. Authority and activity use the captured signed-in source warehouse. Reopened publication reads saved destination identity without bootstrap; local creation and publication retain distinct outcomes. |
 | `btnAdminSetupTesterStation` | `modAdmin.Admin_SetupTesterStation_Click` | `frmSetupTesterStation`: path helpers, `modTesterSetup.SetupTesterStation`, open generated Receiving workbook, delete generated setup, cancel. Capture only eligible current-context actions; never use existing operational workbooks as disposable fixtures. |
 | `btnAdminAddInventoryItem` | `modAdmin.Add_InventoryItem` | Captures exact warehouse/station/user and operator workbook, then modal `frmAddInventoryItem`: Add/Edit selection, custom fields, sheet workbench create/upload, accept/delete/cancel. Owner command results occur after form acceptance; retain existing System_Key, unknown columns and workflow gates. |
 | `btnAdminSeedInventory` | `modAdmin.Seed_DemoInventory` | `frmSeedInventory` selects Seed/Delete/Upload Data Set/Delete Data Set; callback confirmations and `modAdminInventorySeed` results follow. Inbox repair has its own form handler. CSV definition changes are not inventory changes. Existing automation result text is not shared activity proof. |

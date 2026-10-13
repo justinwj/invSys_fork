@@ -38,6 +38,9 @@ End Function
 Option Explicit
 Public Denials As Long
 Private mRecordingContext As String
+Public Function CurrentCatalogVersion() As Long
+    CurrentCatalogVersion = modActivityCatalog.CATALOG_VERSION
+End Function
 Public Function StartRecording() As Boolean
     Dim report As String
     mRecordingContext = modActivity.CaptureContext()
@@ -126,6 +129,7 @@ End Function
 
 function Test-AdminRootRecording($Fixture,$Other,$HostBook,$OtherBook) {
     function Probe([string]$Name,[object[]]$Values=@()){Run 'invSys.Core.xlam' ('TestRootActivity.'+$Name) $Values}
+    $catalogVersion=[int](Probe 'CurrentCatalogVersion')
     function Retained($Before){foreach($path in $Before.Keys){if(-not(Test-Path -LiteralPath $path)){return $false};$s=[IO.File]::Open($path,'Open','Read','ReadWrite');try{$hash=(Get-FileHash -InputStream $s).Hash}finally{$s.Dispose()};if($hash -cne $Before[$path]){return $false}};return $true}
     SelectTarget $Fixture
     $wire=[string](Probe 'Definition' @(40));$definition=if($wire){$wire|ConvertFrom-Json}else{$null}
@@ -167,7 +171,7 @@ function Test-AdminRootRecording($Fixture,$Other,$HostBook,$OtherBook) {
         Check ($prefix+'ExactCorrelatedPair') ($pair -and $requests[0].ActivityId -ceq $outcomes[0].ActivityId -and $requests[0].RecordId -cne $outcomes[0].RecordId)
         $owned=$pair;$safe=$pair;$conclusion=$pair
         foreach($record in $records){
-            $owned=$owned -and $record.OwnerId -ceq 'ADMIN_WAREHOUSE_ROOT_PREFERENCE' -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.StationId -ceq 'S1' -and $record.CatalogVersion -eq 40
+            $owned=$owned -and $record.OwnerId -ceq 'ADMIN_WAREHOUSE_ROOT_PREFERENCE' -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.StationId -ceq 'S1' -and $record.CatalogVersion -eq $catalogVersion
             $effect=if($record.OutcomeCode -ceq 'CANCELLED'){'Unchanged'}else{'Unknown'}
             $severity=if($record.OutcomeCode -like '*REFRESH_FAILED'){'Error'}elseif($record.OutcomeCode -ceq 'UNCONFIRMED_REFRESHED'){'Warning'}else{'Info'}
             $owned=$owned -and $record.DataEffect -ceq $effect -and $record.Severity -ceq $severity

@@ -24,6 +24,7 @@ Attribute mBtnOpenReceiving.VB_VarHelpID = -1
 Private WithEvents mBtnPublishExisting As MSForms.CommandButton
 Attribute mBtnPublishExisting.VB_VarHelpID = -1
 Private mWriteContext As String
+Private mActivity As cCreateWarehouseActivity
 
 Private mPathLocalTouched As Boolean
 Private mLastSuggestedLocalPath As String
@@ -51,7 +52,28 @@ Private Const ANCHOR_BOTTOM As Long = 8
 
 Private mAnchors As Object
 Private mResizeInitialized As Boolean
-Private mWarehousePurpose As MSForms.ComboBox
+Private WithEvents mWarehousePurpose As MSForms.ComboBox
+Attribute mWarehousePurpose.VB_VarHelpID = -1
+
+Public Sub ObserveEntry(ByVal observer As cCreateWarehouseActivity, ByVal writeContext As String)
+    Set mActivity = observer
+    mWriteContext = writeContext
+End Sub
+
+Private Function BeginActivity(ByVal suffix As String) As String
+    If Not mActivity Is Nothing Then BeginActivity = mActivity.BeginAction(suffix)
+End Function
+
+Private Sub FinishActivity(ByVal action As String, ByVal outcome As String)
+    If Not mActivity Is Nothing Then mActivity.Finish action, outcome
+End Sub
+
+Private Sub RaiseActivityFailure(ByVal action As String)
+    Dim number As Long, source As String, description As String
+    number = Err.Number: source = Err.Source: description = Err.Description
+    FinishActivity action, "FAILED"
+    Err.Raise number, source, description
+End Sub
 
 Private Sub UserForm_Initialize()
     mWriteContext = modAuthUserCommands.CaptureContext()
@@ -87,6 +109,7 @@ Private Sub UserForm_Initialize()
 End Sub
 
 Private Sub UserForm_Activate()
+    If Not mActivity Is Nothing Then mActivity.Presented Me.Visible
     If Not mResizeInitialized Then
         modUserFormResizeWin.EnableResizableUserForm Me, True, True
         mResizeInitialized = True
@@ -102,6 +125,14 @@ End Sub
 
 Private Sub UserForm_Terminate()
     Set mAnchors = Nothing
+    Set mActivity = Nothing
+End Sub
+
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+    Dim action As String
+    If Cancel <> 0 Then Exit Sub
+    action = BeginActivity("CLOSE")
+    FinishActivity action, "CLOSED"
 End Sub
 
 Private Sub txtWarehouseId_Change()
@@ -144,6 +175,9 @@ End Sub
 Private Sub mBtnSharePointHelper_Click()
     Dim candidate As String
     Dim warehouseId As String
+    Dim action As String
+    On Error GoTo Failed
+    action = BeginActivity("FIND_SHAREPOINT")
 
     warehouseId = Trim$(CStr(Me.txtWarehouseId.Value))
     candidate = modTesterSetup.DetectSharePointRoot(warehouseId)
@@ -153,6 +187,7 @@ Private Sub mBtnSharePointHelper_Click()
 
     If candidate = "" Then
         ShowSummary "SharePoint root was not detected. Pick the locally synced invSys root folder manually.", COLOR_INFO
+        FinishActivity action, "UNAVAILABLE"
         Exit Sub
     End If
 
@@ -161,13 +196,20 @@ Private Sub mBtnSharePointHelper_Click()
     mFormBusy = False
     ClearErrorLabel Me.lblPathSharePointError
     ShowSummary "SharePoint root detected.", COLOR_SUCCESS
+    FinishActivity action, "STAGED"
+    Exit Sub
+Failed:
+    RaiseActivityFailure action
 End Sub
 
 Private Sub mBtnHubPathHelper_Click()
     Dim candidate As String
+    Dim action As String
+    On Error GoTo Failed
+    action = BeginActivity("BROWSE_HUB")
 
     candidate = modDeploymentPaths.BrowseForFolderPath(Trim$(CStr(Me.txtPathLocal.Value)), "Choose Warehouse Hub Folder")
-    If candidate = "" Then Exit Sub
+    If candidate = "" Then FinishActivity action, "CANCELLED": Exit Sub
 
     mFormBusy = True
     Me.txtPathLocal.Value = candidate
@@ -175,11 +217,25 @@ Private Sub mBtnHubPathHelper_Click()
     mPathLocalTouched = True
     ClearErrorLabel Me.lblPathLocalError
     ShowSummary "Warehouse hub path selected. For Synology, this should be the SMB warehouse folder, for example \\DS920\<share>\WH1.", COLOR_SUCCESS
+    FinishActivity action, "STAGED"
+    Exit Sub
+Failed:
+    RaiseActivityFailure action
 End Sub
 
 Private Sub chkPublishInitial_Click()
+    Dim action As String
     If mFormBusy Then Exit Sub
+    action = BeginActivity("PUBLISH_OPTION")
     ClearErrorLabel Me.lblPathSharePointError
+    FinishActivity action, "STAGED"
+End Sub
+
+Private Sub mWarehousePurpose_Change()
+    Dim action As String
+    If mFormBusy Then Exit Sub
+    action = BeginActivity("PURPOSE")
+    FinishActivity action, "SELECTED"
 End Sub
 
 Private Sub btnCancel_Click()
@@ -196,22 +252,26 @@ Private Sub btnOK_Click()
     Dim addinsFolder As String
     Dim summaryText As String
     Dim commandReport As String
+    Dim action As String, outcome As String, publishOutcome As String
+    On Error GoTo Failed
 
     If StrComp(Me.btnOK.Caption, "Close", vbTextCompare) = 0 Then
         Unload Me
         Exit Sub
     End If
 
+    outcome = "REJECTED"
+    If mLocalBootstrapComplete Then action = BeginActivity("RETRY_PUBLISH") Else action = BeginActivity("SUBMIT")
     ClearValidationErrors
     If Not BuildSpecFromForm(warehouseId, warehouseName, stationId, adminUser, pathLocal, pathSharePoint) Then
         ShowSummary "Fix the highlighted fields and try again.", COLOR_ERROR
-        Exit Sub
+        GoTo ActivityFinished
     End If
 
     If pathSharePoint <> "" Then addinsFolder = pathSharePoint & "\Addins"
     If Not modLocalAddinsRegistration.EnsureLocalInvSysAddinsRegistered(addinsFolder, summaryText) Then
         ShowSummary "invSys add-ins are not registered cleanly for this Excel session." & vbCrLf & summaryText, COLOR_ERROR
-        Exit Sub
+        outcome = "FAILED": GoTo ActivityFinished
     End If
 
     If mLocalBootstrapComplete Then
@@ -219,10 +279,10 @@ Private Sub btnOK_Click()
         mCreatedPathSharePoint = pathSharePoint
         If Not CBool(Me.chkPublishInitial.Value) Then
             ShowSummary "Warehouse hub already exists. Check the publish box to retry SharePoint publish, or click Close.", COLOR_INFO
-            Exit Sub
+            GoTo ActivityFinished
         End If
 
-        If modWarehouseCreateCommands.PublishExisting(mWriteContext, mCreatedPathLocal, mCreatedPathSharePoint, commandReport, mCreatedWarehouseId) Then
+        If modWarehouseCreateCommands.PublishExisting(mWriteContext, mCreatedPathLocal, mCreatedPathSharePoint, commandReport, mCreatedWarehouseId, outcome) Then
             summaryText = "Warehouse hub already existed from this session." & vbCrLf & _
                           commandReport
             MarkFormComplete summaryText, True
@@ -233,18 +293,18 @@ Private Sub btnOK_Click()
             Me.btnCancel.Caption = "Close"
             ShowSummary summaryText, COLOR_ERROR
         End If
-        Exit Sub
+        GoTo ActivityFinished
     End If
 
     If modWarehouseBootstrap.WarehouseArtifactsExistAtPath(warehouseId, pathLocal) Then
         SetErrorCaption Me.lblWarehouseIdError, "Warehouse artifacts already exist at the selected hub path."
         ShowSummary "Choose a different WarehouseId or hub path and try again.", COLOR_ERROR
-        Exit Sub
+        GoTo ActivityFinished
     End If
 
-    If Not modWarehouseCreateCommands.CreateWarehouse(mWriteContext, warehouseId, warehouseName, stationId, adminUser, pathLocal, pathSharePoint, CStr(mWarehousePurpose.Value), commandReport, mCreatedOperatorWorkbookPath) Then
+    If Not modWarehouseCreateCommands.CreateWarehouse(mWriteContext, warehouseId, warehouseName, stationId, adminUser, pathLocal, pathSharePoint, CStr(mWarehousePurpose.Value), commandReport, mCreatedOperatorWorkbookPath, outcome) Then
         ShowSummary commandReport, COLOR_ERROR
-        Exit Sub
+        GoTo ActivityFinished
     End If
 
     mCreatedWarehouseId = warehouseId
@@ -265,10 +325,13 @@ Private Sub btnOK_Click()
     End If
 
     If CBool(Me.chkPublishInitial.Value) Then
-        If modWarehouseCreateCommands.PublishExisting(mWriteContext, pathLocal, pathSharePoint, commandReport, mCreatedWarehouseId) Then
+        If modWarehouseCreateCommands.PublishExisting(mWriteContext, pathLocal, pathSharePoint, commandReport, mCreatedWarehouseId, publishOutcome) Then
+            outcome = "CREATED_PUBLISHED"
             summaryText = summaryText & vbCrLf & commandReport
             MarkFormComplete summaryText, True
         Else
+            outcome = "CREATED_PUBLISH_FAILED"
+            If publishOutcome = "DENIED" Then outcome = "CREATED_PUBLISH_DENIED"
             mCreatedPathSharePoint = pathSharePoint
             summaryText = summaryText & vbCrLf & commandReport & vbCrLf & _
                           "Use Retry Publish, or reopen and choose Publish Existing Warehouse."
@@ -280,15 +343,26 @@ Private Sub btnOK_Click()
         summaryText = summaryText & vbCrLf & "Initial SharePoint publish skipped."
         MarkFormComplete summaryText, True
     End If
+ActivityFinished:
+    FinishActivity action, outcome
+    Exit Sub
+Failed:
+    RaiseActivityFailure action
 End Sub
 
 Private Sub mBtnPublishExisting_Click()
-    Dim report As String
-    If modWarehouseCreateCommands.PublishExisting(mWriteContext, CStr(Me.txtPathLocal.Value), CStr(Me.txtPathSharePoint.Value), report) Then
+    Dim report As String, action As String, outcome As String
+    On Error GoTo Failed
+    action = BeginActivity("PUBLISH_EXISTING")
+    If modWarehouseCreateCommands.PublishExisting(mWriteContext, CStr(Me.txtPathLocal.Value), CStr(Me.txtPathSharePoint.Value), report, "", outcome) Then
         MarkFormComplete report, True
     Else
         ShowSummary report, COLOR_ERROR
     End If
+    FinishActivity action, outcome
+    Exit Sub
+Failed:
+    RaiseActivityFailure action
 End Sub
 
 Private Sub ConfigurePublishExistingButton()
@@ -304,13 +378,18 @@ End Sub
 
 Private Sub mBtnOpenReceiving_Click()
     Dim wb As Workbook
+    Dim action As String
+
+    action = BeginActivity("OPEN_WORKBOOK")
 
     If mCreatedOperatorWorkbookPath = "" Then
         ShowSummary "Receiving workbook path was not captured.", COLOR_ERROR
+        FinishActivity action, "REJECTED"
         Exit Sub
     End If
     If Len(Dir$(mCreatedOperatorWorkbookPath, vbNormal)) = 0 Then
         ShowSummary "Receiving workbook was not found: " & mCreatedOperatorWorkbookPath, COLOR_ERROR
+        FinishActivity action, "REJECTED"
         Exit Sub
     End If
 
@@ -319,10 +398,12 @@ Private Sub mBtnOpenReceiving_Click()
     If wb Is Nothing Then GoTo FailOpen
     wb.Activate
     ShowSummary "Receiving workbook opened. Use Confirm Writes to test the new warehouse.", COLOR_SUCCESS
+    FinishActivity action, "OPENED"
     Exit Sub
 
 FailOpen:
     ShowSummary "Receiving workbook could not be opened: " & Err.Description, COLOR_ERROR
+    FinishActivity action, "FAILED"
 End Sub
 
 Private Sub MarkFormComplete(ByVal summaryText As String, ByVal includeCloseHint As Boolean)

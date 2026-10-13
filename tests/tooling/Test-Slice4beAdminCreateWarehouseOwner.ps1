@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-root-recording-04',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$CaptureEvidence)
+param([string]$DeployRoot='deploy/validation-root-recording-04',[ValidateSet('RED','GREEN')][string]$Phase='RED',[switch]$CaptureEvidence,[switch]$CheckRecording,[switch]$OpeningOnly,[switch]$RecordingOnly,[switch]$CheckGuides)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Create Warehouse owner gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
@@ -15,6 +15,11 @@ $start=[DateTimeOffset]::UtcNow;$code=1
 Write-Output ('Create Warehouse owner controller: '+$root)
 try {
     $extra=@();if($CaptureEvidence){$extra+='-CaptureEvidence'}
+    if($CheckRecording){$extra+='-AdminCreateRecording'}
+    if($OpeningOnly){$extra+='-AdminCreateOpeningOnly';if(-not $CheckRecording){$extra+='-AdminCreateRecording'}}
+    if($RecordingOnly){$extra+='-AdminCreateRecordingOnly'}
+    if($CheckGuides){$extra+='-AdminCreateGuidePaths'}
+    if(($RecordingOnly -or $CheckGuides) -and -not ($CheckRecording -or $OpeningOnly)){$extra+='-AdminCreateRecording'}
     & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1') -DeployRoot $DeployRoot -Phase $Phase -AdminCreateWarehouseOwnerOnly -CompileEvaluationProbesForTest -WaitForExcelReadyForTest -ExcelReadyReadLimitForTest 40 @extra *> (Join-Path $root 'worker.log')
     $code=$LASTEXITCODE
 } finally {
