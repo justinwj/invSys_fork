@@ -72,3 +72,20 @@ ordinary modal interaction, folder-helper dialogs, context/right-change cases,
 post-sign-out publication retry or direct interactive Core commands. Existing
 full-chain/live-role/static/layout/visible results remain scoped prior evidence;
 they are not fresh acceptance of this diagnostic or a new implementation.
+
+## Contract review follow-up (proposal only)
+
+Revised D8-CREATE-01 explicitly adds reopened **Publish Existing Warehouse**,
+authorization against the captured source warehouse after any confirmation,
+no Windows/Office identity substitute, typed calls/primitive envelopes and
+redaction across recording/activity/all logs, including downstream helpers.
+Approval and new D13 coverage remain pending;45/2 is unchanged historical evidence.
+The owner test already calls `modAuth.SignOut` before Create and verifies the
+signed-out state. It has no broader context matrix or confirmation-time hook.
+Reuse `Slice4beAdminAuthWriteDiagnostic.ps1`'s `SignedOut` state and
+`Slice4beAdminCloseActivity.ps1`'s `SignedOut` mode for the expanded cases. Protect
+reopened publication under a new session, zero bootstrap calls, unchanged local
+Config/Auth/inventory, duplicate refusal, invalid/missing runtime, source-vs-
+destination authority, stale/post-confirmation context and sanitized outputs.
+This documentation revision changes no test or product code; no new runtime
+RED/GREEN, packaged build or visible acceptance is claimed.
