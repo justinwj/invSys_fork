@@ -1,6 +1,8 @@
 # Tester Setup cleanup authority diagnostic
 
-4be-A prerequisite,2026-10-13 Pacific. **RED; correction not approved or implemented.**
+4be-A prerequisite,2026-10-13 Pacific. **RED; D8-TESTER-01 approved, not implemented.**
+The user approved all six tightened requirements on2026-10-13 Pacific. Expanded
+RED and implementation remain required; do not request approval again.
 Unchanged qualified package: `deploy/validation-create-recording-02`, catalog41/172.
 
 ```powershell
@@ -29,7 +31,7 @@ without a live source-session check or generated-ownership receipt. Source audit
 also finds Setup directly provisioning/seeding an entered existing runtime; Setup
 has not been exercised by this focused diagnostic. D8-A preserves explicit station
 provisioning, while D8-CREATE-01 applies to Create Warehouse only. **D8-TESTER-01**
-is therefore proposed in v4.11 before changing these write/cleanup boundaries.
+was therefore proposed in v4.11 and is now approved before implementation.
 
 Normal closure restores settings and preserves all package/tooling pins. Delayed
 native audit through2026-10-14T00:09:04.292UTC finds zero Excel1000/1001/1002 events
@@ -38,6 +40,6 @@ or input lock was observed. Ignored receipts contain only scoped runtime evidenc
 
 Product source and XLAMs are unchanged. Reuse the preceding Create qualification;
 no new compile/layout/full-chain/static GREEN or release acceptance is claimed.
-After approval, expand packaged RED for Setup, verified disposable ownership,
+Next, expand packaged RED for Setup, verified disposable ownership,
 partial/reopened cleanup, open/dirty/foreign artifacts and diagnostic redaction;
 then implement and run the required GREEN/regression gates before recording coverage.

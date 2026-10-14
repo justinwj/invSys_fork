@@ -21,12 +21,12 @@ pass focused381, retaining all110 owner checks, with four independent recordings
 truthful Concluded/Incomplete/Failed results and13 reviewed captures. Purpose/layout36,
 Settings202, recording80, smoke86, chain32/live48/Create15 and compile/static/
 preservation gates pass. The prior162 control definitions are unchanged.
-Next is blocked on proposed D8-TESTER-01: [Tester cleanup diagnostic](plan022_slice4be_admin_tester_owner_results.md)
+Next is approved D8-TESTER-01 (2026-10-13 Pacific): [Tester cleanup diagnostic](plan022_slice4be_admin_tester_owner_results.md)
 gives25 PASS/4 expected FAIL through the actual callback/handler. Cleanup still
 deletes after lost source authority; names alone also permit deletion of an
 ordinary canary. Setup's separate write path is audited, not runtime-qualified.
-Approve the live-Core-authority/disposable-ownership contract before its expanded
-RED and implementation; no new recording IDs are introduced. Overall4be-A,
+The user approved all six contract tightenings. Expand packaged RED before
+implementation; no new recording IDs are introduced. Overall4be-A,
 remaining Admin coverage and early B0 remain open; replay is separate4be-B work.
 
 The preceding recording candidate was root-recording-04, catalog40/162. Approved
