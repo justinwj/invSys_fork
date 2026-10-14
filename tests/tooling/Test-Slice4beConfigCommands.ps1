@@ -141,6 +141,9 @@ param(
     [switch]$AdminAggregationPathComparison,
     [switch]$AdminAggregationBoundaryMatrix,
     [switch]$AdminAggregationWriteBoundariesOnly,
+    [switch]$AdminAggregationRestartOnly,
+    [switch]$AdminAggregationCompletionOnly,
+    [string]$AggregationOwnedFixtureRootForTest='',
     [switch]$AdminTesterSetupPaths,
     [switch]$AdminTesterOwnershipPaths,
     [switch]$AdminTesterOwnershipOnly,
@@ -351,10 +354,11 @@ if($ViewerStartupCalibrationForTest -ne 'None' -and -not $TraceViewerStartupForT
 if($ViewerStartupPackageStateForTest -ne 'OriginalReadOnly' -and -not $TraceViewerStartupForTest){
     $savedGuide=$GuideDraftOnly -and $CheckGuideExpectation -and $CheckViewerPublishedRead
     $savedSeed=$AdminSeedGuideTimingOnly -and $AdminSeedGuidePaths -and $AdminSeedRecordingBoundaries -and $AdminSeedOutcomeOnly
+    $savedAggregation=$AdminAggregationRestartOnly -and $AdminAggregationOnly -and $AdminAggregationBoundaryMatrix
     $savedPrint=$RunPrintBaselineOnly -and $CheckProductionDesignerActivity -and $CheckProductionRunLocal -and $PrintSeedBoundaryForTest -cne 'BareSeed'
     $savedCheckIn=$RunCheckInActivityOnly -and $CheckProductionDesignerActivity -and $CheckProductionRunLocal -and -not $CheckTrackingSettings -and -not $CheckSettingsEditorActivity -and -not $CheckViewerPublishedRead -and -not $CheckShippingRecording
     $savedComplete=$RunCompleteBaselineOnly -and $CheckProductionDesignerActivity -and $CheckProductionRunLocal -and -not $RunNextBaselineOnly -and -not $CheckTrackingSettings -and -not $CheckSettingsEditorActivity -and -not $CheckViewerPublishedRead -and -not $CheckShippingRecording
-    if($ViewerStartupPackageStateForTest -ne 'SavedCopies' -or -not $CompileEvaluationProbesForTest -or -not ($savedGuide -or $savedComplete -or $savedPrint -or $savedCheckIn -or $savedSeed)){
+    if($ViewerStartupPackageStateForTest -ne 'SavedCopies' -or -not $CompileEvaluationProbesForTest -or -not ($savedGuide -or $savedComplete -or $savedPrint -or $savedCheckIn -or $savedSeed -or $savedAggregation)){
         throw 'Package-state comparison requires startup tracing or an isolated compiled saved-copy guide/completion/Print/Check In gate.'
     }
 }
@@ -563,6 +567,17 @@ if($RecordingContinuationPipeName -ne ''){
     $recordingHandoff.Connect(10000)
 }
 $runRoot = Join-Path ([IO.Path]::GetTempPath()) ('invsys-config-command-' + [guid]::NewGuid().ToString('N'))
+if($AggregationOwnedFixtureRootForTest){
+    if(-not $AdminAggregationOnly -or -not $AdminAggregationRestartOnly -or -not $AdminAggregationBoundaryMatrix -or $ViewerStartupPackageStateForTest -ne 'SavedCopies'){throw 'Parent-owned fixture root is restricted to the isolated saved-copy Aggregation restart gate.'}
+    $ownedRoot=[IO.Path]::GetFullPath($AggregationOwnedFixtureRootForTest)
+    $tempRoot=[IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\')
+    if(-not [string]::Equals((Split-Path $ownedRoot -Parent),$tempRoot,[StringComparison]::OrdinalIgnoreCase) -or
+        (Split-Path $ownedRoot -Leaf) -cnotmatch '^invsys-config-command-[0-9a-f]{32}$' -or
+        -not(Test-Path -LiteralPath $ownedRoot -PathType Container) -or
+        ((Get-Item -LiteralPath $ownedRoot).Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+        @(Get-ChildItem -LiteralPath $ownedRoot -Force).Count){throw 'Parent-owned restart fixture must be the exact new empty disposable folder.'}
+    $runRoot=$ownedRoot
+}
 $reportRoot = Join-Path $repo 'reports/runtime/config-commands'
 if ($CheckActivityEvidence) {
     $reportRoot = Join-Path $repo 'reports/runtime/slice4be-activity'
@@ -801,6 +816,7 @@ if($AdminTesterSetupOwnerOnly){
 }
 if($AdminAggregationOnly){
     if(-not $CompileEvaluationProbesForTest -or $AdminTesterSetupOwnerOnly -or $AdminConsoleOnly -or $CheckTrackingSettings){throw 'Aggregation requires its isolated compiled diagnostic.'}
+    if($AdminAggregationRestartOnly -and (-not $AdminAggregationBoundaryMatrix -or $ViewerStartupPackageStateForTest -ne 'SavedCopies')){throw 'Aggregation restart requires compiled saved disposable copies and actual boundary probes.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-aggregation/'+[guid]::NewGuid().ToString('N'))
     Write-Output ('Aggregation evidence: '+$reportRoot)
 }
@@ -1226,7 +1242,7 @@ function Run([string]$Package,[string]$Macro,[object[]]$Values=@()) {
         if($desktop.PSObject.Properties['UTC'] -and ([DateTimeOffset]::UtcNow-[DateTimeOffset]::Parse($desktop.UTC)).TotalSeconds -gt 10){throw 'Desktop monitor heartbeat is stale; no further macro was dispatched.'}
         if($desktop.Error5Samples -gt 0){throw 'Desktop Win32 error5 observed; user requires stopping this test.'}
         foreach($stopField in @('LockSamples','MouseLockSamples')){
-            if($desktop.PSObject.Properties[$stopField] -and $desktop.$stopField -gt 0){throw 'Desktop or mouse lock observed; user requires stopping this test.'}
+            if($desktop.PSObject.Properties[$stopField] -and $desktop.$stopField -gt 0){throw 'The interactive desktop stopped receiving input or the mouse is confined; no further macro was dispatched.'}
         }
     }
     $resourceBoundary=$Macro
@@ -2086,6 +2102,12 @@ End Function
         Compile-Slice4beEvaluationProbes
     }
     $templateRoot=Join-Path $repo 'deploy/current/templates'
+    if($AdminAggregationRestartOnly){
+        . (Join-Path $PSScriptRoot 'Slice4beAdminAggregationRestart.ps1')
+        . (Join-Path $PSScriptRoot 'Slice4beProbePackages.ps1')
+        Save-DisposableStartupProbes $packages $probeDeploy 'SavedCopies'
+    }
+    if($AdminAggregationCompletionOnly){. (Join-Path $PSScriptRoot 'Slice4beAdminAggregationCompletion.ps1')}
     if($CheckReceivingReplay){$templateRoot=Join-Path $inputDeploy 'templates'}
     [void](Run 'invSys.Core.xlam' 'modWarehouseBootstrap.SetWarehouseBootstrapTemplateRootOverride' @($templateRoot))
     [void](Run 'invSys.Core.xlam' 'modWarehouseBootstrap.SetLocalOperatorRootOverrideForAutomation' @((Join-Path $runRoot 'operators')))
@@ -2674,6 +2696,9 @@ finally {
     if($RecordingEvaluationDiagnostic){$reportName='diagnostic-evaluation-'+$reportName}
     Complete-ResultEvidence (Join-Path $reportRoot $reportName) {
         # Runtime credentials stay only in disposable generated authority fixtures.
+        # Restart package references can retain file locks until this worker exits;
+        # the parent removes only its exact pre-created folder after confirmed exit.
+        if($AggregationOwnedFixtureRootForTest){return}
         $resolved=[IO.Path]::GetFullPath($runRoot)
         $temp=[IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\')+'\'
         if(-not $recordingFixtureTransferred -and $resolved.StartsWith($temp,[StringComparison]::OrdinalIgnoreCase) -and (Split-Path $resolved -Leaf) -like 'invsys-config-command-*') {

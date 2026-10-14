@@ -47,6 +47,13 @@ Public Sub AtPoint(ByVal point As String)
             Next sheet
             auth.Save: auth.Close False: mInjected = True
         Case "WRITE_FAILURE": mInjected = True: Err.Raise 1004
+        Case "PARTIAL_OUTPUT"
+            Set fso = CreateObject("Scripting.FileSystemObject")
+            With fso.CreateTextFile(mFeed, True, False)
+                .Write "Incomplete disposable aggregation output"
+                .Close
+            End With
+            mInjected = True
     End Select
 End Sub
 Public Function DirectInteractive(ByVal context As String, ByVal sources As String, ByVal outputPath As String) As Boolean
@@ -56,23 +63,74 @@ Public Function DirectInteractive(ByVal context As String, ByVal sources As Stri
     ' Scheduled/fixture authorization is a separate preserved comparison.
     DirectInteractive = modHqAggregator.GenerateGlobalSnapshotFromFiles(sources, outputPath, report)
 End Function
+Public Function CaptureDirect(ByVal bookName As String, ByVal warehouse As String, ByVal configPath As String, ByVal snapshot As String) As String
+    CaptureDirect = modAuthUserCommands.CaptureContext()
+End Function
 '@)
     $owner=$packages['invSys.Admin.xlam'].VBProject.VBComponents.Item('modAdminConsole').CodeModule
     $first=$owner.ProcStartLine('RunHQAggregationFromSourceSet',0);$count=$owner.ProcCountLines('RunHQAggregationFromSourceSet',0)
     $body=$owner.Lines($first,$count)
     $marker='    TestAggregation.Phase "OutputConfig"'
-    if(-not $body.Contains($marker)){throw 'Post-inspection fault boundary unavailable.'}
-    $body=$body.Replace($marker,'    TestAggregationBoundary.AtPoint "AFTER_INSPECTION"'+"`r`n"+$marker)
-    $owner.DeleteLines($first,$count);$owner.InsertLines($first,$body)
+    $modern=$body.Contains('modAggregationCommands.Aggregate')
+    if($modern){
+        $adapter=$probe.CodeModule
+        $first=$adapter.ProcStartLine('DirectInteractive',0);$count=$adapter.ProcCountLines('DirectInteractive',0)
+        $adapter.DeleteLines($first,$count)
+        $adapter.InsertLines($first,@'
+Public Function DirectInteractive(ByVal context As String, ByVal sources As String, ByVal outputPath As String) As Boolean
+    Dim report As String
+    DirectInteractive = modAggregationCommands.Aggregate(context, sources, report)
+End Function
+'@)
+        $first=$adapter.ProcStartLine('CaptureDirect',0);$count=$adapter.ProcCountLines('CaptureDirect',0)
+        $adapter.DeleteLines($first,$count)
+        $adapter.InsertLines($first,@'
+Public Function CaptureDirect(ByVal bookName As String, ByVal warehouse As String, ByVal configPath As String, ByVal snapshot As String) As String
+    Dim context As String
+    context = modAggregationCommands.CaptureForm(bookName)
+    If modAggregationCommands.RegisterSource(context, warehouse, configPath, snapshot) <> "" Then CaptureDirect = context
+End Function
+Public Function ResolveKnown(ByVal context As String, ByVal sources As String) As Boolean
+    Dim report As String
+    ResolveKnown = modAggregationCommands.ResolveRetry(context, sources, True, report)
+    modAggregationCommands.ReleaseForm context
+End Function
+'@)
+        $command=$core.VBComponents.Item('modAggregationCommands').CodeModule
+        $first=$command.ProcStartLine('Aggregate',0);$count=$command.ProcCountLines('Aggregate',0)
+        $body=$command.Lines($first,$count)
+        $point='    mWriting = True: mContext = context'
+        if(-not $body.Contains($point)){throw 'Core inspection-return boundary unavailable.'}
+        $body=$body.Replace($point,$point+"`r`n"+'    TestAggregationBoundary.AtPoint "AFTER_INSPECTION"')
+        $promotion=[regex]::Matches($body,'(?im)^\s*promoted\s*=\s*modAggregationFiles\.Promote[^\r\n]*')
+        if($promotion.Count -ne 1){throw 'Core promotion-return boundary unavailable.'}
+        $body=$body.Replace($promotion[0].Value,$promotion[0].Value+"`r`n"+'    TestAggregationBoundary.AtPoint "AFTER_PROMOTION"')
+        $command.DeleteLines($first,$count);$command.InsertLines($first,$body)
+    }else{
+        if(-not $body.Contains($marker)){throw 'Post-inspection fault boundary unavailable.'}
+        $body=$body.Replace($marker,'    TestAggregationBoundary.AtPoint "AFTER_INSPECTION"'+"`r`n"+$marker)
+        $owner.DeleteLines($first,$count);$owner.InsertLines($first,$body)
+    }
     $writer=$core.VBComponents.Item('modHqAggregator').CodeModule
     $first=$writer.ProcStartLine('WriteGlobalSnapshotWorkbook',0);$count=$writer.ProcCountLines('WriteGlobalSnapshotWorkbook',0)
     $body=$writer.Lines($first,$count)
     $marker='    TestAggregationRoots.Stage "SaveAs"'
     if(-not $body.Contains($marker)){throw 'Writer fault boundary unavailable.'}
-    $body=$body.Replace($marker,'    TestAggregationBoundary.AtPoint "BEFORE_SAVE"'+"`r`n"+$marker)
+    if($modern){
+        $guard=[regex]::Matches($body,'(?im)^\s*If Not modAggregationCommands\.CheckPhase[^\r\n]*7512[^\r\n]*')
+        if($guard.Count -ne 1){throw 'Core pre-save authority boundary unavailable.'}
+        $body=$body.Replace($guard[0].Value,'    TestAggregationBoundary.AtPoint "BEFORE_SAVE"'+"`r`n"+$guard[0].Value)
+    }else{$body=$body.Replace($marker,'    TestAggregationBoundary.AtPoint "BEFORE_SAVE"'+"`r`n"+$marker)}
     $close='    TestAggregationRoots.Stage "Close"'
     if(-not $body.Contains($close)){throw 'Post-save fault boundary unavailable.'}
-    $body=$body.Replace($close,'    TestAggregationBoundary.AtPoint "AFTER_SAVE"'+"`r`n"+$close)
+    if($modern){
+        $guard=[regex]::Matches($body,'(?im)^\s*If Not modAggregationCommands\.CheckPhase[^\r\n]*7513[^\r\n]*')
+        if($guard.Count -ne 1){throw 'Core post-save authority boundary unavailable.'}
+        $body=$body.Replace($guard[0].Value,'    TestAggregationBoundary.AtPoint "AFTER_SAVE"'+"`r`n"+$guard[0].Value)
+    }else{$body=$body.Replace($close,'    TestAggregationBoundary.AtPoint "AFTER_SAVE"'+"`r`n"+$close)}
+    $closed=[regex]::Matches($body,'(?im)^\s*wb\.Close[^\r\n]*')
+    if($closed.Count -ne 1){throw 'Completed persistence observation boundary unavailable.'}
+    if(-not $modern){$body=$body.Replace($closed[0].Value,$closed[0].Value+"`r`n"+'    TestAggregationBoundary.AtPoint "AFTER_PROMOTION"')}
     $writer.DeleteLines($first,$count);$writer.InsertLines($first,$body)
 }
 
@@ -130,7 +188,7 @@ function Test-AggregationBoundaries($Fixture,$Other,$HostBook,$OtherBook,[ref]$O
                     $invalid=Table $invalidBook 'tblInventorySnapshot'
                     if($case -ceq 'MalformedSelectedSource'){$invalid.ListColumns.Item('System_Key').Name='Missing identity'}else{
                         $duplicate=$invalid.ListRows.Add()
-                        $invalid.ListRows.Item(1).Range.Copy($duplicate.Range)
+                        [void]$invalid.ListRows.Item(1).Range.Copy($duplicate.Range)
                     }
                     $invalidBook.Save()
                 }finally{$invalidBook.Close($false)}
@@ -215,6 +273,17 @@ function Test-AggregationBoundaries($Fixture,$Other,$HostBook,$OtherBook,[ref]$O
             [IO.File]::WriteAllBytes($Fixture.Config,$configBytes)
             [IO.File]::WriteAllBytes($authPath,$authBytes)
             if($redirected){Remove-Item -LiteralPath (Join-Path $changedFeed 'Global\invSys.Global.InventorySnapshot.xlsb')}
+            $pending=@(Get-ChildItem -LiteralPath (Split-Path -Parent $Fixture.Output) -File -Filter 'invSys.Aggregation.*.retry.json' -ErrorAction SilentlyContinue)
+            if($pending.Count){
+                # Resolve through the real owner after restoring this deliberately
+                # mutated fixture and capturing a fresh session. Never erase evidence
+                # or overwrite uncertain feed bytes to prepare the next case.
+                SelectTarget $Fixture
+                $review=[string](Core 'CaptureDirect' @($HostBook.Name,$Fixture.Warehouse,$Fixture.Config,$Fixture.Snapshot))
+                $resolved=[bool](Core 'ResolveKnown' @($review,$Fixture.Snapshot))
+                Check ('Aggregation.Boundary.'+$case+'.ExplicitFreshReviewResolvedKnownState') $resolved
+                if(-not $resolved){throw 'Known-state attempt could not be resolved; independent case preparation stopped.'}
+            }
         }
         foreach($overlap in @('TrustedSource','SelectedAuthority','SelectedSnapshots')){
             SelectTarget $Fixture
@@ -249,15 +318,17 @@ function Test-AggregationBoundaries($Fixture,$Other,$HostBook,$OtherBook,[ref]$O
         Check 'Aggregation.Boundary.ClosedOriginalWorkbook.OtherWorkbookPreserved' ($OtherBook.Worksheets.Count -eq $otherSheets)
         [void](Call 'CloseForm')
         SelectTarget $Fixture
-        $context=[string](Run 'invSys.Core.xlam' 'modAuthUserCommands.CaptureContext')
+        $context=[string](Core 'CaptureDirect' @($HostBook.Name,$Fixture.Warehouse,$Fixture.Config,$Fixture.Snapshot))
+        if(-not $context){throw 'Direct interactive capture unavailable; not behavioral RED.'}
         $positive=Join-Path $runRoot 'direct-interactive-positive.xlsb'
         [void](Core 'Arm' @('','','','',''))
         Check 'Aggregation.DirectCore.BaselinePositiveWriterControl' ([bool](Core 'DirectInteractive' @($context,$Fixture.Snapshot,$positive)))
+        $savedFeed=FileHash $Fixture.Output
         [void](Run 'invSys.Core.xlam' 'modAuth.SignOut')
         $denied=Join-Path $runRoot 'direct-interactive-signed-out.xlsb'
         $wrote=[bool](Core 'DirectInteractive' @($context,$Fixture.Snapshot,$denied))
-        Check 'Aggregation.DirectCore.SignedOutInteractiveDispatchDenied' (-not $wrote -and -not(Test-Path -LiteralPath $denied))
-        $Observations.Value+=[pscustomobject]@{Case='DirectCoreSignedOut';OwnerSuccess=$wrote;SourceOutput=(Test-Path -LiteralPath $denied);BaselineAdapter=$true}
+        Check 'Aggregation.DirectCore.SignedOutInteractiveDispatchDenied' (-not $wrote -and -not(Test-Path -LiteralPath $denied) -and (FileHash $Fixture.Output) -ceq $savedFeed)
+        $Observations.Value+=[pscustomobject]@{Case='DirectCoreSignedOut';OwnerSuccess=$wrote;SourceOutput=(Test-Path -LiteralPath $denied);BaselineAdapter=($packages['invSys.Core.xlam'].VBProject.VBComponents.Item('modHqAggregator').CodeModule.Lines(1,200) -notmatch 'commandContext')}
     }finally{
         [void](Call 'CloseForm');[void](Core 'Arm' @('','','','',''))
         [IO.File]::WriteAllBytes($Fixture.Snapshot,$sourceBytes)

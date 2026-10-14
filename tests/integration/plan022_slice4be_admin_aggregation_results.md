@@ -10,6 +10,83 @@ path-only packaged comparison. The approval blocker is cleared. Expanded RED and
 implementation remained pending at approval; local expanded RED is recorded below.
 D8-TESTER-01 remains approved/qualified.
 
+## Resumed protecting RED,2026-10-14 Pacific
+
+The user explicitly resumed work after explaining that this laptop has required
+OLED protection and lock-screen features are disabled. A fresh native check at
+14:44:29 Pacific finds the Default input desktop active, an enabled nonsecure
+screensaver, no running screensaver/error5/Excel, and successful bounded cursor
+movement/restoration. The earlier guard established an inactive input desktop;
+its lock label did not prove the cause. OLED causality remains unverified.
+Monitoring now also records a fixed input-desktop classification and screensaver
+state, while retaining the input/error5/mouse stop guards. Protection settings are
+unchanged. The user revoked the earlier pause; D8-AGG-01 remains approved.
+
+Focused actual-handler write RED completes **36 PASS/36 FAIL** with no harness
+exception: controller `e5d06926d685489abc263bc815498827`, worker
+`a1f6736a08b74e6a9bfcf1e1cce7ecc1`, under the existing ignored runtime roots.
+It verifies reached pre/post-save failure and same-form retry, source/feed/sign-out
+changes before saving, malformed identity schema, duplicate exact entity,
+unknown-column loss, all three destination-overlap cases, closed original workbook,
+the supplemental baseline Core comparison and the retained NewSession case.
+Fault injection preconditions pass. Unknown output columns are lost; malformed/
+duplicate sources and overlapping output still write; durable retry binding is
+absent. These are protecting REDs on unchanged product VBA, not acceptance.
+
+All five instrumented packages compile; settings/package/tooling pins are
+preserved and Excel closes normally. Delayed native events are zero through
+21:51:27.4179880Z; the owned monitor exits normally with no input/error5/mouse
+stop condition. Restart/reopened retry remains the next protecting gate.
+Its saved-copy setup failures are harness failures, not behavioral RED; that
+isolated mode must create and save only disposable instrumented copies before
+fixtures, then actually unload/reload Core to prove fresh module state.
+
+## Completed restart/completion RED and implementation entry,2026-10-14 Pacific
+
+The resumed baseline adds two complete protecting gates, with no harness exception:
+
+| Mode | Controller / worker | Result |
+| --- | --- | --- |
+| Actual disposable add-in unload/reload | `3889c08de1684a59836cf0ef85797df3` / `b5f64094160d4e84b00080064f91a5f3` | 10 PASS /4 FAIL |
+| Legacy manual entry and persisted incomplete output | `b4da83a454a9426aab5f9064328e5ace` / `194ca2083bef4f969f0ba028b124c8e5` | 10 PASS /6 FAIL |
+
+Restart proves fresh Core module state after actual XLAM unload/reload, absent durable
+retry evidence and improper fresh-form overwrite. It does not simulate an Excel or
+machine crash. Completion proves that the legacy manual entry accepts a signed-out
+saved hint, and that injected incomplete persisted output is falsely reported complete
+and overwritten on retry. The authorized normalized manual control succeeds. Source
+authorities/snapshots remain unchanged. Five disposable compiles, settings/package/
+tooling preservation, owned fixture cleanup and normal Excel closure pass; delayed
+Excel events are zero through22:13:13.0906848Z and22:29:05.5021909Z respectively.
+Both classified desktop monitors exit normally with no input/error5/mouse stop.
+
+Approved implementation is now in progress in source: captured Core context, joint
+checks, staged promotion, durable retry review and original-workbook Admin dispatch.
+It is unpromoted and has no GREEN acceptance yet. Initial candidate compilation
+exposed a VBA identifier collision, corrected by naming the column resolver
+`RequiredColumns`; the owned failed-compile Excel process required forced cleanup,
+which is not normal native-closure acceptance. The next candidate compiles but its
+authorized control exposes another defect: fingerprinting an absent destination with
+VBA binary `Open` creates an empty file. A missing-file guard is added before `Open`;
+the actual packaged control is being rerun. That run's native audit is clean; its
+14 PASS/2 FAIL includes a workbook-open harness exception and is not a GREEN gate.
+
+The next candidate run stops11 PASS/1 FAIL on a stale monitor heartbeat. Its last
+desktop inspection is healthy; heartbeat-file publication reports access denied5,
+distinct from a desktop error5. Settings/pins/fixtures restore and Excel closes
+normally; this is a harness interruption, not behavioral GREEN. The monitor now
+bounds retries for file-publication errors5/32/33, retaining the separate immediate
+desktop error5 stop; active telemetry reads use a native delete-sharing handle.
+The fingerprint reader now uses Windows read-only `OPEN_EXISTING`, preventing
+creation even when an input disappears between checks. A declaration-edit compile
+failure is corrected before rerunning; its owned failed compile host required forced
+cleanup. Compilation/forced-cleanup failures are not meaningful RED or acceptance.
+The modern direct-Core probe now calls the actual captured-context command;
+independent boundary cases resolve known retained attempts through fresh authorized
+owner review, and explicit confirmed review of unknown persistence must retain bytes
+and evidence. The updated focused PowerShell files parse successfully. GREEN remains
+pending at this source checkpoint.
+
 ## Local approved-contract RED,2026-10-14 Pacific
 
 **Stopped for the user's desktop-lock condition,2026-10-14 at21:32:12Z

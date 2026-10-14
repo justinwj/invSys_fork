@@ -47,6 +47,12 @@ End Function
 Public Function FeedbackRedacted(ByVal first As String, ByVal second As String) As Boolean
     FeedbackRedacted = frmAggregationSources.FeedbackRedactedForTest(first, second)
 End Function
+Public Function LegacyAggregate(ByVal bookName As String, ByVal warehouse As String) As Boolean
+    Dim report As String, wb As Workbook
+    Set wb = Application.Workbooks(bookName)
+    TestAggregationRoots.ResetError
+    LegacyAggregate = modAdminConsole.RunHQAggregationFromAdmin("config-admin", warehouse, wb, report)
+End Function
 Public Function BoundHostPreserved() As Boolean
     BoundHostPreserved = (mOwnerHost Is mHost)
 End Function
@@ -71,6 +77,9 @@ End Function
 Public Function SelectSource(ByVal warehouse As String) As Long
     SelectSource = frmAggregationSources.SelectSourceForTest(warehouse)
 End Function
+Public Sub ConfirmRetryReview(ByVal confirmed As Boolean)
+    frmAggregationSources.ConfirmRetryReviewForTest confirmed
+End Sub
 Public Sub Aggregate()
     mCalls = 0: mSucceeded = False: Set mOwnerHost = Nothing
     mPhase = "Entry": TestAggregationRoots.ResetError
@@ -86,6 +95,10 @@ End Sub
 '@)
     $form=$admin.VBComponents.Item('frmAggregationSources').CodeModule
     $form.AddFromString(@'
+Private mConfirmRetryForTest As Boolean
+Public Sub ConfirmRetryReviewForTest(ByVal confirmed As Boolean)
+    mConfirmRetryForTest = confirmed
+End Sub
 Public Function SelectSourceForTest(ByVal warehouse As String) As Long
     Dim i As Long
     For i = 0 To mLstSources.ListCount - 1
@@ -106,6 +119,9 @@ Public Sub CloseForTest()
 End Sub
 Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgBoxStyle = vbOKOnly, Optional ByVal Title As String = "") As VbMsgBoxResult
     MsgBox = vbOK
+    If (Buttons And 7) = vbYesNo Then
+        If mConfirmRetryForTest Then MsgBox = vbYes Else MsgBox = vbNo
+    End If
 End Function
 '@)
     $entry=$admin.VBComponents.Item('modAdmin').CodeModule
@@ -121,11 +137,18 @@ End Function
     if(-not($body.Contains($resolve) -and $body.Contains($success))){throw 'Real aggregation observation boundaries unavailable.'}
     $body=$body.Replace($resolve,$resolve+"`r`n"+'    TestAggregation.OwnerEntered auditWb').Replace($success,$success+"`r`n"+'        TestAggregation.OwnerSucceeded')
     $join='    outputPath = sharePointRoot & "\\Global\\invSys.Global.InventorySnapshot.xlsb"'
-    if(-not $body.Contains($join)){throw 'Baseline path-joining comparison boundary changed.'}
-    $body=$body.Replace($join,$join+"`r`n"+'    If TestAggregationRoots.UseNormalizedPath() Then outputPath = TestAggregationRoots.NormalizedFeed(sharePointRoot)')
+    if($body.Contains($join)){
+        $body=$body.Replace($join,$join+"`r`n"+'    If TestAggregationRoots.UseNormalizedPath() Then outputPath = TestAggregationRoots.NormalizedFeed(sharePointRoot)')
+    }elseif(-not $body.Contains('modAggregationCommands.Aggregate')){throw 'Aggregation ownership boundary unavailable.'}
     foreach($point in @(@('    If Not EnsureAdminContext','SourceConfigAuth'),@('    If Not RequireAdminMaintenance','ProvisionedPermission'),@('    If Not ValidateAggregationSourceFilesAdmin','SourceValidation'),@('    sharePointRoot =','OutputConfig'),@('    If modHqAggregator.GenerateGlobalSnapshotFromFiles','Aggregate'))){
         $body=$body.Replace($point[0],('    TestAggregation.Phase "'+$point[1]+'"'+"`r`n"+$point[0]))
     }
+    $owner.DeleteLines($start,$count);$owner.InsertLines($start,$body)
+    $start=$owner.ProcStartLine('RunHQAggregationFromAdmin',0);$count=$owner.ProcCountLines('RunHQAggregationFromAdmin',0)
+    $body=$owner.Lines($start,$count)
+    if($body.Contains($join)){
+        $body=$body.Replace($join,$join+"`r`n"+'    If TestAggregationRoots.UseNormalizedPath() Then outputPath = TestAggregationRoots.NormalizedFeed(sharePointRoot)')
+    }elseif(-not $body.Contains('modAggregationCommands.CaptureForm')){throw 'Manual aggregation ownership boundary unavailable.'}
     $owner.DeleteLines($start,$count);$owner.InsertLines($start,$body)
     $gate=$core.VBComponents.Add(1);$gate.Name='TestAggregationRoots'
     $gate.CodeModule.AddFromString(@'
@@ -137,6 +160,9 @@ Public Sub ResetError()
 End Sub
 Public Sub Entered(ByVal outputPath As String)
     mCalls = mCalls + 1: mOutput = outputPath
+End Sub
+Public Sub ObservedDestination(ByVal path As String)
+    mOutput = path
 End Sub
 Public Sub PathComparison(ByVal normalized As Boolean, ByVal expected As String)
     mNormalized = normalized: mExpected = expected
@@ -168,6 +194,9 @@ Public Function NormalizedControl(ByVal sourcePath As String, ByVal outputPath A
     Dim report As String
     NormalizedControl = modHqAggregator.GenerateGlobalSnapshotFromFiles(sourcePath, outputPath, report)
 End Function
+Public Function Fingerprint(ByVal path As String) As String
+    Fingerprint = modTrainingWire.FileSha256(path)
+End Function
 Public Sub ObserveError(ByVal number As Long)
     mError = number
 End Sub
@@ -184,11 +213,22 @@ Public Function Roots() As Collection
     Set Roots = result
 End Function
 '@)
+    if($core.VBComponents.Item('modTrainingWire').CodeModule.Lines(1,$core.VBComponents.Item('modTrainingWire').CodeModule.CountOfLines) -notmatch 'Public Function FileSha256'){
+        $first=$gate.CodeModule.ProcStartLine('Fingerprint',0);$count=$gate.CodeModule.ProcCountLines('Fingerprint',0)
+        $gate.CodeModule.DeleteLines($first,$count)
+    }
     $aggregation=$core.VBComponents.Item('modHqAggregator').CodeModule
+    $start=$aggregation.ProcStartLine('RunHQAggregation',0);$count=$aggregation.ProcCountLines('RunHQAggregation',0)
+    $body=$aggregation.Lines($start,$count)
+    $body=$body.Replace('    Dim snapshotsFolder As String','    Dim snapshotsFolder As String'+"`r`n"+'    TestAggregationRoots.Entered outputPath')
+    $aggregation.DeleteLines($start,$count);$aggregation.InsertLines($start,$body)
     $start=$aggregation.ProcStartLine('GenerateGlobalSnapshotFromFiles',0);$count=$aggregation.ProcCountLines('GenerateGlobalSnapshotFromFiles',0)
     $body=$aggregation.Lines($start,$count)
     if(-not $body.Contains('FailGenerate:')){throw 'Aggregation error observation boundary missing.'}
     $body=$body.Replace('    On Error GoTo FailGenerate',"    On Error GoTo FailGenerate`r`n    TestAggregationRoots.Entered outputPath").Replace('FailGenerate:',"FailGenerate:`r`n    TestAggregationRoots.ObserveError Err.Number")
+    if($body.Contains('commandContext')){
+        $body=$body.Replace('    TestAggregationRoots.Entered outputPath','    TestAggregationRoots.Entered outputPath'+"`r`n"+'    If commandContext <> "" Then TestAggregationRoots.ObservedDestination CStr(modAggregationAuthority.Entry(commandContext)("Destination"))')
+    }
     $aggregation.DeleteLines($start,$count);$aggregation.InsertLines($start,$body)
     $start=$aggregation.ProcStartLine('WriteGlobalSnapshotWorkbook',0);$count=$aggregation.ProcCountLines('WriteGlobalSnapshotWorkbook',0)
     $body=$aggregation.Lines($start,$count)
@@ -246,7 +286,26 @@ function Test-AdminAggregation($Fixture,$Other) {
         if(-not $expected.Count){throw 'No owner-created inventory to aggregate.'}
         [void](Run 'invSys.Core.xlam' 'TestAggregationRoots.SetRoots' @($Fixture.Root,$Other.Root))
         $sourcePins=SourcePins $Fixture;$otherPins=SourcePins $Other
+        if($AdminAggregationRestartOnly){
+            Test-AggregationRestart $Fixture $Other $hostBook
+            Check 'Aggregation.Restart.SourceAuthoritiesAndSnapshotsPreserved' ((Preserved $sourcePins) -and (Preserved $otherPins))
+            return
+        }
+        if($AdminAggregationCompletionOnly){
+            Test-AggregationCompletion $Fixture $Other $hostBook
+            Check 'Aggregation.Completion.SourceAuthoritiesAndSnapshotsPreserved' ((Preserved $sourcePins) -and (Preserved $otherPins))
+            return
+        }
         $owned=[IO.Path]::GetFullPath($runRoot).TrimEnd('\')+'\'
+        # Supplemental regression for the observed missing-destination creation:
+        # the reader must not materialize a file, even before the public action.
+        $wire=$packages['invSys.Core.xlam'].VBProject.VBComponents.Item('modTrainingWire').CodeModule
+        if($wire.Lines(1,$wire.CountOfLines) -match 'Public Function FileSha256'){
+            $missing=Join-Path $runRoot 'absent-fingerprint-input.xlsb'
+            $hash=[string](Run 'invSys.Core.xlam' 'TestAggregationRoots.Fingerprint' @($missing))
+            Check 'Aggregation.Fingerprint.MissingInputRemainsAbsent' ($hash -ceq '' -and -not(Test-Path -LiteralPath $missing))
+            Check 'Aggregation.Fingerprint.ExactBinarySnapshotHash' ([string](Run 'invSys.Core.xlam' 'TestAggregationRoots.Fingerprint' @($Fixture.Snapshot)) -ieq (Hash $Fixture.Snapshot))
+        }
         if($AdminAggregationPathComparison){
             $driveFeed=Split-Path -Parent (Split-Path -Parent $Fixture.Output)
             if($driveFeed -notmatch '^[A-Za-z]:\\'){throw 'Drive comparison requires a generated local drive fixture.'}

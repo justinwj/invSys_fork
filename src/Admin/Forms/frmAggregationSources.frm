@@ -31,8 +31,13 @@ Private mLblSelected As MSForms.Label
 Private mLblStatus As MSForms.Label
 Private mBuilt As Boolean
 Private mResizeInitialized As Boolean
+Private mSourceContext As String
+Private mSourceWorkbook As Workbook
+Private mBusy As Boolean
 
 Private Sub UserForm_Initialize()
+    Set mSourceWorkbook = modAdmin.ResolveInteractiveAdminWorkbook()
+    If Not mSourceWorkbook Is Nothing Then mSourceContext = modAggregationCommands.CaptureForm(mSourceWorkbook.Name)
     BuildLayout
     DiscoverConnectedRoots
 End Sub
@@ -124,13 +129,17 @@ Private Sub mBtnConnect_Click()
     Dim rootPath As String
 
     rootPath = Trim$(mTxtRoot.Value)
+    If Not modAggregationCommands.CheckForm(mSourceContext, SelectedPaths()) Then ShowStatus "Source context changed. Reopen Aggregation.": Exit Sub
     If Not modAdminConsole.ConnectAggregationServerForAdmin(rootPath, Trim$(mTxtUser.Value), CStr(mTxtPassword.Value), report) Then
-        ShowStatus report
+        ShowStatus "The Windows storage connection was not established."
         mTxtPassword.Value = vbNullString
+        mTxtUser.Value = vbNullString
         Exit Sub
     End If
     mTxtPassword.Value = vbNullString
-    ShowStatus report
+    mTxtUser.Value = vbNullString
+    If Not modAggregationCommands.CheckForm(mSourceContext, SelectedPaths()) Then ShowStatus "Connection returned; source context changed. Reopen Aggregation.": Exit Sub
+    ShowStatus "Windows storage connection established."
     DiscoverRoot rootPath
 End Sub
 
@@ -145,23 +154,24 @@ Private Sub DiscoverRoot(ByVal rootPath As String)
         Exit Sub
     End If
     If Not modAdminConsole.DiscoverAggregationSourcesForAdmin(rootPath, records, report) Then
-        AddRejected "Rejected: " & report
-        ShowStatus report
+        AddRejected "Rejected: source discovery is unavailable."
+        ShowStatus "Source discovery is unavailable."
         Exit Sub
     End If
     For Each item In records
         AddSourceRecord CStr(item)
     Next item
     UpdateSelectedState
-    ShowStatus report
+    ShowStatus "Source discovery returned. Review READY and rejected sources."
 End Sub
 
 Private Sub AddSourceRecord(ByVal recordText As String)
     Dim fields() As String
     Dim i As Long
+    Dim fingerprint As String
 
     fields = Split(recordText, vbTab)
-    If UBound(fields) < 4 Then
+    If UBound(fields) < 5 Then
         AddRejected "Rejected: invalid discovery record."
         Exit Sub
     End If
@@ -174,12 +184,18 @@ Private Sub AddSourceRecord(ByVal recordText As String)
         End If
     Next i
 
+    fingerprint = modAggregationCommands.RegisterSource(mSourceContext, fields(0), fields(5), fields(2))
+    If fingerprint = "" Then
+        AddRejected "Rejected: source identity, publication or schema is invalid."
+        Exit Sub
+    End If
+
     mLstSources.AddItem fields(0)
     i = mLstSources.ListCount - 1
     mLstSources.List(i, 1) = fields(1)
     mLstSources.List(i, 2) = fields(2)
     mLstSources.List(i, 3) = fields(3)
-    mLstSources.List(i, 4) = fields(4)
+    mLstSources.List(i, 4) = fingerprint
     mLstSources.List(i, 5) = "READY"
     mLstSources.Selected(i) = True
 End Sub
@@ -197,6 +213,11 @@ Private Sub mBtnAggregate_Click()
     Dim i As Long
     Dim report As String
     Dim targetWb As Workbook
+    Dim confirmed As Boolean, completed As Boolean
+
+    If mBusy Then Exit Sub
+    mBusy = True: mBtnAggregate.Enabled = False
+    On Error GoTo FailedAggregate
 
     Set selectedFiles = New Collection
     For i = 0 To mLstSources.ListCount - 1
@@ -204,11 +225,16 @@ Private Sub mBtnAggregate_Click()
     Next i
     If selectedFiles.Count = 0 Then
         ShowStatus "Select at least one READY source."
-        Exit Sub
+        GoTo FinishedAggregate
     End If
 
-    Set targetWb = modAdmin.ResolveInteractiveAdminWorkbook()
-    If modAdminConsole.RunHQAggregationFromSourceSet(selectedFiles, "", "", targetWb, report) Then
+    Set targetWb = mSourceWorkbook
+    If modAggregationCommands.NeedsReview(mSourceContext) Then
+        confirmed = (MsgBox("A previous attempt needs review. Verify its saved state and resolve its retained staging before starting a fresh attempt?", vbYesNo Or vbDefaultButton2, "invSys Aggregator") = vbYes)
+        If Not modAggregationCommands.ResolveRetry(mSourceContext, SelectedPaths(), confirmed, report) Then ShowStatus report: GoTo FinishedAggregate
+    End If
+    completed = modAdminConsole.RunHQAggregationFromSourceSet(selectedFiles, "", "", targetWb, report, mSourceContext)
+    If completed Then
         ShowStatus "Completed. " & report
         MsgBox "Advisory Global Inventory Snapshot updated." & vbCrLf & vbCrLf & report & vbCrLf & vbCrLf & _
                "The selected source set was used for this session only. Warehouse-local inventory remains authoritative.", _
@@ -217,6 +243,31 @@ Private Sub mBtnAggregate_Click()
         ShowStatus report
         MsgBox report, vbExclamation, "invSys Aggregator"
     End If
+    If Not modAggregationCommands.CheckForm(mSourceContext, SelectedPaths()) Then
+        If completed Then ShowStatus "Complete output was saved. Reopen Aggregation before another attempt."
+    End If
+FinishedAggregate:
+    mBusy = False: mBtnAggregate.Enabled = True
+    Exit Sub
+FailedAggregate:
+    ShowStatus "Aggregation did not complete. Review the current output and retained attempt before retrying."
+    Resume FinishedAggregate
+End Sub
+
+Private Function SelectedPaths() As String
+    Dim i As Long
+    If mLstSources Is Nothing Then Exit Function
+    For i = 0 To mLstSources.ListCount - 1
+        If mLstSources.Selected(i) Then
+            If SelectedPaths <> "" Then SelectedPaths = SelectedPaths & vbLf
+            SelectedPaths = SelectedPaths & CStr(mLstSources.List(i, 2))
+        End If
+    Next i
+End Function
+
+Private Sub UserForm_Terminate()
+    modAggregationCommands.ReleaseForm mSourceContext
+    Set mSourceWorkbook = Nothing
 End Sub
 
 Private Sub mBtnClose_Click()

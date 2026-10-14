@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-tester-recording-02',[ValidateSet('RED','GREEN')][string]$Phase='RED',[string]$DesktopMonitorReport='',[switch]$PathComparison,[switch]$BoundaryMatrix,[switch]$WriteBoundariesOnly)
+param([string]$DeployRoot='deploy/validation-tester-recording-02',[ValidateSet('RED','GREEN')][string]$Phase='RED',[string]$DesktopMonitorReport='',[switch]$PathComparison,[switch]$BoundaryMatrix,[switch]$WriteBoundariesOnly,[switch]$RestartOnly,[switch]$CompletionOnly)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Aggregation owner gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
@@ -11,17 +11,23 @@ if($pins.Count -ne 5){throw 'Five frozen packages required.'}
 $testPins=@(Get-ChildItem -LiteralPath $PSScriptRoot -File -Filter '*.ps1'|ForEach-Object {[pscustomobject]@{File=$_.FullName;Hash=(Get-FileHash -LiteralPath $_.FullName).Hash}})
 $pins|ConvertTo-Json|Set-Content (Join-Path $root 'package-pins.json')
 $testPins|ConvertTo-Json|Set-Content (Join-Path $root 'tooling-pins.json')
-$start=[DateTimeOffset]::UtcNow;$code=1;$worker=$null
+$start=[DateTimeOffset]::UtcNow;$code=1;$worker=$null;$ownedFixture=''
 Write-Output ('Aggregation owner controller: '+$root)
 try {
+    if($RestartOnly){
+        $ownedFixture=Join-Path ([IO.Path]::GetTempPath()) ('invsys-config-command-'+[guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $ownedFixture -ErrorAction Stop|Out-Null
+    }
     $workerArgs=@('-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',
         (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1'),'-DeployRoot',$DeployRoot,
         '-Phase',$Phase,'-AdminAggregationOnly','-CompileEvaluationProbesForTest',
         '-WaitForExcelReadyForTest','-ExcelReadyReadLimitForTest','40')
     if($DesktopMonitorReport){$workerArgs+=@('-DesktopMonitorReport',$DesktopMonitorReport)}
     if($PathComparison){$workerArgs+='-AdminAggregationPathComparison'}
-    if($BoundaryMatrix){$workerArgs+='-AdminAggregationBoundaryMatrix'}
-    if($WriteBoundariesOnly){$workerArgs+='-AdminAggregationBoundaryMatrix';$workerArgs+='-AdminAggregationWriteBoundariesOnly'}
+    if($BoundaryMatrix -or $WriteBoundariesOnly -or $RestartOnly -or $CompletionOnly){$workerArgs+='-AdminAggregationBoundaryMatrix'}
+    if($WriteBoundariesOnly){$workerArgs+='-AdminAggregationWriteBoundariesOnly'}
+    if($RestartOnly){$workerArgs+=@('-AdminAggregationRestartOnly','-ViewerStartupPackageStateForTest','SavedCopies','-AggregationOwnedFixtureRootForTest',$ownedFixture)}
+    if($CompletionOnly){$workerArgs+='-AdminAggregationCompletionOnly'}
     $quotedArgs=($workerArgs|ForEach-Object {'"'+$_+'"'}) -join ' '
     $launch=[Diagnostics.ProcessStartInfo]::new((Join-Path $PSHOME 'powershell.exe'))
     $launch.Arguments=$quotedArgs;$launch.WorkingDirectory=$PWD.Path
@@ -39,11 +45,21 @@ try {
     }finally{$outputFile.Dispose();$errorFile.Dispose()}
 } finally {
     Wait-RecordingCleanup -Creator $null -Worker $worker
+    $fixtureRemoved=$true
+    if($ownedFixture){
+        try{
+            if(Test-Path -LiteralPath $ownedFixture){
+                if((Get-Item -LiteralPath $ownedFixture).Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'Owned fixture became a reparse point.'}
+                Remove-Item -LiteralPath $ownedFixture -Recurse -Force -ErrorAction Stop
+            }
+            $fixtureRemoved=-not(Test-Path -LiteralPath $ownedFixture)
+        }catch{$fixtureRemoved=$false}
+    }
     $restored=Restore-InvSysTestSettingsSnapshot $snapshot
     $same=@($pins|Where-Object {(Get-FileHash -LiteralPath $_.File).Hash -cne $_.Hash}).Count -eq 0
     $testsSame=@($testPins|Where-Object {(Get-FileHash -LiteralPath $_.File).Hash -cne $_.Hash}).Count -eq 0
-    [pscustomobject]@{StartUTC=$start.ToString('o');EndUTC=[DateTimeOffset]::UtcNow.ToString('o');ExitCode=$code;SettingsRestored=$restored;PackagesPreserved=$same;ToolingPreserved=$testsSame;ExcelClosed=$true;FullAcceptance=$false;NativeInputAcceptance=$false}|ConvertTo-Json|Set-Content (Join-Path $root 'closure.json')
-    if(-not($restored -and $same -and $testsSame)){throw 'Aggregation diagnostic preservation failed.'}
+    [pscustomobject]@{StartUTC=$start.ToString('o');EndUTC=[DateTimeOffset]::UtcNow.ToString('o');ExitCode=$code;SettingsRestored=$restored;PackagesPreserved=$same;ToolingPreserved=$testsSame;OwnedFixtureRemoved=$fixtureRemoved;ExcelClosed=$true;FullAcceptance=$false;NativeInputAcceptance=$false}|ConvertTo-Json|Set-Content (Join-Path $root 'closure.json')
+    if(-not($restored -and $same -and $testsSame -and $fixtureRemoved)){throw 'Aggregation diagnostic preservation or owned fixture cleanup failed.'}
 }
 # Delayed native audit: process exit alone does not prove clean native shutdown.
 Start-Sleep -Seconds 20

@@ -5,12 +5,25 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Current Aggregation checkpoint,2026-10-14 Pacific:** restart RED10 PASS/4 FAIL
+and manual/incomplete-persistence RED10 PASS/6 FAIL complete with clean preserved
+closure. Approved Core-owned interactive implementation is now in progress, with
+candidate failures under correction and no GREEN or recording/guidance acceptance.
+Earlier pending/pause statements below describe their checkpoints. See the
+[Aggregation receipt](plan022_slice4be_admin_aggregation_results.md).
+
 **Aggregation approval update,2026-10-14 Pacific:** the user approved tightened
 D8-AGG-01 in v4.11, clearing Handoff180's blocker. Continue complete4be-A with
 expanded packaged/direct-Core RED before product edits; no new runtime evidence or
 Aggregation recording ID is claimed. Joint source/authority/feed rechecks, durable
 honest-retry state and the path-only packaged comparison are mandatory. Exit the
 prompt on desktop error5, lockscreen, mouse lock or a new required proposal approval.
+
+**Resumed later2026-10-14 Pacific by the user:** input movement/restoration passes;
+the enabled screensaver is nonsecure in current settings. The old guard established
+inactive input, not its cause. Focused write RED now completes36 PASS/36 FAIL with
+clean preserved closure, adding duplicate/schema/custom-column/overlap evidence.
+Restarted retry and product implementation remain next; approval stands.
 
 **Stopped2026-10-14 at14:32:12 Pacific:** the owned monitor detects one desktop
 lock condition and the macro guard stops the focused write gate. Goal is paused

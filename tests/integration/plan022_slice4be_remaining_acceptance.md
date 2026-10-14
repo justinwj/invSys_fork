@@ -6,6 +6,21 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Current Aggregation checkpoint,2026-10-14 Pacific:** resumed restart RED is
+10 PASS/4 FAIL and manual/incomplete-persistence RED is10 PASS/6 FAIL, both complete
+with preserved sources/settings/pins, normal closure and clean delayed native audits.
+Approved implementation is in progress; candidate compile/control defects are being
+corrected. GREEN, Aggregation recording/guidance and remaining4be-A/B0 acceptance
+remain open. Earlier pending/pause statements below are historical. See the
+[Aggregation receipt](plan022_slice4be_admin_aggregation_results.md).
+
+**Resumed by the user later2026-10-14 Pacific.** Input is reverified and the
+focused Aggregation write RED completes36 PASS/36 FAIL without a harness exception,
+with preserved settings/pins and clean delayed closure. The guard now distinguishes
+desktop classification/screensaver state; the previous inactive-input cause is
+unproved. Restarted retry and product implementation remain open. Approval stands;
+4be-A is incomplete. See the current Aggregation receipt.
+
 **Paused2026-10-14 at14:32:12 Pacific by the user's desktop-lock stop condition.**
 Aggregation's latest focused write run stops safely with19 PASS/11 FAIL including
 the lock guard; it is partial evidence, not a completed RED gate. Package/tooling
