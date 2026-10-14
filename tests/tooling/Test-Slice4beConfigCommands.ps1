@@ -138,6 +138,8 @@ param(
     [switch]$AdminCreateWarehouseOwnerOnly,
     [switch]$AdminTesterSetupOwnerOnly,
     [switch]$AdminAggregationOnly,
+    [switch]$AdminAggregationPathComparison,
+    [switch]$AdminAggregationBoundaryMatrix,
     [switch]$AdminTesterSetupPaths,
     [switch]$AdminTesterOwnershipPaths,
     [switch]$AdminTesterOwnershipOnly,
@@ -1204,9 +1206,27 @@ function Wait-ExcelReadyForTest([string]$Macro) {
     throw 'Excel readiness remained unavailable or busy; macro was not dispatched.'
 }
 function Run([string]$Package,[string]$Macro,[object[]]$Values=@()) {
-    if($DesktopMonitorReport -and (Test-Path -LiteralPath $DesktopMonitorReport)){
-        $desktop=(Get-Content -LiteralPath $DesktopMonitorReport -Raw|ConvertFrom-Json)
+    if($DesktopMonitorReport){
+        # Only the report read may retry during atomic replacement; the requested
+        # macro remains undispatched until a fresh complete snapshot is checked.
+        $desktop=$null
+        for($monitorRead=1;$monitorRead -le 5;$monitorRead++){
+            try{
+                $monitorStream=[IO.File]::Open($DesktopMonitorReport,[IO.FileMode]::Open,[IO.FileAccess]::Read,([IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete))
+                $monitorReader=[IO.StreamReader]::new($monitorStream)
+                try{$desktop=($monitorReader.ReadToEnd()|ConvertFrom-Json)}finally{$monitorReader.Dispose()}
+                break
+            }catch{
+                $native=$_.Exception.GetBaseException()
+                if($native -isnot [IO.IOException] -or $monitorRead -eq 5){throw 'Desktop monitor could not be read; no further macro was dispatched.'}
+                Start-Sleep -Milliseconds 20
+            }
+        }
+        if($desktop.PSObject.Properties['UTC'] -and ([DateTimeOffset]::UtcNow-[DateTimeOffset]::Parse($desktop.UTC)).TotalSeconds -gt 10){throw 'Desktop monitor heartbeat is stale; no further macro was dispatched.'}
         if($desktop.Error5Samples -gt 0){throw 'Desktop Win32 error5 observed; user requires stopping this test.'}
+        foreach($stopField in @('LockSamples','MouseLockSamples')){
+            if($desktop.PSObject.Properties[$stopField] -and $desktop.$stopField -gt 0){throw 'Desktop or mouse lock observed; user requires stopping this test.'}
+        }
     }
     $resourceBoundary=$Macro
     if($TraceGuideResourcesForTest){
@@ -2057,6 +2077,10 @@ End Function
     if($AdminAggregationOnly){
         . (Join-Path $PSScriptRoot 'Slice4beAdminAggregation.ps1')
         Install-AdminAggregationProbe
+        if($AdminAggregationBoundaryMatrix){
+            . (Join-Path $PSScriptRoot 'Slice4beAdminAggregationBoundaries.ps1')
+            Install-AggregationBoundaryProbe
+        }
         . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
         Compile-Slice4beEvaluationProbes
     }

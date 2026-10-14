@@ -3,7 +3,76 @@
 4be-A remaining Admin coverage,2026-10-13 Pacific. **Diagnostic RED, not acceptance.**
 Unchanged unpromoted `deploy/validation-tester-recording-02`, catalog42/179;
 code baseline `546b029b`, docs `0a21a86`. Proposed D8-AGG-01 in v4.11 requires
-approval before product implementation. D8-TESTER-01 remains approved/qualified.
+approval before product implementation at that diagnostic checkpoint.
+**Approval update,2026-10-14 Pacific:** the user approved tightened D8-AGG-01,
+including joint source/authority/feed rechecks, durable honest-retry state and the
+path-only packaged comparison. The approval blocker is cleared. Expanded RED and
+implementation remained pending at approval; local expanded RED is recorded below.
+D8-TESTER-01 remains approved/qualified.
+
+## Local approved-contract RED,2026-10-14 Pacific
+
+Product VBA remains unchanged from `ff5db426`. An isolated source-built five-package
+baseline, `deploy/validation-aggregation-baseline-01`, replaces the absent prior
+candidate for these local diagnostics; it is unpromoted. The actual Ribbon/form
+handler remains the entry. Path normalization and fault injection occur only in
+disposable test copies, never in product source or operational workbooks.
+
+| Controller under `admin-aggregation-controller/` | Worker under `slice4be-admin-aggregation/` | Result |
+| --- | --- | --- |
+| `77daae3b04e94f79ad52f9c8f6bcf3a1` | `0a3e518cf9f74a029a16493b43335191` | 74 PASS /10 FAIL; complete retained65/7 plus12 drive/UNC comparisons |
+| `a20328abf5b04c74aaa02408fee6512e` | `c36af2f15e584ac4aa848f6f4ca6fa91` | 88 PASS /35 FAIL; adds post-inspection, borrowed-output and failure/retry boundaries; no harness exception |
+| `7f1b2815847d466e97e2a3730e755e12` | `6440610f466e485dab3a17496f5e579c` | 104 PASS /46 FAIL; adds saved revocation, dirty/unreadable authority, read-only output and closed original workbook; no harness exception |
+
+The path-only packaged comparison holds the source set, workbook, authority, feed
+and package fixed within each variant. Original drive joining fails at SaveAs1004;
+normalization alone yields complete persisted output with exact identities/quantities.
+Both UNC variants persist the exact data through the existing local administrative
+share, but the original dispatched path is noncanonical; normalization preserves
+the UNC prefix and satisfies the canonical destination assertion. Source bytes are
+unchanged in all four comparisons. This establishes the drive failure's cause in
+this fixture, not a universal claim that doubled separators fail on UNC/NAS.
+
+The expanded boundary gate proves the fault actually ran before trusting its result.
+After inspection, changing/replacing or deleting a selected snapshot, changing the
+saved trusted feed, or signing out still reaches the old writer. Changed/missing
+sources can report success; a changed feed creates redirected output. Normalization
+is enabled only in these disposable boundary copies to expose effects independently
+of the known drive joining defect. Clean and dirty borrowed output workbooks are
+closed by the old writer; output bytes/saved-state preservation fails. Injected
+failure immediately before SaveAs deletes the existing output and leaves no durable
+retry record. These are protecting REDs, not acceptance.
+
+The separately labelled direct-Core baseline adapter forwards to the exact primitive
+writer reached by the current interactive handler, which has no context parameter.
+Its positive control succeeds, and it also persists after sign-out. This supplements
+the packaged authority results; it is not the new interactive command's API proof,
+does not replace packaged actions, and changes no scheduled/headless authorization.
+
+Both completed controllers preserve all five package pins, tooling and settings,
+close Excel normally, and pass delayed Application1000/1001/1002 audits with zero
+Excel events. Expanded audit ends2026-10-14T20:38:49.9944419Z. Its owned monitor
+records397 samples with zero error5/lock/mouse-lock observations and exits normally.
+Earlier controller-entry, argument-count and monitor-report concurrency failures
+are harness failures, not behavioral RED. The controller now retains a real child
+process handle; heartbeat reads allow atomic replacement with bounded read-only
+retries and reject stale/missing reports before any macro dispatch.
+
+The broader150-check gate adds actual saved source-rights revocation after inspection,
+dirty Config/Auth, unreadable Config, read-only output and a closed original workbook.
+Rights loss and dirty authority still permit writing. A read-only output reaches the
+writer even though persistence fails; unreadable Config already refuses. Closing the
+original workbook redirects work and mutates the decoy. Its later original
+SwitchWorkbook.OtherWorkbookPreserved result is masked by that earlier decoy
+preparation; a fresh decoy is now created before the retained original matrix and
+must be verified by the next run. No prior mutation assertion is discarded.
+This controller preserves pins/settings, closes normally and has zero delayed Excel
+events through2026-10-14T20:55:46.1078420Z. Its owned monitor records614 healthy
+samples and exits normally. These scoped REDs do not establish product acceptance.
+
+Remaining pre-implementation coverage includes feedback redaction, applicable later
+yield/phase and interrupted/reopened retry. No new product compile/layout/static/regression
+GREEN, package promotion, Aggregation recording or4be-A completion is claimed.
 
 ## Reproduction and boundary
 
@@ -62,8 +131,9 @@ No visible layout or broad Release1 acceptance is claimed by this diagnostic.
 ## Contract and next gate
 
 D17 governs selected read-only sources and advisory output; D8-AGG-01 explicitly
-proposes the unresolved interactive authority/ownership contract. It is pending,
-not inferred from these tests. After approval, extend RED for direct Core denial,
+defined the unresolved interactive authority/ownership proposal at the diagnostic
+checkpoint; its tightened contract is now explicitly approved, not inferred from
+these tests. Extend RED for direct Core denial,
 saved revocation, yields, closed original workbook, changed output Config,
 borrowed/dirty/read-only output, redacted outcomes and source rejection before
 implementation. Preserve D17 identity rules, existing headless authorization and

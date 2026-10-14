@@ -8,10 +8,16 @@ and remaining verification, not a new contract or a percentage estimate.
 
 [Aggregation diagnostic65/7](plan022_slice4be_admin_aggregation_results.md) now
 exposes original-workbook redirection, stale-authority dispatch and callback
-SaveAs1004 on unchanged tester-recording-02. D8-AGG-01 is proposed in v4.11;
-approval is pending before implementation. No persisted unauthorized output is
+SaveAs1004 on unchanged tester-recording-02. Tightened D8-AGG-01 is approved in
+v4.11 on2026-10-14 Pacific; Handoff180's approval blocker is cleared. Expanded
+packaged/direct-Core RED is required before implementation. No new runtime result
+or persisted unauthorized output is
 claimed; the direct normalized-path Core control succeeds. Catalog42/179 and all
-qualified Tester evidence remain unchanged. See Controls1.581 and Plan022.
+qualified Tester evidence remain unchanged. Local unchanged-product entry RED is
+now74/10 for the packaged drive/UNC path comparison and88/35 for expanded
+post-inspection/borrowed-output/failure boundaries, with preserved pins/settings
+and clean native closure. Remaining refusal/phase/retry coverage and implementation
+are pending; see the exact Aggregation receipt, Controls1.584 and Plan022.
 
 Tester recording now has [RED20/46 -> GREEN92 -> expanded299 and guide299](plan022_slice4be_admin_tester_recording_results.md)
 on unpromoted tester-recording-02, catalog42/179. All164 approved D8-TESTER-01

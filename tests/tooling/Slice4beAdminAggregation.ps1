@@ -40,6 +40,10 @@ End Function
 Public Function OwnerSuccess() As Boolean
     OwnerSuccess = mSucceeded
 End Function
+Public Function SetFeedForComparison(ByVal feed As String, ByVal warehouse As String) As Boolean
+    Dim report As String
+    SetFeedForComparison = modConfig.UpdateConfigValue("PathSharePointRoot", feed, report, warehouse, "S1")
+End Function
 Public Function BoundHostPreserved() As Boolean
     BoundHostPreserved = (mOwnerHost Is mHost)
 End Function
@@ -87,6 +91,10 @@ Public Function SelectSourceForTest(ByVal warehouse As String) As Long
     Next i
     mLstSources_Click
 End Function
+Public Function FeedbackRedactedForTest(ByVal first As String, ByVal second As String) As Boolean
+    FeedbackRedactedForTest = (InStr(1, CStr(mLblStatus.Caption), first, vbTextCompare) = 0 And _
+        InStr(1, CStr(mLblStatus.Caption), second, vbTextCompare) = 0)
+End Function
 Public Sub AggregateForTest()
     mBtnAggregate_Click
 End Sub
@@ -109,6 +117,9 @@ End Function
     $success='        RunHQAggregationFromSourceSet = True'
     if(-not($body.Contains($resolve) -and $body.Contains($success))){throw 'Real aggregation observation boundaries unavailable.'}
     $body=$body.Replace($resolve,$resolve+"`r`n"+'    TestAggregation.OwnerEntered auditWb').Replace($success,$success+"`r`n"+'        TestAggregation.OwnerSucceeded')
+    $join='    outputPath = sharePointRoot & "\\Global\\invSys.Global.InventorySnapshot.xlsb"'
+    if(-not $body.Contains($join)){throw 'Baseline path-joining comparison boundary changed.'}
+    $body=$body.Replace($join,$join+"`r`n"+'    If TestAggregationRoots.UseNormalizedPath() Then outputPath = TestAggregationRoots.NormalizedFeed(sharePointRoot)')
     foreach($point in @(@('    If Not EnsureAdminContext','SourceConfigAuth'),@('    If Not RequireAdminMaintenance','ProvisionedPermission'),@('    If Not ValidateAggregationSourceFilesAdmin','SourceValidation'),@('    sharePointRoot =','OutputConfig'),@('    If modHqAggregator.GenerateGlobalSnapshotFromFiles','Aggregate'))){
         $body=$body.Replace($point[0],('    TestAggregation.Phase "'+$point[1]+'"'+"`r`n"+$point[0]))
     }
@@ -117,12 +128,30 @@ End Function
     $gate.CodeModule.AddFromString(@'
 Option Explicit
 Private mFirst As String, mSecond As String, mError As Long, mStage As String, mCalls As Long
+Private mNormalized As Boolean, mExpected As String, mOutput As String
 Public Sub ResetError()
-    mError = 0: mStage = "": mCalls = 0
+    mError = 0: mStage = "": mCalls = 0: mOutput = ""
 End Sub
-Public Sub Entered()
-    mCalls = mCalls + 1
+Public Sub Entered(ByVal outputPath As String)
+    mCalls = mCalls + 1: mOutput = outputPath
 End Sub
+Public Sub PathComparison(ByVal normalized As Boolean, ByVal expected As String)
+    mNormalized = normalized: mExpected = expected
+End Sub
+Public Function UseNormalizedPath() As Boolean
+    UseNormalizedPath = mNormalized
+End Function
+Public Function CanonicalDestination() As Boolean
+    CanonicalDestination = (StrComp(mExpected, mOutput, vbTextCompare) = 0)
+End Function
+Public Function NormalizedFeed(ByVal root As String) As String
+    Dim prefix As String
+    root = Replace$(Trim$(root), "/", "\")
+    If Left$(root, 2) = "\\" Then prefix = "\\": root = Mid$(root, 3)
+    Do While InStr(root, "\\") > 0: root = Replace$(root, "\\", "\"): Loop
+    Do While Right$(root, 1) = "\": root = Left$(root, Len(root) - 1): Loop
+    NormalizedFeed = prefix & root & "\Global\invSys.Global.InventorySnapshot.xlsb"
+End Function
 Public Function Calls() As Long
     Calls = mCalls
 End Function
@@ -156,7 +185,7 @@ End Function
     $start=$aggregation.ProcStartLine('GenerateGlobalSnapshotFromFiles',0);$count=$aggregation.ProcCountLines('GenerateGlobalSnapshotFromFiles',0)
     $body=$aggregation.Lines($start,$count)
     if(-not $body.Contains('FailGenerate:')){throw 'Aggregation error observation boundary missing.'}
-    $body=$body.Replace('    On Error GoTo FailGenerate',"    On Error GoTo FailGenerate`r`n    TestAggregationRoots.Entered").Replace('FailGenerate:',"FailGenerate:`r`n    TestAggregationRoots.ObserveError Err.Number")
+    $body=$body.Replace('    On Error GoTo FailGenerate',"    On Error GoTo FailGenerate`r`n    TestAggregationRoots.Entered outputPath").Replace('FailGenerate:',"FailGenerate:`r`n    TestAggregationRoots.ObserveError Err.Number")
     $aggregation.DeleteLines($start,$count);$aggregation.InsertLines($start,$body)
     $start=$aggregation.ProcStartLine('WriteGlobalSnapshotWorkbook',0);$count=$aggregation.ProcCountLines('WriteGlobalSnapshotWorkbook',0)
     $body=$aggregation.Lines($start,$count)
@@ -215,6 +244,44 @@ function Test-AdminAggregation($Fixture,$Other) {
         [void](Run 'invSys.Core.xlam' 'TestAggregationRoots.SetRoots' @($Fixture.Root,$Other.Root))
         $sourcePins=SourcePins $Fixture;$otherPins=SourcePins $Other
         $owned=[IO.Path]::GetFullPath($runRoot).TrimEnd('\')+'\'
+        if($AdminAggregationPathComparison){
+            $driveFeed=Split-Path -Parent (Split-Path -Parent $Fixture.Output)
+            if($driveFeed -notmatch '^[A-Za-z]:\\'){throw 'Drive comparison requires a generated local drive fixture.'}
+            $uncFeed='\\localhost\'+$driveFeed.Substring(0,1)+'$\'+$driveFeed.Substring(3)
+            if(-not(Test-Path -LiteralPath $uncFeed)){throw 'Disposable UNC fixture unavailable; not behavioral RED.'}
+            foreach($kind in @('Drive','UNC')){
+                $feed=if($kind -ceq 'Drive'){$driveFeed}else{$uncFeed}
+                SelectTarget $Fixture
+                if(-not [bool](Invoke 'SetFeedForComparison' @(($feed+'\\'),$Fixture.Warehouse))){throw 'Owning Config command did not establish the path fixture.'}
+                $expectedOutput=Join-Path $feed 'Global\invSys.Global.InventorySnapshot.xlsb'
+                $comparisonPins=SourcePins $Fixture
+                foreach($normalized in @($false,$true)){
+                    $variant=if($normalized){'Normalized'}else{'Original'}
+                    SelectTarget $Fixture
+                    if(Test-Path -LiteralPath $expectedOutput){Remove-Item -LiteralPath $expectedOutput}
+                    [void](Run 'invSys.Core.xlam' 'TestAggregationRoots.PathComparison' @($normalized,$expectedOutput))
+                    if(-not [bool](Invoke 'OpenForm' @($hostBook.Name))){throw 'Path comparison did not open the packaged form.'}
+                    if([int](Invoke 'SelectSource' @($Fixture.Warehouse)) -ne 1){throw 'Path comparison source set was not identical.'}
+                    [void](Invoke 'Aggregate')
+                    $success=[bool](Invoke 'OwnerSuccess');$persisted=Test-Path -LiteralPath $expectedOutput
+                    $exact=$false
+                    if($persisted){
+                        $actual=ReadEntities $expectedOutput 'tblGlobalInventorySnapshot';$exact=$actual.Count -eq $expected.Count
+                        foreach($id in $expected.Keys){$exact=$exact -and $actual.ContainsKey($id) -and $actual[$id] -eq $expected[$id]}
+                    }
+                    $canonical=[bool](Run 'invSys.Core.xlam' 'TestAggregationRoots.CanonicalDestination')
+                    Check ('Aggregation.Path.'+$kind+'.'+$variant+'.CanonicalDestination') $canonical
+                    Check ('Aggregation.Path.'+$kind+'.'+$variant+'.PackagedCompletePersistence') ($success -and $persisted -and $exact)
+                    Check ('Aggregation.Path.'+$kind+'.'+$variant+'.SourceBytesPreserved') (Preserved $comparisonPins)
+                    $observations+=[pscustomobject]@{Case=('Path'+$kind+$variant);CanonicalDestination=$canonical;OwnerSuccess=$success;SourceOutput=$persisted;ExactEntities=$exact;CoreErrorNumber=[int](Run 'invSys.Core.xlam' 'TestAggregationRoots.ErrorNumber');LastCoreStage=[string](Run 'invSys.Core.xlam' 'TestAggregationRoots.LastStage')}
+                    [void](Invoke 'CloseForm')
+                }
+            }
+            SelectTarget $Fixture
+            if(-not [bool](Invoke 'SetFeedForComparison' @($driveFeed,$Fixture.Warehouse))){throw 'Path fixture feed restoration failed.'}
+            [void](Run 'invSys.Core.xlam' 'TestAggregationRoots.PathComparison' @($false,$Fixture.Output))
+            $sourcePins=SourcePins $Fixture
+        }
         SelectTarget $Fixture
         $normal=[bool](Run 'invSys.Core.xlam' 'TestAggregationRoots.NormalizedControl' @($Fixture.Snapshot,$Fixture.Output))
         Check 'Aggregation.Control.NormalizedPathServiceSucceeds' ($normal -and (Test-Path -LiteralPath $Fixture.Output))
@@ -224,6 +291,14 @@ function Test-AdminAggregation($Fixture,$Other) {
             Check 'Aggregation.Control.ExactSelectedEntitiesAndQuantities' $exact
         }
         Check 'Aggregation.Control.SourcesPreserved' ((Preserved $sourcePins) -and (Preserved $otherPins))
+        if($AdminAggregationBoundaryMatrix){
+            Test-AggregationBoundaries $Fixture $Other $hostBook $otherBook ([ref]$observations)
+            # Deliberate boundary mutations must not pre-prepare the decoy used
+            # by the retained original ordered workbook-switch regression.
+            $otherBook.Close($false);$otherBook=$excel.Workbooks.Add()
+            $otherBook.Windows.Item(1).Visible=$true
+            $otherBook.Worksheets.Item(1).Cells.Item(1,1).Value2='Preserve unrelated workbook'
+        }
         foreach($case in @('Admin','SwitchWorkbook','SignedOut','SignedOutHint','Reader','OtherWarehouseAdmin','NewSession')){
             SelectTarget $Fixture
             foreach($f in @($Fixture,$Other)){
@@ -277,6 +352,11 @@ function Test-AdminAggregation($Fixture,$Other) {
             $observations+=[pscustomobject]@{Case=$case;SignedIn=$signed;SourceCapability=$capable;OwnerCalls=$calls;CoreDispatches=$coreCalls;OwnerSuccess=$success;OriginalWorkbook=$bound;SourceOutput=$sourceOutput;OtherOutput=$otherOutput;LastOwnerPhase=$phase;CoreErrorNumber=$errorNumber;LastCoreStage=$stage}
             [void](Invoke 'CloseForm')
         }
+    }catch{
+        $line=$_.InvocationInfo.ScriptLineNumber
+        [pscustomobject]@{ExceptionType=$_.Exception.GetType().FullName;HResult=$_.Exception.HResult;ScriptLine=$line}|
+            ConvertTo-Json|Set-Content (Join-Path $reportRoot 'aggregation-harness-failure.json')
+        throw
     }finally{
         [void](Invoke 'CloseForm');$hostBook.Close($false);$otherBook.Close($false);SelectTarget $Fixture
         [pscustomobject]@{DiagnosticOnly=$true;Acceptance=$false;Cases=$observations}|ConvertTo-Json -Depth 4|Set-Content (Join-Path $reportRoot 'aggregation-authority-observations.json')

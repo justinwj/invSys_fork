@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-tester-recording-02',[ValidateSet('RED','GREEN')][string]$Phase='RED')
+param([string]$DeployRoot='deploy/validation-tester-recording-02',[ValidateSet('RED','GREEN')][string]$Phase='RED',[string]$DesktopMonitorReport='',[switch]$PathComparison,[switch]$BoundaryMatrix)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Aggregation owner gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
@@ -11,13 +11,33 @@ if($pins.Count -ne 5){throw 'Five frozen packages required.'}
 $testPins=@(Get-ChildItem -LiteralPath $PSScriptRoot -File -Filter '*.ps1'|ForEach-Object {[pscustomobject]@{File=$_.FullName;Hash=(Get-FileHash -LiteralPath $_.FullName).Hash}})
 $pins|ConvertTo-Json|Set-Content (Join-Path $root 'package-pins.json')
 $testPins|ConvertTo-Json|Set-Content (Join-Path $root 'tooling-pins.json')
-$start=[DateTimeOffset]::UtcNow;$code=1
+$start=[DateTimeOffset]::UtcNow;$code=1;$worker=$null
 Write-Output ('Aggregation owner controller: '+$root)
 try {
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1') -DeployRoot $DeployRoot -Phase $Phase -AdminAggregationOnly -CompileEvaluationProbesForTest -WaitForExcelReadyForTest -ExcelReadyReadLimitForTest 40 *> (Join-Path $root 'worker.log')
-    $code=$LASTEXITCODE
+    $workerArgs=@('-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',
+        (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1'),'-DeployRoot',$DeployRoot,
+        '-Phase',$Phase,'-AdminAggregationOnly','-CompileEvaluationProbesForTest',
+        '-WaitForExcelReadyForTest','-ExcelReadyReadLimitForTest','40')
+    if($DesktopMonitorReport){$workerArgs+=@('-DesktopMonitorReport',$DesktopMonitorReport)}
+    if($PathComparison){$workerArgs+='-AdminAggregationPathComparison'}
+    if($BoundaryMatrix){$workerArgs+='-AdminAggregationBoundaryMatrix'}
+    $quotedArgs=($workerArgs|ForEach-Object {'"'+$_+'"'}) -join ' '
+    $launch=[Diagnostics.ProcessStartInfo]::new((Join-Path $PSHOME 'powershell.exe'))
+    $launch.Arguments=$quotedArgs;$launch.WorkingDirectory=$PWD.Path
+    $launch.UseShellExecute=$false;$launch.CreateNoWindow=$true
+    $launch.RedirectStandardOutput=$true;$launch.RedirectStandardError=$true
+    $outputFile=[IO.FileStream]::new((Join-Path $PWD.Path (Join-Path $root 'worker.log')),[IO.FileMode]::Create,[IO.FileAccess]::Write,[IO.FileShare]::Read,1,$true)
+    $errorFile=[IO.FileStream]::new((Join-Path $PWD.Path (Join-Path $root 'worker-error.log')),[IO.FileMode]::Create,[IO.FileAccess]::Write,[IO.FileShare]::Read,1,$true)
+    try{
+        $worker=[Diagnostics.Process]::Start($launch)
+        $outputCopy=$worker.StandardOutput.BaseStream.CopyToAsync($outputFile,256)
+        $errorCopy=$worker.StandardError.BaseStream.CopyToAsync($errorFile,256)
+        $worker.WaitForExit();$outputCopy.Wait();$errorCopy.Wait()
+        if(-not $worker.HasExited){throw 'Aggregation worker termination was not confirmed.'}
+        $code=$worker.ExitCode
+    }finally{$outputFile.Dispose();$errorFile.Dispose()}
 } finally {
-    Wait-RecordingCleanup -Creator $null -Worker $null
+    Wait-RecordingCleanup -Creator $null -Worker $worker
     $restored=Restore-InvSysTestSettingsSnapshot $snapshot
     $same=@($pins|Where-Object {(Get-FileHash -LiteralPath $_.File).Hash -cne $_.Hash}).Count -eq 0
     $testsSame=@($testPins|Where-Object {(Get-FileHash -LiteralPath $_.File).Hash -cne $_.Hash}).Count -eq 0

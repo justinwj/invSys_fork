@@ -5,6 +5,13 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Aggregation approval update,2026-10-14 Pacific:** the user approved tightened
+D8-AGG-01 in v4.11, clearing Handoff180's blocker. Continue complete4be-A with
+expanded packaged/direct-Core RED before product edits; no new runtime evidence or
+Aggregation recording ID is claimed. Joint source/authority/feed rechecks, durable
+honest-retry state and the path-only packaged comparison are mandatory. Exit the
+prompt on desktop error5, lockscreen, mouse lock or a new required proposal approval.
+
 Add Warehouse Root: [RED53/1](plan022_slice4be_admin_root_write_results.md) proves
 false remembered feedback after a refused local write. D18-ROOT-01 is approved
 (2026-10-13); expanded RED96/15 -> GREEN120 qualifies the owner correction, with
@@ -153,8 +160,12 @@ Packaged [diagnostic65 PASS/7 FAIL](plan022_slice4be_admin_aggregation_results.m
 2026-10-13 Pacific, now supplements the source audit below. It proves workbook
 redirection and stale-authority Core dispatch. Authorized callback output fails
 at SaveAs1004; a normalized-path direct Core control succeeds. No persisted
-unauthorized output is proved. Proposed D8-AGG-01 in v4.11/Plan022/Controls1.581
-requires approval before implementation. Catalog42/179 remains unchanged.
+unauthorized output is proved. Tightened D8-AGG-01 in v4.11/Plan022/Controls1.583
+is approved2026-10-14 Pacific; local entry RED reaches74/10 for actual-handler
+drive/UNC comparison and88/35 for expanded boundaries, without a harness exception
+and with clean preserved closure. Remaining refusal/phase/retry coverage continues
+before product implementation; see the exact Aggregation receipt and Controls1.584.
+Catalog42/179 remains unchanged.
 
 Preceding read-only source audit,2026-10-13 Pacific:
 `btnAdminHqAggregator` dispatches `modAdmin.Admin_AggregateGlobalSnapshot_Click`
