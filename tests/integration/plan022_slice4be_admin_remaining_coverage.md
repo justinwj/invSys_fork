@@ -12,6 +12,12 @@ Aggregation recording ID is claimed. Joint source/authority/feed rechecks, durab
 honest-retry state and the path-only packaged comparison are mandatory. Exit the
 prompt on desktop error5, lockscreen, mouse lock or a new required proposal approval.
 
+**Stopped2026-10-14 at14:32:12 Pacific:** the owned monitor detects one desktop
+lock condition and the macro guard stops the focused write gate. Goal is paused
+under that user instruction; approval stands. Completed104/46 remains the latest
+full Aggregation RED; subsequent tests are partial evidence with explicit harness/
+stop boundaries. Product VBA is unchanged. See the Aggregation receipt and Handoff181.
+
 Add Warehouse Root: [RED53/1](plan022_slice4be_admin_root_write_results.md) proves
 false remembered feedback after a refused local write. D18-ROOT-01 is approved
 (2026-10-13); expanded RED96/15 -> GREEN120 qualifies the owner correction, with

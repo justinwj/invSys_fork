@@ -12,6 +12,42 @@ D8-TESTER-01 remains approved/qualified.
 
 ## Local approved-contract RED,2026-10-14 Pacific
 
+**Stopped for the user's desktop-lock condition,2026-10-14 at21:32:12Z
+(14:32:12 Pacific).** Owned monitor `resume-d8-agg-01/write-boundaries-entry-12`
+records150 samples, one lock condition, zero error5/mouse-lock/other failures,
+and `Stopped=True`; the macro dispatcher refuses further work. Goal is paused
+under the user's explicit conditional stop instruction; D8-AGG-01 remains approved.
+Product VBA is still unchanged, and4be-A is incomplete.
+
+After the complete104 PASS/46 FAIL gate below, additional actual-handler probes
+protect feedback redaction, same-form retry, post-save failure, pre-save
+source/feed/sign-out changes, malformed/duplicate sources, unknown output columns
+and destination overlaps. A focused `-WriteBoundariesOnly` selector runs these
+write cases and the retained NewSession case without repeating the path comparison.
+The duplicate fixture now copies a generated row directly rather than assigning
+mixed COM numeric/string values; its behavioral case has not yet been reached.
+
+| Controller / worker under the existing ignored runtime roots | Interrupted result |
+| --- | --- |
+| `284090309d21490c9035d371ffcb1089` / `5b3ca6761e7f4e1a9df54e9cedbde1db` | 100 PASS/56 FAIL, including a stale-monitor harness failure before NewSession completes; fresh decoy restores the original workbook-switch mutation RED |
+| `9e24d501299449848c058b5acdcd0fb4` / `bf14b6b9fd8449658cec401ce9c5858b` | 24 PASS/19 FAIL, including a duplicate-fixture COM harness failure; completed cases expose pre-save changes and malformed-source acceptance |
+| `9e1b652822644f26b9b499dad0d2a61b` / `3fff33580ed6494db1a2294c3d2f7a5e` | 19 PASS/11 FAIL, including the required desktop-lock stop; reached failure-before/after-save and source-change-before-save cases |
+
+These are partial evidence, not completed RED gates. Reached failure cases retain
+no durable destination/source/phase-bound retry record and allow another write
+from the same form. Reached feedback checks expose entered source/feed paths.
+No exact persisted-output claim is added for the injected post-save failure.
+Unknown-column/overlap, corrected duplicate, interrupted/reopened retry and the
+remaining phase checks still require verification before product implementation.
+The direct Core baseline adapter remains supplemental, not proof of a new API.
+
+All three controllers preserve package/tooling pins and restore settings, close
+Excel normally, and record zero delayed Application1000/1001/1002 Excel events
+through21:22:02.3276397Z,21:28:17.1729832Z and21:32:41.5673421Z respectively.
+The last two owned monitors exit normally. Sharing-error retries and a numeric
+publication-failure record were added only to ignored monitor orchestration;
+one healthy short shutdown does not establish long-run monitor reliability.
+
 Product VBA remains unchanged from `ff5db426`. An isolated source-built five-package
 baseline, `deploy/validation-aggregation-baseline-01`, replaces the absent prior
 candidate for these local diagnostics; it is unpromoted. The actual Ribbon/form

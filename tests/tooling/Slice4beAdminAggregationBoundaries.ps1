@@ -70,6 +70,9 @@ End Function
     $marker='    TestAggregationRoots.Stage "SaveAs"'
     if(-not $body.Contains($marker)){throw 'Writer fault boundary unavailable.'}
     $body=$body.Replace($marker,'    TestAggregationBoundary.AtPoint "BEFORE_SAVE"'+"`r`n"+$marker)
+    $close='    TestAggregationRoots.Stage "Close"'
+    if(-not $body.Contains($close)){throw 'Post-save fault boundary unavailable.'}
+    $body=$body.Replace($close,'    TestAggregationBoundary.AtPoint "AFTER_SAVE"'+"`r`n"+$close)
     $writer.DeleteLines($first,$count);$writer.InsertLines($first,$body)
 }
 
@@ -86,11 +89,25 @@ function Test-AggregationBoundaries($Fixture,$Other,$HostBook,$OtherBook,[ref]$O
     $changedFeed=Join-Path $runRoot 'changed-aggregation-feed'
     if(-not [IO.Path]::GetFullPath($changedFeed).StartsWith($owned,[StringComparison]::OrdinalIgnoreCase)){throw 'Changed feed escapes disposable scope.'}
     try{
-        foreach($case in @('SourceChangedAfterInspection','SourceMissingAfterInspection','FeedChangedAfterInspection','SignedOutAfterInspection','RightsRevokedAfterInspection','FailureBeforeSave','BorrowedCleanOutput','BorrowedDirtyOutput','ReadOnlyOutput','DirtyConfig','UnreadableConfig','DirtyAuth')){
+        $cases=if($AdminAggregationWriteBoundariesOnly){
+            @('FailureBeforeSave','FailureAfterSave','SourceChangedBeforeSave','FeedChangedBeforeSave','SignedOutBeforeSave','MalformedSelectedSource','DuplicateSelectedEntity','UnknownOutputColumn')
+        }else{
+            @('SourceChangedAfterInspection','SourceMissingAfterInspection','FeedChangedAfterInspection','SignedOutAfterInspection','RightsRevokedAfterInspection','FailureBeforeSave','FailureAfterSave','SourceChangedBeforeSave','FeedChangedBeforeSave','SignedOutBeforeSave','MalformedSelectedSource','DuplicateSelectedEntity','UnknownOutputColumn','BorrowedCleanOutput','BorrowedDirtyOutput','ReadOnlyOutput','DirtyConfig','UnreadableConfig','DirtyAuth')
+        }
+        foreach($case in $cases){
             SelectTarget $Fixture
             [void](Core 'Arm' @('','','','',''))
             [void](Run 'invSys.Core.xlam' 'TestAggregationRoots.PathComparison' @($true,$Fixture.Output))
             if(-not [bool](Run 'invSys.Core.xlam' 'TestAggregationRoots.NormalizedControl' @($Fixture.Snapshot,$Fixture.Output))){throw 'Existing output fixture failed; not behavioral RED.'}
+            if($case -ceq 'UnknownOutputColumn'){
+                $customBook=$excel.Workbooks.Open($Fixture.Output,0,$false)
+                try{
+                    $custom=Table $customBook 'tblGlobalInventorySnapshot'
+                    $column=$custom.ListColumns.Add();$column.Name='Local Annotation'
+                    $column.DataBodyRange.Cells.Item(1,1).Value2='Preserve disposable annotation'
+                    $customBook.Save()
+                }finally{$customBook.Close($false)}
+            }
             $before=FileHash $Fixture.Output
             $borrowed=$null;$authorityBook=$null
             $outputAttributes=[IO.File]::GetAttributes($Fixture.Output)
@@ -107,6 +124,17 @@ function Test-AggregationBoundaries($Fixture,$Other,$HostBook,$OtherBook,[ref]$O
                 Check ('Aggregation.Boundary.'+$case+'.DirtyPrecondition') (-not [bool]$authorityBook.Saved)
             }
             if($case -ceq 'UnreadableConfig'){[IO.File]::WriteAllBytes($Fixture.Config,[Text.Encoding]::ASCII.GetBytes('Invalid disposable configuration'))}
+            if($case -cin @('MalformedSelectedSource','DuplicateSelectedEntity')){
+                $invalidBook=$excel.Workbooks.Open($Fixture.Snapshot,0,$false)
+                try{
+                    $invalid=Table $invalidBook 'tblInventorySnapshot'
+                    if($case -ceq 'MalformedSelectedSource'){$invalid.ListColumns.Item('System_Key').Name='Missing identity'}else{
+                        $duplicate=$invalid.ListRows.Add()
+                        $invalid.ListRows.Item(1).Range.Copy($duplicate.Range)
+                    }
+                    $invalidBook.Save()
+                }finally{$invalidBook.Close($false)}
+            }
             $fault=switch($case){
                 'SourceChangedAfterInspection'{'SOURCE_CHANGED'}
                 'SourceMissingAfterInspection'{'SOURCE_MISSING'}
@@ -114,26 +142,55 @@ function Test-AggregationBoundaries($Fixture,$Other,$HostBook,$OtherBook,[ref]$O
                 'SignedOutAfterInspection'{'SIGN_OUT'}
                 'RightsRevokedAfterInspection'{'RIGHTS_REVOKED'}
                 'FailureBeforeSave'{'WRITE_FAILURE'}
+                'FailureAfterSave'{'WRITE_FAILURE'}
+                'SourceChangedBeforeSave'{'SOURCE_CHANGED'}
+                'FeedChangedBeforeSave'{'FEED_CHANGED'}
+                'SignedOutBeforeSave'{'SIGN_OUT'}
                 default{''}
             }
-            $point=if($case -ceq 'FailureBeforeSave'){'BEFORE_SAVE'}else{'AFTER_INSPECTION'}
+            $point=if($case -ceq 'FailureAfterSave'){'AFTER_SAVE'}elseif($case -cin @('FailureBeforeSave','SourceChangedBeforeSave','FeedChangedBeforeSave','SignedOutBeforeSave')){'BEFORE_SAVE'}else{'AFTER_INSPECTION'}
             [void](Core 'Arm' @($fault,$point,$Fixture.Snapshot,$Other.Snapshot,$changedFeed))
             [void](Call 'Aggregate')
             $success=[bool](Call 'OwnerSuccess');$calls=[int](Run 'invSys.Core.xlam' 'TestAggregationRoots.Calls')
             $preserved=(FileHash $Fixture.Output) -ceq $before
             if($fault){Check ('Aggregation.Boundary.'+$case+'.FaultInjected') ([bool](Core 'Injected'))}
-            Check ('Aggregation.Boundary.'+$case+'.NoFalseCompletion') (-not $success)
-            Check ('Aggregation.Boundary.'+$case+'.ExistingOutputPreserved') $preserved
-            $redacted=[bool](Run 'invSys.Admin.xlam' 'frmAggregationSources.FeedbackRedactedForTest' @($Fixture.Root,$feed))
-            Check ('Aggregation.Boundary.'+$case+'.FeedbackExcludesEnteredPaths') $redacted
-            if($case -cne 'FailureBeforeSave'){
-                Check ('Aggregation.Boundary.'+$case+'.RefusedBeforeWriter') ($calls -eq 0)
+            if($case -ceq 'UnknownOutputColumn'){
+                Check 'Aggregation.Boundary.UnknownOutputColumn.CompletePersistence' $success
+                $customPreserved=$false
+                if(Test-Path -LiteralPath $Fixture.Output){
+                    $customBook=$excel.Workbooks.Open($Fixture.Output,0,$true)
+                    try{
+                        $custom=Table $customBook 'tblGlobalInventorySnapshot'
+                        foreach($column in $custom.ListColumns){
+                            if([string]$column.Name -ceq 'Local Annotation'){$customPreserved=[string]$column.DataBodyRange.Cells.Item(1,1).Value2 -ceq 'Preserve disposable annotation'}
+                        }
+                    }finally{$customBook.Close($false)}
+                }
+                Check 'Aggregation.Boundary.UnknownOutputColumn.ValuesPreserved' $customPreserved
             }else{
+                Check ('Aggregation.Boundary.'+$case+'.NoFalseCompletion') (-not $success)
+                if($case -cne 'FailureAfterSave'){Check ('Aggregation.Boundary.'+$case+'.ExistingOutputPreserved') $preserved}
+            }
+            $redacted=[bool](Call 'FeedbackRedacted' @($Fixture.Root,$feed))
+            Check ('Aggregation.Boundary.'+$case+'.FeedbackExcludesEnteredPaths') $redacted
+            if($case -cnotin @('FailureBeforeSave','FailureAfterSave','SourceChangedBeforeSave','FeedChangedBeforeSave','SignedOutBeforeSave','UnknownOutputColumn')){
+                Check ('Aggregation.Boundary.'+$case+'.RefusedBeforeWriter') ($calls -eq 0)
+            }elseif($case -cin @('FailureBeforeSave','FailureAfterSave')){
                 $retry=@(Get-ChildItem -LiteralPath (Split-Path -Parent $Fixture.Output) -Recurse -File -Filter '*aggregation*retry*.json' -ErrorAction SilentlyContinue)
-                Check 'Aggregation.Boundary.FailureBeforeSave.DurableRetryStateRetained' ($retry.Count -gt 0)
+                Check ('Aggregation.Boundary.'+$case+'.DurableRetryStateRetained') ($retry.Count -gt 0)
+                $boundRetry=$false
+                foreach($file in $retry){
+                    try{
+                        $record=[IO.File]::ReadAllText($file.FullName)|ConvertFrom-Json
+                        $sourceHash=FileHash $Fixture.Snapshot
+                        $matching=@($record.Sources|Where-Object { $_.Path -ceq $Fixture.Snapshot -and $_.Hash -ieq $sourceHash })
+                        if($record.Destination -ceq $Fixture.Output -and $record.Phase -is [string] -and $record.Phase -and $record.Persistence -is [string] -and $record.Persistence -and $matching.Count -eq 1){$boundRetry=$true}
+                    }catch{$boundRetry=$false}
+                }
+                Check ('Aggregation.Boundary.'+$case+'.RetryRecordBindsDestinationSourceAndPhase') $boundRetry
                 [void](Core 'Arm' @('','','','',''))
                 [void](Call 'Aggregate')
-                Check 'Aggregation.Boundary.FailureBeforeSave.SameFormRetryRequiresRecapture' (-not [bool](Call 'OwnerSuccess') -and [int](Run 'invSys.Core.xlam' 'TestAggregationRoots.Calls') -eq 0)
+                Check ('Aggregation.Boundary.'+$case+'.SameFormRetryRequiresRecapture') (-not [bool](Call 'OwnerSuccess') -and [int](Run 'invSys.Core.xlam' 'TestAggregationRoots.Calls') -eq 0)
             }
             if($null -ne $borrowed){
                 $stillOpen=$false;$statePreserved=$false
@@ -158,6 +215,27 @@ function Test-AggregationBoundaries($Fixture,$Other,$HostBook,$OtherBook,[ref]$O
             [IO.File]::WriteAllBytes($Fixture.Config,$configBytes)
             [IO.File]::WriteAllBytes($authPath,$authBytes)
             if($redirected){Remove-Item -LiteralPath (Join-Path $changedFeed 'Global\invSys.Global.InventorySnapshot.xlsb')}
+        }
+        foreach($overlap in @('TrustedSource','SelectedAuthority','SelectedSnapshots')){
+            SelectTarget $Fixture
+            $overlapFeed=switch($overlap){
+                'TrustedSource'{$Fixture.Root}
+                'SelectedAuthority'{$Other.Root}
+                'SelectedSnapshots'{Split-Path -Parent $Other.Snapshot}
+            }
+            if(-not [bool](Call 'SetFeedForComparison' @($overlapFeed,$Fixture.Warehouse))){throw 'Overlap feed fixture was not established.'}
+            $overlapOutput=Join-Path $overlapFeed 'Global\invSys.Global.InventorySnapshot.xlsb'
+            if(-not [IO.Path]::GetFullPath($overlapOutput).StartsWith($owned,[StringComparison]::OrdinalIgnoreCase)){throw 'Overlap output escapes disposable scope.'}
+            [void](Run 'invSys.Core.xlam' 'TestAggregationRoots.PathComparison' @($true,$overlapOutput))
+            if(-not [bool](Run 'invSys.Core.xlam' 'TestAggregationRoots.NormalizedControl' @($Other.Snapshot,$overlapOutput))){throw 'Existing overlap output fixture unavailable.'}
+            $overlapHash=FileHash $overlapOutput
+            if(-not [bool](Call 'OpenForm' @($HostBook.Name)) -or [int](Call 'SelectSource' @($Other.Warehouse)) -ne 1){throw 'Overlap fixture did not enter the actual source-selection handler.'}
+            [void](Call 'Aggregate')
+            Check ('Aggregation.Overlap.'+$overlap+'.RefusedBeforeWriter') (-not [bool](Call 'OwnerSuccess') -and [int](Run 'invSys.Core.xlam' 'TestAggregationRoots.Calls') -eq 0)
+            Check ('Aggregation.Overlap.'+$overlap+'.ExistingOutputPreserved') ((FileHash $overlapOutput) -ceq $overlapHash)
+            [void](Call 'CloseForm')
+            [IO.File]::WriteAllBytes($Fixture.Config,$configBytes)
+            Remove-Item -LiteralPath $overlapOutput
         }
         SelectTarget $Fixture
         $closedHost=$excel.Workbooks.Add();$closedName=$closedHost.Name

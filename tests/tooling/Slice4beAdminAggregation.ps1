@@ -44,6 +44,9 @@ Public Function SetFeedForComparison(ByVal feed As String, ByVal warehouse As St
     Dim report As String
     SetFeedForComparison = modConfig.UpdateConfigValue("PathSharePointRoot", feed, report, warehouse, "S1")
 End Function
+Public Function FeedbackRedacted(ByVal first As String, ByVal second As String) As Boolean
+    FeedbackRedacted = frmAggregationSources.FeedbackRedactedForTest(first, second)
+End Function
 Public Function BoundHostPreserved() As Boolean
     BoundHostPreserved = (mOwnerHost Is mHost)
 End Function
@@ -299,7 +302,8 @@ function Test-AdminAggregation($Fixture,$Other) {
             $otherBook.Windows.Item(1).Visible=$true
             $otherBook.Worksheets.Item(1).Cells.Item(1,1).Value2='Preserve unrelated workbook'
         }
-        foreach($case in @('Admin','SwitchWorkbook','SignedOut','SignedOutHint','Reader','OtherWarehouseAdmin','NewSession')){
+        $authorityCases=if($AdminAggregationWriteBoundariesOnly){@('NewSession')}else{@('Admin','SwitchWorkbook','SignedOut','SignedOutHint','Reader','OtherWarehouseAdmin','NewSession')}
+        foreach($case in $authorityCases){
             SelectTarget $Fixture
             foreach($f in @($Fixture,$Other)){
                 $output=[IO.Path]::GetFullPath($f.Output)

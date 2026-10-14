@@ -6,6 +6,13 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Paused2026-10-14 at14:32:12 Pacific by the user's desktop-lock stop condition.**
+Aggregation's latest focused write run stops safely with19 PASS/11 FAIL including
+the lock guard; it is partial evidence, not a completed RED gate. Package/tooling
+pins and settings are preserved, Excel closes normally and the delayed native
+audit is clean. D8-AGG-01 remains approved; product VBA and4be-A acceptance are
+unchanged. Resume from Handoff181 after desktop input is reverified.
+
 [Aggregation diagnostic65/7](plan022_slice4be_admin_aggregation_results.md) now
 exposes original-workbook redirection, stale-authority dispatch and callback
 SaveAs1004 on unchanged tester-recording-02. Tightened D8-AGG-01 is approved in

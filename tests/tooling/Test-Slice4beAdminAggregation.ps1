@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-tester-recording-02',[ValidateSet('RED','GREEN')][string]$Phase='RED',[string]$DesktopMonitorReport='',[switch]$PathComparison,[switch]$BoundaryMatrix)
+param([string]$DeployRoot='deploy/validation-tester-recording-02',[ValidateSet('RED','GREEN')][string]$Phase='RED',[string]$DesktopMonitorReport='',[switch]$PathComparison,[switch]$BoundaryMatrix,[switch]$WriteBoundariesOnly)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Aggregation owner gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
@@ -21,6 +21,7 @@ try {
     if($DesktopMonitorReport){$workerArgs+=@('-DesktopMonitorReport',$DesktopMonitorReport)}
     if($PathComparison){$workerArgs+='-AdminAggregationPathComparison'}
     if($BoundaryMatrix){$workerArgs+='-AdminAggregationBoundaryMatrix'}
+    if($WriteBoundariesOnly){$workerArgs+='-AdminAggregationBoundaryMatrix';$workerArgs+='-AdminAggregationWriteBoundariesOnly'}
     $quotedArgs=($workerArgs|ForEach-Object {'"'+$_+'"'}) -join ' '
     $launch=[Diagnostics.ProcessStartInfo]::new((Join-Path $PSHOME 'powershell.exe'))
     $launch.Arguments=$quotedArgs;$launch.WorkingDirectory=$PWD.Path

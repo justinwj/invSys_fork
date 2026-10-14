@@ -140,6 +140,7 @@ param(
     [switch]$AdminAggregationOnly,
     [switch]$AdminAggregationPathComparison,
     [switch]$AdminAggregationBoundaryMatrix,
+    [switch]$AdminAggregationWriteBoundariesOnly,
     [switch]$AdminTesterSetupPaths,
     [switch]$AdminTesterOwnershipPaths,
     [switch]$AdminTesterOwnershipOnly,
