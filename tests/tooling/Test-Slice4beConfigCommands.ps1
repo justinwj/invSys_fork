@@ -136,6 +136,7 @@ param(
     [switch]$AdminConsoleOnly,
     [switch]$AdminDirectoryColumnsOnly,
     [switch]$AdminCreateWarehouseOwnerOnly,
+    [switch]$AdminTesterSetupOwnerOnly,
     [switch]$AdminCreateRecording,
     [switch]$AdminCreateOpeningOnly,
     [switch]$AdminCreateRecordingOnly,
@@ -458,7 +459,7 @@ if($CheckProductionDesignerActivity){
 }
 if($CheckProductionDesignerPaths -and -not $CheckProductionDesignerActivity){throw 'Production paths require the designer gate.'}
 if($CaptureProductionDesignerPaths -and -not $CheckProductionDesignerPaths){throw 'Production captures require the path gate.'}
-if($CompileEvaluationProbesForTest -and -not ($AdminCreateWarehouseOwnerOnly -or $AdminSeedOutcomeOnly -or $AdminDirectoryColumnsOnly -or $AdminConsoleOnly -or $AdminVerifyAddinsOnly -or $AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $RecordingEvaluationDiagnostic -or $CheckEvaluationVisualEvidence -or $CheckViewerPublishedRead -or $CheckAdminUomActivity -or $CheckSettingsEditorActivity -or $CheckTrackingSettings -or $CheckProductionDesignerActivity)){
+if($CompileEvaluationProbesForTest -and -not ($AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $AdminSeedOutcomeOnly -or $AdminDirectoryColumnsOnly -or $AdminConsoleOnly -or $AdminVerifyAddinsOnly -or $AdminReconcileIdentityOnly -or $CheckAuthReadOnly -or $RecordingEvaluationDiagnostic -or $CheckEvaluationVisualEvidence -or $CheckViewerPublishedRead -or $CheckAdminUomActivity -or $CheckSettingsEditorActivity -or $CheckTrackingSettings -or $CheckProductionDesignerActivity)){
     throw 'Instrumented project compilation requires a supported focused gate.'
 }
 if($TraceSettingsOpenForTest -and ($Phase -ne 'RED' -or -not $CheckTrackingSettings)) {
@@ -781,6 +782,11 @@ if($AdminCreateWarehouseOwnerOnly){
     if(-not $CompileEvaluationProbesForTest -or $CheckViewerPublishedRead -or $AdminDirectoryColumnsOnly -or $CheckTrackingSettings -or $CheckAuthReadOnly){throw 'Create owner coverage requires its separate compiled gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-create-owner/'+[guid]::NewGuid().ToString('N'))
     Write-Output ('Create Warehouse owner evidence: '+$reportRoot)
+}
+if($AdminTesterSetupOwnerOnly){
+    if(-not $CompileEvaluationProbesForTest -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $AdminDirectoryColumnsOnly -or $CheckTrackingSettings -or $CheckAuthReadOnly){throw 'Tester owner coverage requires its separate compiled gate.'}
+    $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-tester-owner/'+[guid]::NewGuid().ToString('N'))
+    Write-Output ('Tester owner evidence: '+$reportRoot)
 }
 if($AdminConsoleOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-console/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin Console evidence: '+$reportRoot)}
 if($AdminSeedOutcomeOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-seed-outcome/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin Seed outcome evidence: '+$reportRoot)}
@@ -1981,6 +1987,12 @@ End Function
         . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
         Compile-Slice4beEvaluationProbes
     }
+    if($AdminTesterSetupOwnerOnly){
+        . (Join-Path $PSScriptRoot 'Slice4beAdminTesterSetupOwner.ps1')
+        Install-AdminTesterSetupOwnerProbe
+        . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
+        Compile-Slice4beEvaluationProbes
+    }
     if($AdminCreateWarehouseOwnerOnly){
         . (Join-Path $PSScriptRoot 'Slice4beAdminCreateWarehouseOwner.ps1')
         Install-AdminCreateWarehouseOwnerProbe
@@ -2208,7 +2220,11 @@ End Function
         if(-not ($AdminCreateOpeningOnly -or $AdminCreateRecordingOnly)){Test-AdminCreateWarehouseOwner $a $b}
         if($AdminCreateRecording){Test-AdminCreateRecording $a $b}
     }
-    if(-not $AdminCreateWarehouseOwnerOnly -and -not $AdminSeedOutcomeOnly -and -not $AdminDirectoryColumnsOnly -and -not $AdminConsoleOnly -and -not $AdminVerifyAddinsOnly -and -not $AdminReconcileIdentityOnly -and -not $AdminSettingsCloseOnly -and -not $CheckViewerRefreshFailure -and -not $CheckViewerEventDetail -and -not $CheckViewerEventGroups -and -not $CheckViewerPublishedRead -and $PrintSeedBoundaryForTest -notin @('FreshSeed','BareSeed')) {
+    if($AdminTesterSetupOwnerOnly){
+        $step='packaged Tester Setup cleanup authority diagnostic'
+        Test-AdminTesterSetupOwner $a $b
+    }
+    if(-not $AdminTesterSetupOwnerOnly -and -not $AdminCreateWarehouseOwnerOnly -and -not $AdminSeedOutcomeOnly -and -not $AdminDirectoryColumnsOnly -and -not $AdminConsoleOnly -and -not $AdminVerifyAddinsOnly -and -not $AdminReconcileIdentityOnly -and -not $AdminSettingsCloseOnly -and -not $CheckViewerRefreshFailure -and -not $CheckViewerEventDetail -and -not $CheckViewerEventGroups -and -not $CheckViewerPublishedRead -and $PrintSeedBoundaryForTest -notin @('FreshSeed','BareSeed')) {
     $step='unauthenticated command'
     [void](Run 'invSys.Core.xlam' 'modAuth.SignOut')
     $before=(Get-FileHash -LiteralPath $a.Config).Hash
