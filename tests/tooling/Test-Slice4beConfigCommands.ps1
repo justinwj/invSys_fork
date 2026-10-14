@@ -137,6 +137,10 @@ param(
     [switch]$AdminDirectoryColumnsOnly,
     [switch]$AdminCreateWarehouseOwnerOnly,
     [switch]$AdminTesterSetupOwnerOnly,
+    [switch]$AdminTesterSetupPaths,
+    [switch]$AdminTesterOwnershipPaths,
+    [switch]$AdminTesterOwnershipOnly,
+    [switch]$AdminTesterSetupEvidenceOnly,
     [switch]$AdminCreateRecording,
     [switch]$AdminCreateOpeningOnly,
     [switch]$AdminCreateRecordingOnly,
@@ -1990,6 +1994,10 @@ End Function
     if($AdminTesterSetupOwnerOnly){
         . (Join-Path $PSScriptRoot 'Slice4beAdminTesterSetupOwner.ps1')
         Install-AdminTesterSetupOwnerProbe
+        if($AdminTesterOwnershipPaths){
+            . (Join-Path $PSScriptRoot 'Slice4beAdminTesterOwnershipPaths.ps1')
+            Install-TesterOwnershipProbe
+        }
         . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
         Compile-Slice4beEvaluationProbes
     }
@@ -2222,7 +2230,9 @@ End Function
     }
     if($AdminTesterSetupOwnerOnly){
         $step='packaged Tester Setup cleanup authority diagnostic'
-        Test-AdminTesterSetupOwner $a $b
+        if(-not $AdminTesterOwnershipOnly){Test-AdminTesterSetupOwner $a $b}
+        if($AdminTesterSetupPaths){Test-AdminTesterSetupPaths $a $b}
+        if($AdminTesterOwnershipPaths){Test-TesterOwnershipPaths $a $b}
     }
     if(-not $AdminTesterSetupOwnerOnly -and -not $AdminCreateWarehouseOwnerOnly -and -not $AdminSeedOutcomeOnly -and -not $AdminDirectoryColumnsOnly -and -not $AdminConsoleOnly -and -not $AdminVerifyAddinsOnly -and -not $AdminReconcileIdentityOnly -and -not $AdminSettingsCloseOnly -and -not $CheckViewerRefreshFailure -and -not $CheckViewerEventDetail -and -not $CheckViewerEventGroups -and -not $CheckViewerPublishedRead -and $PrintSeedBoundaryForTest -notin @('FreshSeed','BareSeed')) {
     $step='unauthenticated command'

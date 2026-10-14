@@ -103,7 +103,7 @@ Private Sub AppendPerfLine(ByVal lineText As String)
     logPath = ResolvePerfLogPath()
     fileNum = FreeFile
     Open logPath For Append As #fileNum
-    lineText = modWarehouseCreateCommands.DiagnosticText(lineText)
+    lineText = modTesterCommands.DiagnosticText(modWarehouseCreateCommands.DiagnosticText(lineText))
     Print #fileNum, lineText
     Close #fileNum
     On Error GoTo 0

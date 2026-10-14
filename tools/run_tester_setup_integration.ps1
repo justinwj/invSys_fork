@@ -134,6 +134,12 @@ try {
         (Join-Path $repo "src/InventoryDomain/Modules/modInventoryProjectionExtras.bas"),
         (Join-Path $repo "src/InventoryDomain/Modules/modShipmentReconcile.bas"),
         (Join-Path $repo "src/Admin/Modules/modTesterSetup.bas"),
+        (Join-Path $repo "src/Core/Modules/modTesterProvisioning.bas"),
+        (Join-Path $repo "src/Core/Modules/modTesterFiles.bas"),
+        (Join-Path $repo "src/Core/Modules/modTesterCommands.bas"),
+        (Join-Path $repo "src/Core/Modules/modTesterAuthority.bas"),
+        (Join-Path $repo "src/Core/Modules/modTesterOwnership.bas"),
+        (Join-Path $repo "src/Core/Modules/modAuthUserCommands.bas"),
         (Join-Path $repo "tests/unit/TestPhase2Helpers.bas"),
         (Join-Path $repo "tests/integration/test_TesterSetup.bas")
     )

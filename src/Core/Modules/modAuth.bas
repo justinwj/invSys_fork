@@ -1224,16 +1224,10 @@ Private Sub LogDecision(ByVal requestId As String, _
                         ByVal result As String, _
                         ByVal source As String, _
                         ByVal detail As String)
-    Debug.Print Format$(Now, "yyyy-mm-dd hh:nn:ss"), _
-                "AUTH", _
-                IIf(requestId = "", "-", requestId), _
-                userId, _
-                capability, _
-                IIf(warehouseId = "", "-", warehouseId), _
-                IIf(stationId = "", "-", stationId), _
-                result, _
-                source, _
-                detail
+    If modTesterCommands.IsWriting() Then Debug.Print "Tester command diagnostic.": Exit Sub
+    Debug.Print Format$(Now, "yyyy-mm-dd hh:nn:ss"), "AUTH", IIf(requestId = "", "-", requestId), _
+        userId, capability, IIf(warehouseId = "", "-", warehouseId), IIf(stationId = "", "-", stationId), _
+        result, source, detail
 End Sub
 
 Private Function ResolveAuthWorkbook(ByVal whId As String) As Workbook

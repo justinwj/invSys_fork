@@ -1253,7 +1253,7 @@ Private Sub AppendPublishLogSync(ByVal warehouseId As String, _
                " | " & SafeTrimSync(detailText)
     fileNum = FreeFile
     Open logPath For Append As #fileNum
-    Print #fileNum, modWarehouseCreateCommands.DiagnosticText(lineText)
+    Print #fileNum, modTesterCommands.DiagnosticText(modWarehouseCreateCommands.DiagnosticText(lineText))
     Close #fileNum
     LogDiagnosticSafeSync "WAN-PUBLISH", Replace$(lineText, " | ", "|")
     On Error GoTo 0

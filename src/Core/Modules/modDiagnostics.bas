@@ -13,6 +13,8 @@ Public Sub ResetDiagnosticCapture()
 End Sub
 
 Public Sub LogDiagnosticEvent(ByVal categoryName As String, ByVal detailText As String)
+    categoryName = modTesterCommands.DiagnosticText(categoryName)
+    detailText = modTesterCommands.DiagnosticText(detailText)
     mDiagnosticEventCount = mDiagnosticEventCount + 1
     mLastDiagnosticCategory = Trim$(categoryName)
     mLastDiagnosticMessage = Trim$(detailText)

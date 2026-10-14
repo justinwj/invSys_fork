@@ -38,17 +38,7 @@ Sub Open_CreateWarehouse()
 End Sub
 
 Sub Admin_SetupTesterStation_Click()
-    Dim report As String
-    Dim targetWb As Workbook
-
-    Set targetWb = ResolveInteractiveAdminWorkbook()
-    Call modRoleWorkbookSurfaces.EnsureAdminLegacyWorkbookSurface(targetWb, report)
-    If Not modLocalAddinsRegistration.EnsureLocalInvSysAddinsRegistered("", report) Then
-        MsgBox "Current invSys add-ins are not registered cleanly for this Excel session." & vbCrLf & vbCrLf & _
-               report, vbExclamation, "invSys Admin"
-        Exit Sub
-    End If
-    frmSetupTesterStation.Show
+    modTesterPresentation.ShowTesterSetup ResolveInteractiveAdminWorkbook()
 End Sub
 
 Sub Open_SetupTesterStation()

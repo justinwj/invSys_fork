@@ -414,7 +414,7 @@ Private Sub CloseHiddenReadOnlyInventoryWorkbookProcessor(ByVal warehouseId As S
     For Each wb In Application.Workbooks
         If StrComp(Trim$(wb.FullName), targetPath, vbTextCompare) = 0 Then
             If wb.ReadOnly And Not WorkbookHasVisibleWindowProcessor(wb) Then
-                Debug.Print "RunBatch LOCK: Closing hidden read-only inventory workbook before processor lock: " & wb.Name
+                Debug.Print modTesterCommands.DiagnosticText("RunBatch LOCK: Closing hidden read-only inventory workbook before processor lock: " & wb.Name)
                 LogDiagnosticSafeProcessor "PROCESSOR", "RunBatchCloseHiddenReadOnlyInventory|Path=" & targetPath & "|Name=" & wb.Name
                 wb.Close SaveChanges:=False
                 Exit For
@@ -448,25 +448,25 @@ Private Sub LogInventoryWorkbookLockDiagnosticsProcessor(ByVal warehouseId As St
 
     targetPath = ResolveInventoryWorkbookPathProcessor(warehouseId)
     If Not openWorkbookPaths Is Nothing Then existedBeforeResolve = openWorkbookPaths.Exists(targetPath)
-    Debug.Print "RunBatch LOCK: InventoryPath=" & targetPath
-    Debug.Print "RunBatch LOCK: FileExists=" & CStr(modDeploymentPaths.FileExistsManaged(targetPath))
-    Debug.Print "RunBatch LOCK: OpenBeforeResolve=" & CStr(existedBeforeResolve)
+    Debug.Print modTesterCommands.DiagnosticText("RunBatch LOCK: InventoryPath=" & targetPath)
+    Debug.Print modTesterCommands.DiagnosticText("RunBatch LOCK: FileExists=" & CStr(modDeploymentPaths.FileExistsManaged(targetPath)))
+    Debug.Print modTesterCommands.DiagnosticText("RunBatch LOCK: OpenBeforeResolve=" & CStr(existedBeforeResolve))
 
     If Not inventoryWb Is Nothing Then
-        Debug.Print "RunBatch LOCK: ResolvedWorkbook=" & inventoryWb.Name & ", ReadOnly=" & CStr(inventoryWb.ReadOnly) & ", FullName=" & inventoryWb.FullName
+        Debug.Print modTesterCommands.DiagnosticText("RunBatch LOCK: ResolvedWorkbook=" & inventoryWb.Name & ", ReadOnly=" & CStr(inventoryWb.ReadOnly) & ", FullName=" & inventoryWb.FullName)
         LogDiagnosticSafeProcessor "PROCESSOR", "RunBatchLockResolved|InventoryPath=" & targetPath & "|Workbook=" & inventoryWb.Name & "|ReadOnly=" & CStr(inventoryWb.ReadOnly) & "|OpenBeforeResolve=" & CStr(existedBeforeResolve) & "|FullName=" & inventoryWb.FullName
     End If
 
     For Each wb In Application.Workbooks
         If StrComp(Trim$(wb.FullName), targetPath, vbTextCompare) = 0 Then
             alreadyOpen = True
-            Debug.Print "RunBatch LOCK: AlreadyOpen=TRUE, ReadOnly=" & CStr(wb.ReadOnly) & ", Name=" & wb.Name
+            Debug.Print modTesterCommands.DiagnosticText("RunBatch LOCK: AlreadyOpen=TRUE, ReadOnly=" & CStr(wb.ReadOnly) & ", Name=" & wb.Name)
             LogDiagnosticSafeProcessor "PROCESSOR", "RunBatchLock|InventoryPath=" & targetPath & "|FileExists=True|AlreadyOpen=True|ReadOnly=" & CStr(wb.ReadOnly) & "|OpenBeforeResolve=" & CStr(existedBeforeResolve) & "|Name=" & wb.Name
         End If
     Next wb
 
     If Not alreadyOpen Then
-        Debug.Print "RunBatch LOCK: AlreadyOpen=FALSE"
+        Debug.Print modTesterCommands.DiagnosticText("RunBatch LOCK: AlreadyOpen=FALSE")
         LogDiagnosticSafeProcessor "PROCESSOR", "RunBatchLock|InventoryPath=" & targetPath & "|FileExists=" & CStr(modDeploymentPaths.FileExistsManaged(targetPath)) & "|AlreadyOpen=False|OpenBeforeResolve=" & CStr(existedBeforeResolve)
     End If
     On Error GoTo 0

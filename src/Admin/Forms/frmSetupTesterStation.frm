@@ -42,15 +42,28 @@ Private mOperatorWorkbookPath As String
 Private mFormBusy As Boolean
 Private mAnchors As Object
 Private mResizeInitialized As Boolean
+Private mTesterContext As String
+Private mSourceBound As Boolean
+
+Public Sub BindSource(ByVal context As String)
+    If mSourceBound Or Me.Visible Then
+        modTesterCommands.ReleaseForm context
+        Exit Sub
+    End If
+    modTesterCommands.ReleaseForm mTesterContext
+    mTesterContext = context
+    mSourceBound = True
+End Sub
 
 Private Sub UserForm_Initialize()
+    mTesterContext = modTesterCommands.CaptureForm()
     mFormBusy = True
     ConfigureShellLayout
     CreateDynamicControls
     ApplyDefaults
     ClearValidationErrors
     InitializeSetupTesterAnchors
-    ShowSummary "Choose the warehouse hub folder first. For Synology, use the SMB warehouse path, for example \\DS920\<share>\WH1. Then choose the locally synced invSys SharePoint root that contains Addins, Events, Snapshots, and TesterPackage.", COLOR_INFO
+    ShowSummary "Choose empty folders for a disposable test environment and optional publication, or select the exact folders of an environment created by this tool. Existing unmarked environments cannot be adopted.", COLOR_INFO
     mFormBusy = False
 End Sub
 
@@ -69,6 +82,7 @@ Private Sub UserForm_Layout()
 End Sub
 
 Private Sub UserForm_Terminate()
+    modTesterCommands.ReleaseForm mTesterContext
     Set mAnchors = Nothing
 End Sub
 
@@ -113,6 +127,7 @@ Private Sub mBtnHubPathHelper_Click()
     Dim candidate As String
 
     candidate = modDeploymentPaths.BrowseForFolderPath(Trim$(CStr(Me.txtPathLocal.Value)), "Choose Warehouse Hub Folder")
+    If Not SourceStillAuthorized() Then Exit Sub
     If candidate = "" Then Exit Sub
 
     mFormBusy = True
@@ -132,6 +147,7 @@ Private Sub mBtnSharePointHelper_Click()
     If candidate = "" Then
         candidate = modTesterSetup.BrowseForSharePointRoot(Trim$(CStr(Me.txtPathSharePoint.Value)))
     End If
+    If Not SourceStillAuthorized() Then Exit Sub
 
     If candidate = "" Then
         ShowSummary "SharePoint root was not detected. Pick the locally synced invSys root folder manually.", COLOR_INFO
@@ -154,7 +170,6 @@ Private Sub btnOK_Click()
     Dim spec As modTesterSetup.TesterSetupSpec
     Dim rawPin As String
     Dim detailText As String
-    Dim operatorName As String
 
     If mSetupSucceeded Then
         Unload Me
@@ -162,13 +177,9 @@ Private Sub btnOK_Click()
     End If
 
     ClearValidationErrors
+    If Not SourceStillAuthorized() Then Exit Sub
     If Not BuildSpecFromForm(spec, rawPin) Then
         ShowSummary "Fix the highlighted fields and try again.", COLOR_ERROR
-        Exit Sub
-    End If
-
-    If Not modLocalAddinsRegistration.EnsureLocalInvSysAddinsRegistered(spec.PathSharePointRoot & "\Addins", detailText) Then
-        ShowSummary "invSys add-ins are not registered cleanly for this Excel session." & vbCrLf & detailText, COLOR_ERROR
         Exit Sub
     End If
 
@@ -177,15 +188,15 @@ Private Sub btnOK_Click()
     If Not mBtnOpen Is Nothing Then mBtnOpen.Enabled = False
     If Not mBtnDeleteGenerated Is Nothing Then mBtnDeleteGenerated.Enabled = False
 
-    modTesterSetup.SetTesterSetupProgressSink Me
-    If modTesterSetup.SetupTesterStation(spec) Then
+    UpdateSetupProgress "Creating test environment..."
+    If modTesterCommands.Setup(mTesterContext, spec.UserId, spec.PinHash, spec.WarehouseId, spec.StationId, _
+            spec.PathLocal, spec.PathSharePointRoot, detailText, mOperatorWorkbookPath) Then
         mSetupSucceeded = True
-        mOperatorWorkbookPath = modTesterSetup.GetLastTesterOperatorWorkbookPath()
-        operatorName = Mid$(mOperatorWorkbookPath, InStrRev(mOperatorWorkbookPath, "\") + 1)
-        If operatorName = "" Then operatorName = spec.WarehouseId & ".Receiving.Operator.xlsm"
-        ShowSummary "Setup complete. Open " & operatorName & " to begin.", COLOR_SUCCESS
+        ShowSummary detailText, COLOR_SUCCESS
         Me.btnOK.Caption = "Close"
         Me.btnCancel.Caption = "Close"
+        Me.btnOK.Enabled = True
+        Me.btnCancel.Enabled = True
         If Not mBtnOpen Is Nothing Then
             mBtnOpen.Visible = True
             mBtnOpen.Enabled = True
@@ -193,13 +204,12 @@ Private Sub btnOK_Click()
         If Not mBtnDeleteGenerated Is Nothing Then mBtnDeleteGenerated.Enabled = True
         If Not mAnchors Is Nothing Then mAnchors.ResizeControls
     Else
-        detailText = modTesterSetup.GetLastTesterSetupReport()
-        ShowSummary "Setup failed. Review the runtime path and try again." & vbCrLf & detailText, COLOR_ERROR
+        ShowSummary detailText, COLOR_ERROR
         Me.btnOK.Enabled = True
         Me.btnCancel.Enabled = True
         If Not mBtnDeleteGenerated Is Nothing Then mBtnDeleteGenerated.Enabled = True
     End If
-    modTesterSetup.ClearTesterSetupProgressSink
+    rawPin = "": spec.PinHash = ""
 End Sub
 
 Private Sub btnCancel_Click()
@@ -231,10 +241,10 @@ Private Sub mBtnDeleteGenerated_Click()
         Exit Sub
     End If
 
-    prompt = "Delete Test Environment generated files for Warehouse '" & spec.WarehouseId & "'?" & vbCrLf & _
-             "Hub: " & spec.PathLocal & vbCrLf & _
-             "This will delete only known tester-generated files and empty tester folders."
+    prompt = "Delete the generated files for the environment selected above?" & vbCrLf & _
+             "Only verified owned files and empty owned folders will be deleted. Unknown files will be preserved."
     response = MsgBox(prompt, vbQuestion Or vbYesNo Or vbDefaultButton2, "Delete Test Environment Files")
+    If Not SourceStillAuthorized() Then Exit Sub
     If response <> vbYes Then Exit Sub
 
     Me.btnOK.Enabled = False
@@ -242,7 +252,8 @@ Private Sub mBtnDeleteGenerated_Click()
     If Not mBtnOpen Is Nothing Then mBtnOpen.Enabled = False
     If Not mBtnDeleteGenerated Is Nothing Then mBtnDeleteGenerated.Enabled = False
 
-    If modTesterSetup.DeleteTesterStationGenerated(spec, False, report) Then
+    If modTesterCommands.DeleteGenerated(mTesterContext, spec.WarehouseId, spec.StationId, _
+            spec.PathLocal, spec.PathSharePointRoot, True, report) Then
         mSetupSucceeded = False
         mOperatorWorkbookPath = vbNullString
         If Not mBtnOpen Is Nothing Then
@@ -251,15 +262,21 @@ Private Sub mBtnDeleteGenerated_Click()
         End If
         Me.btnOK.Caption = "Setup"
         Me.btnCancel.Caption = "Close"
-        ShowSummary "Test Environment generated files deleted." & vbCrLf & CompactCleanupReportForm(report), COLOR_SUCCESS
+        ShowSummary report, COLOR_SUCCESS
     Else
-        ShowSummary "Test Environment cleanup failed." & vbCrLf & CompactCleanupReportForm(report), COLOR_ERROR
+        ShowSummary report, COLOR_ERROR
     End If
 
     Me.btnOK.Enabled = True
     Me.btnCancel.Enabled = True
     If Not mBtnDeleteGenerated Is Nothing Then mBtnDeleteGenerated.Enabled = True
 End Sub
+
+Private Function SourceStillAuthorized() As Boolean
+    Dim report As String
+    SourceStillAuthorized = modTesterCommands.CheckForm(mTesterContext, report)
+    If Not SourceStillAuthorized Then ShowSummary report, COLOR_ERROR
+End Function
 
 Public Sub UpdateSetupProgress(ByVal stepText As String)
     If Trim$(stepText) = "" Then Exit Sub
@@ -314,7 +331,7 @@ Private Sub ConfigureShellLayout()
 
     Me.txtPathLocal.Left = 170
     Me.txtPathLocal.Top = 224
-    Me.txtPathLocal.Width = 360
+    Me.txtPathLocal.Width = 258
 
     Me.txtPathSharePoint.Left = 170
     Me.txtPathSharePoint.Top = 274
