@@ -1,10 +1,17 @@
 # Slice 4be remaining acceptance checklist
 
-Last reviewed: 2026-10-13 UTC. **4be-A remains incomplete.** Architecture v4.11,
+Last reviewed: 2026-10-14 UTC. **4be-A remains incomplete.** Architecture v4.11,
 the designated Plan022 and the controls catalog govern; this index records evidence
 and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
+
+[Aggregation diagnostic65/7](plan022_slice4be_admin_aggregation_results.md) now
+exposes original-workbook redirection, stale-authority dispatch and callback
+SaveAs1004 on unchanged tester-recording-02. D8-AGG-01 is proposed in v4.11;
+approval is pending before implementation. No persisted unauthorized output is
+claimed; the direct normalized-path Core control succeeds. Catalog42/179 and all
+qualified Tester evidence remain unchanged. See Controls1.581 and Plan022.
 
 Tester recording now has [RED20/46 -> GREEN92 -> expanded299 and guide299](plan022_slice4be_admin_tester_recording_results.md)
 on unpromoted tester-recording-02, catalog42/179. All164 approved D8-TESTER-01

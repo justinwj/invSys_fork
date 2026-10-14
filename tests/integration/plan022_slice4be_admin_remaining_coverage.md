@@ -149,7 +149,14 @@ as deliberate actions merely because an event procedure exists.
 
 ## Next independent entry: Aggregate Global Snapshot
 
-Read-only source audit,2026-10-13 Pacific; no behavioral RED or new contract.
+Packaged [diagnostic65 PASS/7 FAIL](plan022_slice4be_admin_aggregation_results.md),
+2026-10-13 Pacific, now supplements the source audit below. It proves workbook
+redirection and stale-authority Core dispatch. Authorized callback output fails
+at SaveAs1004; a normalized-path direct Core control succeeds. No persisted
+unauthorized output is proved. Proposed D8-AGG-01 in v4.11/Plan022/Controls1.581
+requires approval before implementation. Catalog42/179 remains unchanged.
+
+Preceding read-only source audit,2026-10-13 Pacific:
 `btnAdminHqAggregator` dispatches `modAdmin.Admin_AggregateGlobalSnapshot_Click`
 and opens `frmAggregationSources`. The callback checks cached ADMIN_MAINT, resolves
 an operator workbook and prepares its surfaces, but does not bind that workbook
@@ -159,8 +166,8 @@ or invSys session to the form. `mBtnAggregate_Click` resolves the workbook again
 Windows/Office identity; the latter checks provisioned capability. This is a
 source finding, not proof of an unauthorized write in the current package.
 
-Next D13 diagnostic must open the actual packaged callback, establish a successful
-generated-fixture aggregation, then invoke the same Aggregate handler after a
+The initial D13 diagnostic was required to open the actual packaged callback,
+establish a successful generated-fixture aggregation, then invoke the same handler after a
 workbook switch, sign-out, role loss and warehouse switch. Assert the original
 workbook/source binding, current live authority, exact advisory output and
 non-mutation of source Config/Auth/inventory/published snapshots. Do not replace
@@ -168,7 +175,8 @@ the owning aggregation result or use a direct service test as callback evidence.
 D17 preserves an explicit session-only source set and advisory output; D8/D18
 govern authority and captured context. Resolve any newly required write contract
 in v4.11 before implementation. No aggregation recording ID or replay adapter is
-introduced by this audit. D13 RED is unnecessary for this documentation-only finding.
+introduced by this audit. The diagnostic receipt above records the failed callback
+baseline and remaining approved-contract RED work; no owner correction is implemented.
 
 ## Shared session entries and old console functions
 
