@@ -3,12 +3,12 @@ Option Explicit
 Option Private Module
 
 Public Sub OpenFromRibbon()
-    Dim report As String, target As Workbook, observer As cCreateWarehouseActivity
+    Dim report As String, target As Workbook, observer As cProvisioningActivity
     Dim writeContext As String, number As Long, source As String, description As String
     On Error GoTo Failed
     Set target = modAdmin.ResolveInteractiveAdminWorkbook()
     writeContext = modAuthUserCommands.CaptureContext()
-    Set observer = New cCreateWarehouseActivity
+    Set observer = New cProvisioningActivity
     observer.Initialize target
     Call modRoleWorkbookSurfaces.EnsureAdminLegacyWorkbookSurface(target, report)
     If Not modLocalAddinsRegistration.EnsureLocalInvSysAddinsRegistered("", report) Then

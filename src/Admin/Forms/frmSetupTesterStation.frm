@@ -44,6 +44,11 @@ Private mAnchors As Object
 Private mResizeInitialized As Boolean
 Private mTesterContext As String
 Private mSourceBound As Boolean
+Private mActivity As cProvisioningActivity
+
+Public Sub ObserveEntry(ByVal observer As cProvisioningActivity)
+    Set mActivity = observer
+End Sub
 
 Public Sub BindSource(ByVal context As String)
     If mSourceBound Or Me.Visible Then
@@ -68,12 +73,13 @@ Private Sub UserForm_Initialize()
 End Sub
 
 Private Sub UserForm_Activate()
+    If Not mActivity Is Nothing Then mActivity.Presented Me.Visible
     If Not mResizeInitialized Then
         modUserFormResizeWin.EnableResizableUserForm Me, True, True
         mResizeInitialized = True
     End If
 
-    If Not mAnchors Is Nothing Then mAnchors.ResizeControls
+    UserForm_Layout
 End Sub
 
 Private Sub UserForm_Layout()
@@ -84,6 +90,12 @@ End Sub
 Private Sub UserForm_Terminate()
     modTesterCommands.ReleaseForm mTesterContext
     Set mAnchors = Nothing
+    Set mActivity = Nothing
+End Sub
+
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+    If Cancel <> 0 Or mActivity Is Nothing Then Exit Sub
+    mActivity.Finish mActivity.BeginAction("CLOSE"), "CLOSED"
 End Sub
 
 Private Sub txtAdminUser_Change()
@@ -124,11 +136,13 @@ Private Sub txtPathSharePoint_Change()
 End Sub
 
 Private Sub mBtnHubPathHelper_Click()
-    Dim candidate As String
+    Dim candidate As String, action As String, outcome As String
+    On Error GoTo Failed
+    If Not mActivity Is Nothing Then action = mActivity.BeginAction("BROWSE_HUB")
 
     candidate = modDeploymentPaths.BrowseForFolderPath(Trim$(CStr(Me.txtPathLocal.Value)), "Choose Warehouse Hub Folder")
-    If Not SourceStillAuthorized() Then Exit Sub
-    If candidate = "" Then Exit Sub
+    outcome = "DENIED": If Not SourceStillAuthorized() Then GoTo Finished
+    outcome = "CANCELLED": If candidate = "" Then GoTo Finished
 
     mFormBusy = True
     Me.txtPathLocal.Value = candidate
@@ -136,22 +150,31 @@ Private Sub mBtnHubPathHelper_Click()
     mPathLocalTouched = True
     ClearErrorLabel Me.lblPathLocalError
     ShowSummary "Warehouse hub path selected. For Synology, this should be the SMB warehouse folder, for example \\DS920\<share>\WH1.", COLOR_SUCCESS
+    outcome = "STAGED"
+Finished:
+    If Not mActivity Is Nothing Then mActivity.Finish action, outcome
+    Exit Sub
+Failed:
+    modAdminActionObservation.RaiseFormFailure mActivity, action
 End Sub
 
 Private Sub mBtnSharePointHelper_Click()
     Dim candidate As String
     Dim warehouseId As String
+    Dim action As String, outcome As String
+    On Error GoTo Failed
+    If Not mActivity Is Nothing Then action = mActivity.BeginAction("FIND_SHAREPOINT")
 
     warehouseId = Trim$(CStr(Me.txtWarehouseId.Value))
     candidate = modTesterSetup.DetectSharePointRoot(warehouseId)
     If candidate = "" Then
         candidate = modTesterSetup.BrowseForSharePointRoot(Trim$(CStr(Me.txtPathSharePoint.Value)))
     End If
-    If Not SourceStillAuthorized() Then Exit Sub
+    outcome = "DENIED": If Not SourceStillAuthorized() Then GoTo Finished
 
     If candidate = "" Then
         ShowSummary "SharePoint root was not detected. Pick the locally synced invSys root folder manually.", COLOR_INFO
-        Exit Sub
+        outcome = "UNAVAILABLE": GoTo Finished
     End If
 
     mFormBusy = True
@@ -159,6 +182,12 @@ Private Sub mBtnSharePointHelper_Click()
     mFormBusy = False
     ClearErrorLabel Me.lblPathSharePointError
     ShowSummary "SharePoint root detected.", COLOR_SUCCESS
+    outcome = "STAGED"
+Finished:
+    If Not mActivity Is Nothing Then mActivity.Finish action, outcome
+    Exit Sub
+Failed:
+    modAdminActionObservation.RaiseFormFailure mActivity, action
 End Sub
 
 Private Sub mTxtConfirmPin_Change()
@@ -170,17 +199,20 @@ Private Sub btnOK_Click()
     Dim spec As modTesterSetup.TesterSetupSpec
     Dim rawPin As String
     Dim detailText As String
+    Dim action As String, outcome As String
+    On Error GoTo Failed
 
     If mSetupSucceeded Then
         Unload Me
         Exit Sub
     End If
 
+    If Not mActivity Is Nothing Then action = mActivity.BeginAction("SETUP")
     ClearValidationErrors
-    If Not SourceStillAuthorized() Then Exit Sub
+    outcome = "DENIED": If Not SourceStillAuthorized() Then GoTo Finished
     If Not BuildSpecFromForm(spec, rawPin) Then
         ShowSummary "Fix the highlighted fields and try again.", COLOR_ERROR
-        Exit Sub
+        outcome = "REJECTED": GoTo Finished
     End If
 
     Me.btnOK.Enabled = False
@@ -190,7 +222,7 @@ Private Sub btnOK_Click()
 
     UpdateSetupProgress "Creating test environment..."
     If modTesterCommands.Setup(mTesterContext, spec.UserId, spec.PinHash, spec.WarehouseId, spec.StationId, _
-            spec.PathLocal, spec.PathSharePointRoot, detailText, mOperatorWorkbookPath) Then
+            spec.PathLocal, spec.PathSharePointRoot, detailText, mOperatorWorkbookPath, outcome) Then
         mSetupSucceeded = True
         ShowSummary detailText, COLOR_SUCCESS
         Me.btnOK.Caption = "Close"
@@ -209,7 +241,13 @@ Private Sub btnOK_Click()
         Me.btnCancel.Enabled = True
         If Not mBtnDeleteGenerated Is Nothing Then mBtnDeleteGenerated.Enabled = True
     End If
+Finished:
     rawPin = "": spec.PinHash = ""
+    If Not mActivity Is Nothing Then mActivity.Finish action, outcome
+    Exit Sub
+Failed:
+    rawPin = "": spec.PinHash = ""
+    modAdminActionObservation.RaiseFormFailure mActivity, action
 End Sub
 
 Private Sub btnCancel_Click()
@@ -217,16 +255,26 @@ Private Sub btnCancel_Click()
 End Sub
 
 Private Sub mBtnOpen_Click()
+    Dim action As String, outcome As String
+    On Error GoTo Failed
+    If Not mActivity Is Nothing Then action = mActivity.BeginAction("OPEN_WORKBOOK")
     If mOperatorWorkbookPath = "" Then
         ShowSummary "Setup completed, but the operator workbook path was not captured.", COLOR_ERROR
-        Exit Sub
+        outcome = "REJECTED": GoTo Finished
     End If
 
     If modTesterSetup.OpenTesterReceivingWorkbook(mOperatorWorkbookPath) Then
         ShowSummary "Operator workbook opened. Use Refresh Inventory, then run your Confirm Writes test.", COLOR_SUCCESS
+        outcome = "OPENED"
     Else
         ShowSummary "Setup completed, but the operator workbook could not be opened automatically.", COLOR_ERROR
+        outcome = "FAILED"
     End If
+Finished:
+    If Not mActivity Is Nothing Then mActivity.Finish action, outcome
+    Exit Sub
+Failed:
+    modAdminActionObservation.RaiseFormFailure mActivity, action
 End Sub
 
 Private Sub mBtnDeleteGenerated_Click()
@@ -234,18 +282,21 @@ Private Sub mBtnDeleteGenerated_Click()
     Dim report As String
     Dim prompt As String
     Dim response As VbMsgBoxResult
+    Dim action As String, outcome As String
+    On Error GoTo Failed
+    If Not mActivity Is Nothing Then action = mActivity.BeginAction("DELETE")
 
     ClearValidationErrors
     If Not BuildCleanupSpecFromForm(spec) Then
         ShowSummary "Warehouse, station, and warehouse hub path are required before cleanup.", COLOR_ERROR
-        Exit Sub
+        outcome = "REJECTED": GoTo Finished
     End If
 
     prompt = "Delete the generated files for the environment selected above?" & vbCrLf & _
              "Only verified owned files and empty owned folders will be deleted. Unknown files will be preserved."
     response = MsgBox(prompt, vbQuestion Or vbYesNo Or vbDefaultButton2, "Delete Test Environment Files")
-    If Not SourceStillAuthorized() Then Exit Sub
-    If response <> vbYes Then Exit Sub
+    outcome = "DENIED": If Not SourceStillAuthorized() Then GoTo Finished
+    outcome = "CANCELLED": If response <> vbYes Then GoTo Finished
 
     Me.btnOK.Enabled = False
     Me.btnCancel.Enabled = False
@@ -253,7 +304,7 @@ Private Sub mBtnDeleteGenerated_Click()
     If Not mBtnDeleteGenerated Is Nothing Then mBtnDeleteGenerated.Enabled = False
 
     If modTesterCommands.DeleteGenerated(mTesterContext, spec.WarehouseId, spec.StationId, _
-            spec.PathLocal, spec.PathSharePointRoot, True, report) Then
+            spec.PathLocal, spec.PathSharePointRoot, True, report, outcome) Then
         mSetupSucceeded = False
         mOperatorWorkbookPath = vbNullString
         If Not mBtnOpen Is Nothing Then
@@ -270,6 +321,11 @@ Private Sub mBtnDeleteGenerated_Click()
     Me.btnOK.Enabled = True
     Me.btnCancel.Enabled = True
     If Not mBtnDeleteGenerated Is Nothing Then mBtnDeleteGenerated.Enabled = True
+Finished:
+    If Not mActivity Is Nothing Then mActivity.Finish action, outcome
+    Exit Sub
+Failed:
+    modAdminActionObservation.RaiseFormFailure mActivity, action
 End Sub
 
 Private Function SourceStillAuthorized() As Boolean

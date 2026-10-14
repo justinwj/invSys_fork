@@ -141,6 +141,9 @@ param(
     [switch]$AdminTesterOwnershipPaths,
     [switch]$AdminTesterOwnershipOnly,
     [switch]$AdminTesterSetupEvidenceOnly,
+    [switch]$AdminTesterRecording,
+    [switch]$AdminTesterRecordingOnly,
+    [switch]$AdminTesterGuidePaths,
     [switch]$AdminCreateRecording,
     [switch]$AdminCreateOpeningOnly,
     [switch]$AdminCreateRecordingOnly,
@@ -1352,7 +1355,7 @@ function NewFixture([string]$Suffix) {
             $row.Range.Cells.Item(1,$caps.ListColumns.Item($pair.Key).Index).Value2=$pair.Value
         }
     }
-    if($AdminCreateGuidePaths -or $AdminWarehouseRootGuidePaths -or $AdminDirectoryGuidePaths -or $AdminReconcileLocalDiagnostic -or $AdminSeedGuidePaths -or $AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
+    if($AdminTesterGuidePaths -or $AdminCreateGuidePaths -or $AdminWarehouseRootGuidePaths -or $AdminDirectoryGuidePaths -or $AdminReconcileLocalDiagnostic -or $AdminSeedGuidePaths -or $AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
         # Explicit fixture grant: Admin bootstrap does not imply guide maintenance.
         $row=$caps.ListRows.Add()
         foreach($pair in @{UserId='config-admin';Capability='ACTION_PATH_MAINT';WarehouseId=$wh;StationId='S1';Status='Active'}.GetEnumerator()){
@@ -1994,6 +1997,14 @@ End Function
     if($AdminTesterSetupOwnerOnly){
         . (Join-Path $PSScriptRoot 'Slice4beAdminTesterSetupOwner.ps1')
         Install-AdminTesterSetupOwnerProbe
+        if($AdminTesterRecording){
+            . (Join-Path $PSScriptRoot 'Slice4beAdminTesterRecording.ps1')
+            Install-AdminTesterRecordingProbe
+            if($AdminTesterGuidePaths){
+                . (Join-Path $PSScriptRoot 'Slice4beAdminVerifyGuide.ps1')
+                Install-AdminVerifyGuideProbe
+            }
+        }
         if($AdminTesterOwnershipPaths){
             . (Join-Path $PSScriptRoot 'Slice4beAdminTesterOwnershipPaths.ps1')
             Install-TesterOwnershipProbe
@@ -2230,9 +2241,10 @@ End Function
     }
     if($AdminTesterSetupOwnerOnly){
         $step='packaged Tester Setup cleanup authority diagnostic'
-        if(-not $AdminTesterOwnershipOnly){Test-AdminTesterSetupOwner $a $b}
+        if(-not ($AdminTesterOwnershipOnly -or $AdminTesterRecordingOnly)){Test-AdminTesterSetupOwner $a $b}
         if($AdminTesterSetupPaths){Test-AdminTesterSetupPaths $a $b}
         if($AdminTesterOwnershipPaths){Test-TesterOwnershipPaths $a $b}
+        if($AdminTesterRecording){Test-AdminTesterRecording $a $b}
     }
     if(-not $AdminTesterSetupOwnerOnly -and -not $AdminCreateWarehouseOwnerOnly -and -not $AdminSeedOutcomeOnly -and -not $AdminDirectoryColumnsOnly -and -not $AdminConsoleOnly -and -not $AdminVerifyAddinsOnly -and -not $AdminReconcileIdentityOnly -and -not $AdminSettingsCloseOnly -and -not $CheckViewerRefreshFailure -and -not $CheckViewerEventDetail -and -not $CheckViewerEventGroups -and -not $CheckViewerPublishedRead -and $PrintSeedBoundaryForTest -notin @('FreshSeed','BareSeed')) {
     $step='unauthenticated command'

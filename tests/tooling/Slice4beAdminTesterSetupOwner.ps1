@@ -64,7 +64,25 @@ End Function
 Public Function Summary() As String
     Summary = frmSetupTesterStation.lblSummary.Caption
 End Function
+Public Sub ObserveTrackingNotice(ByVal text As String)
+    If Left$(text, 21) = "Tracking unavailable:" Then mTrackingNotices = mTrackingNotices + 1
+End Sub
+Public Function TrackingNotices() As Long
+    TrackingNotices = mTrackingNotices
+End Function
+Public Sub ResetTrackingNotices()
+    mTrackingNotices = 0
+End Sub
 '@)
+    $probe.CodeModule.InsertLines($probe.CodeModule.CountOfDeclarationLines+1,'Private mTrackingNotices As Long')
+    if(@($project.VBComponents|Where-Object Name -CEQ 'cProvisioningActivity').Count){
+        $project.VBComponents.Item('cProvisioningActivity').CodeModule.AddFromString(@'
+Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgBoxStyle = vbOKOnly, Optional ByVal Title As String = "") As VbMsgBoxResult
+    TestTesterOwner.ObserveTrackingNotice Prompt
+    MsgBox = vbOK
+End Function
+'@)
+    }
     $form=$project.VBComponents.Item('frmSetupTesterStation').CodeModule
     $form.InsertLines($form.CountOfDeclarationLines+1,'Private mTestMode As String, mTestConfirmations As Long')
     $form.AddFromString(@'

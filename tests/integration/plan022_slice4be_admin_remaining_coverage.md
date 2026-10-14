@@ -15,7 +15,16 @@ scoped-qualified: focused370, independent successful/incomplete/failed guide
 results,11 reviewed captures, directory219, Settings202, recording80, smoke86,
 chain32/live48/Create15 and compile/static/preservation gates.
 
-Current qualified recording candidate is unpromoted create-recording-02,
+Current qualified recording candidate is unpromoted tester-recording-02,
+catalog42/179. [Tester recording and guide conclusions](plan022_slice4be_admin_tester_recording_results.md)
+pass expanded299 retaining164 owner checks, then fresh guide299 and ten reviewed
+captures. Create381, Settings202, recording80, smoke86, chain32/live48/Create15
+and compile/layout/static/preservation/native gates pass. Prior172 definitions
+remain unchanged. Seven Tester observations introduce no new owner permission,
+Training designation or replay adapter. Remaining Admin coverage and early B0
+keep4be-A open; the next independent entry audit is Aggregation below.
+
+Preceding recording candidate is unpromoted create-recording-02,
 catalog41/172. [Create recording and guide conclusions](plan022_slice4be_admin_create_recording_results.md)
 pass focused381, retaining all110 owner checks, with four independent recordings,
 truthful Concluded/Incomplete/Failed results and13 reviewed captures. Purpose/layout36,
@@ -27,8 +36,9 @@ traces cleanup RED25/4 and Setup RED33/30 through ownership/redaction/layout fix
 to GREEN164. Create381, Settings202, recording80, smoke86, chain32/live48/Create15,
 compile, visible layout and static gates pass. All five passing headless baseline
 checks remain green; one old offline-publication expectation fails unchanged.
-No new recording IDs are introduced. Tester recording, overall4be-A,
-remaining Admin coverage and early B0 remain open; replay is separate4be-B work.
+That owner checkpoint introduced no new recording IDs. Its recording follow-up
+is qualified above. Overall4be-A, remaining Admin coverage and early B0 remain
+open; broader replay is separate4be-B work.
 
 The preceding recording candidate was root-recording-04, catalog40/162. Approved
 [D8-CREATE-01 owner implementation](plan022_slice4be_admin_create_owner_results.md)
@@ -136,6 +146,29 @@ as deliberate actions merely because an event procedure exists.
 | `btnAdminDesignLifecycle` | `modAdminDesignLifecycle.Admin_DesignLifecycle_Click` | `frmAdminDesignLifecycle`: refresh, constructed Import Legacy Recipes, Release selected, Obsolete selected, Close. `ExecuteDesignLifecycleCommand` separates queued event, processing and resulting status. A form open is not a release; recipe import is not authority to migrate legacy inventory. |
 | `btnAdminVerifyAddinsPublished` | `modAdmin.Verify_AddinsPublished` | `modAddinsPublish.VerifyAddinsPublished` checks required files/nonzero sizes and shows existing result. Verification is not PublishAddins. Capture fixed result facts, not full diagnostic paths. |
 | `btnAdminRetireMigrateWarehouse` | `modAdmin.Admin_RetireMigrateWarehouse_Click` | `frmRetireMigrateWarehouse`: source/target/root selection, connection, archive destination, mode, re-auth, confirmation, Back/Cancel/Close. `HandleConfirmOk` performs separate archive/migrate/retire/delete stages; partial success must not become rollback or whole-operation success. |
+
+## Next independent entry: Aggregate Global Snapshot
+
+Read-only source audit,2026-10-13 Pacific; no behavioral RED or new contract.
+`btnAdminHqAggregator` dispatches `modAdmin.Admin_AggregateGlobalSnapshot_Click`
+and opens `frmAggregationSources`. The callback checks cached ADMIN_MAINT, resolves
+an operator workbook and prepares its surfaces, but does not bind that workbook
+or invSys session to the form. `mBtnAggregate_Click` resolves the workbook again.
+`RunHQAggregationFromSourceSet` then uses `EnsureAdminContext` and
+`RequireAdminMaintenance`: the former can obtain a saved user-ID hint or
+Windows/Office identity; the latter checks provisioned capability. This is a
+source finding, not proof of an unauthorized write in the current package.
+
+Next D13 diagnostic must open the actual packaged callback, establish a successful
+generated-fixture aggregation, then invoke the same Aggregate handler after a
+workbook switch, sign-out, role loss and warehouse switch. Assert the original
+workbook/source binding, current live authority, exact advisory output and
+non-mutation of source Config/Auth/inventory/published snapshots. Do not replace
+the owning aggregation result or use a direct service test as callback evidence.
+D17 preserves an explicit session-only source set and advisory output; D8/D18
+govern authority and captured context. Resolve any newly required write contract
+in v4.11 before implementation. No aggregation recording ID or replay adapter is
+introduced by this audit. D13 RED is unnecessary for this documentation-only finding.
 
 ## Shared session entries and old console functions
 

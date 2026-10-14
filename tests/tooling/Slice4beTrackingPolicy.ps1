@@ -194,8 +194,9 @@ function Get-TrackingPolicyVersion($Fixture) {
 function Test-Slice4beTrackingPolicy($Fixture,$Other) {
     $request=Get-TrackingPolicyRequest
     $model=$request|ConvertFrom-Json
-    # Architecture v4.11 D18 catalog41 adds ten Create Warehouse controls to the prior162.
-    $loaded=($model.SchemaVersion -eq 2 -and $model.CatalogVersion -eq 41 -and $model.Controls.Count -eq 172 -and @($model.Users).Count -eq 0)
+    # D18 catalog42 adds seven Tester controls; retain the qualified41 baseline comparison.
+    $catalogCounts=@{41=172;42=179}
+    $loaded=($model.SchemaVersion -eq 2 -and $catalogCounts.ContainsKey([int]$model.CatalogVersion) -and $model.Controls.Count -eq $catalogCounts[[int]$model.CatalogVersion] -and @($model.Users).Count -eq 0)
     Check 'TrackingPolicy.EditorLoaded' $loaded
     if(-not $loaded){throw 'Tracking policy editor fixture did not load.'}
     Check 'TrackingPolicy.BuiltInDefaults' (-not $model.ViewerActionPathCaptureEnabled -and $model.AdminViewerEventLoggingEnabled -and $model.DefaultView -ceq 'How-To' -and

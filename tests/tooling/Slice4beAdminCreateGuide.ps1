@@ -1,5 +1,6 @@
 # Four independent real creation/publication journeys; no fabricated outcome or journal.
 function Test-AdminCreateGuide($Fixture,$HostBook){
+    $catalogVersion=[int](Probe 'CurrentCatalogVersion')
     . (Join-Path $PSScriptRoot 'Slice4beRecordingFixture.ps1')
     . (Join-Path $PSScriptRoot 'Slice4beRecordingEvaluation.ps1')
     . (Join-Path $PSScriptRoot 'Slice4beGuideTestActions.ps1')
@@ -42,7 +43,7 @@ function Test-AdminCreateGuide($Fixture,$HostBook){
             }
             $records=@(Get-Slice4beActivityFiles $Fixture|Where-Object{$_ -cnotin $before}|ForEach-Object{Get-Content $_ -Raw|ConvertFrom-Json}|Where-Object ControlId -CEQ 'ADMIN_CREATE_SUBMIT')
             $count=if($incomplete){3}else{4};$valid=$records.Count -eq $count
-            foreach($record in $records){$valid=$valid -and $record.SequenceId -ceq $sequence -and $record.CatalogVersion -eq 41 -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.DataEffect -ceq 'Unknown' -and @($record.SourceEventRefs).Count -eq 0}
+            foreach($record in $records){$valid=$valid -and $record.SequenceId -ceq $sequence -and $record.CatalogVersion -eq $catalogVersion -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.DataEffect -ceq 'Unknown' -and @($record.SourceEventRefs).Count -eq 0}
             foreach($ordinal in 1,2){$expected=if($incomplete -and $ordinal -eq 2){1}else{2};$outcome=if($kind -ceq 'Unconfirmed' -and $ordinal -eq 2){'CREATED_PUBLISH_FAILED'}else{'CREATED_PUBLISHED'};$part=@($records|Where-Object Ordinal -EQ $ordinal);$valid=$valid -and $part.Count -eq $expected -and @($part|Where-Object OutcomeCode -CEQ 'REQUESTED').Count -eq 1 -and @($part|Where-Object OutcomeCode -CEQ $outcome).Count -eq ($expected-1)}
             Check ('Create.Recorded.'+$kind+'.ExactActionsAndContext') $valid
             if(-not $incomplete){Check ('Create.Recorded.'+$kind+'.ActualStop') ((RecordingControl 'Stop Recording' 'Click') -ceq 'DELIVERED')}

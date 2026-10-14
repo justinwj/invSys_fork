@@ -6,6 +6,9 @@ function Install-AdminCreateRecordingProbe {
     $probe=$core.VBComponents.Add(1);$probe.Name='TestCreateRecording'
     $probe.CodeModule.AddFromString(@'
 Option Explicit
+Public Function CurrentCatalogVersion() As Long
+    CurrentCatalogVersion = modActivityCatalog.CATALOG_VERSION
+End Function
 Public Function Definition(ByVal id As String, ByVal version As Long) As String
     Dim model As Object
     Set model = modActivityCatalog.Control(id, version)
@@ -86,6 +89,7 @@ End Sub
 function Test-AdminCreateRecording($Fixture,$Other) {
     function Invoke([string]$Name,[object[]]$Values=@()){Run 'invSys.Admin.xlam' ('TestCreateOwner.'+$Name) $Values}
     function Probe([string]$Name,[object[]]$Values=@()){Run 'invSys.Core.xlam' ('TestCreateRecording.'+$Name) $Values}
+    $catalogVersion=[int](Probe 'CurrentCatalogVersion')
     function Observe([string]$Suffix,[string]$Outcome,[scriptblock]$Action,[string]$Label=$Suffix){
         $before=@(Get-Slice4beActivityFiles $Fixture)
         & $Action
@@ -95,7 +99,7 @@ function Test-AdminCreateRecording($Fixture,$Other) {
         if(-not $valid){Write-Output ('Create observation counts '+$Label+': records='+$records.Count+' requested='+$attempt.Count+' result='+$result.Count+' outcomes='+(@($records|ForEach-Object OutcomeCode)-join ','))}
         Check ('Create.Recording.'+$Label+'.Pair') $valid
         if($valid){$valid=$attempt[0].ActivityId -ceq $result[0].ActivityId -and $attempt[0].RecordId -cne $result[0].RecordId}
-        foreach($r in $records){$valid=$valid -and $r.CatalogVersion -eq 41 -and $r.OwnerId -ceq 'ADMIN_WAREHOUSE_CREATE' -and $r.WarehouseId -ceq $Fixture.Warehouse -and $r.UserId -ceq 'config-admin' -and @($r.SourceEventRefs).Count -eq 0}
+        foreach($r in $records){$valid=$valid -and $r.CatalogVersion -eq $catalogVersion -and $r.OwnerId -ceq 'ADMIN_WAREHOUSE_CREATE' -and $r.WarehouseId -ceq $Fixture.Warehouse -and $r.UserId -ceq 'config-admin' -and @($r.SourceEventRefs).Count -eq 0}
         Check ('Create.Recording.'+$Label+'.ExactSourceContext') $valid
         $safe=$records.Count -eq 2
         foreach($r in $records){$raw=($r|ConvertTo-Json -Depth 12).Replace('\\','\');foreach($value in @($script:CreateRecordingId,$script:CreateRecordingRoot,$Fixture.Secret,'Generated Create coverage','create-fixture-admin')){if($value -and $raw.Contains($value)){$safe=$false}}}

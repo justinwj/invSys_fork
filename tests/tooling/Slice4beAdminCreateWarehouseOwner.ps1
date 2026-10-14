@@ -104,8 +104,9 @@ Public Sub ResetTrackingNotices()
     mTrackingNotices = 0
 End Sub
 '@)
-    if(@($project.VBComponents|Where-Object Name -CEQ 'cCreateWarehouseActivity').Count){
-        $project.VBComponents.Item('cCreateWarehouseActivity').CodeModule.AddFromString(@'
+    $observerName=if(@($project.VBComponents|Where-Object Name -CEQ 'cProvisioningActivity').Count){'cProvisioningActivity'}else{'cCreateWarehouseActivity'}
+    if(@($project.VBComponents|Where-Object Name -CEQ $observerName).Count){
+        $project.VBComponents.Item($observerName).CodeModule.AddFromString(@'
 Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgBoxStyle = vbOKOnly, Optional ByVal Title As String = "") As VbMsgBoxResult
     TestCreateOwner.ObserveTrackingNotice Prompt
     MsgBox = vbOK

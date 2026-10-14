@@ -2,7 +2,7 @@ VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "cCreateWarehouseActivity"
+Attribute VB_Name = "cProvisioningActivity"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
@@ -11,9 +11,11 @@ Option Explicit
 
 Private mContext As String, mNotice As String, mOpening As String
 Private mTarget As Workbook, mPresented As Boolean
+Private mPrefix As String, mLabel As String
 
-Public Sub Initialize(ByVal target As Workbook)
+Public Sub Initialize(ByVal target As Workbook, Optional ByVal prefix As String = "ADMIN_CREATE_", Optional ByVal label As String = "Create Warehouse")
     On Error GoTo Unavailable
+    mPrefix = prefix: mLabel = label
     Set mTarget = target
     mContext = modActivity.CaptureContext()
     mOpening = BeginAction("OPEN")
@@ -28,7 +30,7 @@ Public Function BeginAction(ByVal suffix As String) As String
     mNotice = ""
     Set surface = modAdminActionObservation.CurrentSurface()
     If Not TargetLive() Then GoTo Unavailable
-    BeginAction = modActivity.BeginAction("ADMIN_CREATE_" & suffix, mContext, mNotice)
+    BeginAction = modActivity.BeginAction(mPrefix & suffix, mContext, mNotice)
     If mContext <> modActivity.CaptureContext() Then UnavailableNotice
 Finished:
     modAdminActionObservation.RestoreSurface surface
@@ -45,7 +47,7 @@ Public Sub Finish(ByVal action As String, ByVal outcome As String)
     If action <> "" Then
         If Not TargetLive() Then GoTo Unavailable
         If Not modActivity.FinishAction(action, outcome, notice) And notice = "" Then _
-            notice = "Tracking unavailable: the Create Warehouse result could not be recorded."
+            notice = "Tracking unavailable: the " & mLabel & " result could not be recorded."
         If notice <> "" Then mNotice = notice
     End If
 Finished:
@@ -77,7 +79,7 @@ Private Function TargetLive() As Boolean
 End Function
 
 Private Sub UnavailableNotice()
-    mNotice = "Tracking unavailable: Create Warehouse could not be recorded."
+    mNotice = "Tracking unavailable: " & mLabel & " could not be recorded."
     On Error Resume Next
     modActionRecording.ContextClosed mContext, True
 End Sub

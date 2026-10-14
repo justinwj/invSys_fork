@@ -24,7 +24,7 @@ Attribute mBtnOpenReceiving.VB_VarHelpID = -1
 Private WithEvents mBtnPublishExisting As MSForms.CommandButton
 Attribute mBtnPublishExisting.VB_VarHelpID = -1
 Private mWriteContext As String
-Private mActivity As cCreateWarehouseActivity
+Private mActivity As cProvisioningActivity
 
 Private mPathLocalTouched As Boolean
 Private mLastSuggestedLocalPath As String
@@ -55,7 +55,7 @@ Private mResizeInitialized As Boolean
 Private WithEvents mWarehousePurpose As MSForms.ComboBox
 Attribute mWarehousePurpose.VB_VarHelpID = -1
 
-Public Sub ObserveEntry(ByVal observer As cCreateWarehouseActivity, ByVal writeContext As String)
+Public Sub ObserveEntry(ByVal observer As cProvisioningActivity, ByVal writeContext As String)
     Set mActivity = observer
     mWriteContext = writeContext
 End Sub

@@ -6,6 +6,17 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+Tester recording now has [RED20/46 -> GREEN92 -> expanded299 and guide299](plan022_slice4be_admin_tester_recording_results.md)
+on unpromoted tester-recording-02, catalog42/179. All164 approved D8-TESTER-01
+owner checks are retained. Create381, Settings202, recording80, smoke86,
+chain32/live48/Create15 and compile/layout/static/preservation/native gates pass.
+This Tester increment is scoped-qualified. The
+[remaining Admin map](plan022_slice4be_admin_remaining_coverage.md) and scoped
+receipts supersede the older Root/Create/Tester pending statements below.
+Other Admin coverage and early B0 acceptance remain open.
+
+### Earlier Root and Directory checkpoints
+
 Add Warehouse Root now has [packaged diagnostic RED53/1](plan022_slice4be_admin_root_write_results.md):
 an unpersisted root is reported remembered. Approved D18-ROOT-01 now has expanded
 RED96/15 -> GREEN120, with native warning captures, directory149, smoke86,

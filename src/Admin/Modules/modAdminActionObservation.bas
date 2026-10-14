@@ -2,6 +2,13 @@ Attribute VB_Name = "modAdminActionObservation"
 Option Explicit
 Option Private Module
 
+Public Sub RaiseFormFailure(ByVal observer As cProvisioningActivity, ByVal action As String)
+    Dim number As Long, source As String, description As String
+    number = Err.Number: source = Err.Source: description = Err.Description
+    If Not observer Is Nothing Then observer.Finish action, "FAILED"
+    Err.Raise number, source, description
+End Sub
+
 ' Optional observations never determine or replace an Admin business result.
 Public Function BeginObservation(ByVal controlId As String, ByRef notice As String, _
                       ByVal unavailableMessage As String) As String
