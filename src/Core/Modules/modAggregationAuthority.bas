@@ -66,7 +66,11 @@ Public Function Check(ByVal key As String) As Boolean
     If Not modAuth.LoadAuth(CStr(saved("Warehouse"))) Then Exit Function
     If Not modAuth.CanPerform("ADMIN_MAINT", modAuth.GetCurrentUserId(), CStr(saved("Warehouse")), CStr(saved("Station")), "HQ_AGGREGATE") Then Exit Function
     feedPath = modAggregationSources.Feed(CStr(saved("Config")), CStr(saved("Warehouse")), raw)
-    If feedPath = "" Or raw <> saved("Feed") Then Exit Function
+    If feedPath = "" Or raw <> saved("Feed") Then
+        ' Restoring the setting cannot revive an observed-untrusted capture.
+        saved("Used") = True
+        Exit Function
+    End If
     Check = (saved("Context") = modAuthUserCommands.CaptureContext())
 Failed:
 End Function

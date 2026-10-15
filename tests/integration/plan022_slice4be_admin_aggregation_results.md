@@ -46,6 +46,14 @@ procedure maxima are213/83 against1000/200 caps. Only the two intended product
 components differ from38dea294. No exception or deployment is required. Full
 joint-check variants, D13 phase proof and relevant regressions remain open.
 
+**Core capture correction, GREEN pending,2026-10-15 Pacific:** after protecting
+RED commitf2cd2a81, `modAggregationAuthority.Check` consumes the existing capture
+when it observes an untrusted saved feed. Restoring settings cannot revive that
+key; a newly opened form captures current authorized state. No global session,
+shared store, receipt, source inventory or headless authorization changes. Build
+fresh owner-09 with Excel closed and rerun the unchanged29-check FeedReopen test;
+earlier owner-08 qualification does not automatically qualify this correction.
+
 **Observed-feed reopening protecting RED,2026-10-15 Pacific:** unchanged owner-08
 completes21 PASS/8 expected FAIL, controller
 `admin-aggregation-controller/281b451eb23f4e88a03979420f9e4dde`, worker
