@@ -1,5 +1,20 @@
 # Slice 4be-A / early B0: Receiving replay
 
+**Parent-owned cleanup correction,2026-10-15 Pacific:** the B0-only saved-copy
+test option now accepts a parent's exact new empty generated temporary folder.
+It shares the existing Aggregation restart path validation and defers deletion
+to that parent after worker/Excel exit; other worker routes keep their cleanup.
+Four entry-guard checks refuse unscoped mode, two competing owners, nonempty roots
+and nested roots, preserving a canary and starting no Excel. All484 tooling files
+plus five trial scripts parse. An initial guard invocation omitted the existing
+saved-guide prerequisites and is retained as harness-precondition evidence, not RED.
+No product/architecture contract changes and no product RED is claimed.
+
+Fresh full trial108 is prepared with all121 original behavior checks, identical
+five candidate packages/template and taskbar restoration required. Parent cleanup
+must remove the exact owned fixture after normal process exit before qualifying
+B0. No successful full rerun or cleanup outcome is inferred from the guard checks.
+
 **Current-candidate behavior checkpoint,2026-10-15 Pacific:** trial107 on
 source1c9bff87/recording02 completes121 passing checks and one child-cleanup
 harness failure. All122 check names are unique. All15 published acceptance images

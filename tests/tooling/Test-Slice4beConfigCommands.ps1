@@ -151,6 +151,7 @@ param(
     [switch]$AdminAggregationGuideOnly,
     [switch]$AdminAggregationOutcomeOnly,
     [string]$AggregationOwnedFixtureRootForTest='',
+    [string]$ReceivingOwnedFixtureRootForTest='',
     [switch]$AdminTesterSetupPaths,
     [switch]$AdminTesterOwnershipPaths,
     [switch]$AdminTesterOwnershipOnly,
@@ -575,9 +576,16 @@ if($RecordingContinuationPipeName -ne ''){
     $recordingHandoff.Connect(10000)
 }
 $runRoot = Join-Path ([IO.Path]::GetTempPath()) ('invsys-config-command-' + [guid]::NewGuid().ToString('N'))
-if($AggregationOwnedFixtureRootForTest){
-    if(-not $AdminAggregationOnly -or -not $AdminAggregationRestartOnly -or -not $AdminAggregationBoundaryMatrix -or $ViewerStartupPackageStateForTest -ne 'SavedCopies'){throw 'Parent-owned fixture root is restricted to the isolated saved-copy Aggregation restart gate.'}
-    $ownedRoot=[IO.Path]::GetFullPath($AggregationOwnedFixtureRootForTest)
+$parentOwnedFixtureRootForTest=$AggregationOwnedFixtureRootForTest
+if($ReceivingOwnedFixtureRootForTest){
+    if($AggregationOwnedFixtureRootForTest -or -not $CheckReceivingReplay -or $AdminAggregationOnly -or $ViewerStartupPackageStateForTest -ne 'SavedCopies'){
+        throw 'Receiving parent-owned cleanup requires the isolated saved-copy B0 gate.'
+    }
+    $parentOwnedFixtureRootForTest=$ReceivingOwnedFixtureRootForTest
+}
+if($parentOwnedFixtureRootForTest){
+    if($AggregationOwnedFixtureRootForTest -and (-not $AdminAggregationOnly -or -not $AdminAggregationRestartOnly -or -not $AdminAggregationBoundaryMatrix -or $ViewerStartupPackageStateForTest -ne 'SavedCopies')){throw 'Parent-owned fixture root is restricted to the isolated saved-copy Aggregation restart gate.'}
+    $ownedRoot=[IO.Path]::GetFullPath($parentOwnedFixtureRootForTest)
     $tempRoot=[IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\')
     if(-not [string]::Equals((Split-Path $ownedRoot -Parent),$tempRoot,[StringComparison]::OrdinalIgnoreCase) -or
         (Split-Path $ownedRoot -Leaf) -cnotmatch '^invsys-config-command-[0-9a-f]{32}$' -or
@@ -2781,7 +2789,7 @@ finally {
         # Runtime credentials stay only in disposable generated authority fixtures.
         # Restart package references can retain file locks until this worker exits;
         # the parent removes only its exact pre-created folder after confirmed exit.
-        if($AggregationOwnedFixtureRootForTest){return}
+        if($parentOwnedFixtureRootForTest){return}
         $resolved=[IO.Path]::GetFullPath($runRoot)
         $temp=[IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\')+'\'
         if(-not $recordingFixtureTransferred -and $resolved.StartsWith($temp,[StringComparison]::OrdinalIgnoreCase) -and (Split-Path $resolved -Leaf) -like 'invsys-config-command-*') {

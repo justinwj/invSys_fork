@@ -5,6 +5,26 @@ D8-TESTER-01. Controls1.580 records catalog42/179, preserving catalog41/172.
 **Scoped-qualified on unpromoted tester-recording-02.** No Training-purpose or
 replay change is introduced; overall4be-A is incomplete.
 
+## Current recording02 shared-store regression
+
+Last verified2026-10-15 Pacific. Unchanged source1c9bff87/candidate
+`validation-aggregation-recording-02` passes127/127 with eight directly reviewed
+captures. Controller `shared-recording02-current-controller/6c32d771f2094663892ab6b12957f3d2`,
+worker `slice4be-admin-tester-owner/2ebf0401ac3f4cd2897404a9fb00457f`, owned entry
+`resume-d8-agg-01/tester-guide-recording02-entry-97`. The exact127 check names
+are unique; all five package and484 tooling pins are verified before later tooling
+changes. Test commit1da478c8 identifies this cohort.
+
+Independent Source/Observed/Interrupted/Unconfirmed recordings, exact publication,
+reader-authoring refusal and honest saved successful/Incomplete/Failed results
+pass. All three views preserve evidence and source inventory is unchanged.
+Settings/owned fixture/pins and normal worker/Excel/controller/monitor closure pass;
+delayed native audit through22:57:36.4777226Z finds zero Excel failure events.
+No desktop stop occurs. The launcher observation ends143, but the separately
+launched owned runner finishes normally with both original orchestration exit
+codes0; do not confuse that observation with a stopped native gate. This qualifies
+the current shared Tester guide regression, not comprehensive4be-A/B0 acceptance.
+
 ## Owner-07 regression qualified by retained evidence and fresh guide GREEN127
 
 Last verified2026-10-14 Pacific, delayed audit2026-10-15T04:25:31.7165189Z.

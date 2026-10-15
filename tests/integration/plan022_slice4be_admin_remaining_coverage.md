@@ -5,6 +5,17 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Current Receiving/shared checkpoint,2026-10-15 Pacific:** recording02/source
+1c9bff87 trial107 completes121 passing checks and one disposable-cleanup harness
+failure, with15 reviewed images and verified package/template/all484 tooling
+preservation. Worker/Excel/controller exit unforced; settings/native audit pass
+through22:39:30.7159407Z. Original outer-wrapper closure is unavailable after
+observation143; monitor closure, taskbar restoration and exact disposable cleanup
+are separately recovered and recorded. Preserve the child-cleanup failure; full
+B0 remains open. Shared Tester guidance is running; Settings/lifecycle remain
+prepared. Release1 fixture conformance and uncovered entries still keep4be-A open.
+See the code Receiving receipt for exact scope and identifiers.
+
 **Current six-group qualification,2026-10-15 Pacific:** fresh NamedReturns57 and
 FeedReopen29 retain the interrupted passing prefix and join the four complete
 groups below, proving273 distinct current-candidate checks on identical packages/

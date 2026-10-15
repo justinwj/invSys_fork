@@ -6,6 +6,28 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Current shared Tester guide regression,2026-10-15 Pacific:** recording02/
+source1c9bff87 passes127/127 with eight reviewed captures, identical five packages/
+all484 tooling pins, preserved settings/fixtures and normal owned closure.
+Delayed native audit through22:57:36.4777226Z finds zero Excel failures; no desktop
+stop occurs. Exact provenance is in the [Tester receipt](plan022_slice4be_admin_tester_recording_results.md).
+The B0 parent-owned cleanup correction has four passing refusal guards and is
+prepared for the complete121-check rerun; Settings/lifecycle remain prepared.
+Release1 fixture conformance and uncovered controls still keep4be-A open.
+
+**Current Receiving behavior checkpoint,2026-10-15 Pacific:** unchanged
+recording02/source1c9bff87 trial107 completes121 passing checks and one disposable
+cleanup harness failure. All15 published images are reviewed; five packages,
+six copied package/template inputs and all484 tooling pins are unchanged.
+Worker/Excel/controller exit without force, settings are restored and delayed
+native failures are zero through22:39:30.7159407Z. Original outer-wrapper closure
+is unavailable after observation143; separate recovered closure stops the monitor
+normally. Original taskbar state and exact disposable-residue cleanup are verified
+separately. This does not erase the child-cleanup failure or qualify full B0.
+The current shared Tester guidance regression is running; Settings and lifecycle
+gates remain prepared. Release1 fixture conformance and remaining controls stay
+open. See the [Receiving receipt](plan022_slice4be_receiving_replay_results.md).
+
 **Current six-group qualification,2026-10-15 Pacific:** recording02/source1c9bff87
 qualifies273 distinct D8 regression checks: path88/Ownership60/Completion60/
 Restart14 plus fresh NamedReturns57/FeedReopen29. All five packages/all484 tooling
@@ -32,8 +54,9 @@ trials100/101 are running in resume batch102; no completed group is rerun.
 These are scoped gates, not full4be-A acceptance; see the
 [Aggregation receipt](plan022_slice4be_admin_aggregation_results.md).
 
-Current Receiving B0 and shared Tester-guide/Settings/recording-lifecycle gates
-are prepared only. Release1's existing live/full-chain fixture must first replace
+Current Receiving behavior evidence and the shared Tester-guide run are qualified
+above; Settings/recording-lifecycle gates remain prepared. Release1's existing
+live/full-chain fixture must first replace
 synthetic canonical create/applied rows and fixed identities with Admin-generated
 runtimes and owning creation/processing results, preserving every existing check.
 The [remaining Admin coverage audit](plan022_slice4be_admin_remaining_coverage.md)
