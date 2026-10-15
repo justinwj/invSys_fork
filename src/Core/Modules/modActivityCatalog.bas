@@ -7,7 +7,9 @@ Public Const CATALOG_VERSION As Long = 43
 Public Function ControlIds(Optional ByVal version As Long = CATALOG_VERSION) As Variant
     Dim ids As Variant, added As Variant, index As Long, offset As Long
     If version = 43 Then
-        ids = ControlIds(42): added = modAggregationActivityCodes.ControlIds(): offset = UBound(ids) + 1
+        ids = ControlIds(42): added = Array("ADMIN_AGGREGATION_OPEN", "ADMIN_AGGREGATION_REFRESH", "ADMIN_AGGREGATION_ADD_SERVER", _
+            "ADMIN_AGGREGATION_CONNECT", "ADMIN_AGGREGATION_SELECT_SOURCE", "ADMIN_AGGREGATION_AGGREGATE", "ADMIN_AGGREGATION_CLOSE")
+        offset = UBound(ids) + 1
         ReDim Preserve ids(LBound(ids) To UBound(ids) + UBound(added) + 1)
         For index = LBound(added) To UBound(added): ids(offset + index) = added(index): Next index
         ControlIds = ids: Exit Function

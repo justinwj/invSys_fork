@@ -2,11 +2,6 @@ Attribute VB_Name = "modAggregationActivityCodes"
 Option Explicit
 Option Private Module
 
-Public Function ControlIds() As Variant
-    ControlIds = Array("ADMIN_AGGREGATION_OPEN", "ADMIN_AGGREGATION_REFRESH", "ADMIN_AGGREGATION_ADD_SERVER", _
-        "ADMIN_AGGREGATION_CONNECT", "ADMIN_AGGREGATION_SELECT_SOURCE", "ADMIN_AGGREGATION_AGGREGATE", "ADMIN_AGGREGATION_CLOSE")
-End Function
-
 Public Function Control(ByVal id As String) As Object
     Dim caption As String, kind As String, record As Object
     kind = "Command"
@@ -49,13 +44,13 @@ Public Function Outcome(ByVal id As String, ByVal code As String) As Object
         Case "REQUESTED": message = definition("Caption") & " requested."
         Case "REJECTED": severity = "Warning": message = "The request was refused. Read the form result."
         Case "DENIED": severity = "Warning": message = "Source context changed. Reopen Aggregation. No rollback is asserted."
-        Case "FAILED": severity = "Error": message = "The action did not finish. Review its output and retained attempt; no rollback is asserted."
+        Case "FAILED": severity = "Error": message = "The action did not finish. Read the form result; no rollback is asserted."
         Case "CANCELLED", "INDETERMINATE", "COMPLETED_STOPPED"
             If id <> "ADMIN_AGGREGATION_AGGREGATE" Then Exit Function
             Select Case code
                 Case "CANCELLED": message = "The retained-attempt review was cancelled. Its existing state is retained."
                 Case "INDETERMINATE": severity = "Warning": message = "Output persistence needs review. Its bytes and retry evidence are retained."
-                Case "COMPLETED_STOPPED": severity = "Warning": message = "Complete output was saved. Further work stopped; review the retained attempt and source context."
+                Case "COMPLETED_STOPPED": severity = "Warning": message = "Complete output was saved. Further work stopped; inspect the output and source context before retrying."
             End Select
         Case Else
             If Not PositiveOutcome(id, code) Then Exit Function
