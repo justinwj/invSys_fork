@@ -46,6 +46,45 @@ procedure maxima are213/83 against1000/200 caps. Only the two intended product
 components differ from38dea294. No exception or deployment is required. Full
 joint-check variants, D13 phase proof and relevant regressions remain open.
 
+**Outcome-honesty RED25/2,2026-10-15 Pacific:** protecting test69d47521 runs
+`-RecordingOutcomesOnly -Phase RED` on unchanged recording01/source857d250a.
+Controller `admin-aggregation-controller/1a379de00cdc4446b7ca695b95dfef79`, worker
+`slice4be-admin-aggregation/c2e6c26b22254a37a5b94ce770af8091`, completes27 checks.
+Only the two NoUnprovedRetryClaim assertions fail. Actual failed connection records
+FAILED with no aggregation writer/output/receipt. Injected workbook-audit failure
+after real Core completion records COMPLETED_STOPPED, independently exact output,
+one writer, no continued owner success, already-resolved Core receipt and honest
+UI persistence feedback. Source/context/redaction/conclusion and all compiles/
+preservation/normal native/owned closure pass through19:51:00.1405429Z; no desktop
+stop. The two activity messages incorrectly refer to a retained attempt.
+
+Source1c9bff87 corrects those messages without asserting artifact existence and
+moves the sole-caller seven-ID enumeration into the existing catalog method,
+removing its redundant wrapper. Exact IDs/order and catalog43/186 stay unchanged.
+Fresh candidate02 build, unchanged27/104 GREEN and static/regression gates are
+pending. No authority, output, receipt, replay or older catalog semantics change.
+
+**Recording GREEN104,2026-10-15 Pacific:** unchanged recording01/source857d250a
+passes104/104 after the read-only desktop check returns Default/active and Excel
+closed. Controller `admin-aggregation-controller/312051737fcd4e11ac1c26e9de7f4fad`,
+worker `slice4be-admin-aggregation/0b4fc5dd410c420792148ee4b6f00e24`. Reproducible
+`reports/runtime/aggregation-recording-01/verify.py` retains all104 RED names in
+exact order, clears52 failures and matches all483 tooling pins. Every actual
+Ribbon/form action records the intended redacted source-bound pair, loading causes
+no spurious actions, and ordinary aggregate persists exact selected entities/qty.
+Global/control/user suppression and reached attempt/result store faults preserve
+authorized ordinary work, exact output and sources; failures give one truthful
+notice and retain honest activity. Five compiles, pins/settings/owned cleanup and
+normal Excel/controller/monitor closure pass; native events are zero through
+2026-10-15T19:46:00.2957033Z with no desktop stop. Earlier71/1 stays partial.
+
+One focused message-honesty follow-up now runs on the same unchanged candidate:
+actual failed connection has no aggregation receipt; a real completed Core output
+followed by injected workbook-audit failure has already resolved its receipt.
+Their recorded messages currently refer to a retained attempt. Protect exact
+owner/output/receipt facts before correcting wording. Static duplicate cleanup,
+independent guides, current relevant regressions and4be-A/B0 remain open.
+
 **Current error5 stop,2026-10-15 12:24:50 Pacific:** recording candidate
 `deploy/validation-aggregation-recording-01`, source857d250a/catalog43, ends71 PASS/
 1 desktop-stop harness failure. Monitor records actual error5 at
