@@ -5,6 +5,28 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Release1 regression fixture audit,2026-10-15 Pacific (source finding only):**
+`tools/validate_phase6_live_role_workflows.ps1.New-InventoryWorkbook` constructs
+canonical `tblInventoryLog`/`tblAppliedEvents`, assigns fixed `SYS-LIVE-*` identities
+from a SKU dictionary, and appends synthetic INVENTORY_CREATE/APPLIED rows with
+SourceInbox HARNESS. The validator also builds Config/Auth/inboxes directly before
+opening packages. Full-chain `New-OrderedLiveValidator` retains that fixture prefix;
+its separate generated Admin-entry gate does not make those canonical seed rows
+owning-service results. No current runtime test was dispatched for this audit.
+
+This fixture cannot establish the requested current release proof under v4.11 D14
+(System_Key generated once at the owning creation/service boundary) and AGENTS.md's
+Admin Generate/Create + optional Admin Seed test-inventory rule. Historical live48/
+chain results retain their original limited scope. Before the current Release1
+regression gate, correct the fixture to use generated runtimes and owning creation/
+processing results, carrying their exact generated keys into later role actions.
+Preserve the existing ordered workflow checks/IDs/counts and accepted behavior;
+do not drop checks, import legacy inventory or substitute a narrower smoke test.
+This is test-fixture conformance under existing requirements, not a new architecture
+proposal or behavioral RED. Fixture correction/execution remain pending after the
+active Aggregation guidance/regression gates. Source-reference/diff review protects
+this non-contract audit record; no product or validator implementation changes here.
+
 **Current error5 stop,2026-10-15 13:23:20 Pacific:** recording02/source1c9bff87
 has qualified recording104/outcome27 (125 distinct) and complete static ratchets
 with194 duplicates/9/45 calls and size caps. Independent guide trial84's7/1 was a
