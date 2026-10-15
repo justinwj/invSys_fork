@@ -1,5 +1,25 @@
 # Slice 4be.2 Event Tracking Settings
 
+## Current recording02 catalog expectation correction
+
+Last verified2026-10-15 Pacific. Source1c9bff87/candidate
+`validation-aggregation-recording-02` initially ends27 PASS/2 FAIL in controller
+`shared-recording02-current-controller/e16408e487e548ddb082067cbfcf3c19`, worker
+`slice4be-tracking-settings/bffb62eb362548c1854581439ed45399`, owned entry98.
+The policy-editor assertion accepts only catalog41/172 and42/179; the approved
+seven Aggregation controls make the candidate43/186. The explicit assertion fails,
+then its intentional terminal harness exception prevents later Settings checks.
+This is a stale test expectation, not established product RED or Settings GREEN.
+
+Settings/package/all484 tooling/fixture preservation and normal owned closure pass;
+delayed native audit through23:17:47.6081021Z finds zero Excel failures. No desktop
+stop occurs. The test mapping now retains41/172 and42/179 and adds exact43/186;
+no product, callback, policy rule or assertion identity changes. All484 tooling
+files plus four fresh trial scripts parse. Full unchanged-candidate rerun109 is
+prepared and must retain the original prefix and complete the remaining matrix.
+Receiving121/15 reviewed captures and Tester127/eight reviewed captures remain
+qualified; lifecycle, Release1 fixture conformance and4be-A remain open.
+
 ## Catalog-9 Boxing regression
 
 The isolated `deploy/validation-boxing-activity-visible` candidate passes **191/191**
