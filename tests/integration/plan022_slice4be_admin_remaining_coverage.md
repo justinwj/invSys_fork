@@ -5,6 +5,15 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Current technical regression qualification,2026-10-15 Pacific:** unchanged
+recording02/source1c9bff87 passes Receiving121 with15 original-size reviewed images,
+exact earlier behavior-check retention and normal parent-owned fixture removal.
+Settings/package/template/all484 tooling preservation, original taskbar restoration
+and zero delayed native failures pass through23:15:41.5845891Z. Tester127 with eight
+reviewed images is separately qualified through22:57:36.4777226Z. Neither relabels
+older partial runs or accepts comprehensive4be-A/B0. Shared Settings is running;
+lifecycle, Release1 fixture conformance and uncovered entries remain required.
+
 **Current Receiving/shared checkpoint,2026-10-15 Pacific:** recording02/source
 1c9bff87 trial107 completes121 passing checks and one disposable-cleanup harness
 failure, with15 reviewed images and verified package/template/all484 tooling

@@ -1,5 +1,31 @@
 # Slice 4be-A / early B0: Receiving replay
 
+**Current packaged gate qualified,2026-10-15 Pacific:** source1c9bff87/
+recording02 trial108 passes121/121, retaining every trial107 behavior-check name
+and order. All15 published images are directly reviewed at original size: profile
+and runner minimum/default/larger/native maximize/restore, exact setup, successful
+saved conclusion/applied-source proof and stopped-run failure. Five packages,
+six copied package/template inputs and all484 tooling pins are verified unchanged.
+The product/callback/required-size contracts and native capture guards are unchanged.
+
+Controller `receiving-b0-current-controller/13eb863b3e5440f2a22bd98f142e7012`,
+worker `slice4be-receiving-replay/0f79ae51667b4b3d9081b711af1a7d20`, entry
+`resume-d8-agg-01/receiving-b0-parent-recording02-entry-108`, test commit02e68a18.
+The parent removes its exact pre-created fixture after worker/Excel exit.
+Settings, original taskbar state1, package/tooling preservation and normal
+worker/Excel/controller/monitor closure all pass. Original scope/orchestration
+receipts record exit0; delayed native audit through23:15:41.5845891Z finds zero
+Excel failure events. Desktop stop counters are zero. No forced termination or
+post-exit manual recovery is needed. Launcher observation143 does not replace the
+separate completed native runner's receipts. Ignored `qualification.json` records
+the verified gates. Trial107 remains121/1; it is not relabeled GREEN.
+
+This qualifies the current Receiving packaged regression/early-B0 technical gate.
+Comprehensive B0/4be-A and human acceptance remain separate. Shared Tester127 is
+qualified; Settings is running and lifecycle remains prepared. Release1 fixture
+conformance and remaining control coverage still keep4be-A open. Product static
+ratchets retain their unchanged-source1c9bff87 qualification.
+
 **Parent-owned cleanup correction,2026-10-15 Pacific:** the B0-only saved-copy
 test option now accepts a parent's exact new empty generated temporary folder.
 It shares the existing Aggregation restart path validation and defers deletion
@@ -10,10 +36,10 @@ plus five trial scripts parse. An initial guard invocation omitted the existing
 saved-guide prerequisites and is retained as harness-precondition evidence, not RED.
 No product/architecture contract changes and no product RED is claimed.
 
-Fresh full trial108 is prepared with all121 original behavior checks, identical
-five candidate packages/template and taskbar restoration required. Parent cleanup
-must remove the exact owned fixture after normal process exit before qualifying
-B0. No successful full rerun or cleanup outcome is inferred from the guard checks.
+Fresh full trial108 retains all121 original behavior checks and identical five
+candidate packages/template. Its normal parent cleanup, taskbar restoration and
+complete packaged qualification are recorded above; guard checks alone did not
+establish that outcome.
 
 **Current-candidate behavior checkpoint,2026-10-15 Pacific:** trial107 on
 source1c9bff87/recording02 completes121 passing checks and one child-cleanup
