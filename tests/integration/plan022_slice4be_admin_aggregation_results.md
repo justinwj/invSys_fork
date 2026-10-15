@@ -46,6 +46,22 @@ procedure maxima are213/83 against1000/200 caps. Only the two intended product
 components differ from38dea294. No exception or deployment is required. Full
 joint-check variants, D13 phase proof and relevant regressions remain open.
 
+**Restored phase GREEN32,2026-10-15 Pacific:** real owner-08 checks pass32/32,
+controller `admin-aggregation-controller/ae4f5ae6ed32406d9664b4e9657a3dc4`, worker
+`slice4be-admin-aggregation/1fa97fefbca34c6691fef0ca0e3adc7d`.
+The reproducible `reports/runtime/aggregation-phase-retention-08/verify.py` and
+`retention.json` retain all29 business assertions from equivalent RED24/8 in exact
+order, clearing every failure. Three RED-only seam-reached assertions are replaced
+by three successful explicit fresh-review assertions; no business check is dropped.
+All five package hashes and480 tooling pins match. Before/after-save sign-out leaves
+feed bytes unchanged and retains bound retry evidence. After-promotion sign-out
+retains the independently verified complete result, acknowledges it truthfully and
+retains retry evidence until fresh authorized review. Five compiles, final source
+preservation, settings/pins/owned cleanup and normal Excel/controller/monitor closure
+pass with zero delayed native events through2026-10-15T17:03:30.0009573Z.
+This qualifies sign-out at the three phases;
+the full source/feed/authority variants remain open. Product source12b39790 is unchanged.
+
 **D13 equivalent phase RED,2026-10-15 Pacific:** frozen owner-08 completes24
 PASS/8 expected FAIL through the actual handler, controller
 `admin-aggregation-controller/36b9496cb08846a7b556696c203d70aa`, worker

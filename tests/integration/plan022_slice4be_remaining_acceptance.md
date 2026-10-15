@@ -9,7 +9,8 @@ and remaining verification, not a new contract or a percentage estimate.
 **Focused named-return correction,2026-10-15 Pacific:** source12b39790 in fresh
 owner-08 passes57/57 after50/7 RED, retaining every assertion in order and all480
 tooling pins. Source/output/receipt preservation and normal native/owned closure
-pass. Owner-08 cold compile and static ratchets also pass. Full source/feed/authority
+pass. Owner-08 cold compile/static ratchets and restored three-phase sign-out32 also
+pass, retaining all29 equivalent-RED business checks. Full source/feed/authority
 return and phase variants, relevant regressions and recording/guidance remain open. Owner-07's
 retained218 below keeps its candidate scope;4be-A/B0 remain incomplete.
 
