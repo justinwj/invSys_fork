@@ -2107,7 +2107,10 @@ End Function
         . (Join-Path $PSScriptRoot 'Slice4beProbePackages.ps1')
         Save-DisposableStartupProbes $packages $probeDeploy 'SavedCopies'
     }
-    if($AdminAggregationCompletionOnly){. (Join-Path $PSScriptRoot 'Slice4beAdminAggregationCompletion.ps1')}
+    if($AdminAggregationCompletionOnly){
+        . (Join-Path $PSScriptRoot 'Slice4beAdminAggregationCompletion.ps1')
+        . (Join-Path $PSScriptRoot 'Slice4beAdminAggregationIntegrity.ps1')
+    }
     if($CheckReceivingReplay){$templateRoot=Join-Path $inputDeploy 'templates'}
     [void](Run 'invSys.Core.xlam' 'modWarehouseBootstrap.SetWarehouseBootstrapTemplateRootOverride' @($templateRoot))
     [void](Run 'invSys.Core.xlam' 'modWarehouseBootstrap.SetLocalOperatorRootOverrideForAutomation' @((Join-Path $runRoot 'operators')))

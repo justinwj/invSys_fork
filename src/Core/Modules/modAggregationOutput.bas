@@ -48,7 +48,7 @@ Public Function CaptureExtras(ByVal table As ListObject) As Object
         If saved.Exists(key) Then Err.Raise vbObjectError + 7501
         Set values = CreateObject("Scripting.Dictionary")
         For Each column In table.ListColumns
-            If Not fields.Exists(Trim$(column.Name)) Then values.Add column.Name, table.DataBodyRange.Cells(row, column.Index).Formula
+            If Not fields.Exists(Trim$(column.Name)) Then values.Add column.Name, table.DataBodyRange.Cells(row, column.Index).FormulaR1C1
         Next column
         saved.Add key, values
     Next row
@@ -64,7 +64,7 @@ Public Sub RestoreExtras(ByVal table As ListObject, ByVal saved As Object)
         If saved.Exists(key) Then
             Set values = saved(key)
             For Each column In table.ListColumns
-                If values.Exists(column.Name) Then table.DataBodyRange.Cells(row, column.Index).Formula = values(column.Name)
+                If values.Exists(column.Name) Then table.DataBodyRange.Cells(row, column.Index).FormulaR1C1 = values(column.Name)
             Next column
         End If
     Next row

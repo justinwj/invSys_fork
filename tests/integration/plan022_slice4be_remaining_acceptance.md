@@ -9,9 +9,13 @@ and remaining verification, not a new contract or a percentage estimate.
 **Current Aggregation checkpoint,2026-10-14 Pacific:** resumed restart RED is
 10 PASS/4 FAIL and manual/incomplete-persistence RED is10 PASS/6 FAIL, both complete
 with preserved sources/settings/pins, normal closure and clean delayed native audits.
-Approved implementation is in progress; candidate compile/control defects are being
-corrected. GREEN, Aggregation recording/guidance and remaining4be-A/B0 acceptance
-remain open. Earlier pending/pause statements below are historical. See the
+The unpromoted owner-06 candidate subsequently passes76/76 actual authority/binding
+checks with clean preserved native closure. The broader boundary/path matrix is
+running. A private context-store consolidation restores duplicate counts to194,
+with9/45 dynamic calls and size caps held; its rebuilt runtime validation remains
+pending. Integrity follow-up tests are prepared but not yet run. Aggregation owner
+completion, recording/guidance and remaining4be-A/B0 acceptance remain open.
+Earlier pending/pause statements below are historical. See the
 [Aggregation receipt](plan022_slice4be_admin_aggregation_results.md).
 
 **Resumed by the user later2026-10-14 Pacific.** Input is reverified and the

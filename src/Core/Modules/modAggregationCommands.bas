@@ -64,12 +64,13 @@ Public Function CheckPhase(ByVal context As String, ByVal candidate As String) A
 End Function
 
 Public Function IsWriting() As Boolean
-    IsWriting = mWriting
+    ' Either surviving marker keeps the headless writer out of an active attempt.
+    IsWriting = (mWriting Or mContext <> "")
 End Function
 
 Public Function Aggregate(ByVal context As String, ByVal paths As String, ByRef report As String, Optional ByRef outcome As String = "") As Boolean
     Dim saved As Object, record As Object, candidateHash As String, rawReport As String, promoted As Boolean
-    Dim source As Variant, rows As Long, events As Boolean, alerts As Boolean, began As Boolean, state As String
+    Dim source As Variant, rows As Long, events As Boolean, alerts As Boolean, began As Boolean, state As String, sourcePaths As String
     On Error GoTo Failed
     report = "Aggregation is busy. Wait for the current attempt to finish.": outcome = "REJECTED"
     If mWriting Then Exit Function
@@ -82,6 +83,12 @@ Public Function Aggregate(ByVal context As String, ByVal paths As String, ByRef 
     report = "A previous attempt needs review. Its output and retry evidence are retained. Reopen Aggregation to resolve it."
     outcome = "INDETERMINATE"
     If modAggregationRetry.Pending(CStr(saved("Destination"))) Then Exit Function
+    outcome = "DENIED"
+    report = "The source session, feed or selected snapshots changed. Reopen Aggregation and refresh the selection."
+    For Each source In mSources
+        If sourcePaths <> "" Then sourcePaths = sourcePaths & vbLf
+        sourcePaths = sourcePaths & CStr(source("Path"))
+    Next source
     events = Application.EnableEvents: alerts = Application.DisplayAlerts: began = True
     Application.EnableEvents = False: Application.DisplayAlerts = False
     mWriting = True: mContext = context
@@ -91,7 +98,7 @@ Public Function Aggregate(ByVal context As String, ByVal paths As String, ByRef 
     mCandidate = CStr(record("Candidate"))
     outcome = "FAILED": report = "Aggregation did not complete. Retry evidence is retained; no rollback is claimed."
     If Not CheckPhase(context, mCandidate) Then GoTo Finished
-    If Not modHqAggregator.GenerateGlobalSnapshotFromFiles(paths, mCandidate, rawReport, context, True) Then GoTo Finished
+    If Not modHqAggregator.GenerateGlobalSnapshotFromFiles(sourcePaths, mCandidate, rawReport, context, True) Then GoTo Finished
     If Not CheckPhase(context, mCandidate) Then GoTo Finished
     If Not modAggregationSources.Complete(mCandidate, mSources) Then GoTo Finished
     candidateHash = modTrainingWire.FileSha256(mCandidate)

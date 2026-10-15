@@ -243,6 +243,12 @@ Private Sub WriteGlobalSnapshotWorkbook(ByVal outputPath As String, _
     If loSnap.DataBodyRange Is Nothing Then loSnap.ListRows.Add
     DeleteAllRowsHq loSnap
 
+    If commandContext <> "" Then
+        For Each key In Array("WarehouseId", "System_Key", "SKU", "SourceSnapshot")
+            loSnap.ListColumns(GetColumnIndexHq(loSnap, CStr(key))).Range.NumberFormat = "@"
+        Next key
+    End If
+
     For Each key In globalRows.Keys
         loSnap.ListRows.Add
         rowIndex = loSnap.ListRows.Count

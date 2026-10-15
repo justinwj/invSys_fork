@@ -79,19 +79,24 @@ End Function
 
 Public Function ReadRows(ByVal path As String, ByVal tableName As String, Optional ByVal warehouse As String = "") As Object
     Dim book As Workbook, copy As String, table As ListObject, columns As Object, rows As Object, entry As Object
-    Dim names As Variant, name As Variant, row As Long, key As String, wh As String, identity As String
+    Dim names As Variant, name As Variant, row As Long, key As String, wh As String, identity As String, populated As Boolean
     On Error GoTo Finished
     Set book = modAggregationFiles.OpenCopy(path, copy)
     If book Is Nothing Then GoTo Finished
     Set table = modExecutionTarget.Table(book, tableName)
     names = Array("WarehouseId", "System_Key", "SKU", "QtyOnHand", "LastAppliedAtUTC")
+    If tableName = "tblGlobalInventorySnapshot" Then names = Array("WarehouseId", "System_Key", "SKU", "QtyOnHand", "LastAppliedAtUTC", "SourceSnapshot")
     Set columns = RequiredColumns(table, names)
     If columns Is Nothing Then GoTo Finished
     Set rows = CreateObject("Scripting.Dictionary"): rows.CompareMode = vbBinaryCompare
     For row = 1 To table.ListRows.Count
         key = CStr(table.DataBodyRange.Cells(row, columns("System_Key")).Value2)
         wh = CStr(table.DataBodyRange.Cells(row, columns("WarehouseId")).Value2)
-        If key <> "" Or wh <> "" Or CStr(table.DataBodyRange.Cells(row, columns("SKU")).Value2) <> "" Then
+        populated = False
+        For Each name In names
+            If CStr(table.DataBodyRange.Cells(row, columns(CStr(name))).Value2) <> "" Then populated = True
+        Next name
+        If populated Then
             If key = "" Or key <> Trim$(key) Or wh = "" Then GoTo Finished
             If warehouse <> "" And wh <> warehouse Then GoTo Finished
             If Not IsNumeric(table.DataBodyRange.Cells(row, columns("QtyOnHand")).Value2) Then GoTo Finished
@@ -112,12 +117,20 @@ End Function
 
 Public Function Complete(ByVal path As String, ByVal sources As Collection) As Boolean
     Dim actual As Object, expected As Object, record As Variant, key As Variant, name As Variant, entry As Object
+    Dim warehouses As Object
     On Error GoTo Invalid
     Set expected = CreateObject("Scripting.Dictionary"): expected.CompareMode = vbBinaryCompare
+    Set warehouses = CreateObject("Scripting.Dictionary"): warehouses.CompareMode = vbBinaryCompare
     For Each record In sources
         For Each key In record("Rows").Keys
             If expected.Exists(key) Then Exit Function
-            expected.Add key, record("Rows")(key)
+            Set entry = CreateObject("Scripting.Dictionary")
+            For Each name In record("Rows")(key).Keys
+                entry.Add CStr(name), record("Rows")(key)(name)
+            Next name
+            entry.Add "SourceSnapshot", record("Path")
+            expected.Add key, entry
+            warehouses(CStr(record("Rows")(key)("WarehouseId"))) = True
         Next key
     Next record
     Set actual = ReadRows(path, "tblGlobalInventorySnapshot")
@@ -126,9 +139,43 @@ Public Function Complete(ByVal path As String, ByVal sources As Collection) As B
     For Each key In expected.Keys
         If Not actual.Exists(key) Then Exit Function
         For Each name In expected(key).Keys
-            If actual(key)(name) <> expected(key)(name) Then Exit Function
+            If name = "QtyOnHand" Then
+                If CDbl(actual(key)(name)) <> CDbl(expected(key)(name)) Then Exit Function
+            Else
+                If StrComp(CStr(actual(key)(name)), CStr(expected(key)(name)), vbBinaryCompare) <> 0 Then Exit Function
+            End If
         Next name
     Next key
-    Complete = True
+    Complete = StatusValid(path, sources.Count, warehouses.Count)
 Invalid:
+End Function
+
+Private Function StatusValid(ByVal path As String, ByVal sourceCount As Long, ByVal warehouseCount As Long) As Boolean
+    Dim book As Workbook, copy As String, table As ListObject, columns As Object, name As Variant, expected As Object
+    On Error GoTo Finished
+    Set book = modAggregationFiles.OpenCopy(path, copy)
+    If book Is Nothing Then GoTo Finished
+    Set table = modExecutionTarget.Table(book, "tblGlobalSnapshotStatus")
+    Set columns = RequiredColumns(table, Array("Scope", "AuthorityLevel", "AuthoritativeStore", "VisibilityRule", "GeneratedAtUTC", _
+        "SnapshotsFolder", "SnapshotFileCount", "SkippedSnapshotFileCount", "WarehouseCount"))
+    If columns Is Nothing Then GoTo Finished
+    If table.ListRows.Count <> 1 Then GoTo Finished
+    Set expected = CreateObject("Scripting.Dictionary")
+    expected.Add "Scope", "GLOBAL": expected.Add "AuthorityLevel", "ADVISORY_ONLY"
+    expected.Add "AuthoritativeStore", "Warehouse-local WHx.invSys.Data.Inventory.xlsb"
+    expected.Add "VisibilityRule", "Never overrides warehouse-local authoritative balances"
+    expected.Add "SnapshotsFolder", "Explicit selected sources\"
+    For Each name In expected.Keys
+        If CStr(table.DataBodyRange.Cells(1, columns(CStr(name))).Value2) <> expected(name) Then GoTo Finished
+    Next name
+    If Not modTrainingWire.ValidUtcTimestamp(CStr(table.DataBodyRange.Cells(1, columns("GeneratedAtUTC")).Value2)) Then GoTo Finished
+    For Each name In Array("SnapshotFileCount", "SkippedSnapshotFileCount", "WarehouseCount")
+        If Not IsNumeric(table.DataBodyRange.Cells(1, columns(CStr(name))).Value2) Then GoTo Finished
+    Next name
+    If CDbl(table.DataBodyRange.Cells(1, columns("SnapshotFileCount")).Value2) <> sourceCount Then GoTo Finished
+    If CDbl(table.DataBodyRange.Cells(1, columns("SkippedSnapshotFileCount")).Value2) <> 0 Then GoTo Finished
+    If CDbl(table.DataBodyRange.Cells(1, columns("WarehouseCount")).Value2) <> warehouseCount Then GoTo Finished
+    StatusValid = True
+Finished:
+    modAggregationFiles.CloseCopy book, copy
 End Function

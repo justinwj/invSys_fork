@@ -2,7 +2,7 @@ Attribute VB_Name = "modAggregationAuthority"
 Option Explicit
 Option Private Module
 
-Private mForms As Object
+Private mAggregationForms As cCapturedFormStore
 
 Public Function Capture(ByVal bookName As String) As String
     Dim context As String, target As WarehouseTarget, book As Workbook, entry As Object, key As String
@@ -30,21 +30,21 @@ Public Function Capture(ByVal bookName As String) As String
     entry.Add "Feed", raw: entry.Add "Destination", modAggregationFiles.Canonical(feedPath & "\Global\invSys.Global.InventorySnapshot.xlsb")
     entry.Add "Used", False: entry.Add "Sources", CreateObject("Scripting.Dictionary")
     entry("Sources").CompareMode = vbTextCompare
-    If mForms Is Nothing Then Set mForms = CreateObject("Scripting.Dictionary")
-    key = modSystemIdentity.NewId(): mForms.Add key, entry
-    If Not Check(key) Then mForms.Remove key: Exit Function
+    If mAggregationForms Is Nothing Then Set mAggregationForms = New cCapturedFormStore
+    key = modSystemIdentity.NewId(): mAggregationForms.Add key, entry
+    If Not Check(key) Then mAggregationForms.Remove key: Exit Function
     Capture = key
 Failed:
 End Function
 
 Public Function Entry(ByVal key As String) As Object
-    If mForms Is Nothing Then Exit Function
-    If mForms.Exists(key) Then Set Entry = mForms(key)
+    If mAggregationForms Is Nothing Then Exit Function
+    Set Entry = mAggregationForms.Item(key)
 End Function
 
 Public Sub Release(ByVal key As String)
-    If mForms Is Nothing Then Exit Sub
-    If mForms.Exists(key) Then mForms.Remove key
+    If mAggregationForms Is Nothing Then Exit Sub
+    mAggregationForms.Remove key
 End Sub
 
 Public Function Check(ByVal key As String) As Boolean

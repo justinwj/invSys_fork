@@ -22,6 +22,7 @@ End Property
     $probe.CodeModule.AddFromString(@'
 Option Explicit
 Private mHost As Workbook, mOwnerHost As Workbook, mCalls As Long, mSucceeded As Boolean, mPhase As String
+Private mForm As frmAggregationSources
 Public Sub Phase(ByVal value As String)
     mPhase = value
 End Sub
@@ -71,39 +72,75 @@ Public Function OpenForm(ByVal bookName As String) As Boolean
     RibbonOnActionAdmin control
     DoEvents
     For Each item In VBA.UserForms
-        If TypeName(item) = "frmAggregationSources" Then OpenForm = item.Visible
+        If TypeName(item) = "frmAggregationSources" Then
+            Set mForm = item: OpenForm = item.Visible
+        End If
     Next item
 End Function
 Public Function SelectSource(ByVal warehouse As String) As Long
-    SelectSource = frmAggregationSources.SelectSourceForTest(warehouse)
+    If Not mForm Is Nothing Then SelectSource = mForm.SelectSourceForTest(warehouse)
+End Function
+Public Function AddSource(ByVal warehouse As String) As Long
+    If Not mForm Is Nothing Then AddSource = mForm.AddSourceForTest(warehouse)
+End Function
+Public Function SourceIs(ByVal bookName As String) As Boolean
+    If Not mForm Is Nothing Then SourceIs = mForm.SourceIsForTest(bookName)
+End Function
+Public Function NoInventedRetry() As Boolean
+    If Not mForm Is Nothing Then NoInventedRetry = mForm.NoInventedRetryForTest()
 End Function
 Public Sub ConfirmRetryReview(ByVal confirmed As Boolean)
-    frmAggregationSources.ConfirmRetryReviewForTest confirmed
+    If Not mForm Is Nothing Then mForm.ConfirmRetryReviewForTest confirmed
 End Sub
 Public Sub Aggregate()
+    Dim item As Object, present As Boolean
     mCalls = 0: mSucceeded = False: Set mOwnerHost = Nothing
     mPhase = "Entry": TestAggregationRoots.ResetError
-    frmAggregationSources.AggregateForTest
+    If mForm Is Nothing Then Exit Sub
+    For Each item In VBA.UserForms
+        If item Is mForm Then present = True
+    Next item
+    If Not present Then Exit Sub
+    If mForm.Visible Then mForm.AggregateForTest
 End Sub
 Public Sub CloseForm()
     Dim item As Object
     For Each item In VBA.UserForms
         If TypeName(item) = "frmAggregationSources" Then item.CloseForTest: Exit For
     Next item
-    Set mHost = Nothing: Set mOwnerHost = Nothing
+    Set mForm = Nothing: Set mHost = Nothing: Set mOwnerHost = Nothing
 End Sub
 '@)
     $form=$admin.VBComponents.Item('frmAggregationSources').CodeModule
+    $modernAuthority=$form.Lines(1,$form.CountOfLines) -match 'Private mSourceContext'
     $form.AddFromString(@'
 Private mConfirmRetryForTest As Boolean
 Public Sub ConfirmRetryReviewForTest(ByVal confirmed As Boolean)
     mConfirmRetryForTest = confirmed
 End Sub
+Public Function SourceIsForTest(ByVal bookName As String) As Boolean
+    Dim expected As Workbook
+    On Error GoTo Unavailable
+    Set expected = Application.Workbooks(bookName)
+    SourceIsForTest = (mSourceWorkbook Is expected) And (modAggregationCommands.BoundWorkbookName(mSourceContext) = bookName)
+Unavailable:
+End Function
+Public Function NoInventedRetryForTest() As Boolean
+    NoInventedRetryForTest = (InStr(1, CStr(mLblStatus.Caption), "previous attempt", vbTextCompare) = 0)
+End Function
 Public Function SelectSourceForTest(ByVal warehouse As String) As Long
     Dim i As Long
     For i = 0 To mLstSources.ListCount - 1
         mLstSources.Selected(i) = (CStr(mLstSources.List(i, 0)) = warehouse)
         If mLstSources.Selected(i) Then SelectSourceForTest = SelectSourceForTest + 1
+    Next i
+    mLstSources_Click
+End Function
+Public Function AddSourceForTest(ByVal warehouse As String) As Long
+    Dim i As Long
+    For i = 0 To mLstSources.ListCount - 1
+        If CStr(mLstSources.List(i, 0)) = warehouse Then mLstSources.Selected(i) = True
+        If mLstSources.Selected(i) Then AddSourceForTest = AddSourceForTest + 1
     Next i
     mLstSources_Click
 End Function
@@ -124,6 +161,12 @@ Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgB
     End If
 End Function
 '@)
+    if(-not $modernAuthority){
+        foreach($target in @(@($form,'SourceIsForTest'),@($probe.CodeModule,'SourceIs'))){
+            $first=$target[0].ProcStartLine($target[1],0);$count=$target[0].ProcCountLines($target[1],0)
+            $target[0].DeleteLines($first,$count)
+        }
+    }
     $entry=$admin.VBComponents.Item('modAdmin').CodeModule
     $start=$entry.ProcStartLine('Admin_AggregateGlobalSnapshot_Click',0);$count=$entry.ProcCountLines('Admin_AggregateGlobalSnapshot_Click',0)
     $body=$entry.Lines($start,$count)
@@ -292,6 +335,10 @@ function Test-AdminAggregation($Fixture,$Other) {
             return
         }
         if($AdminAggregationCompletionOnly){
+            $module=$packages['invSys.Core.xlam'].VBProject.VBComponents.Item('modHqAggregator').CodeModule
+            if($module.Lines(1,$module.CountOfLines) -match 'commandContext'){
+                Test-AggregationIntegrity $Fixture $Other $hostBook
+            }
             Test-AggregationCompletion $Fixture $Other $hostBook
             Check 'Aggregation.Completion.SourceAuthoritiesAndSnapshotsPreserved' ((Preserved $sourcePins) -and (Preserved $otherPins))
             return

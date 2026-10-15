@@ -12,6 +12,86 @@ D8-TESTER-01 remains approved/qualified.
 
 ## Resumed protecting RED,2026-10-14 Pacific
 
+**Current candidate authority GREEN:** unpromoted source-built
+`deploy/validation-aggregation-owner-06` passes76/76 through the actual Ribbon/form
+handler, controller `21131ae074c3446fb6c9c206e528fd02`, worker
+`5ba0522a9e3c4a5a99d9c578deb63db9`. Both authorized cases persist exact selected
+identities/quantities: normal Admin and active-workbook switch. The original workbook
+stays bound; unrelated workbook structure/value and both sources' authority/snapshot
+bytes are unchanged. Signed-out, saved-hint, Reader, another warehouse's Admin and
+replacement-session cases refuse before the writer and create no output. The binary
+fingerprint matches Windows SHA-256 and leaves a missing input absent. All five
+instrumented packages compile; settings/package/tooling pins and owned fixture cleanup
+pass, Excel closes normally, and delayed Excel events are zero through
+23:38:22.7700976Z. The classified monitor exits normally without a desktop stop.
+This qualifies entry authority/binding only. The full source/feed/output/failure/path
+matrix, restart/completion GREEN, recording/guidance and remaining4be-A remain open.
+Source draft/evidence are pushed as code `578afefb`, docs `3f47de8`; no promotion.
+
+The frozen candidate's broader actual-handler matrix completes **213 PASS/2 FAIL**,
+controller `bdb0daf376cd4056a1d1d1e793000fcb`, worker
+`744c1237cf3149f19e4b4cc3505ab715`. Four drive/UNC variants pass canonical destination,
+exact persistence and source preservation. Post-inspection and pre-save source/feed/
+authority changes refuse; failure receipts, fresh known-state review, unknown columns,
+borrowed/read-only output, dirty/unreadable authority, three overlaps, direct-Core
+positive/denial and retained authority cases pass. The two closed-workbook assertions
+fail (writer reached and decoy structure changed). Cause remains unresolved: the
+probe used the form's default instance, which can recreate an unloaded form; it did
+not assert the captured workbook before closing. Do not call this a confirmed stale-
+form product defect or a GREEN gate. The next probe retains the exact live form,
+does not dispatch a nonexistent/hidden operator form, and explicitly verifies capture.
+Five compiles, pins/settings/owned cleanup and normal closure pass; delayed Excel
+events are zero through2026-10-15T00:25:22.5621361Z. The monitor exits normally with
+no desktop stop. Product entry binding is unchanged pending the focused reproduction.
+
+**Static source follow-up, runtime validation pending:** initial scan finds three
+new duplicate bodies (Aggregation/Tester entry, release and busy query),197 groups
+versus194. Lookup/release now use one private `cCapturedFormStore` implementation,
+with a separate instance retained by each authority; no source/session permission
+logic moves into that store. Aggregation's busy query checks both its flag and
+surviving active-context marker. Regenerated `aggregation-owner-static-02` versus
+the `bbe8c064` source export has365 components/6552 procedures/142110 lines,
+unchanged9 literal/45 unresolved dynamic calls and194 duplicate groups. Existing
+oversized modules do not grow; new components are30–204 lines and new procedures
+are at most77 lines. Its ignored `ratchet-verification.json` records this scoped
+comparison; no exception is required. The frozen owner-06 runtime gates do not
+validate this subsequent source refactor. Compile, the authority gate and the
+existing Tester regression remain required on its rebuilt candidate.
+
+A new independent integrity helper is prepared for multi-source exactness,
+changed mixed selections, orphan quantity rows, numeric-text SKU preservation,
+externally held output, unavailable overlap identity, local formula reordering,
+candidate status/provenance integrity and truthful pre-staging refusal. It is not
+yet wired or run; these are required tests of code-review findings, not established
+runtime defects. The in-progress frozen boundary matrix uses its unchanged harness
+dependencies and does not consume this new helper.
+
+**Focused integrity/completion RED completed,2026-10-14 Pacific:** unchanged
+owner-06 passes45/fails14, controller `7b668c708f8e464ca84e2999b65ab839`, worker
+`cd57f6b80b94442391fcaa370ce8cd2c`. All fault preconditions reach their actual
+boundaries; there is no harness exception. Exact-instance capture and closed-original
+operator refusal pass, resolving the preceding default-instance probe artifact
+without a product entry-binding change. Multi-source exactness, whole-set refusal
+after one selected source changes, legacy manual saved-hint denial and all retained
+unknown-output/confirmed-review checks pass. Source authorities/snapshots are preserved.
+
+Behavioral RED establishes: orphan managed quantity rows are silently omitted;
+numeric-text SKU fails the authorized complete-output control; an external holder
+is noticed only after writer entry; missing physical identity lets unproved overlap
+proceed; reordered local formulas attach incorrect values; missing status or wrong
+source provenance is promoted as complete; and pre-staging refusal invents a previous
+attempt. Source fixes reject populated identity-less rows, preserve managed text and
+relative formulas, reserve existing output write access without writing, refuse
+unknown overlap, validate saved advisory metadata/provenance/counts, build only from
+captured canonical source paths and report refusal accurately before staging exists.
+These fixes and the private-store refactor await candidate07 validation.
+
+Five instrumented compiles, package/tooling pins, settings and owned cleanup pass;
+Excel closes normally with zero delayed events through2026-10-15T00:53:08.9628746Z.
+The monitor records1504 healthy samples and exits normally. Product packages remain
+unpromoted. The known incomplete bytes in the final test are generated disposable
+output, never an operational workbook.
+
 The user explicitly resumed work after explaining that this laptop has required
 OLED protection and lock-screen features are disabled. A fresh native check at
 14:44:29 Pacific finds the Default input desktop active, an enabled nonsecure

@@ -7,8 +7,11 @@ outcome, permission, exclusion, replay adapter or business rule.
 
 **Current Aggregation checkpoint,2026-10-14 Pacific:** restart RED10 PASS/4 FAIL
 and manual/incomplete-persistence RED10 PASS/6 FAIL complete with clean preserved
-closure. Approved Core-owned interactive implementation is now in progress, with
-candidate failures under correction and no GREEN or recording/guidance acceptance.
+closure. The approved owner-06 candidate subsequently passes76/76 packaged authority/
+binding checks with clean preserved native closure. The broader boundary/path gate
+is running; prepared integrity follow-up and the private-store consolidation's runtime
+checks remain pending. Static comparison holds194 duplicate groups,9/45 dynamic calls
+and size caps. Owner completion and recording/guidance acceptance remain open.
 Earlier pending/pause statements below describe their checkpoints. See the
 [Aggregation receipt](plan022_slice4be_admin_aggregation_results.md).
 

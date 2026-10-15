@@ -68,7 +68,9 @@ Public Function Under(ByVal path As String, ByVal folder As String) As Boolean
     If path = "" Or folder = "" Then Under = True: Exit Function
     If StrComp(Left$(path & "\", Len(folder) + 1), folder & "\", vbTextCompare) = 0 Then Under = True: Exit Function
     Set fso = CreateObject("Scripting.FileSystemObject")
-    key = Identity(folder): current = path
+    key = Identity(folder)
+    If key = "" Then Under = True: Exit Function
+    current = path
     Do While current <> ""
         If key <> "" And Identity(current) = key Then Under = True: Exit Function
         current = fso.GetParentFolderName(current)
@@ -86,14 +88,21 @@ End Function
 
 Public Function Available(ByVal path As String) As Boolean
     Dim book As Workbook, fso As Object, current As String
+    Dim handle As LongPtr
     On Error GoTo Invalid
     If Canonical(path) = "" Then Exit Function
     For Each book In Application.Workbooks
         If SameFile(book.FullName, path) Then Exit Function
     Next book
     Set fso = CreateObject("Scripting.FileSystemObject")
+    If fso.FolderExists(path) Then Exit Function
     If fso.FileExists(path) Then
         If (fso.GetFile(path).Attributes And 1) <> 0 Then Exit Function
+        ' OPEN_EXISTING reserves write access without writing or truncating.
+        ' No sharing also detects another Excel instance or external holder.
+        handle = CreateFileW(StrPtr(path), &H40000000, 0, 0, 3, 0, 0)
+        If handle = -1 Or handle = 0 Then Exit Function
+        CloseHandle handle: handle = 0
     End If
     current = fso.GetParentFolderName(path)
     Do While current <> ""
@@ -105,6 +114,7 @@ Public Function Available(ByVal path As String) As Boolean
     Loop
     Available = True
 Invalid:
+    If handle <> 0 And handle <> -1 Then CloseHandle handle
 End Function
 
 Public Function OpenCopy(ByVal path As String, ByRef copyPath As String) As Workbook

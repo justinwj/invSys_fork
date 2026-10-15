@@ -13,6 +13,10 @@ End Sub
 Public Function Injected() As Boolean
     Injected = mInjected
 End Function
+Public Function IdentityUnavailable() As Boolean
+    IdentityUnavailable = (mFault = "IDENTITY_UNAVAILABLE")
+    If IdentityUnavailable Then mInjected = True
+End Function
 Public Sub AtPoint(ByVal point As String)
     Dim fso As Object, target As WarehouseTarget, report As String
     Dim auth As Workbook, sheet As Worksheet, table As ListObject, row As ListRow
@@ -54,6 +58,21 @@ Public Sub AtPoint(ByVal point As String)
                 .Close
             End With
             mInjected = True
+        Case "CANDIDATE_STATUS_REMOVED", "CANDIDATE_SOURCE_WRONG"
+            Set fso = CreateObject("Scripting.FileSystemObject")
+            For Each auth In Application.Workbooks
+                If StrComp(fso.GetParentFolderName(auth.FullName), fso.GetParentFolderName(mFeed), vbTextCompare) = 0 And _
+                        (auth.FullName = mFeed Or LCase$(auth.Name) Like "invsys.aggregation.*.candidate.xlsb") Then
+                    If mFault = "CANDIDATE_STATUS_REMOVED" Then
+                        auth.Worksheets("GlobalSnapshotStatus").Delete
+                    Else
+                        Set table = auth.Worksheets("GlobalInventorySnapshot").ListObjects("tblGlobalInventorySnapshot")
+                        table.ListColumns("SourceSnapshot").DataBodyRange.Value2 = "Invalid disposable source provenance"
+                    End If
+                    auth.Save: mInjected = True: Exit For
+                End If
+            Next auth
+            If Not mInjected Then Err.Raise vbObjectError + 502
     End Select
 End Sub
 Public Function DirectInteractive(ByVal context As String, ByVal sources As String, ByVal outputPath As String) As Boolean
@@ -73,6 +92,13 @@ End Function
     $marker='    TestAggregation.Phase "OutputConfig"'
     $modern=$body.Contains('modAggregationCommands.Aggregate')
     if($modern){
+        $files=$core.VBComponents.Item('modAggregationFiles').CodeModule
+        $first=$files.ProcStartLine('Identity',0);$count=$files.ProcCountLines('Identity',0)
+        $body=$files.Lines($first,$count)
+        $marker='    On Error GoTo Finished'
+        if(-not $body.Contains($marker)){throw 'File identity fault boundary unavailable.'}
+        $body=$body.Replace($marker,$marker+"`r`n"+'    If TestAggregationBoundary.IdentityUnavailable() Then Exit Function')
+        $files.DeleteLines($first,$count);$files.InsertLines($first,$body)
         $adapter=$probe.CodeModule
         $first=$adapter.ProcStartLine('DirectInteractive',0);$count=$adapter.ProcCountLines('DirectInteractive',0)
         $adapter.DeleteLines($first,$count)
