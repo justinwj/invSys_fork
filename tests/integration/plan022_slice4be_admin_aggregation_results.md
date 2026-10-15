@@ -10,13 +10,32 @@ path-only packaged comparison. The approval blocker is cleared. Expanded RED and
 implementation remained pending at approval; local expanded RED is recorded below.
 D8-TESTER-01 remains approved/qualified.
 
-**Current checkpoint,2026-10-14 Pacific:** the resumed owner-07 Tester GuideOnly
+**Retry restart GREEN,2026-10-14 Pacific:** owner-07 passes14/14 through an actual
+five-add-in unload/reload in its owned Excel host, controller
+`admin-aggregation-controller/38dc2b7101d54d46a0a9bd6b20f61b26`, worker
+`slice4be-admin-aggregation/1fafce3ec81145d1a4e4c41ea9aaabc5`.
+The interrupted command claims no completion; durable pending evidence survives
+fresh Core runtime state. The reopened form cannot automatically promote it, and
+actual feed/source bytes remain preserved. Five compiles, saved disposable probes,
+settings/package/tooling pins, owned fixture removal, normal Excel and owned wrapper
+closure pass; delayed Excel events are zero through2026-10-15T04:31:27.6552742Z.
+This is add-in restart proof, not Excel-process or machine-crash qualification.
+
+The unchanged broader matrix is now selectable as Inspection(5), Write(8) and
+Ownership(6), with overlap/closed-original/direct-Core assertions in Ownership and
+the full authority/path cases run separately. All19 cases retain their exact default
+order and assertions; all four changed harness files parse. D13 behavioral RED
+does not apply to selection-only plumbing. Composite name-level retention must
+cover the previous full matrix before broad GREEN is claimed. Inspection is running;
+other groups remain pending. No product source or security setting changes.
+
+**Tester checkpoint,2026-10-14 Pacific:** the resumed owner-07 Tester GuideOnly
 gate passes127/127 with eight reviewed captures and clean preserved native closure
 through2026-10-15T04:25:31.7165189Z. Exact retention proves444 distinct passing
 owner/recording/guide checks on identical packages, including all88 earlier passing
 guide checks. See the Tester receipt; prior interrupted runs remain partial.
 Product source and Aggregation GREEN60/static03 are unchanged. Broader boundary/
-path, actual unload/reload retry and relevant regressions plus Aggregation recording/
+path and relevant regressions plus Aggregation recording/
 guidance and4be-A/B0 remain open. Actual error5/lock/mouse-lock stop rules remain.
 
 **Previous stop,2026-10-14 19:58:24 Pacific:** the continuation records actual

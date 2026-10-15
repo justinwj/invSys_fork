@@ -402,6 +402,10 @@ function Test-AdminAggregation($Fixture,$Other) {
         Check 'Aggregation.Control.SourcesPreserved' ((Preserved $sourcePins) -and (Preserved $otherPins))
         if($AdminAggregationBoundaryMatrix){
             Test-AggregationBoundaries $Fixture $Other $hostBook $otherBook ([ref]$observations)
+            if($AdminAggregationBoundaryGroup -ne 'All'){
+                Check ('Aggregation.BoundaryGroup.'+$AdminAggregationBoundaryGroup+'.SourceAuthoritiesAndSnapshotsPreserved') ((Preserved $sourcePins) -and (Preserved $otherPins))
+                return
+            }
             # Deliberate boundary mutations must not pre-prepare the decoy used
             # by the retained original ordered workbook-switch regression.
             $otherBook.Close($false);$otherBook=$excel.Workbooks.Add()

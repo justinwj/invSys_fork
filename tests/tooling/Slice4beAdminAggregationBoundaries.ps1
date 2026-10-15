@@ -173,10 +173,16 @@ function Test-AggregationBoundaries($Fixture,$Other,$HostBook,$OtherBook,[ref]$O
     $changedFeed=Join-Path $runRoot 'changed-aggregation-feed'
     if(-not [IO.Path]::GetFullPath($changedFeed).StartsWith($owned,[StringComparison]::OrdinalIgnoreCase)){throw 'Changed feed escapes disposable scope.'}
     try{
-        $cases=if($AdminAggregationWriteBoundariesOnly){
-            @('FailureBeforeSave','FailureAfterSave','SourceChangedBeforeSave','FeedChangedBeforeSave','SignedOutBeforeSave','MalformedSelectedSource','DuplicateSelectedEntity','UnknownOutputColumn')
-        }else{
-            @('SourceChangedAfterInspection','SourceMissingAfterInspection','FeedChangedAfterInspection','SignedOutAfterInspection','RightsRevokedAfterInspection','FailureBeforeSave','FailureAfterSave','SourceChangedBeforeSave','FeedChangedBeforeSave','SignedOutBeforeSave','MalformedSelectedSource','DuplicateSelectedEntity','UnknownOutputColumn','BorrowedCleanOutput','BorrowedDirtyOutput','ReadOnlyOutput','DirtyConfig','UnreadableConfig','DirtyAuth')
+        $inspection=@('SourceChangedAfterInspection','SourceMissingAfterInspection','FeedChangedAfterInspection','SignedOutAfterInspection','RightsRevokedAfterInspection')
+        $write=@('FailureBeforeSave','FailureAfterSave','SourceChangedBeforeSave','FeedChangedBeforeSave','SignedOutBeforeSave','MalformedSelectedSource','DuplicateSelectedEntity','UnknownOutputColumn')
+        $ownership=@('BorrowedCleanOutput','BorrowedDirtyOutput','ReadOnlyOutput','DirtyConfig','UnreadableConfig','DirtyAuth')
+        $cases=if($AdminAggregationWriteBoundariesOnly){$write}else{
+            switch($AdminAggregationBoundaryGroup){
+                'Inspection'{$inspection}
+                'Write'{$write}
+                'Ownership'{$ownership}
+                default{$inspection+$write+$ownership}
+            }
         }
         foreach($case in $cases){
             SelectTarget $Fixture
@@ -311,6 +317,7 @@ function Test-AggregationBoundaries($Fixture,$Other,$HostBook,$OtherBook,[ref]$O
                 if(-not $resolved){throw 'Known-state attempt could not be resolved; independent case preparation stopped.'}
             }
         }
+        if($AdminAggregationBoundaryGroup -notin @('All','Ownership')){return}
         foreach($overlap in @('TrustedSource','SelectedAuthority','SelectedSnapshots')){
             SelectTarget $Fixture
             $overlapFeed=switch($overlap){

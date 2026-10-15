@@ -5,6 +5,13 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Aggregation retry restart GREEN,2026-10-14 Pacific:** owner-07 passes14/14 after
+actual disposable add-in unload/reload. Pending evidence survives, fresh-form auto-
+promotion refuses, feed/source bytes are preserved and native closure is clean.
+Grouped selection retains all19 existing boundary cases without changing assertions;
+composite full-matrix retention remains pending. No product source change or broader
+Aggregation/4be-A acceptance is claimed; see the Aggregation receipt.
+
 **Current verified increment,2026-10-14 Pacific:** fresh owner-07 Tester guide127
 passes, with eight reviewed captures and clean preserved native closure. Retention
 proves444 distinct owner/recording/guide checks on identical packages and qualifies

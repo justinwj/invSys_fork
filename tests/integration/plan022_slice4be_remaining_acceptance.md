@@ -6,6 +6,14 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Aggregation retry restart GREEN,2026-10-14 Pacific:** owner-07 passes14/14 after
+actual disposable add-in unload/reload, retaining pending evidence and refusing
+automatic promotion through the reopened form. Feed/source bytes, settings/pins,
+owned cleanup and normal native closure pass. This does not qualify a machine or
+Excel-process crash. Inspection/write/ownership and separate authority/path runs
+retain all19 matrix cases; full name-level retention remains required before broad
+GREEN. Product source, Aggregation GREEN60/static03 and qualified Tester444 stand.
+
 **Current verified increment,2026-10-14 Pacific:** owner-07 Tester guide127/127
 passes with eight reviewed captures and clean preserved native closure. Retention
 proof qualifies444 distinct owner/recording/guide checks on identical packages,
