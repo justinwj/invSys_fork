@@ -10,6 +10,16 @@ path-only packaged comparison. The approval blocker is cleared. Expanded RED and
 implementation remained pending at approval; local expanded RED is recorded below.
 D8-TESTER-01 remains approved/qualified.
 
+**Source correction, runtime GREEN pending,2026-10-15 Pacific:** following recorded
+RED commit0d4edf6a, only `frmAggregationSources` and `modAggregationCommands` change.
+Connection failure and success both reach the joint return check after clearing
+transient connection inputs. Aggregate captures its selected paths before dialogs;
+confirmed/cancelled review and result returns validate that same set. A failed result
+preserves its verified command report while requiring reopening. Confirmed Core
+review now distinguishes busy/invalid-context refusal from genuine cancellation.
+No source authority or feed ownership changes. Build a fresh ignored candidate with
+Excel closed, then rerun `-YieldGroup RedFocus` before any GREEN claim.
+
 **Named-return protecting RED,2026-10-15 Pacific:** unchanged owner-07 completes
 50 PASS/7 expected FAIL, controller
 `admin-aggregation-controller/cca897e0af654f38bcd7328ee9585cf9`, worker

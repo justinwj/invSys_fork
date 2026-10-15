@@ -163,7 +163,10 @@ Public Function ResolveRetry(ByVal context As String, ByVal paths As String, ByV
     Dim fso As Object, state As String, item As Variant, field As Variant, expected As String
     On Error GoTo Failed
     report = "Attempt review cancelled. Existing output and retry evidence are retained."
-    If Not confirmed Or mWriting Then Exit Function
+    If Not confirmed Then Exit Function
+    report = "Aggregation is busy. Wait for the current attempt to finish."
+    If mWriting Then Exit Function
+    report = "The source session, feed or selected snapshots changed. Reopen Aggregation and refresh the selection."
     Set sources = modAggregationAuthority.SelectSources(context, paths)
     If sources Is Nothing Then Exit Function
     If Not modAggregationAuthority.Joint(context, sources) Then Exit Function

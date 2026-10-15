@@ -127,18 +127,15 @@ End Sub
 Private Sub mBtnConnect_Click()
     Dim report As String
     Dim rootPath As String
+    Dim connected As Boolean
 
     rootPath = Trim$(mTxtRoot.Value)
     If Not modAggregationCommands.CheckForm(mSourceContext, SelectedPaths()) Then ShowStatus "Source context changed. Reopen Aggregation.": Exit Sub
-    If Not modAdminConsole.ConnectAggregationServerForAdmin(rootPath, Trim$(mTxtUser.Value), CStr(mTxtPassword.Value), report) Then
-        ShowStatus "The Windows storage connection was not established."
-        mTxtPassword.Value = vbNullString
-        mTxtUser.Value = vbNullString
-        Exit Sub
-    End If
+    connected = modAdminConsole.ConnectAggregationServerForAdmin(rootPath, Trim$(mTxtUser.Value), CStr(mTxtPassword.Value), report)
     mTxtPassword.Value = vbNullString
     mTxtUser.Value = vbNullString
     If Not modAggregationCommands.CheckForm(mSourceContext, SelectedPaths()) Then ShowStatus "Connection returned; source context changed. Reopen Aggregation.": Exit Sub
+    If Not connected Then ShowStatus "The Windows storage connection was not established.": Exit Sub
     ShowStatus "Windows storage connection established."
     DiscoverRoot rootPath
 End Sub
@@ -214,6 +211,7 @@ Private Sub mBtnAggregate_Click()
     Dim report As String
     Dim targetWb As Workbook
     Dim confirmed As Boolean, completed As Boolean
+    Dim capturedPaths As String
 
     If mBusy Then Exit Sub
     mBusy = True: mBtnAggregate.Enabled = False
@@ -228,10 +226,15 @@ Private Sub mBtnAggregate_Click()
         GoTo FinishedAggregate
     End If
 
+    capturedPaths = SelectedPaths()
     Set targetWb = mSourceWorkbook
     If modAggregationCommands.NeedsReview(mSourceContext) Then
         confirmed = (MsgBox("A previous attempt needs review. Verify its saved state and resolve its retained staging before starting a fresh attempt?", vbYesNo Or vbDefaultButton2, "invSys Aggregator") = vbYes)
-        If Not modAggregationCommands.ResolveRetry(mSourceContext, SelectedPaths(), confirmed, report) Then ShowStatus report: GoTo FinishedAggregate
+        If Not modAggregationCommands.CheckForm(mSourceContext, capturedPaths) Then
+            ShowStatus "Source session, feed or selected snapshots changed. Reopen Aggregation."
+            GoTo FinishedAggregate
+        End If
+        If Not modAggregationCommands.ResolveRetry(mSourceContext, capturedPaths, confirmed, report) Then ShowStatus report: GoTo FinishedAggregate
     End If
     completed = modAdminConsole.RunHQAggregationFromSourceSet(selectedFiles, "", "", targetWb, report, mSourceContext)
     If completed Then
@@ -243,8 +246,12 @@ Private Sub mBtnAggregate_Click()
         ShowStatus report
         MsgBox report, vbExclamation, "invSys Aggregator"
     End If
-    If Not modAggregationCommands.CheckForm(mSourceContext, SelectedPaths()) Then
-        If completed Then ShowStatus "Complete output was saved. Reopen Aggregation before another attempt."
+    If Not modAggregationCommands.CheckForm(mSourceContext, capturedPaths) Then
+        If completed Then
+            ShowStatus "Complete output was saved. Reopen Aggregation before another attempt."
+        ElseIf InStr(1, report, "Reopen Aggregation", vbTextCompare) = 0 Then
+            ShowStatus report & " Reopen Aggregation before another attempt."
+        End If
     End If
 FinishedAggregate:
     mBusy = False: mBtnAggregate.Enabled = True
