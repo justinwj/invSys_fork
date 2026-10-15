@@ -5,6 +5,16 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Current guide/cold qualification,2026-10-15 Pacific:** recording02/source1c9bff87
+passes independent guide135 with eight reviewed captures, truthful saved successful/
+Incomplete/Failed conclusions and preserved evidence across all three views.
+Normal preserved native/owned closure passes through20:51:56.8313608Z. Cold compile
+passes all five projects;359 components retain all prior358, with exactly the seven
+intended source additions/changes and clean closure through20:53:08.0573248Z.
+The six-group current D8 regression sequence is running. Shared-store/Release1
+regressions, remaining control coverage and current Receiving B0 remain required;
+this does not complete4be-A. See the Aggregation receipt for exact provenance.
+
 **Release1 regression fixture audit,2026-10-15 Pacific (source finding only):**
 `tools/validate_phase6_live_role_workflows.ps1.New-InventoryWorkbook` constructs
 canonical `tblInventoryLog`/`tblAppliedEvents`, assigns fixed `SYS-LIVE-*` identities

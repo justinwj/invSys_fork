@@ -1,5 +1,36 @@
 # Aggregation authority and output ownership evidence
 
+**Independent guide GREEN135,2026-10-15 Pacific:** unchanged recording02/source
+1c9bff87 passes135/135 unique checks, controller
+`admin-aggregation-controller/164449abc4734baf962de307e1f776f2`, worker
+`slice4be-admin-aggregation/26e151fdf7e44a2cb8676b3e2f06c672`. Independent source,
+observed, interrupted and refused recordings exercise actual aggregation actions;
+exact persisted output and source preservation pass. The authored two-step guide
+uses the exact source reference. Saved observed conclusions match both steps;
+interrupted evidence remains Incomplete and the refused second action remains
+Failed/unmatched, without borrowing source success. Reader authoring refuses.
+Diagnostic, How-To and Compare both preserve the same evidence. All eight actual
+captures are reviewed for readable instructions, outcomes and layout.
+
+Five package/all484 tooling pins, settings, owned cleanup and normal Excel/
+controller/monitor closure pass; delayed native events are zero through
+20:51:56.8313608Z, with no desktop stop. Qualification checks135 unique passing
+names, all489 unchanged input pins and eight capture files against the controller/
+worker above and its closure reports. Earlier trials84/87 retain
+their harness/desktop-stop limits; neither is behavioral RED or complete GREEN.
+
+**Current cold/source gate,2026-10-15 Pacific:** controller
+`aggregation-cold-compile-controller/d23b5c740db349e0adb7a4b429c67961` passes cold
+Operations dependency resolution and all five project compiles. Source comparison
+against owner09 controller08060f0b1c2445c2bf1fc6f2e96f9311 retains every358 prior
+component and adds only Core.modAggregationActivityCodes (359 total). Exactly six
+existing components change: Admin.frmAggregationSources/modAdmin/modAdminConsole;
+Core.modActivityCatalog/modEvaluationMatches/modExpectationDraft. No other code
+hash changes, including identifier casing. Preserved normal closure and zero native
+events pass through20:53:08.0573248Z. The current six-group D8 regression sequence
+is running; shared-store/Release1 regressions, remaining coverage and current B0
+still prevent comprehensive4be-A acceptance. No current/NAS promotion occurs.
+
 Original prerequisite diagnostic,2026-10-13 Pacific. **Diagnostic RED, not acceptance.**
 Unchanged unpromoted `deploy/validation-tester-recording-02`, catalog42/179;
 code baseline `546b029b`, docs `0a21a86`. Proposed D8-AGG-01 in v4.11 requires
