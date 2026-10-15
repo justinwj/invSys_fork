@@ -5,6 +5,41 @@ D8-TESTER-01. Controls1.580 records catalog42/179, preserving catalog41/172.
 **Scoped-qualified on unpromoted tester-recording-02.** No Training-purpose or
 replay change is introduced; overall4be-A is incomplete.
 
+## Owner-07 regression qualified by retained evidence and fresh guide GREEN127
+
+Last verified2026-10-14 Pacific, delayed audit2026-10-15T04:25:31.7165189Z.
+Frozen `deploy/validation-aggregation-owner-07` passes **127/127** with the focused
+`-GuideOnly` selector. Controller `admin-tester-guides-controller/1b8736ea5a164d6bb838371b5b9f194d`,
+worker `slice4be-admin-tester-owner/77f96317772042a08c1e37b8ab82e95e`.
+The wrapper exposes `Test-Slice4beAdminTesterSetupOwner.ps1 -DeployRoot
+deploy/validation-aggregation-owner-07 -Phase GREEN -GuideOnly`; ignored owned
+orchestration is `resume-d8-agg-01/tester-guide-only-green-entry-32/`.
+
+Fresh Source/Observed/Interrupted/Unconfirmed recordings, exact publication,
+authoring/Reader refusal and saved Concluded/Incomplete/Failed conclusions pass.
+All three views preserve exact evidence; all eight fresh captures were reviewed
+and are readable through the conclusions' final line. No Domain application,
+Training designation or replay eligibility is inferred. Five instrumented compiles,
+settings/package/tooling pins, owned fixture removal, normal Excel closure and zero
+delayed Excel events pass. Both owned monitor/controller exit normally with code0.
+
+`reports/runtime/tester-guide-retention-07/retention.json` and its `verify.py`
+prove **444 distinct passing checks** on identical five-package hashes: the prior
+164 owner-prefix checks (including five compiles),158 recording/boundary checks,
+and the fresh127 guide checks, with shared checks counted once. All88 previously
+passing guide assertions are retained; none is missing. Only three harness files
+change, adding selector plumbing and an early branch to the unchanged guide suite.
+The focused run dispatches no unrelated owner/recording-boundary suite and creates
+all four fresh recordings. The prior owner and recording probe sets are identical.
+All three controllers have preserved settings/pins/cleanup and zero delayed events.
+Earlier355/1 and251/1 runs remain partial; their passing checks are reused under
+this explicit proof, not relabeled as whole-run GREEN.
+
+This qualifies the Tester regression on owner-07, including the shared private
+captured-form store. It does not complete Aggregation's remaining gates or4be-A.
+The selector changes no product contract, so D13 behavioral RED is inapplicable;
+all three changed PowerShell files parse and their diff is reviewed.
+
 ## Owner-07 regression interrupted by desktop error5
 
 Last verified2026-10-14 Pacific. The existing RecordingOnly/CheckGuides selection

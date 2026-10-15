@@ -151,6 +151,7 @@ param(
     [switch]$AdminTesterRecording,
     [switch]$AdminTesterRecordingOnly,
     [switch]$AdminTesterGuidePaths,
+    [switch]$AdminTesterGuideOnly,
     [switch]$AdminCreateRecording,
     [switch]$AdminCreateOpeningOnly,
     [switch]$AdminCreateRecordingOnly,
@@ -781,6 +782,7 @@ if($AdminAuthWriteDiagnostic -and -not $CheckAdminAuthRefresh){throw 'Auth write
 if($RequireAdminAuthWriteAuthority -and -not $AdminAuthWriteDiagnostic){throw 'Write authority assertions require the existing diagnostic cases.'}
 if($CheckAdminUsersAuthority -and -not $RequireAdminAuthWriteAuthority){throw 'Direct Core authority tests require the handler authority gate.'}
 if($CheckAdminUsersRecording -and -not $CheckAdminUsersAuthority){throw 'Recording requires the authority probe.'}
+if($AdminTesterGuideOnly -and (-not $AdminTesterSetupOwnerOnly -or -not $AdminTesterRecording -or -not $AdminTesterRecordingOnly -or -not $AdminTesterGuidePaths)){throw 'Focused Tester guide selection requires its owner, recording-only and guide probes.'}
 if($AdminUsersRecordingOnly -and -not $CheckAdminUsersRecording){throw 'Focused recording requires its probe.'}
 if($AdminUsersGuideOnly -and (-not $CheckAdminUsersRecording -or $AdminUsersRecordingOnly)){throw 'Focused guide requires Users recording and excludes recording-only mode.'}
 if($CheckAuthReadOnly){

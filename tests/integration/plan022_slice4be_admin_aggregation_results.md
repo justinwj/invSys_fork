@@ -10,7 +10,16 @@ path-only packaged comparison. The approval blocker is cleared. Expanded RED and
 implementation remained pending at approval; local expanded RED is recorded below.
 D8-TESTER-01 remains approved/qualified.
 
-**Current stop,2026-10-14 19:58:24 Pacific:** the continuation records actual
+**Current checkpoint,2026-10-14 Pacific:** the resumed owner-07 Tester GuideOnly
+gate passes127/127 with eight reviewed captures and clean preserved native closure
+through2026-10-15T04:25:31.7165189Z. Exact retention proves444 distinct passing
+owner/recording/guide checks on identical packages, including all88 earlier passing
+guide checks. See the Tester receipt; prior interrupted runs remain partial.
+Product source and Aggregation GREEN60/static03 are unchanged. Broader boundary/
+path, actual unload/reload retry and relevant regressions plus Aggregation recording/
+guidance and4be-A/B0 remain open. Actual error5/lock/mouse-lock stop rules remain.
+
+**Previous stop,2026-10-14 19:58:24 Pacific:** the continuation records actual
 Win32 error5 at2026-10-15T02:58:24.8356015Z, with inactive input, Other desktop
 and a running screensaver. Inactivity alone was informational; access-denied
 stopped the monitor. No bypass or OLED setting change was attempted. Tester

@@ -5,7 +5,14 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
-**Current error5 stop,2026-10-14 19:58:24 Pacific:** the monitor records actual
+**Current verified increment,2026-10-14 Pacific:** fresh owner-07 Tester guide127
+passes, with eight reviewed captures and clean preserved native closure. Retention
+proves444 distinct owner/recording/guide checks on identical packages and qualifies
+the shared-store regression. Earlier partial runs retain their limits. Aggregation
+GREEN60/static03 stand; broader boundary/path/restart, remaining regressions,
+Aggregation observations/guidance and comprehensive4be-A/B0 remain open.
+
+**Previous error5 stop,2026-10-14 19:58:24 Pacific:** the monitor records actual
 Win32 error5 after informational inactive input. Tester recording/guide continuation
 ends251 PASS/1 stop-related harness failure; successful guide views pass, while
 interrupted/unconfirmed view tails remain incomplete. Pins/settings/owned cleanup,
