@@ -46,6 +46,38 @@ procedure maxima are213/83 against1000/200 caps. Only the two intended product
 components differ from38dea294. No exception or deployment is required. Full
 joint-check variants, D13 phase proof and relevant regressions remain open.
 
+**Complete static ratchets,2026-10-15 Pacific:** source1c9bff87's full maintenance
+generation completes at20:02:58.0373185Z. Reproducible
+`reports/runtime/aggregation-recording-static-02/verify-ratchet.py` checks finished
+manifest/maintenance/reviewed-backlog JSON/Markdown and completion/schema markers.
+Metrics366 components/6559 procedures/142380 lines,194 duplicate groups and9 literal/
+45 unresolved dynamic calls meet the accepted pre-D8 baseline ratchets. Existing
+oversized modules do not grow; new maxima213/83 fit1000/200 caps. Removing the
+sole-caller ID wrapper cuts one procedure, three lines and one duplicate group
+from857d250a. Only Catalog and AggregationActivityCodes change after that source;
+no exception or scanner-driven deletion. Script-only LASTEXITCODE is unset, so
+qualification checks complete artifacts/final markers and the normally exited
+owned process rather than inventing a native script exit value. Source-only
+static GREEN does not establish runtime acceptance; current recording/guides,
+cold/source comparison and relevant regressions/4be-A/B0 remain open.
+
+**Outcome-honesty GREEN27,2026-10-15 Pacific:** source1c9bff87 in recording02
+passes unchanged27/27, clearing both message failures with exact RED name/order
+retention and all484 tooling pins matching. Controller
+`admin-aggregation-controller/77f34f39f18e4451b955dbb590c67dc9`, worker
+`slice4be-admin-aggregation/3d0045329bd24d85b58d528786a84aa9`. Both actual record
+messages now avoid an unproved retained-attempt claim. Failed connection has no
+writer/output/receipt; late audit failure has one writer, exact saved output,
+resolved Core receipt, no owner success and truthful UI acknowledgment. Five
+compiles, source preservation, settings/package/tooling pins, owned cleanup and
+normal Excel/controller/monitor closure pass; delayed native events are zero
+through2026-10-15T19:59:19.4545410Z. Build02 also closes cleanly through
+19:53:38.6669835Z. No desktop stop or deployment. The first qualification-only
+wrapper miscounted JSON arrays and refused dispatch despite the passing test;
+corrected counting qualifies existing evidence without a rerun. It is not RED.
+Final-candidate104 and independent guides now run serially; full static generation,
+current relevant regressions and4be-A/B0 remain open.
+
 **Outcome-honesty RED25/2,2026-10-15 Pacific:** protecting test69d47521 runs
 `-RecordingOutcomesOnly -Phase RED` on unchanged recording01/source857d250a.
 Controller `admin-aggregation-controller/1a379de00cdc4446b7ca695b95dfef79`, worker
