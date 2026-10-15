@@ -6,6 +6,15 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**User-required stop,2026-10-14 18:50:59 Pacific:** the monitor records inactive
+input with Other desktop/screensaver running, zero error5/mouse-lock counts.
+Owner-07 integrity/completion GREEN60 and static ratchets stand. Tester355 PASS/
+1 stop-related harness failure is incomplete; the164 owner prefix passes while
+interrupted recording/guide verification remains open. Pins/settings/owned cleanup,
+normal Excel closure and zero delayed native events pass. Broader owner-07 gates,
+Aggregation recording/guidance and4be-A/B0 remain incomplete. Resume from Handoff182
+only after the user's direction and input revalidation; D8-AGG-01 stays approved.
+
 **Current Aggregation checkpoint,2026-10-14 Pacific:** resumed restart RED is
 10 PASS/4 FAIL and manual/incomplete-persistence RED is10 PASS/6 FAIL, both complete
 with preserved sources/settings/pins, normal closure and clean delayed native audits.

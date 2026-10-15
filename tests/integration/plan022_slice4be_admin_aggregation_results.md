@@ -10,6 +10,17 @@ path-only packaged comparison. The approval blocker is cleared. Expanded RED and
 implementation remained pending at approval; local expanded RED is recorded below.
 D8-TESTER-01 remains approved/qualified.
 
+**Latest checkpoint:** stopped under the user's inactive-desktop condition at
+2026-10-15T01:50:59.3042519Z (2026-10-14 18:50:59 Pacific). The monitor records one
+inactive-input condition, desktop class Other and a running screensaver, with zero
+error5/mouse-lock/other failures. This does not establish a Windows lock or identify
+the screensaver's cause. No more automation is authorized until the user resumes.
+Unpromoted owner-07 passes focused integrity/completion GREEN60 after45/14 RED,
+with clean preserved closure and final static ratchets. The subsequent Tester
+regression is355 PASS/1 stop-related harness failure and is incomplete. Broader candidate07 boundary/path/restart and
+recording/guidance gates remain open;4be-A is incomplete. Earlier checkpoints below
+retain their stated candidate and scope.
+
 ## Resumed protecting RED,2026-10-14 Pacific
 
 **Current candidate authority GREEN:** unpromoted source-built
@@ -91,6 +102,40 @@ Excel closes normally with zero delayed events through2026-10-15T00:53:08.962874
 The monitor records1504 healthy samples and exits normally. Product packages remain
 unpromoted. The known incomplete bytes in the final test are generated disposable
 output, never an operational workbook.
+
+**Candidate07 focused GREEN,2026-10-14 Pacific:** actual operator-form integrity
+and retained manual/completion tests pass **60/60**, controller
+`edc8af565cb4421fb6b65f9742bc733b`, worker `2c9d79a4d4f74e8e886172d26e0d6120`.
+All eight new RED categories are corrected, including exact numeric-text SKU,
+relative formulas and independent candidate schema/provenance checks. Multi-source
+exactness, whole-set changed-source refusal, exact-instance closed-original behavior,
+manual saved-hint denial and unknown-output receipt/reopen/confirmed-review refusal
+all pass. Five compiles, source preservation, settings/package/tooling pins and
+owned cleanup pass; Excel closes normally, with zero delayed events through
+2026-10-15T01:20:25.5372399Z. No desktop stop occurs.
+
+Final-source static03 passes365 components/6553 procedures/142179 lines, unchanged
+9/45 dynamic calls and194 duplicate groups versus the committed source baseline;
+existing oversized modules do not grow, new modules/procedures max210/83 within
+1000/200 caps. Its ignored `ratchet-verification.json` records the comparison.
+Code `38dea294` and docs `d807736` are pushed. Tester regression is now running
+because both authorities use the private store. Broader candidate07 boundary/path,
+restart, relevant regressions, recording/guidance and4be-A completion remain open;
+the preceding owner-06 results do not qualify those candidate07 gates.
+
+**Required desktop stop during Tester regression:** controller
+`54def7630e7f46e4988597bc6c19ea61`, worker `3b7507c1a941436fa0b0506506c43178`,
+on unchanged owner-07 finishes355 PASS/1 FAIL. The failure is the macro dispatcher's
+stale-heartbeat guard after the monitor already stopped on inactive input; it is
+not a product RED. The164 owner prefix and completed recording/observed-path checks
+pass; the interrupted recording/guide tail remains incomplete. Five compiles,
+settings/package/tooling pins, owned cleanup and normal Excel closure pass; delayed
+Excel events are zero through2026-10-15T01:51:41.4885938Z. Monitor/controller handles
+both terminate normally. No error5 or confined mouse is observed. The screensaver
+is running on the Other input desktop when input is lost, but its exact identity
+and causality are unproved. The user requires coming out of the prompt at this
+condition, so no broader run or new build is started. Recording-only plus guide
+regression can finish the unverified tail after an explicit resume and healthy input.
 
 The user explicitly resumed work after explaining that this laptop has required
 OLED protection and lock-screen features are disabled. A fresh native check at

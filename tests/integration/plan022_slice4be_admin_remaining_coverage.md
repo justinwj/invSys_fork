@@ -5,6 +5,13 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Current stop,2026-10-14 18:50:59 Pacific:** inactive input coincides with Other
+desktop/screensaver running; Windows lock/cause is not established. Owner-07
+GREEN60 and static ratchets are retained. Tester355/1 stops safely after its164
+owner prefix; recording/guide tail and broader owner-07/Aggregation coverage remain
+open. Cleanup/preservation and native audit pass. The user requires returning from
+the prompt at this condition; follow Handoff182 after an explicit resume.
+
 **Current Aggregation checkpoint,2026-10-14 Pacific:** restart RED10 PASS/4 FAIL
 and manual/incomplete-persistence RED10 PASS/6 FAIL complete with clean preserved
 closure. The approved owner-06 candidate subsequently passes76/76 packaged authority/
