@@ -46,6 +46,27 @@ procedure maxima are213/83 against1000/200 caps. Only the two intended product
 components differ from38dea294. No exception or deployment is required. Full
 joint-check variants, D13 phase proof and relevant regressions remain open.
 
+**D18 recording protecting RED,2026-10-15 Pacific:** test commit3af831b1 runs
+`-RecordingOnly -Phase RED` on unchanged owner-09 source45336d88. Controller
+`admin-aggregation-controller/e6705f6c596f4dbda68cbf3f7c0fa1cb`, worker
+`slice4be-admin-aggregation/842de5428a9d4899a031f94c74cb1005` completes52 PASS/52
+expected FAIL over104 unique checks. Seven definitions and all ten actual-action
+attempt/result observations are absent. The ordinary callback/form aggregate
+persists exact entities/quantities; global/control/user suppression and source
+preservation pass. Optional-store adapters are installed but unreached because no
+aggregation activity is attempted; their failures establish missing recording,
+not fault-handling causality. All five compiles, settings/package/all483 tooling
+pins, owned cleanup and normal Excel/owned closure pass; delayed native events
+are zero through2026-10-15T19:15:22.0736922Z. No desktop stop or harness exception.
+
+Implementation now adds seven catalog43 controls through the existing provisioning
+observer, explicit owner outcome propagation and catalog/evaluator/expectation
+choices. Only actual callback entry starts OPEN; loading/smoke and source-list
+population stay programmatic. Optional notices recheck captured context/selection.
+Known complete/stopped and indeterminate persistence retain separate outcomes.
+GREEN, recording/guide boundaries, relevant regressions and static gates are pending;
+this is no new replay adapter, promotion or4be-A acceptance.
+
 **Current owner-09 full matrices,2026-10-15 Pacific:** all ten named returns/
 phases pass: both connections45 each, confirmed review72, cancelled review62,
 failed result57, completed result37, completed result with changed UI selection37,
