@@ -329,6 +329,11 @@ function Test-AdminAggregation($Fixture,$Other) {
         if(-not $expected.Count){throw 'No owner-created inventory to aggregate.'}
         [void](Run 'invSys.Core.xlam' 'TestAggregationRoots.SetRoots' @($Fixture.Root,$Other.Root))
         $sourcePins=SourcePins $Fixture;$otherPins=SourcePins $Other
+        if($AdminAggregationYieldGroup){
+            Test-AggregationYields $Fixture $Other $hostBook
+            Check ('Aggregation.YieldGroup.'+$AdminAggregationYieldGroup+'.SourceAuthoritiesAndSnapshotsPreserved') ((Preserved $sourcePins) -and (Preserved $otherPins))
+            return
+        }
         if($AdminAggregationRestartOnly){
             Test-AggregationRestart $Fixture $Other $hostBook
             Check 'Aggregation.Restart.SourceAuthoritiesAndSnapshotsPreserved' ((Preserved $sourcePins) -and (Preserved $otherPins))

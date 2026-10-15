@@ -1,6 +1,6 @@
-# Aggregation prerequisite diagnostic
+# Aggregation authority and output ownership evidence
 
-4be-A remaining Admin coverage,2026-10-13 Pacific. **Diagnostic RED, not acceptance.**
+Original prerequisite diagnostic,2026-10-13 Pacific. **Diagnostic RED, not acceptance.**
 Unchanged unpromoted `deploy/validation-tester-recording-02`, catalog42/179;
 code baseline `546b029b`, docs `0a21a86`. Proposed D8-AGG-01 in v4.11 requires
 approval before product implementation at that diagnostic checkpoint.
@@ -9,6 +9,35 @@ including joint source/authority/feed rechecks, durable honest-retry state and t
 path-only packaged comparison. The approval blocker is cleared. Expanded RED and
 implementation remained pending at approval; local expanded RED is recorded below.
 D8-TESTER-01 remains approved/qualified.
+
+**Named-return protecting RED,2026-10-15 Pacific:** unchanged owner-07 completes
+50 PASS/7 expected FAIL, controller
+`admin-aggregation-controller/cca897e0af654f38bcd7328ee9585cf9`, worker
+`slice4be-admin-aggregation/165a377e9fad4671a9dc3dc18c0ceb54`.
+Entry: `Test-Slice4beAdminAggregation.ps1 -DeployRoot deploy/validation-aggregation-owner-07 -Phase RED -YieldGroup RedFocus`,
+with the owned passive monitor in `resume-d8-agg-01/yield-focus-red-entry-38`.
+Five instrumented compiles and all actual fault-return prerequisites pass; there
+is no harness exception. One source-change fault at each affected return proves:
+
+| Actual return | Confirmed contract failure |
+| --- | --- |
+| Failed connection | No immediate reopening feedback; the failed branch skips its joint return check. |
+| Confirmed retry review | Missing reopening feedback and false cancellation, including a supplemental direct Core refusal assertion. |
+| Cancelled retry review | Missing reopening feedback after the selected source changes. |
+| Failed result dialog | Missing reopening feedback after the injected write failure and source change. |
+| Completed result with selection cleared during the dialog | The return check uses the changed UI selection and misses a changed source from the set used for output. |
+
+No unauthorized persisted output is proved. Connection/review refusals reach no
+writer; existing feed bytes and exact retry receipts remain preserved. The failed
+result follows the verified injected write failure. The completed-result case
+independently verifies every captured source entity/quantity and acknowledges that
+known complete output remains saved. Explicit fresh review resolves known retained
+attempts; final source/authority/snapshot preservation passes. Settings/package/
+tooling pins, owned cleanup and normal Excel/controller/monitor closure pass;
+delayed Excel events are zero through2026-10-15T16:34:05.8110120Z. No desktop stop
+or security/OLED change occurs. Product correction and focused GREEN remain pending
+at this RED checkpoint. Full source/feed/authority variants and phase-return proof
+remain required; the retained218 matrix does not close D8 or4be-A.
 
 **Retained boundary/path verification,2026-10-15 Pacific:** the same frozen owner-07
 now has218 distinct passing assertions, retaining every name in the earlier215-check

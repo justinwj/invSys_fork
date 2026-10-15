@@ -1,7 +1,9 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-tester-recording-02',[ValidateSet('RED','GREEN')][string]$Phase='RED',[string]$DesktopMonitorReport='',[switch]$PathComparison,[switch]$BoundaryMatrix,[switch]$WriteBoundariesOnly,[switch]$RestartOnly,[switch]$CompletionOnly,[ValidateSet('All','Inspection','Write','Ownership')][string]$BoundaryGroup='All',[ValidateSet('All','UnknownOutputColumn')][string]$BoundaryCase='All')
+param([string]$DeployRoot='deploy/validation-tester-recording-02',[ValidateSet('RED','GREEN')][string]$Phase='RED',[string]$DesktopMonitorReport='',[switch]$PathComparison,[switch]$BoundaryMatrix,[switch]$WriteBoundariesOnly,[switch]$RestartOnly,[switch]$CompletionOnly,[ValidateSet('All','Inspection','Write','Ownership')][string]$BoundaryGroup='All',[ValidateSet('All','UnknownOutputColumn')][string]$BoundaryCase='All',
+    [ValidateSet('','RedFocus','ConnectionFailed','ConnectionSucceeded','Confirmation','ConfirmationCancelled','ResultCompleted','ResultCompletedSelectionChanged','ResultFailed','BeforeSave','AfterSave','AfterPromotion')][string]$YieldGroup='')
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if($BoundaryCase -ne 'All' -and $BoundaryGroup -ne 'Write'){throw 'The focused unknown-column case requires the Write boundary group.'}
+if($YieldGroup -and ($BoundaryGroup -ne 'All' -or $BoundaryCase -ne 'All' -or $PathComparison -or $WriteBoundariesOnly -or $RestartOnly -or $CompletionOnly)){throw 'Named Aggregation yields exclude other focused modes.'}
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Aggregation owner gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
 $snapshot=Get-InvSysTestSettingsSnapshot
@@ -25,9 +27,10 @@ try {
         '-WaitForExcelReadyForTest','-ExcelReadyReadLimitForTest','40')
     if($DesktopMonitorReport){$workerArgs+=@('-DesktopMonitorReport',$DesktopMonitorReport)}
     if($PathComparison){$workerArgs+='-AdminAggregationPathComparison'}
-    if($BoundaryMatrix -or $WriteBoundariesOnly -or $RestartOnly -or $CompletionOnly -or ($BoundaryGroup -ne 'All')){$workerArgs+='-AdminAggregationBoundaryMatrix'}
+    if($BoundaryMatrix -or $WriteBoundariesOnly -or $RestartOnly -or $CompletionOnly -or ($BoundaryGroup -ne 'All') -or $YieldGroup){$workerArgs+='-AdminAggregationBoundaryMatrix'}
     if($BoundaryGroup -ne 'All'){$workerArgs+=@('-AdminAggregationBoundaryGroup',$BoundaryGroup)}
     if($BoundaryCase -ne 'All'){$workerArgs+=@('-AdminAggregationBoundaryCase',$BoundaryCase)}
+    if($YieldGroup){$workerArgs+=@('-AdminAggregationYieldGroup',$YieldGroup)}
     if($WriteBoundariesOnly){$workerArgs+='-AdminAggregationWriteBoundariesOnly'}
     if($RestartOnly){$workerArgs+=@('-AdminAggregationRestartOnly','-ViewerStartupPackageStateForTest','SavedCopies','-AggregationOwnedFixtureRootForTest',$ownedFixture)}
     if($CompletionOnly){$workerArgs+='-AdminAggregationCompletionOnly'}
