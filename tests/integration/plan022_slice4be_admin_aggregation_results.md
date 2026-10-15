@@ -48,8 +48,9 @@ joint-check variants, D13 phase proof and relevant regressions remain open.
 
 **Current owner-09 full matrices,2026-10-15 Pacific:** failed/successful connection
 returns each pass45/45, confirmed review72/72, cancelled review62/62 and failed
-result57/57. Reproducible `reports/runtime/aggregation-joint-matrix-09/verify.py` verifies257 distinct passing
-assertions on identical five-package hashes/all481 tooling pins across these five
+result57/57 and completed result37/37. Reproducible
+`reports/runtime/aggregation-joint-matrix-09/verify.py` verifies288 distinct passing
+assertions on identical five-package hashes/all481 tooling pins across these six
 groups. Each covers changed/missing source, changed feed, sign-out and saved-rights
 revocation. Five compiles, final source preservation, settings/package/tooling pins,
 owned cleanup, normal Excel/controller/monitor closure and zero delayed native
@@ -62,6 +63,7 @@ events pass. Remaining full result/phase variants are not yet qualified.
 | Confirmed review72 | `06390ab3601340a39488d0d572223cdd` / `1a7742aff6e648c6852fd7a1b50da12a` | 2026-10-15T18:09:51.1457436Z |
 | Cancelled review62 | `4cc39d36560b4831a521c96169084c68` / `caa1942d4040493bac82a78324e0a297` | 2026-10-15T18:18:54.7546652Z |
 | Failed result57 | `cb9fe876f3954918ac5be5937002856c` / `04d3cdaf942c4b0a8dc51273d8181f2b` | 2026-10-15T18:26:15.9872053Z |
+| Completed result37 | `02f9696e6ca3469f98b5e5076cc69e29` / `16e6e3bb172c451595917095be3736be` | 2026-10-15T18:33:49.1540868Z |
 
 The initial sequential controller stopped after the passing successful-connection
 trial because its provenance parser did not accept Windows separators. Independent
