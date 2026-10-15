@@ -123,6 +123,12 @@ End Function
 '@)
 }
 
+function Get-AdminInventoryEntryHash([string]$Path) {
+    $stream=[IO.FileStream]::new($Path,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::ReadWrite)
+    try {(Get-FileHash -InputStream $stream).Hash}
+    finally {$stream.Dispose()}
+}
+
 function Get-AdminInventoryEntryFacts($Fixture) {
     $path=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
     $book=$null;$opened=$false
@@ -133,7 +139,7 @@ function Get-AdminInventoryEntryFacts($Fixture) {
         $legacy=@($book.Worksheets|ForEach-Object {$_.ListObjects}|ForEach-Object {$_.ListColumns}|Where-Object {$_.Name.Trim().ToUpperInvariant() -ceq 'ROW'}).Count
         $keys=@();foreach($row in $log.ListRows){$key=[string]$row.Range.Cells.Item(1,$log.ListColumns.Item('System_Key').Index).Value2;if($key){$keys+=$key}}
         $lastDelta=if($log.ListRows.Count){[double]$log.ListRows.Item($log.ListRows.Count).Range.Cells.Item(1,$log.ListColumns.Item('QtyDelta').Index).Value2}else{0}
-        [pscustomobject]@{LogRows=$log.ListRows.Count;AppliedRows=$applied.ListRows.Count;LegacyHeaders=$legacy;DistinctKeys=@($keys|Select-Object -Unique).Count;LastDelta=$lastDelta;Saved=$book.Saved;FileHash=(Get-FileHash -LiteralPath $path).Hash}
+        [pscustomobject]@{LogRows=$log.ListRows.Count;AppliedRows=$applied.ListRows.Count;LegacyHeaders=$legacy;DistinctKeys=@($keys|Select-Object -Unique).Count;LastDelta=$lastDelta;Saved=$book.Saved;FileHash=(Get-AdminInventoryEntryHash $path)}
     } finally {if($opened){$book.Close($false)}}
 }
 
@@ -146,11 +152,11 @@ function Test-AdminInventoryEntry($Fixture,$Other) {
     $hostBook.SaveAs((Join-Path $runRoot 'inventory-entry-host.xlsx'),51)
     $otherBook.SaveAs((Join-Path $runRoot 'inventory-entry-unrelated.xlsx'),51)
     $otherSheetCount=$otherBook.Worksheets.Count
-    $authHash=(Get-FileHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))).Hash
-    $configHash=(Get-FileHash $Fixture.Config).Hash
-    $otherInventoryHash=(Get-FileHash (Join-Path $Other.Root ($Other.Warehouse+'.invSys.Data.Inventory.xlsb'))).Hash
-    $otherAuthHash=(Get-FileHash (Join-Path $Other.Root ($Other.Warehouse+'.invSys.Auth.xlsb'))).Hash
-    $otherConfigHash=(Get-FileHash $Other.Config).Hash
+    $authHash=Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))
+    $configHash=Get-AdminInventoryEntryHash $Fixture.Config
+    $otherInventoryHash=Get-AdminInventoryEntryHash (Join-Path $Other.Root ($Other.Warehouse+'.invSys.Data.Inventory.xlsb'))
+    $otherAuthHash=Get-AdminInventoryEntryHash (Join-Path $Other.Root ($Other.Warehouse+'.invSys.Auth.xlsb'))
+    $otherConfigHash=Get-AdminInventoryEntryHash $Other.Config
     try {
         foreach($mode in @('Baseline','ActiveWorkbook','SignedOut','OtherWarehouseAdmin','ReplacementSession')){
             SelectTarget $Fixture
@@ -178,8 +184,8 @@ function Test-AdminInventoryEntry($Fixture,$Other) {
             [pscustomobject]@{Case=$mode;ModalAcceptReached=$actionReached;InventoryWriteObserved=$wrote;SavedInventoryBytesChanged=($after.Saved -eq $true -and $after.FileHash -cne $before.FileHash);ReplacementSessionRefusalContractNotAssumed=($mode -ceq 'ReplacementSession')}|
                 ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'inventory-entry-observations.jsonl')
         }
-        Check 'InventoryEntry.SourceAuthAndConfigPreserved' ($authHash -ceq (Get-FileHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))).Hash -and $configHash -ceq (Get-FileHash $Fixture.Config).Hash)
-        Check 'InventoryEntry.OtherWarehouseInventoryPreserved' ($otherInventoryHash -ceq (Get-FileHash (Join-Path $Other.Root ($Other.Warehouse+'.invSys.Data.Inventory.xlsb'))).Hash)
-        Check 'InventoryEntry.OtherWarehouseAuthorityPreserved' ($otherAuthHash -ceq (Get-FileHash (Join-Path $Other.Root ($Other.Warehouse+'.invSys.Auth.xlsb'))).Hash -and $otherConfigHash -ceq (Get-FileHash $Other.Config).Hash)
+        Check 'InventoryEntry.SourceAuthAndConfigPreserved' ($authHash -ceq (Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))) -and $configHash -ceq (Get-AdminInventoryEntryHash $Fixture.Config))
+        Check 'InventoryEntry.OtherWarehouseInventoryPreserved' ($otherInventoryHash -ceq (Get-AdminInventoryEntryHash (Join-Path $Other.Root ($Other.Warehouse+'.invSys.Data.Inventory.xlsb'))))
+        Check 'InventoryEntry.OtherWarehouseAuthorityPreserved' ($otherAuthHash -ceq (Get-AdminInventoryEntryHash (Join-Path $Other.Root ($Other.Warehouse+'.invSys.Auth.xlsb'))) -and $otherConfigHash -ceq (Get-AdminInventoryEntryHash $Other.Config))
     } finally {$hostBook.Close($false);$otherBook.Close($false)}
 }

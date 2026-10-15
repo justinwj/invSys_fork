@@ -1,5 +1,20 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Initial harness checkpoint,2026-10-15 Pacific:** trial113 ends7 PASS/1 harness
+exception before any modal action. All five instrumented compiles, probe-before-form
+guard and generated Seed pass; an ordinary file-hash read conflicts with Excel's
+existing writer handle. Controller `admin-inventory-entry-controller/10aecb25b0da478fa319a093e65704b6`
+records preserved settings/packages/all485 tooling/fixture cleanup and normal owned
+closure; delayed native audit through23:49:59.1215207Z finds zero Excel failures.
+No desktop stop occurs. This is not product RED or unauthorized-write evidence.
+
+The diagnostic now uses the existing Shipping/Aggregation read-only shared-stream
+hashing pattern. A disposable canary reproduces the ordinary-reader conflict,
+verifies the shared hash equals its original hash, preserves the held writer's
+position and confirms unchanged bytes after closing both handles. No permission,
+Excel state, product behavior or assertion changes. All485 tooling/four fresh trial
+scripts parse. Fresh114 is prepared to reach the same actual Ribbon/modal cases.
+
 Prepared2026-10-15 Pacific against unchanged product source1c9bff87 and unpromoted
 `validation-aggregation-recording-02`. No product correction, new ControlId or
 architectural decision is approved by this test preparation. D14 identity and
