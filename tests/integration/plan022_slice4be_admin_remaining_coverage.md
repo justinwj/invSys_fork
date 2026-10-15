@@ -5,6 +5,15 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Current error5 stop,2026-10-14 21:50:25 Pacific:** write-group56/1 is partial after
+actual error5; unknown-column and final group-preservation assertions are absent.
+First seven cases pass. Settings/pins/owned cleanup, normal Excel/wrapper closure
+and delayed native audit pass. Qualified Tester444, retry14, inspection42 and
+integrity60/static03 stand. Full retained-matrix proof and additional actual-yield/
+post-save/post-promotion checks remain required before Aggregation recording and
+broader4be-A/B0 acceptance. No source/security change or new approval is implied.
+Handoff184 records continuation after user resume.
+
 **Aggregation retry restart GREEN,2026-10-14 Pacific:** owner-07 passes14/14 after
 actual disposable add-in unload/reload. Pending evidence survives, fresh-form auto-
 promotion refuses, feed/source bytes are preserved and native closure is clean.

@@ -10,6 +10,23 @@ path-only packaged comparison. The approval blocker is cleared. Expanded RED and
 implementation remained pending at approval; local expanded RED is recorded below.
 D8-TESTER-01 remains approved/qualified.
 
+**Current error5 stop,2026-10-14 21:50:25 Pacific:** the write group ends
+**56 PASS/1 stop-related harness failure**, controller
+`admin-aggregation-controller/46c9711282d440539105b15bd027ce9b`, worker
+`slice4be-admin-aggregation/d511326b4f9d4d54b08ad5508fda2ef7`.
+Its first seven cases pass; `UnknownOutputColumn` has no assertions and the final
+whole-group source-preservation check was not reached. Do not call the group GREEN.
+The monitor records actual error5 at2026-10-15T04:50:25.8234260Z (675 samples,
+one inactive-input sample, Other desktop, screensaver running; lock/mouse/other
+counts0). The current call returns safely, then the guard refuses further dispatch
+with a stale-heartbeat error. No security bypass or OLED setting change was tried.
+Settings/package/tooling pins, owned cleanup, normal Excel/owned wrapper closure
+pass; delayed Excel events are zero through04:52:29.5788230Z, with CIM confirming
+no Excel process at04:53:56.9331610Z. Tester444, retry14, inspection42 and prior
+integrity60/static03 remain scoped verified evidence. Handoff184 records resumption;
+Ownership/authority-path and full retained-matrix proof plus the additional
+yield/phase-return tests, recording/guidance and4be-A/B0 remain incomplete.
+
 **Retry restart GREEN,2026-10-14 Pacific:** owner-07 passes14/14 through an actual
 five-add-in unload/reload in its owned Excel host, controller
 `admin-aggregation-controller/38dc2b7101d54d46a0a9bd6b20f61b26`, worker
@@ -21,13 +38,41 @@ settings/package/tooling pins, owned fixture removal, normal Excel and owned wra
 closure pass; delayed Excel events are zero through2026-10-15T04:31:27.6552742Z.
 This is add-in restart proof, not Excel-process or machine-crash qualification.
 
-The unchanged broader matrix is now selectable as Inspection(5), Write(8) and
+**Inspection group GREEN42,2026-10-14 Pacific:** owner-07 passes42/42, controller
+`admin-aggregation-controller/128e224ae8334ea9ba8d9226b2c9f3ec`, worker
+`slice4be-admin-aggregation/fa34427f80174291a7010912b3e66478`.
+Changed/missing source, changed trusted feed, sign-out and saved-rights revocation
+after inspection all refuse before the writer, preserve output and avoid redirection
+or entered-path feedback. Source authorities/snapshots are preserved. Five compiles,
+settings/package/tooling pins, owned cleanup, normal Excel/wrapper closure and zero
+delayed native events pass through2026-10-15T04:38:20.8937157Z. Write, Ownership and
+authority/path groups plus full name-level retention remain open.
+
+The unchanged broader matrix is selectable as Inspection(5), Write(8) and
 Ownership(6), with overlap/closed-original/direct-Core assertions in Ownership and
 the full authority/path cases run separately. All19 cases retain their exact default
 order and assertions; all four changed harness files parse. D13 behavioral RED
 does not apply to selection-only plumbing. Composite name-level retention must
-cover the previous full matrix before broad GREEN is claimed. Inspection is running;
-other groups remain pending. No product source or security setting changes.
+cover the previous full matrix before broad GREEN is claimed. Inspection passes;
+Write is interrupted and other groups remain pending. No product source or security
+setting changes.
+
+**Additional approved-contract coverage still required:** the existing19 cases
+exercise post-inspection and pre-save changes, but do not inject source/feed/
+authority changes at connection, retry-confirmation or result-dialog returns.
+AFTER_SAVE currently injects write failure, and AFTER_PROMOTION injects partial
+output; source changed/missing, feed changed, sign-out and saved-rights loss also
+need those phase-return checks. No explicit DoEvents/picker site was found in the
+Core Aggregation command modules;
+absent sites must be identified rather than claimed covered. A static hypothesis
+is that `frmAggregationSources.mBtnConnect_Click` exits on connection failure before
+its post-return joint check. Reproduce the actual-handler timing and visible
+reopening requirement before any product edit; this is not yet runtime RED.
+Also test whether confirmed retry review followed by source/feed/authority refusal
+incorrectly retains `ResolveRetry`'s default cancellation message; that is another
+static hypothesis, not an established runtime defect.
+These tests extend the approved D8/D13 verification. A retained-matrix GREEN alone
+will not close the full D8-AGG-01 contract or4be-A.
 
 **Tester checkpoint,2026-10-14 Pacific:** the resumed owner-07 Tester GuideOnly
 gate passes127/127 with eight reviewed captures and clean preserved native closure
