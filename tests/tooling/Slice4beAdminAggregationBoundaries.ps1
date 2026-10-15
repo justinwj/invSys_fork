@@ -184,6 +184,7 @@ function Test-AggregationBoundaries($Fixture,$Other,$HostBook,$OtherBook,[ref]$O
                 default{$inspection+$write+$ownership}
             }
         }
+        if($AdminAggregationBoundaryCase -ne 'All'){$cases=@($cases|Where-Object {$_ -ceq $AdminAggregationBoundaryCase})}
         foreach($case in $cases){
             SelectTarget $Fixture
             [void](Core 'Arm' @('','','','',''))

@@ -5,7 +5,13 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
-**Current error5 stop,2026-10-14 21:50:25 Pacific:** write-group56/1 is partial after
+**Resumed write tail,2026-10-15 Pacific:** owner-07 passes16/16 for the existing
+unknown-column action and final Write-group source-preservation assertion, with
+clean preserved native/owned closure. The prior56/1 stays partial; full retention,
+remaining groups, actual-yield/phase tests and broader4be-A/B0 remain required.
+See the [Aggregation receipt](plan022_slice4be_admin_aggregation_results.md).
+
+**Previous error5 stop,2026-10-14 21:50:25 Pacific:** write-group56/1 is partial after
 actual error5; unknown-column and final group-preservation assertions are absent.
 First seven cases pass. Settings/pins/owned cleanup, normal Excel/wrapper closure
 and delayed native audit pass. Qualified Tester444, retry14, inspection42 and

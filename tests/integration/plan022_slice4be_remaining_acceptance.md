@@ -1,12 +1,19 @@
 # Slice 4be remaining acceptance checklist
 
-Last reviewed: 2026-10-14 UTC. **4be-A remains incomplete.** Architecture v4.11,
+Last reviewed: 2026-10-15 UTC. **4be-A remains incomplete.** Architecture v4.11,
 the designated Plan022 and the controls catalog govern; this index records evidence
 and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
-**Current error5 stop,2026-10-14 21:50:25 Pacific:** write-group56 PASS/1 stop-related
+**Resumed write tail,2026-10-15 Pacific:** owner-07 passes16/16 for the existing
+unknown-column action and final Write-group preservation assertion, with compiles,
+pins/settings/cleanup, normal owned closure and zero delayed native events. The
+earlier56/1 remains partial until exact same-package/assertion retention is proved.
+Remaining groups, yield/phase tests, recording/guidance and4be-A/B0 stay open; see
+the [Aggregation receipt](plan022_slice4be_admin_aggregation_results.md).
+
+**Previous error5 stop,2026-10-14 21:50:25 Pacific:** write-group56 PASS/1 stop-related
 harness failure is incomplete; unknown-column and final whole-group preservation
 assertions were not reached. First seven cases pass. Settings/pins/owned cleanup,
 normal Excel/wrapper closure and zero delayed native events pass through

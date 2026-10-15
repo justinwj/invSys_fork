@@ -1,6 +1,7 @@
 [CmdletBinding()]
-param([string]$DeployRoot='deploy/validation-tester-recording-02',[ValidateSet('RED','GREEN')][string]$Phase='RED',[string]$DesktopMonitorReport='',[switch]$PathComparison,[switch]$BoundaryMatrix,[switch]$WriteBoundariesOnly,[switch]$RestartOnly,[switch]$CompletionOnly,[ValidateSet('All','Inspection','Write','Ownership')][string]$BoundaryGroup='All')
+param([string]$DeployRoot='deploy/validation-tester-recording-02',[ValidateSet('RED','GREEN')][string]$Phase='RED',[string]$DesktopMonitorReport='',[switch]$PathComparison,[switch]$BoundaryMatrix,[switch]$WriteBoundariesOnly,[switch]$RestartOnly,[switch]$CompletionOnly,[ValidateSet('All','Inspection','Write','Ownership')][string]$BoundaryGroup='All',[ValidateSet('All','UnknownOutputColumn')][string]$BoundaryCase='All')
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
+if($BoundaryCase -ne 'All' -and $BoundaryGroup -ne 'Write'){throw 'The focused unknown-column case requires the Write boundary group.'}
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Aggregation owner gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
 $snapshot=Get-InvSysTestSettingsSnapshot
@@ -26,6 +27,7 @@ try {
     if($PathComparison){$workerArgs+='-AdminAggregationPathComparison'}
     if($BoundaryMatrix -or $WriteBoundariesOnly -or $RestartOnly -or $CompletionOnly -or ($BoundaryGroup -ne 'All')){$workerArgs+='-AdminAggregationBoundaryMatrix'}
     if($BoundaryGroup -ne 'All'){$workerArgs+=@('-AdminAggregationBoundaryGroup',$BoundaryGroup)}
+    if($BoundaryCase -ne 'All'){$workerArgs+=@('-AdminAggregationBoundaryCase',$BoundaryCase)}
     if($WriteBoundariesOnly){$workerArgs+='-AdminAggregationWriteBoundariesOnly'}
     if($RestartOnly){$workerArgs+=@('-AdminAggregationRestartOnly','-ViewerStartupPackageStateForTest','SavedCopies','-AggregationOwnedFixtureRootForTest',$ownedFixture)}
     if($CompletionOnly){$workerArgs+='-AdminAggregationCompletionOnly'}

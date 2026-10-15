@@ -10,7 +10,23 @@ path-only packaged comparison. The approval blocker is cleared. Expanded RED and
 implementation remained pending at approval; local expanded RED is recorded below.
 D8-TESTER-01 remains approved/qualified.
 
-**Current error5 stop,2026-10-14 21:50:25 Pacific:** the write group ends
+**Resumed write tail GREEN,2026-10-15 Pacific:** frozen owner-07 passes16/16,
+controller `admin-aggregation-controller/6b7d5f9efd21409daf6a516bff1605cf`, worker
+`slice4be-admin-aggregation/83d795bcb546496ba4eeaaca86ca48b9`.
+The existing `UnknownOutputColumn` case persists complete output and preserves its
+custom value; feedback excludes entered paths, no redirection occurs, and the final
+Write-group source/authority/snapshot preservation assertion passes. Five compiles,
+settings/package/tooling pins, owned cleanup and normal Excel/controller/monitor
+closure pass; delayed Excel events are zero through2026-10-15T16:08:15.3132193Z.
+The `-BoundaryGroup Write -BoundaryCase UnknownOutputColumn` selector changes only
+selection in three parsed scripts; default cases/order/assertions are unchanged.
+D13 behavioral RED does not apply to this selection-only plumbing. The earlier56/1
+run remains partial; retaining its seven passing cases requires package and exact
+assertion-name comparison. Ownership/authority-path, composite retention, extra
+yield/phase checks and broader4be-A/B0 remain open. Product source/static03 are
+unchanged. Passive access succeeded before testing; no protection setting changed.
+
+**Previous error5 stop,2026-10-14 21:50:25 Pacific:** the write group ends
 **56 PASS/1 stop-related harness failure**, controller
 `admin-aggregation-controller/46c9711282d440539105b15bd027ce9b`, worker
 `slice4be-admin-aggregation/d511326b4f9d4d54b08ad5508fda2ef7`.
