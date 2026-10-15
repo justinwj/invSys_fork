@@ -1210,6 +1210,16 @@ function CaptureOwnedFormEvidence([string]$Title,[string]$FileName,[long]$Window
         if($clicked){Start-Sleep -Milliseconds 200}
         try {CaptureFormEvidence $Title $FileName $WindowHandle; return}
         catch {
+            if($_.Exception.GetBaseException().Message -ceq 'Requested form content is obscured.'){
+                $captureFailure=$_
+                try {
+                    # Existing native facts contain identifiers/classes/geometry only.
+                    # Preserve refusal; never publish covered pixels or retry the action.
+                    [pscustomobject]@{Image=$FileName;Attempt=$attempt;PhysicalCaptionFacts=[InvSysSettingsCapture]::CaptionFacts()}|
+                        ConvertTo-Json -Depth 3 -Compress|Add-Content (Join-Path $reportRoot 'capture-obscured-failure.jsonl')
+                }catch{}
+                throw $captureFailure
+            }
             if($_.Exception.GetBaseException().Message -cne 'Requested form is not in the foreground.'){throw}
             # Window/process identifiers and classes only; never captions or workbook values.
             $activationResult=if($null -eq $activated){'Unavailable'}else{[string]$activated}

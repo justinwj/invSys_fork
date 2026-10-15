@@ -5,6 +5,16 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Current six-group qualification,2026-10-15 Pacific:** fresh NamedReturns57 and
+FeedReopen29 retain the interrupted passing prefix and join the four complete
+groups below, proving273 distinct current-candidate checks on identical packages/
+all484 tooling pins. Normal preserved closure passes through21:55:07.4471793Z,
+without another desktop stop. The composite does not relabel interrupted94 as a
+whole GREEN. Guide135/eight reviewed captures, recording125 and cold/static gates
+stand on source1c9bff87. Current Receiving B0 is running with byte-identical pinned
+candidate copies/template; shared regressions, Release1 fixture conformance and
+remaining control coverage keep4be-A open. See the Aggregation receipt.
+
 **Current regression checkpoint,2026-10-15 Pacific:** path88/Ownership60/
 Completion60/Restart14 qualify199 distinct checks on unchanged recording02/
 source1c9bff87, with identical five-package/all484 tooling pins and clean preserved

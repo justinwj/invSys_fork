@@ -1,5 +1,28 @@
 # Aggregation authority and output ownership evidence
 
+**Current six-group regression qualification,2026-10-15 Pacific:** fresh unchanged
+NamedReturns100 passes57/57, retaining all40 passing checks from interrupted94;
+FeedReopen101 passes29/29. Together with the four complete groups below, this
+qualifies273 distinct checks on identical five-package/all484 tooling pins.
+`regressions-recording02-return-resume-entry-102/verify.py --require-all` reproduces
+the composite and exact interrupted-prefix retention; it explicitly reports
+SingleRun=False. Earlier94 remains40/1 stop evidence, never a whole GREEN.
+
+| Group | PASS | Controller | Worker | Native audit UTC |
+|---|---:|---|---|---|
+| NamedReturns | 57 | b82dbb6a8b324cebbc470bb4e5d1d07f | 36bee37bfdc549138ab60c47d84bb957 | 21:49:24.1468352Z |
+| FeedReopen | 29 | 36c4dd39ca8c4c1eb71c357661b691f1 | b1e60d124b9f4058950c458dbdb46f02 | 21:55:07.4471793Z |
+
+Both resumed groups preserve settings/packages/tooling/sources, remove only their
+owned fixtures and close Excel/owned wrappers normally with zero delayed native
+events and no new desktop stop. Feed restoration cannot revive the old captured
+form in the same session; reopening persists the exact selected set. Failed and
+completed-result returns preserve known output/receipts and require reopening.
+Product source1c9bff87, catalog43/186 and static ratchets are unchanged. Current
+Receiving B0 now runs against byte-identical candidate copies plus the pinned
+template; shared regressions, Release1 fixture conformance and remaining control
+coverage still prevent full4be-A acceptance. No current/NAS promotion occurs.
+
 **Current regression checkpoint,2026-10-15 Pacific:** unchanged recording02/
 source1c9bff87 qualifies four groups with identical five-package/all484-tooling
 pins. `regressions-recording02-batch-entry-89/verify.py` reproduces199 distinct

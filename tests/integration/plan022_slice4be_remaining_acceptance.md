@@ -6,6 +6,16 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Current six-group qualification,2026-10-15 Pacific:** recording02/source1c9bff87
+qualifies273 distinct D8 regression checks: path88/Ownership60/Completion60/
+Restart14 plus fresh NamedReturns57/FeedReopen29. All five packages/all484 tooling
+pins match; the fresh57 retains interrupted94's40 passing checks. Preserved normal
+closure and zero delayed native events pass through21:55:07.4471793Z. This is a
+qualified composite, not a whole-run GREEN for interrupted94. Recording125,
+independent guide135/eight reviewed captures and cold/static gates stand. Current
+Receiving B0 is running; shared regressions, Release1 fixture conformance and
+remaining coverage keep4be-A open. Exact provenance is in the Aggregation receipt.
+
 **Current Aggregation qualification,2026-10-15 Pacific:** recording02/source
 1c9bff87 has recording104/outcome27 (125 distinct), independent guide135 with eight
 reviewed captures, full static ratchets and all five cold compiles. Exact compiled

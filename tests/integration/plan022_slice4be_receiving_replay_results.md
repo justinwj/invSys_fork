@@ -1,5 +1,34 @@
 # Slice 4be-A / early B0: Receiving replay
 
+**Current-candidate harness checkpoint,2026-10-15 Pacific:** source1c9bff87/
+recording02 trial96 ends44 PASS/2 harness exceptions; no product assertion fails.
+Controller `receiving-b0-current-controller/175ab58b77174a44a450f6e6f639a8ff`, worker
+`slice4be-receiving-replay/710e0db572a342dca0453d0b888b09dd`. Five compiles,
+generated Training runtime, actual source receipt/application, redaction, profile
+versioning/validation and maximized state/control-fit checks pass. Native screen
+capture then refuses with fixed error `Requested form content is obscured.`
+No maximized acceptance image is published. Remaining replay/resize checks are
+unreached; the earlier General02 qualification below retains its historical scope.
+
+The child cleanup also fails, leaving exactly five known disposable startup-probe
+packages. Normal Excel/worker/controller/monitor closure, settings/package/all484
+tooling preservation and zero delayed native events pass through21:58:55.9692400Z;
+desktop stop counters are zero. The controller's OwnedFixtureRemoved flag covers
+its own empty parent allocation, not the failed child cleanup. After confirmed
+process exit, the exact generated residue is checked for package-only content and
+absence of reparse points, then removed at22:04:11.7941885Z. The ignored trial96
+post-exit receipt preserves OriginalChildCleanupPassed=False. No operational
+workbook is deleted and no product RED or current B0 acceptance is claimed.
+
+Failure reporting now persists the existing caption-failure facts on obscured
+capture, without retrying, saving covered pixels, emitting captions/contents or
+changing native capture code. Five isolated checks pass: original refusal,
+single attempt, no published image, fixed schema and caption-value redaction.
+The extracted native C# is unchanged. This is non-contract diagnostic evidence;
+no new behavioral RED is manufactured. Fresh full trial103 continues on the same
+five candidate packages/template; no checks or guards are removed. Current B0,
+shared regressions, Release1 fixture conformance and comprehensive4be-A remain open.
+
 Last verified: 2026-10-11 UTC. D18-REPLAY-01 is approved. Unchanged General02
 passes **121/121**, retaining all117 prior checks and adding four capture-settling
 checks. Both restored forms now have intact reviewed images. The capture helper
