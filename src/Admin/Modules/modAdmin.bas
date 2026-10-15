@@ -2397,7 +2397,7 @@ Public Sub Admin_AggregateGlobalSnapshot_Click()
 
     Set targetWb = ResolveInteractiveAdminWorkbook()
     Call modRoleWorkbookSurfaces.EnsureAdminLegacyWorkbookSurface(targetWb, report)
-    frmAggregationSources.Show
+    frmAggregationSources.ObserveEntry: frmAggregationSources.Show
 End Sub
 
 ' D13 packaged form initialization smoke. This is not a Ribbon command and does

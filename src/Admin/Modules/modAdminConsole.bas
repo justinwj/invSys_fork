@@ -999,10 +999,10 @@ Public Function RunHQAggregationFromSourceSet(ByVal sourceFiles As Collection, _
                                               Optional ByVal warehouseId As String = "", _
                                               Optional ByVal adminWb As Workbook = Nothing, _
                                               Optional ByRef report As String = "", _
-                                              Optional ByVal sourceContext As String = "") As Boolean
-    Dim auditWb As Workbook, identity() As String, paths As String, outcome As String, savedOutput As Boolean
+                                              Optional ByVal sourceContext As String = "", Optional ByRef outcome As String = "") As Boolean
+    Dim auditWb As Workbook, identity() As String, paths As String, savedOutput As Boolean
     On Error GoTo Failed
-    report = "Source context changed. Reopen Aggregation and refresh the selected sources."
+    report = "Source context changed. Reopen Aggregation and refresh the selected sources.": outcome = "DENIED"
     If adminWb Is Nothing Or sourceContext = "" Then Exit Function
     paths = SerializeAggregationSourceFilesAdmin(sourceFiles)
     If Not modAggregationCommands.CheckForm(sourceContext, paths) Then Exit Function
@@ -1015,7 +1015,7 @@ Public Function RunHQAggregationFromSourceSet(ByVal sourceFiles As Collection, _
     savedOutput = modAggregationCommands.Aggregate(sourceContext, paths, report, outcome)
     If savedOutput Then
         If Not modAggregationCommands.CheckForm(sourceContext, paths) Then
-            report = "Complete output was saved. Source context changed; reopen Aggregation."
+            report = "Complete output was saved. Source context changed; reopen Aggregation.": outcome = "COMPLETED_STOPPED"
             Exit Function
         End If
         AppendAuditEntry auditWb, "HQ_AGGREGATE", identity(0), identity(1), identity(2), _
@@ -1025,9 +1025,9 @@ Public Function RunHQAggregationFromSourceSet(ByVal sourceFiles As Collection, _
     Exit Function
 Failed:
     If savedOutput Then
-        report = "Complete output was saved, but the workbook audit could not be updated."
+        report = "Complete output was saved, but the workbook audit could not be updated.": outcome = "COMPLETED_STOPPED"
     Else
-        report = "Aggregation did not complete. Review the output and retained attempt before retrying."
+        report = "Aggregation did not complete. Review the output and retained attempt before retrying.": outcome = "FAILED"
     End If
 End Function
 
