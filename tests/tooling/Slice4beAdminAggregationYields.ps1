@@ -116,6 +116,10 @@ End Function
 }
 
 function Test-AggregationYields($Fixture,$Other,$HostBook) {
+    if($AdminAggregationYieldGroup -eq 'FeedReopen'){
+        Test-AggregationFeedReopen $Fixture $Other $HostBook
+        return
+    }
     function Call([string]$Name,[object[]]$Values=@()){Run 'invSys.Admin.xlam' ('TestAggregation.'+$Name) $Values}
     function Core([string]$Name,[object[]]$Values=@()){Run 'invSys.Core.xlam' ('TestAggregationBoundary.'+$Name) $Values}
     function SavedHash([string]$Path){(Get-FileHash -LiteralPath $Path).Hash}

@@ -46,6 +46,26 @@ procedure maxima are213/83 against1000/200 caps. Only the two intended product
 components differ from38dea294. No exception or deployment is required. Full
 joint-check variants, D13 phase proof and relevant regressions remain open.
 
+**Observed-feed reopening protecting RED,2026-10-15 Pacific:** unchanged owner-08
+completes21 PASS/8 expected FAIL, controller
+`admin-aggregation-controller/281b451eb23f4e88a03979420f9e4dde`, worker
+`slice4be-admin-aggregation/9faf8a272429424d8a33513fe36b1b71`.
+Entry: `-DeployRoot deploy/validation-aggregation-owner-08 -Phase RED -YieldGroup FeedReopen`.
+Both actual failed/successful connection-return branches first observe a changed
+trusted saved feed and require reopening. Restoring only the disposable Config bytes
+keeps the same live session and form, yet the old capture reaches the writer,
+reports completion and changes feed bytes; reopening feedback is lost. Four refusal/
+preservation assertions fail per branch. Both fresh-capture positive controls persist
+every exact selected entity/quantity. No unexpected retry artifact, redirect, source
+mutation or harness exception occurs. This is a stale-capture contract defect with
+a live authorized actor, not proof of an unauthorized user's persisted output.
+Five compiles, settings/package/tooling pins, owned cleanup, source preservation
+and normal Excel/controller/monitor closure pass; delayed native events are zero
+through2026-10-15T17:26:55.9302623Z. The approved rule that a changed trusted feed
+requires reopening governs the correction. Product source is unchanged at this RED
+checkpoint; expire the observed-untrusted capture in Core, then prove focused GREEN
+on a fresh candidate. Earlier owner-08 matrices retain their stated scope.
+
 **Full confirmed-review variants GREEN72,2026-10-15 Pacific:** owner-08 passes72/72,
 controller `admin-aggregation-controller/0beecedc328941eb9fc38a28eb0834f6`, worker
 `slice4be-admin-aggregation/a035c83f0a33466484c2d425d9f957f2`. Changed/missing source,

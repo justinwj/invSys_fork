@@ -142,7 +142,7 @@ param(
     [switch]$AdminAggregationBoundaryMatrix,
     [ValidateSet('All','Inspection','Write','Ownership')][string]$AdminAggregationBoundaryGroup='All',
     [ValidateSet('All','UnknownOutputColumn')][string]$AdminAggregationBoundaryCase='All',
-    [ValidateSet('','RedFocus','PhaseRedFocus','ConnectionFailed','ConnectionSucceeded','Confirmation','ConfirmationCancelled','ResultCompleted','ResultCompletedSelectionChanged','ResultFailed','BeforeSave','AfterSave','AfterPromotion')][string]$AdminAggregationYieldGroup='',
+    [ValidateSet('','RedFocus','PhaseRedFocus','FeedReopen','ConnectionFailed','ConnectionSucceeded','Confirmation','ConfirmationCancelled','ResultCompleted','ResultCompletedSelectionChanged','ResultFailed','BeforeSave','AfterSave','AfterPromotion')][string]$AdminAggregationYieldGroup='',
     [switch]$AdminAggregationSuppressPhaseRechecksForTest,
     [switch]$AdminAggregationWriteBoundariesOnly,
     [switch]$AdminAggregationRestartOnly,
@@ -2111,6 +2111,10 @@ End Function
         if($AdminAggregationYieldGroup){
             . (Join-Path $PSScriptRoot 'Slice4beAdminAggregationYields.ps1')
             Install-AggregationYieldProbe
+            if($AdminAggregationYieldGroup -eq 'FeedReopen'){
+                . (Join-Path $PSScriptRoot 'Slice4beAdminAggregationFeedReopen.ps1')
+                Install-AggregationFeedReopenProbe
+            }
         }
         . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
         Compile-Slice4beEvaluationProbes
