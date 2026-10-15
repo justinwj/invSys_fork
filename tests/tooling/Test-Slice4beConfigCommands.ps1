@@ -147,6 +147,8 @@ param(
     [switch]$AdminAggregationWriteBoundariesOnly,
     [switch]$AdminAggregationRestartOnly,
     [switch]$AdminAggregationCompletionOnly,
+    [switch]$AdminAggregationRecording,
+    [switch]$AdminAggregationGuideOnly,
     [string]$AggregationOwnedFixtureRootForTest='',
     [switch]$AdminTesterSetupPaths,
     [switch]$AdminTesterOwnershipPaths,
@@ -790,6 +792,8 @@ if($AdminAggregationBoundaryGroup -ne 'All' -and (-not $AdminAggregationOnly -or
 if($AdminAggregationBoundaryCase -ne 'All' -and $AdminAggregationBoundaryGroup -ne 'Write'){throw 'The focused unknown-column case requires the Write boundary group.'}
 if($AdminAggregationYieldGroup -and (-not $AdminAggregationOnly -or -not $AdminAggregationBoundaryMatrix -or $AdminAggregationBoundaryGroup -ne 'All' -or $AdminAggregationBoundaryCase -ne 'All' -or $AdminAggregationPathComparison -or $AdminAggregationWriteBoundariesOnly -or $AdminAggregationRestartOnly -or $AdminAggregationCompletionOnly)){throw 'Named Aggregation yields require their matrix and exclude other focused modes.'}
 if($AdminAggregationSuppressPhaseRechecksForTest -and ($Phase -ne 'RED' -or $AdminAggregationYieldGroup -notin @('PhaseRedFocus','BeforeSave','AfterSave','AfterPromotion'))){throw 'The isolated missing-phase-check seam is restricted to its RED phase tests.'}
+if($AdminAggregationGuideOnly -and (-not $AdminAggregationOnly -or -not $AdminAggregationRecording)){throw 'Aggregation guides require their actual owner and recording probes.'}
+if($AdminAggregationRecording -and (-not $AdminAggregationOnly -or $AdminAggregationYieldGroup -or $AdminAggregationBoundaryMatrix -or $AdminAggregationPathComparison -or $AdminAggregationRestartOnly -or $AdminAggregationCompletionOnly)){throw 'Aggregation recording excludes other focused modes.'}
 if($AdminTesterGuideOnly -and (-not $AdminTesterSetupOwnerOnly -or -not $AdminTesterRecording -or -not $AdminTesterRecordingOnly -or -not $AdminTesterGuidePaths)){throw 'Focused Tester guide selection requires its owner, recording-only and guide probes.'}
 if($AdminUsersRecordingOnly -and -not $CheckAdminUsersRecording){throw 'Focused recording requires its probe.'}
 if($AdminUsersGuideOnly -and (-not $CheckAdminUsersRecording -or $AdminUsersRecordingOnly)){throw 'Focused guide requires Users recording and excludes recording-only mode.'}
@@ -1408,7 +1412,7 @@ function NewFixture([string]$Suffix) {
             $row.Range.Cells.Item(1,$caps.ListColumns.Item($pair.Key).Index).Value2=$pair.Value
         }
     }
-    if($AdminTesterGuidePaths -or $AdminCreateGuidePaths -or $AdminWarehouseRootGuidePaths -or $AdminDirectoryGuidePaths -or $AdminReconcileLocalDiagnostic -or $AdminSeedGuidePaths -or $AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
+    if($AdminAggregationGuideOnly -or $AdminTesterGuidePaths -or $AdminCreateGuidePaths -or $AdminWarehouseRootGuidePaths -or $AdminDirectoryGuidePaths -or $AdminReconcileLocalDiagnostic -or $AdminSeedGuidePaths -or $AdminUsersGuideOnly -or $AdminConsoleGuidePaths -or $AdminVerifyGuidePaths -or $AdminReconcileGuidePaths -or $RunScalePathsForTest -or $CheckGeneralSettingsRecorded -or $RunPrintRecordedOnly -or $RunNextPathsOnly -or $RunCompletePathsOnly -or $RunCheckInPathsOnly -or $RunAllocatePathsOnly -or $RunRefreshPathsOnly -or $RunLoadPathsOnly -or $RunClearPathsOnly -or $RunPresentationPathsOnly -or $CheckGuideDraft -or $CheckOperationsGuidePresentation -or $CheckSettingsDiagnostics -or $CheckProductionLifecyclePresentation -or $CheckProductionInstructionPaths -or $CheckProductionUomPaths -or $CheckProductionComponentPaths -or $CheckProductionRecipeOrderPaths -or $CheckProductionRecipeStructurePaths -or $CheckProductionDesignReadPaths -or $CheckProductionRegulationPaths -or $CheckProductionClosePaths -or $CheckProcessWorksheetPaths -or $CheckProductionAssignmentPaths){
         # Explicit fixture grant: Admin bootstrap does not imply guide maintenance.
         $row=$caps.ListRows.Add()
         foreach($pair in @{UserId='config-admin';Capability='ACTION_PATH_MAINT';WarehouseId=$wh;StationId='S1';Status='Active'}.GetEnumerator()){
@@ -2104,6 +2108,14 @@ End Function
     if($AdminAggregationOnly){
         . (Join-Path $PSScriptRoot 'Slice4beAdminAggregation.ps1')
         Install-AdminAggregationProbe
+        if($AdminAggregationRecording){
+            . (Join-Path $PSScriptRoot 'Slice4beAdminAggregationRecording.ps1')
+            Install-AggregationRecordingProbe
+            if($AdminAggregationGuideOnly){
+                . (Join-Path $PSScriptRoot 'Slice4beAdminVerifyGuide.ps1')
+                Install-AdminVerifyGuideProbe
+            }
+        }
         if($AdminAggregationBoundaryMatrix){
             . (Join-Path $PSScriptRoot 'Slice4beAdminAggregationBoundaries.ps1')
             Install-AggregationBoundaryProbe

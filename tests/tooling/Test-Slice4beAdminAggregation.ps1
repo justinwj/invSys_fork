@@ -1,8 +1,9 @@
 [CmdletBinding()]
 param([string]$DeployRoot='deploy/validation-tester-recording-02',[ValidateSet('RED','GREEN')][string]$Phase='RED',[string]$DesktopMonitorReport='',[switch]$PathComparison,[switch]$BoundaryMatrix,[switch]$WriteBoundariesOnly,[switch]$RestartOnly,[switch]$CompletionOnly,[ValidateSet('All','Inspection','Write','Ownership')][string]$BoundaryGroup='All',[ValidateSet('All','UnknownOutputColumn')][string]$BoundaryCase='All',
     [ValidateSet('','RedFocus','PhaseRedFocus','FeedReopen','ConnectionFailed','ConnectionSucceeded','Confirmation','ConfirmationCancelled','ResultCompleted','ResultCompletedSelectionChanged','ResultFailed','BeforeSave','AfterSave','AfterPromotion')][string]$YieldGroup='',
-    [switch]$SuppressPhaseRechecksForTest)
+    [switch]$SuppressPhaseRechecksForTest,[switch]$RecordingOnly,[switch]$GuideOnly)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
+if(($RecordingOnly -or $GuideOnly) -and ($YieldGroup -or $BoundaryMatrix -or $WriteBoundariesOnly -or $RestartOnly -or $CompletionOnly -or $PathComparison -or $BoundaryGroup -ne 'All' -or $BoundaryCase -ne 'All')){throw 'Aggregation recording and guide gates exclude other focused modes.'}
 if($BoundaryCase -ne 'All' -and $BoundaryGroup -ne 'Write'){throw 'The focused unknown-column case requires the Write boundary group.'}
 if($YieldGroup -and ($BoundaryGroup -ne 'All' -or $BoundaryCase -ne 'All' -or $PathComparison -or $WriteBoundariesOnly -or $RestartOnly -or $CompletionOnly)){throw 'Named Aggregation yields exclude other focused modes.'}
 if($SuppressPhaseRechecksForTest -and ($Phase -ne 'RED' -or $YieldGroup -notin @('PhaseRedFocus','BeforeSave','AfterSave','AfterPromotion'))){throw 'The isolated missing-phase-check seam is restricted to its RED phase tests.'}
@@ -28,6 +29,8 @@ try {
         '-Phase',$Phase,'-AdminAggregationOnly','-CompileEvaluationProbesForTest',
         '-WaitForExcelReadyForTest','-ExcelReadyReadLimitForTest','40')
     if($DesktopMonitorReport){$workerArgs+=@('-DesktopMonitorReport',$DesktopMonitorReport)}
+    if($RecordingOnly -or $GuideOnly){$workerArgs+='-AdminAggregationRecording'}
+    if($GuideOnly){$workerArgs+='-AdminAggregationGuideOnly'}
     if($PathComparison){$workerArgs+='-AdminAggregationPathComparison'}
     if($BoundaryMatrix -or $WriteBoundariesOnly -or $RestartOnly -or $CompletionOnly -or ($BoundaryGroup -ne 'All') -or $YieldGroup){$workerArgs+='-AdminAggregationBoundaryMatrix'}
     if($BoundaryGroup -ne 'All'){$workerArgs+=@('-AdminAggregationBoundaryGroup',$BoundaryGroup)}
