@@ -10,11 +10,20 @@ path-only packaged comparison. The approval blocker is cleared. Expanded RED and
 implementation remained pending at approval; local expanded RED is recorded below.
 D8-TESTER-01 remains approved/qualified.
 
-**Latest checkpoint:** stopped under the user's inactive-desktop condition at
+**Resume clarification,2026-10-14 Pacific:** the user explicitly permits continued
+work while input is inactive or the screensaver runs, provided the work still
+functions. Actual error5 and mouse lock remain stop conditions; do not bypass
+security or change OLED protection. The earlier inactive-input stop was the agent's
+conservative interpretation, not an explicit inactive-input stop instruction or
+proof of Windows lock. The isolated continuation records inactivity separately
+from confirmed lock, access-denied and mouse-confinement observations. This is an
+execution-policy correction, not a product contract change; D13 RED does not apply.
+
+**Historical checkpoint:** stopped after inactive input was observed at
 2026-10-15T01:50:59.3042519Z (2026-10-14 18:50:59 Pacific). The monitor records one
 inactive-input condition, desktop class Other and a running screensaver, with zero
 error5/mouse-lock/other failures. This does not establish a Windows lock or identify
-the screensaver's cause. No more automation is authorized until the user resumes.
+the screensaver's cause. The user has since authorized the continuation above.
 Unpromoted owner-07 passes focused integrity/completion GREEN60 after45/14 RED,
 with clean preserved closure and final static ratchets. The subsequent Tester
 regression is355 PASS/1 stop-related harness failure and is incomplete. Broader candidate07 boundary/path/restart and

@@ -5,12 +5,19 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
-**Current stop,2026-10-14 18:50:59 Pacific:** inactive input coincides with Other
+**Resume clarification,2026-10-14 Pacific:** the user permits continued work
+while input is inactive or the screensaver runs if it still functions. Actual
+error5 and mouse lock require stopping without bypassing security. Inactivity
+alone establishes neither Windows lock nor a need to stop. The earlier stop was
+the agent's conservative interpretation. Tester recording/guide continuation
+runs on unchanged owner-07; no new acceptance result is claimed yet.
+
+**Historical stop,2026-10-14 18:50:59 Pacific:** inactive input coincides with Other
 desktop/screensaver running; Windows lock/cause is not established. Owner-07
 GREEN60 and static ratchets are retained. Tester355/1 stops safely after its164
 owner prefix; recording/guide tail and broader owner-07/Aggregation coverage remain
-open. Cleanup/preservation and native audit pass. The user requires returning from
-the prompt at this condition; follow Handoff182 after an explicit resume.
+open. Cleanup/preservation and native audit pass. The user has since resumed
+under the clarified conditions above; Handoff182 retains the earlier checkpoint.
 
 **Current Aggregation checkpoint,2026-10-14 Pacific:** restart RED10 PASS/4 FAIL
 and manual/incomplete-persistence RED10 PASS/6 FAIL complete with clean preserved
