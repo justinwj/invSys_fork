@@ -1,5 +1,61 @@
 # Slice 4be-A / early B0: Receiving replay
 
+**Current-candidate behavior checkpoint,2026-10-15 Pacific:** trial107 on
+source1c9bff87/recording02 completes121 passing checks and one child-cleanup
+harness failure. All122 check names are unique. All15 published acceptance images
+are directly reviewed, including original-size native maximize/restore frames,
+fresh applied-source proof and stopped-run verification. No product assertion
+fails. Five packages, six copied package/template inputs and all484 tooling pins
+are verified unchanged. This is behavior evidence, not complete B0 acceptance.
+
+Controller `receiving-b0-current-controller/b254c1ad00d443c988067a10b6825006` and
+worker `slice4be-receiving-replay/94ae21abd8744bac9ab84ae10c589785` retain the
+typed121/1 result. The worker's shutdown is delayed, then worker/Excel/controller
+exit without forced termination. Settings/input preservation passes; delayed
+native audit through22:39:30.7159407Z reports zero Excel failure events. The outer
+observation exits143 and its original orchestration receipt is absent; do not
+claim original-wrapper success. The remaining monitor is stopped through its
+ordinary stop file after runtime exit. Recovered closure is recorded separately.
+Original taskbar state1 is independently restored at22:39:13.6025022Z; the stale
+scope receipt is not rewritten as a successful original finally block.
+
+Automatic approval review rejects proposed worker termination; it is never
+executed and becomes unnecessary after natural exit. No new approval is pending.
+Exact disposable startup-copy residue is handled only after process exit, with
+the original child-cleanup failure preserved. The next B0 qualification needs
+parent-owned post-worker fixture cleanup, retaining the complete121-check matrix.
+Shared regressions, Release1 fixture conformance and remaining4be-A coverage stay
+open. Ignored trial107 receipts contain the detailed closure/preservation proof.
+
+**Capture-fixture correction,2026-10-15 Pacific:** trial103 reproduces44/2 with
+read-only failure facts identifying the system taskbar over the maximized client
+edge. Native ABM_GETSTATE/monitor queries confirm auto-hide and the shared monitor/
+work area. Temporary auto-hide-off comparison104 ends41/2 because the deliberately
+larger fixture retains a position partly under the now-visible taskbar. All product
+assertions reached in both runs pass; neither is product RED or B0 acceptance.
+Their normal preserved closure/native audits pass through22:10:03.0503782Z and
+22:17:58.0592856Z. Each taskbar scope confirms original-state restoration. Exact
+five-package startup residues are removed only after worker/Excel exit.
+
+Dedicated blank-fixture `-CoveredForeground -WorkAreaPositioning` is committed
+as6a051ebb before implementation. RED worker30932dec41fa45b8ad552a4d8576221b
+establishes the partially covered owned form, preserves its size/topmost state and
+fails the specific work-area placement case while five prior cases pass. GREEN
+worker84d087c41f554636ab7f8571d9abf054 retains all six case identities/order and
+passes every case, with normal unforced Excel closure and taskbar restoration.
+The corrected frame is directly reviewed. This is tooling RED/GREEN, not a product
+behavior correction. InvSys packages, replay actions and required test sizes stay
+unchanged. The B0-only capture helper moves an owned visible restored fixture into
+its existing monitor work area without resizing or changing topmost/activation
+state. Maximized, off-monitor and oversized fixtures retain refusal/independent
+validation; obscured-content and foreground guards remain intact.
+
+Full B0 trial107 uses the same five candidate packages/template and complete
+assertion set; its121/1 result and separately verified taskbar restoration are
+qualified above. Current B0 acceptance remains unproved. Native API references:
+[ABM_GETSTATE](https://learn.microsoft.com/windows/win32/shell/abm-getstate),
+[ABM_SETSTATE](https://learn.microsoft.com/windows/win32/shell/abm-setstate).
+
 **Current-candidate harness checkpoint,2026-10-15 Pacific:** source1c9bff87/
 recording02 trial96 ends44 PASS/2 harness exceptions; no product assertion fails.
 Controller `receiving-b0-current-controller/175ab58b77174a44a450f6e6f639a8ff`, worker

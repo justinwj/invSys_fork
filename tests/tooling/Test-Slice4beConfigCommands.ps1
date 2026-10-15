@@ -897,6 +897,7 @@ public static class InvSysSettingsCapture {
     public static string[] CaptionFacts() { return captionFacts.ToArray(); }
     public delegate bool WindowCallback(IntPtr hwnd, IntPtr state);
     [StructLayout(LayoutKind.Sequential)] public struct Rect { public int Left, Top, Right, Bottom; }
+    [StructLayout(LayoutKind.Sequential)] struct MonitorInfo { public int Size; public Rect Monitor,Work; public uint Flags; }
     [StructLayout(LayoutKind.Sequential)] public struct Point { public int X,Y; }
     [StructLayout(LayoutKind.Sequential)] public struct Mouse { public int X,Y; public uint Data,Flags,Time; public UIntPtr Extra; }
     [StructLayout(LayoutKind.Sequential)] public struct Input { public uint Type; public Mouse Mouse; }
@@ -914,6 +915,9 @@ public static class InvSysSettingsCapture {
     [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr hwnd);
     [DllImport("user32.dll")] public static extern bool IsWindowEnabled(IntPtr hwnd);
     [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr hwnd);
+    [DllImport("user32.dll")] static extern bool IsZoomed(IntPtr hwnd);
+    [DllImport("user32.dll")] static extern IntPtr MonitorFromWindow(IntPtr hwnd,uint flags);
+    [DllImport("user32.dll",CharSet=CharSet.Unicode)] static extern bool GetMonitorInfo(IntPtr monitor,ref MonitorInfo info);
     [DllImport("user32.dll")] static extern IntPtr WindowFromPoint(Point point);
     [DllImport("user32.dll")] static extern IntPtr MonitorFromPoint(Point point,uint flags);
     [DllImport("user32.dll",SetLastError=true)] static extern bool GetCursorPos(out Point point);
@@ -1107,6 +1111,33 @@ public static class InvSysSettingsCapture {
         }
         }
     }
+    public static bool PositionOwnedCaptureInWorkArea(IntPtr form,IntPtr excel) {
+        using(var pixels=new PhysicalPixels()) {
+        uint owner,expected;GetWindowThreadProcessId(form,out owner);GetWindowThreadProcessId(excel,out expected);
+        if(owner==0 || owner!=expected || !IsWindowVisible(form) || IsIconic(form))
+            throw new Exception("Work-area positioning requires the owned visible capture fixture.");
+        if(IsZoomed(form))return false; // Native maximize/restore is independently tested.
+        IntPtr monitor=MonitorFromWindow(form,0);
+        var info=new MonitorInfo {Size=Marshal.SizeOf(typeof(MonitorInfo))};Rect before;
+        if(monitor==IntPtr.Zero || !GetMonitorInfo(monitor,ref info) || !GetWindowRect(form,out before))
+            throw new Exception("Owned capture fixture is outside its monitor.");
+        int width=before.Right-before.Left,height=before.Bottom-before.Top;
+        if(width>info.Work.Right-info.Work.Left || height>info.Work.Bottom-info.Work.Top)
+            throw new Exception("Owned capture fixture exceeds the available work area.");
+        int left=Math.Max(info.Work.Left,Math.Min(before.Left,info.Work.Right-width));
+        int top=Math.Max(info.Work.Top,Math.Min(before.Top,info.Work.Bottom-height));
+        if(left==before.Left && top==before.Top)return false;
+        bool topmost=IsTopmost(form);
+        // Position only: preserve size, activation, owner order and topmost state.
+        if(!SetWindowPos(form,IntPtr.Zero,left,top,0,0,0x215))
+            throw new Exception("Owned capture fixture could not be positioned in its work area.");
+        Rect after;
+        if(!GetWindowRect(form,out after) || after.Right-after.Left!=width || after.Bottom-after.Top!=height ||
+           after.Left<info.Work.Left || after.Top<info.Work.Top || after.Right>info.Work.Right || after.Bottom>info.Work.Bottom || IsTopmost(form)!=topmost)
+            throw new Exception("Owned capture fixture position or size was not preserved.");
+        return true;
+        }
+    }
     public static void SaveVisibleWindow(IntPtr hwnd, string path) {
         using(var pixels=new PhysicalPixels()) {
         Rect r;
@@ -1185,6 +1216,13 @@ function CaptureOwnedFormEvidence([string]$Title,[string]$FileName,[long]$Window
     for($attempt=1;$attempt -le 3;$attempt++){
         $owned=[InvSysSettingsCapture]::OwnedVisibleForm($Title,[IntPtr]$excel.Hwnd).ToInt64()
         if($WindowHandle -eq 0 -or $owned -ne $WindowHandle){throw 'Requested capture does not identify a unique owned visible form.'}
+        if((Get-Variable CheckReceivingReplay -ValueOnly -ErrorAction SilentlyContinue) -eq $true){
+            $positioned=[InvSysSettingsCapture]::PositionOwnedCaptureInWorkArea([IntPtr]$WindowHandle,[IntPtr]$excel.Hwnd)
+            if($positioned){
+                [pscustomobject]@{Image=$FileName;Attempt=$attempt;PositionAdjusted=$true;SizePreserved=$true}|
+                    ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'capture-work-area-position.jsonl')
+            }
+        }
         if($GuideCaptureVisibleExcelForTest){
             $captureVisible=$excel.Visible
             if($captureVisible -isnot [bool]){throw 'Capture-time application visibility is unavailable.'}
