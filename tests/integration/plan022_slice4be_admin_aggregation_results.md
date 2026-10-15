@@ -46,6 +46,28 @@ procedure maxima are213/83 against1000/200 caps. Only the two intended product
 components differ from38dea294. No exception or deployment is required. Full
 joint-check variants, D13 phase proof and relevant regressions remain open.
 
+**Full connection-return variants GREEN,2026-10-15 Pacific:** owner-08 passes45/45
+for each actual failed/successful connection-return branch. Both include the ordinary
+valid-context control and changed/missing source, changed trusted feed, sign-out and
+saved-rights revocation. Every fault reaches its actual return, requires reopening,
+refuses before the writer, preserves existing feed bytes, avoids redirection and
+excludes entered paths from feedback. Final source/authority preservation passes.
+
+| Return | Controller / worker | Delayed zero-native-event audit UTC |
+| --- | --- | --- |
+| Failed connection45 | `37004efe5cbc4218a9843e742510400e` / `e98acc5edd374d58a897aaa9fc77c254` | 2026-10-15T17:07:14.1534379Z |
+| Successful connection45 | `8b295c3e03d34bf7866755a84474cb9f` / `bfaf5f54a5c4486dac5e9c493d29bcdd` | 2026-10-15T17:10:53.3785318Z |
+
+Controllers are under `admin-aggregation-controller`, workers under
+`slice4be-admin-aggregation`. Five compiles, settings/package/tooling pins, owned
+cleanup and normal Excel/controller/monitor closure pass for both, with no desktop
+stop. Native connection results alone are adapted; real form actions/Core joint
+checks remain. `reports/runtime/aggregation-joint-matrix-08/verify.py` and its
+sanitized retention receipt prove84 distinct assertions across both runs on
+identical five-package hashes/all480 tooling pins. No network credential or real Windows connection is introduced by
+this deterministic return proof. Full review/result/phase variants and remaining
+regressions/recording/guidance/4be-A gates remain open; source12b39790 is unchanged.
+
 **Restored phase GREEN32,2026-10-15 Pacific:** real owner-08 checks pass32/32,
 controller `admin-aggregation-controller/ae4f5ae6ed32406d9664b4e9657a3dc4`, worker
 `slice4be-admin-aggregation/1fa97fefbca34c6691fef0ca0e3adc7d`.

@@ -10,7 +10,9 @@ and remaining verification, not a new contract or a percentage estimate.
 owner-08 passes57/57 after50/7 RED, retaining every assertion in order and all480
 tooling pins. Source/output/receipt preservation and normal native/owned closure
 pass. Owner-08 cold compile/static ratchets and restored three-phase sign-out32 also
-pass, retaining all29 equivalent-RED business checks. Full source/feed/authority
+pass, retaining all29 equivalent-RED business checks. Both full connection-return
+matrices pass45/45, with84 distinct checks and identical packages/tooling.
+Remaining source/feed/authority review/result/phase
 return and phase variants, relevant regressions and recording/guidance remain open. Owner-07's
 retained218 below keeps its candidate scope;4be-A/B0 remain incomplete.
 

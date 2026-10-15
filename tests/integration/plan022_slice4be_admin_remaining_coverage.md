@@ -9,7 +9,9 @@ outcome, permission, exclusion, replay adapter or business rule.
 57/57 after50/7 RED, retaining exact assertion order and all480 tooling pins, with
 preserved sources/output/receipts and clean native/owned closure. Owner-08 cold compile
 and static ratchets also pass. Restored three-phase sign-out32 retains all29
-equivalent-RED business checks. Full variants/phases, relevant regressions and Aggregation
+equivalent-RED business checks. Both full connection matrices pass45/45, retaining84
+distinct checks on identical packages/tooling. Remaining review/result/phase variants,
+relevant regressions and Aggregation
 recording/guidance remain required. Earlier owner-07 evidence retains its scope;
 comprehensive4be-A/B0 remain open. See the Aggregation receipt.
 
