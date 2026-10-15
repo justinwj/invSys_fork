@@ -167,6 +167,19 @@ End Function
             $target[0].DeleteLines($first,$count)
         }
     }
+    if(-not $AdminAggregationRecording){
+        # Adapt the new optional notice at its native dialog boundary too.
+        # Recording probes supply their own counted notice adapter.
+        foreach($component in $admin.VBComponents){
+            if($component.Name -cne 'cProvisioningActivity'){continue}
+            $component.CodeModule.AddFromString(@'
+Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgBoxStyle = vbOKOnly, Optional ByVal Title As String = "") As VbMsgBoxResult
+    MsgBox = vbOK
+End Function
+'@)
+            break
+        }
+    }
     $entry=$admin.VBComponents.Item('modAdmin').CodeModule
     $start=$entry.ProcStartLine('Admin_AggregateGlobalSnapshot_Click',0);$count=$entry.ProcCountLines('Admin_AggregateGlobalSnapshot_Click',0)
     $body=$entry.Lines($start,$count)

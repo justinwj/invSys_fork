@@ -16,7 +16,7 @@ function Test-AggregationGuide($Fixture,$Other,$HostBook,$Expected){
             CloseRecordingViewer;SelectTarget $Fixture;OpenRecordingViewer
             $prior=BoundPins $journalRoot;$oldActivity=ActivityPins;$before=@(Get-Slice4beActivityFiles $Fixture)
             Check ('Aggregation.Recorded.'+$kind+'.ActualStart') ((RecordingControl 'Start Recording' 'Click') -ceq 'DELIVERED')
-            $starts=@(Get-ChildItem $journalRoot -File -Filter '*.json'|Where-Object {-not $prior.ContainsKey($_.FullName)}|ForEach-Object {Get-Content $_ -Raw|ConvertFrom-Json}|Where-Object RecordType -CEQ 'Start')
+            $starts=@(Get-ChildItem $journalRoot -File -Filter '*.json'|Where-Object {-not $prior.ContainsKey($_.FullName)}|ForEach-Object {Get-Content -LiteralPath $_.FullName -Raw|ConvertFrom-Json}|Where-Object RecordType -CEQ 'Start')
             if($starts.Count -ne 1){throw 'One durable Aggregation recording Start required.'}
             $sequence=$starts[0].SequenceId;$incomplete=$kind -ceq 'Interrupted';$success=$kind -cin @('Source','Observed')
             for($ordinal=1;$ordinal -le 2;$ordinal++){
