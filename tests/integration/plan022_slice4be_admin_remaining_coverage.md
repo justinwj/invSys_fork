@@ -5,6 +5,16 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Current error5 stop,2026-10-15 Pacific:** source857d250a adds catalog43/186
+aggregation observations after protecting RED52/52. Fresh recording GREEN ends71
+PASS/1 actual-desktop-stop harness failure at19:24:50.1946379Z; all71 retain the
+exact RED prefix. Cleanup/pins/settings and clean native/owned closure pass through
+19:25:18.2119683Z, with Excel closed. This is not whole GREEN. Owner-09's ten joint
+matrices447 remain scoped to source45336d88. Source-only static reports show one
+new ControlIds duplicate (194->195); no exception is accepted and full generation
+is incomplete. No new runtime dispatch follows the stop. Recording/guides/relevant
+regressions/static and4be-A/B0 remain open; see the Aggregation receipt/Handoff185.
+
 **Current capture correction,2026-10-15 Pacific:** owner-09 source45336d88 passes
 FeedReopen29 after21/8 RED with exact assertion/order/all481 tooling retention,
 fresh-capture exact output and clean preserved native/owned closure. Static05/cold

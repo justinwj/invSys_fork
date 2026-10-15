@@ -46,6 +46,33 @@ procedure maxima are213/83 against1000/200 caps. Only the two intended product
 components differ from38dea294. No exception or deployment is required. Full
 joint-check variants, D13 phase proof and relevant regressions remain open.
 
+**Current error5 stop,2026-10-15 12:24:50 Pacific:** recording candidate
+`deploy/validation-aggregation-recording-01`, source857d250a/catalog43, ends71 PASS/
+1 desktop-stop harness failure. Monitor records actual error5 at
+2026-10-15T19:24:50.1946379Z; inactive input/Other desktop/screensaver also occur,
+but Windows lock and cause are unproved. No bypass or new runtime dispatch follows.
+Controller `admin-aggregation-controller/5520c5a9eaba46f7af5886d4117ff7f1`, worker
+`slice4be-admin-aggregation/908cc967cc9140649b842ba0bd3ea983`. All71 passing names
+retain the exact RED prefix, ending `Aggregation.Recording.SELECT_SOURCE.NoSpuriousActions`;
+the following conclusion check and authorized aggregate/output/suppression/fault
+checks are unqualified on this candidate. This partial run is not GREEN104.
+
+Five compiles, settings/package/all483 tooling pins, owned fixture cleanup and
+normal Excel/controller/monitor closure pass. Delayed native events are zero through
+19:25:18.2119683Z; a separate check confirms Excel closed. The isolated five-package
+build also passes preserved normal closure through19:21:21.2063645Z. Current/NAS
+is unpromoted. Whole recording GREEN, guide/persistence/notice boundaries, cold
+compile and relevant regressions remain required;4be-A/B0 stays open.
+
+Source-only static JSON shows366 components/6560 procedures/142383 lines and9/45
+dynamic calls; size caps and old oversized-module non-growth pass. Duplicate groups
+grow194->195: `modAggregationActivityCodes.ControlIds` matches the normalized shape
+of `modTesterActivityCodes.ControlIds` (`duplicate:9167c7c8680043c7:ControlIds+ControlIds`).
+No exception is accepted. The positively identified source-only generator is stopped
+on session exit; its two JSON reports are available, full maintenance generation
+and duplicate-ratchet closure are pending. Do not claim static GREEN. Handoff185
+names the required unchanged-candidate recording rerun after user resume.
+
 **D18 recording protecting RED,2026-10-15 Pacific:** test commit3af831b1 runs
 `-RecordingOnly -Phase RED` on unchanged owner-09 source45336d88. Controller
 `admin-aggregation-controller/e6705f6c596f4dbda68cbf3f7c0fa1cb`, worker
