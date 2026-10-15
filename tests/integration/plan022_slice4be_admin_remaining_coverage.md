@@ -5,6 +5,13 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Current capture correction,2026-10-15 Pacific:** owner-09 source45336d88 passes
+FeedReopen29 after21/8 RED with exact assertion/order/all481 tooling retention,
+fresh-capture exact output and clean preserved native/owned closure. Static05/cold
+compile pass, with only Core Authority changed among358 compiled components. Current
+full matrices, relevant regressions and recording/guidance
+remain required. Earlier owner-08 evidence retains its scope;4be-A/B0 remain open.
+
 **Focused return correction,2026-10-15 Pacific:** owner-08 source12b39790 passes
 57/57 after50/7 RED, retaining exact assertion order and all480 tooling pins, with
 preserved sources/output/receipts and clean native/owned closure. Owner-08 cold compile

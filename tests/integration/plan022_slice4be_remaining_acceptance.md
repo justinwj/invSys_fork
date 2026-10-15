@@ -6,14 +6,22 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Current capture correction,2026-10-15 Pacific:** owner-09 source45336d88 passes
+FeedReopen29 after21/8 RED, retaining every assertion/order and all481 tooling pins.
+Restored settings cannot revive the old capture; fresh captures persist exact output.
+Normal preserved native/owned closure, static05 and cold compile pass; compiled
+comparison changes only Core Authority among358 components. Current-candidate full
+matrices and relevant regressions remain required before
+recording/guidance and4be-A/B0 acceptance. Earlier owner-08 evidence below keeps its scope.
+
 **Focused named-return correction,2026-10-15 Pacific:** source12b39790 in fresh
 owner-08 passes57/57 after50/7 RED, retaining every assertion in order and all480
 tooling pins. Source/output/receipt preservation and normal native/owned closure
 pass. Owner-08 cold compile/static ratchets and restored three-phase sign-out32 also
 pass, retaining all29 equivalent-RED business checks. Both full connection-return
 matrices pass45/45, with84 distinct checks and identical packages/tooling.
-Remaining source/feed/authority review/result/phase
-return and phase variants, relevant regressions and recording/guidance remain open. Owner-07's
+Remaining source/feed/authority review/result/phase variants, relevant regressions
+and recording/guidance remain open. Owner-07's
 retained218 below keeps its candidate scope;4be-A/B0 remain incomplete.
 
 **Retained matrix qualified,2026-10-15 Pacific:** owner-07 Ownership60 and authority/

@@ -46,13 +46,35 @@ procedure maxima are213/83 against1000/200 caps. Only the two intended product
 components differ from38dea294. No exception or deployment is required. Full
 joint-check variants, D13 phase proof and relevant regressions remain open.
 
-**Core capture correction, GREEN pending,2026-10-15 Pacific:** after protecting
-RED commitf2cd2a81, `modAggregationAuthority.Check` consumes the existing capture
+**Observed-feed reopening GREEN29,2026-10-15 Pacific:** source45336d88 in fresh
+unpromoted owner-09 passes29/29 through the unchanged FeedReopen handler test,
+controller `admin-aggregation-controller/819a220e367d484890db57b3650ab4b1`, worker
+`slice4be-admin-aggregation/febfb07cbd4c45918225ca1d003ad082`.
+All29 RED names retain exact order, all eight failures clear and all481 tooling
+pins match. Both old captures stay refused after settings restoration in the same
+live session; both fresh captures persist every exact selected entity/quantity.
+Feed/source preservation, five compiles, settings/package/tooling pins, owned
+cleanup and normal Excel/controller/monitor closure pass; delayed native events
+are zero through2026-10-15T17:39:54.1534626Z. Build09 also passes settings restoration
+and clean delayed closure through17:34:12.3593651Z. Its initial wrapper path-variable
+collision stopped before Excel/candidate creation; the corrected wrapper launched
+the prepared build. That setup error is not behavioral RED or a desktop error.
+
+After protecting RED commitf2cd2a81, `modAggregationAuthority.Check` consumes the existing capture
 when it observes an untrusted saved feed. Restoring settings cannot revive that
 key; a newly opened form captures current authorized state. No global session,
-shared store, receipt, source inventory or headless authorization changes. Build
-fresh owner-09 with Excel closed and rerun the unchanged29-check FeedReopen test;
-earlier owner-08 qualification does not automatically qualify this correction.
+shared store, receipt, source inventory or headless authorization changes. Static05
+and its reproducible ratchet proof retain365 components/6553 procedures,194 duplicate
+groups and9/45 dynamic calls;142193 lines, maxima213/83 and no oversized growth fit
+the caps. Only the intended Authority component differs from source12b39790.
+Owner-09 cold-start Operations references and five project compiles also pass,
+controller `aggregation-cold-compile-controller/08060f0b1c2445c2bf1fc6f2e96f9311`,
+with clean preserved native/owned closure through2026-10-15T17:41:36.1395087Z.
+The sanitized compiled comparison in static05 verifies358 matching component keys
+across five packages, with only Core `modAggregationAuthority` changed from08;
+identifier-casing tolerance also requires identical string-literal hashes.
+Current-candidate full matrices and relevant regressions remain required; earlier
+owner-08 qualification does not automatically qualify owner-09.
 
 **Observed-feed reopening protecting RED,2026-10-15 Pacific:** unchanged owner-08
 completes21 PASS/8 expected FAIL, controller
