@@ -8,8 +8,9 @@ outcome, permission, exclusion, replay adapter or business rule.
 **Current capture correction,2026-10-15 Pacific:** owner-09 source45336d88 passes
 FeedReopen29 after21/8 RED with exact assertion/order/all481 tooling retention,
 fresh-capture exact output and clean preserved native/owned closure. Static05/cold
-compile pass, with only Core Authority changed among358 compiled components. Current
-full matrices, relevant regressions and recording/guidance
+compile pass, with only Core Authority changed among358 compiled components. All ten current full return/phase matrices now pass447 distinct assertions on
+identical packages/all481 tooling pins, with clean preserved closure through
+19:04:46.7368156Z and no desktop stop. Relevant regressions and recording/guidance
 remain required. Earlier owner-08 evidence retains its scope;4be-A/B0 remain open.
 
 **Focused return correction,2026-10-15 Pacific:** owner-08 source12b39790 passes
