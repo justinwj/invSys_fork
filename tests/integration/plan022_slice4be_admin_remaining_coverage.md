@@ -5,6 +5,17 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Current error5 stop,2026-10-15 13:23:20 Pacific:** recording02/source1c9bff87
+has qualified recording104/outcome27 (125 distinct) and complete static ratchets
+with194 duplicates/9/45 calls and size caps. Independent guide trial84's7/1 was a
+FileInfo short-path harness failure; test549c1d79 fixes that reader and adapts
+optional notices only for non-recording regressions. Corrected trial87 ends7/1
+on actual error5 at20:23:20.1669715Z after actual Start; no guide/output/conclusion
+qualifies. Preservation/normal native closure pass through20:24:09.5596802Z and
+Excel is closed. No bypass or further runtime dispatch. Cold/source comparison,
+guidance, current regressions/control coverage and4be-A/B0 remain open. Handoff186
+records the unchanged-candidate guide continuation; earlier scopes remain intact.
+
 **Current error5 stop,2026-10-15 Pacific:** source857d250a adds catalog43/186
 aggregation observations after protecting RED52/52. Fresh recording GREEN ends71
 PASS/1 actual-desktop-stop harness failure at19:24:50.1946379Z; all71 retain the

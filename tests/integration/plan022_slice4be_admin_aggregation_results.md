@@ -46,6 +46,48 @@ procedure maxima are213/83 against1000/200 caps. Only the two intended product
 components differ from38dea294. No exception or deployment is required. Full
 joint-check variants, D13 phase proof and relevant regressions remain open.
 
+**Current error5 stop,2026-10-15 13:23:20 Pacific:** corrected guide trial87 on
+unchanged recording02/source1c9bff87 ends7 PASS/1 desktop-stop harness failure.
+Actual error5 is recorded at2026-10-15T20:23:20.1669715Z; inactive input, Other
+desktop and screensaver coincide, without proving Windows lock or cause. Controller
+`admin-aggregation-controller/0ed201c331934f6fb0bf47961e38140b`, worker
+`slice4be-admin-aggregation/c58ce9c7787b455e877d2a55d56f4ac9`. Five compiles,
+owner-created fixture and actual recording Start pass. No guide action/output/
+conclusion or image set qualifies; do not infer no dispatch from the short prefix.
+The corrected full-path reader is not a whole-guide qualification. The guard's
+reported exception is stale heartbeat on a later read of the monitor already
+stopped at actual error5; do not classify this as a new unrelated runtime defect.
+
+Settings/package/all484 tooling pins, owned fixture cleanup and normal Excel/
+controller/monitor closure pass; delayed native events are zero through
+20:24:09.5596802Z. Independent Excel closure is checked before exit. No bypass or
+new runtime dispatch follows the stop. Recording104/outcome27 retain125 distinct
+qualified checks and full static ratchets remain GREEN on source1c9bff87. Cold/
+source comparison, corrected complete independent guidance, current D8/Release1
+regressions, remaining control coverage and current B0 remain open. Cold trial85
+is prepared only; Handoff186 names the exact guide-first continuation.
+
+**Final-candidate recording GREEN104,2026-10-15 Pacific:** recording02/source
+1c9bff87 passes104/104 with every original RED name/order retained. Controller
+`admin-aggregation-controller/dc9a4196b90840e68e191c4a6fc14a34`, worker
+`slice4be-admin-aggregation/2183fcf8f7ac4c52bf93daf8145b3ca1`. Five compiles,
+exact owner-confirmed persisted output, source preservation, policy suppression
+and reached optional-store faults pass. Pins/settings/owned cleanup and normal
+Excel/controller/monitor closure pass through20:15:46.4874456Z with zero native
+events and no desktop stop. Exact same-package/all484-tooling retention with
+outcome27 proves125 distinct passing recording/outcome checks, counting six
+common fixture/compile assertions once. This does not qualify guides or broader A.
+
+The first independent guide gate ends7 PASS/1 harness exception: actual Start is
+present, but its FileInfo reader uses a short name instead of the full path.
+Controller `c4cd91ebbdc4417ebef6bbf8e81f2ffd`, worker
+`slice4be-admin-aggregation/c2b4de3e67a04bc3a68e475cba86b7c0`; preserved normal
+native/owned closure passes through20:18:13.7730381Z. No desktop stop. This is
+harness failure, not behavioral RED or guide GREEN. Test549c1d79 reads FullName
+with LiteralPath and supplies the optional native-notice adapter only to separate
+non-recording D8 regressions; product code/assertions are unchanged. Corrected
+fresh guide trial87 runs on the same frozen candidate; relevant gates remain open.
+
 **Complete static ratchets,2026-10-15 Pacific:** source1c9bff87's full maintenance
 generation completes at20:02:58.0373185Z. Reproducible
 `reports/runtime/aggregation-recording-static-02/verify-ratchet.py` checks finished
