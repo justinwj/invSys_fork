@@ -50,8 +50,21 @@ End Function
     . (Join-Path $PSScriptRoot 'Slice4beAdminDirectoryBoundaries.ps1')
     Install-AdminDirectoryBoundaries $probe.CodeModule $null -ControlId 'ADMIN_AGGREGATION_AGGREGATE' -Outcome 'COMPLETED' -ProbeName 'TestAggregationActivity' -RootAction
     $owner=$admin.VBComponents.Item('TestAggregation').CodeModule
-    $owner.InsertLines($owner.CountOfDeclarationLines+1,'Private mConnectionResult As Boolean, mTrackingNotices As Long')
+    $owner.InsertLines($owner.CountOfDeclarationLines+1,'Private mConnectionResult As Boolean, mTrackingNotices As Long, mAuditFault As Boolean, mAuditReached As Boolean')
     $owner.AddFromString(@'
+Public Sub SetAuditFailure(ByVal value As Boolean)
+    mAuditFault = value: mAuditReached = False
+End Sub
+Public Function AuditFailureForTest() As Boolean
+    AuditFailureForTest = mAuditFault
+    If mAuditFault Then mAuditReached = True
+End Function
+Public Function AuditFailureReached() As Boolean
+    AuditFailureReached = mAuditReached
+End Function
+Public Function RecordingAcknowledgesPersistence() As Boolean
+    If Not mForm Is Nothing Then RecordingAcknowledgesPersistence = mForm.RecordingAcknowledgesPersistenceForTest()
+End Function
 Public Sub RecordingGesture(ByVal name As String, Optional ByVal root As String = "", Optional ByVal secret As String = "")
     If Not mForm Is Nothing Then mForm.RecordingGestureForTest name, root, secret
 End Sub
@@ -86,10 +99,20 @@ Public Sub RecordingGestureForTest(ByVal name As String, ByVal root As String, B
             mBtnConnect_Click
     End Select
 End Sub
+Public Function RecordingAcknowledgesPersistenceForTest() As Boolean
+    RecordingAcknowledgesPersistenceForTest = (InStr(1, mLblStatus.Caption, "Complete output was saved", vbTextCompare) > 0)
+End Function
 Public Function CredentialsClearedForTest() As Boolean
     CredentialsClearedForTest = (CStr(mTxtUser.Value) = "" And CStr(mTxtPassword.Value) = "")
 End Function
 '@)
+    $auditOwner=$admin.VBComponents.Item('modAdminConsole').CodeModule
+    $start=$auditOwner.ProcStartLine('RunHQAggregationFromSourceSet',0);$count=$auditOwner.ProcCountLines('RunHQAggregationFromSourceSet',0)
+    $body=$auditOwner.Lines($start,$count)
+    $marker='        AppendAuditEntry auditWb, "HQ_AGGREGATE",'
+    if([regex]::Matches($body,[regex]::Escape($marker)).Count -ne 1){throw 'Post-save workbook-audit boundary unavailable.'}
+    $body=$body.Replace($marker,'        If TestAggregation.AuditFailureForTest() Then Err.Raise vbObjectError + 573'+"`r`n"+$marker)
+    $auditOwner.DeleteLines($start,$count);$auditOwner.InsertLines($start,$body)
     $connection=$admin.VBComponents.Item('modAdminConsole').CodeModule
     $first=$connection.ProcStartLine('ConnectAggregationServerForAdmin',0);$count=$connection.ProcCountLines('ConnectAggregationServerForAdmin',0)
     $connection.DeleteLines($first,$count)
@@ -107,7 +130,7 @@ End Function
 
 function Test-AggregationRecording($Fixture,$Other,$HostBook,$Expected) {
     function Activity([string]$Name,[object[]]$Values=@()){Run 'invSys.Core.xlam' ('TestAggregationActivity.'+$Name) $Values}
-    function Observe([string]$Suffix,[string]$Outcome,[scriptblock]$Action,[string]$Label=$Suffix){
+    function Observe([string]$Suffix,[string]$Outcome,[scriptblock]$Action,[string]$Label=$Suffix,[switch]$NoRetryClaim){
         $before=@(Get-Slice4beActivityFiles $Fixture)
         $ownPins=SourcePins $Fixture;$otherPins=SourcePins $Other
         & $Action
@@ -117,6 +140,11 @@ function Test-AggregationRecording($Fixture,$Other,$HostBook,$Expected) {
         $attempt=@($records|Where-Object OutcomeCode -CEQ 'REQUESTED');$result=@($records|Where-Object OutcomeCode -CEQ $Outcome)
         $pair=$records.Count -eq 2 -and $attempt.Count -eq 1 -and $result.Count -eq 1
         Check ('Aggregation.Recording.'+$Label+'.Pair') $pair
+        if($NoRetryClaim){
+            $honest=$result.Count -eq 1
+            if($honest){$honest=$result[0].UserMessage -notmatch '(?i)retained (attempt|retry)'}
+            Check ('Aggregation.Recording.'+$Label+'.NoUnprovedRetryClaim') $honest
+        }
         $valid=$pair
         if($pair){$valid=$attempt[0].ActivityId -ceq $result[0].ActivityId -and $attempt[0].RecordId -cne $result[0].RecordId}
         foreach($record in $records){$valid=$valid -and $record.CatalogVersion -eq 43 -and $record.OwnerId -ceq 'ADMIN_HQ_AGGREGATION' -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.StationId -ceq 'S1' -and @($record.SourceEventRefs).Count -eq 0 -and $record.DataEffect -ceq 'Unknown'}
@@ -145,6 +173,11 @@ function Test-AggregationRecording($Fixture,$Other,$HostBook,$Expected) {
     try{
         SelectTarget $Fixture
         if(-not [bool](Activity 'SetPolicy')){throw 'Aggregation recording policy prerequisite unavailable.'}
+        if($AdminAggregationOutcomeOnly){
+            . (Join-Path $PSScriptRoot 'Slice4beAdminAggregationOutcomes.ps1')
+            Test-AggregationOutcomeRecording $Fixture $Other $HostBook
+            return
+        }
         if($AdminAggregationGuideOnly){
             . (Join-Path $PSScriptRoot 'Slice4beAdminAggregationGuide.ps1')
             Test-AggregationGuide $Fixture $Other $HostBook $Expected

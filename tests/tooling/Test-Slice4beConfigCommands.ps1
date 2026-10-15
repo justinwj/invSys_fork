@@ -149,6 +149,7 @@ param(
     [switch]$AdminAggregationCompletionOnly,
     [switch]$AdminAggregationRecording,
     [switch]$AdminAggregationGuideOnly,
+    [switch]$AdminAggregationOutcomeOnly,
     [string]$AggregationOwnedFixtureRootForTest='',
     [switch]$AdminTesterSetupPaths,
     [switch]$AdminTesterOwnershipPaths,
@@ -793,6 +794,7 @@ if($AdminAggregationBoundaryCase -ne 'All' -and $AdminAggregationBoundaryGroup -
 if($AdminAggregationYieldGroup -and (-not $AdminAggregationOnly -or -not $AdminAggregationBoundaryMatrix -or $AdminAggregationBoundaryGroup -ne 'All' -or $AdminAggregationBoundaryCase -ne 'All' -or $AdminAggregationPathComparison -or $AdminAggregationWriteBoundariesOnly -or $AdminAggregationRestartOnly -or $AdminAggregationCompletionOnly)){throw 'Named Aggregation yields require their matrix and exclude other focused modes.'}
 if($AdminAggregationSuppressPhaseRechecksForTest -and ($Phase -ne 'RED' -or $AdminAggregationYieldGroup -notin @('PhaseRedFocus','BeforeSave','AfterSave','AfterPromotion'))){throw 'The isolated missing-phase-check seam is restricted to its RED phase tests.'}
 if($AdminAggregationGuideOnly -and (-not $AdminAggregationOnly -or -not $AdminAggregationRecording)){throw 'Aggregation guides require their actual owner and recording probes.'}
+if($AdminAggregationOutcomeOnly -and (-not $AdminAggregationOnly -or -not $AdminAggregationRecording -or $AdminAggregationGuideOnly)){throw 'Aggregation outcome recording requires its owner/probes and excludes guide mode.'}
 if($AdminAggregationRecording -and (-not $AdminAggregationOnly -or $AdminAggregationYieldGroup -or $AdminAggregationBoundaryMatrix -or $AdminAggregationPathComparison -or $AdminAggregationRestartOnly -or $AdminAggregationCompletionOnly)){throw 'Aggregation recording excludes other focused modes.'}
 if($AdminTesterGuideOnly -and (-not $AdminTesterSetupOwnerOnly -or -not $AdminTesterRecording -or -not $AdminTesterRecordingOnly -or -not $AdminTesterGuidePaths)){throw 'Focused Tester guide selection requires its owner, recording-only and guide probes.'}
 if($AdminUsersRecordingOnly -and -not $CheckAdminUsersRecording){throw 'Focused recording requires its probe.'}
