@@ -46,6 +46,27 @@ procedure maxima are213/83 against1000/200 caps. Only the two intended product
 components differ from38dea294. No exception or deployment is required. Full
 joint-check variants, D13 phase proof and relevant regressions remain open.
 
+**Current owner-09 full matrices,2026-10-15 Pacific:** failed/successful connection
+returns each pass45/45, followed by confirmed review72/72. Reproducible
+`reports/runtime/aggregation-joint-matrix-09/verify.py` verifies150 distinct passing
+assertions on identical five-package hashes/all481 tooling pins across these three
+groups. Each covers changed/missing source, changed feed, sign-out and saved-rights
+revocation. Five compiles, final source preservation, settings/package/tooling pins,
+owned cleanup, normal Excel/controller/monitor closure and zero delayed native
+events pass. Remaining full review/result/phase variants are not yet qualified.
+
+| Group | Controller / worker | Native audit UTC |
+| --- | --- | --- |
+| Failed connection45 | `27fa2ae11b3149fba90fad85bf8d6bc5` / `ec28f22b386d41508341e625e99d9392` | 2026-10-15T17:46:22.6967495Z |
+| Successful connection45 | `76594d86ad3a4c06a5e736456f996e7c` / `e7fec5284b6645639dad4cfb7b793e38` | 2026-10-15T17:53:18.5077255Z |
+| Confirmed review72 | `06390ab3601340a39488d0d572223cdd` / `1a7742aff6e648c6852fd7a1b50da12a` | 2026-10-15T18:09:51.1457436Z |
+
+The initial sequential controller stopped after the passing successful-connection
+trial because its provenance parser did not accept Windows separators. Independent
+qualification passed; the corrected controller resumes only unrun groups. This is
+orchestration failure, not behavioral RED or a desktop stop. Input packages/tooling
+are unchanged. Source45336d88 and scoped focused/static/cold gates remain intact.
+
 **Observed-feed reopening GREEN29,2026-10-15 Pacific:** source45336d88 in fresh
 unpromoted owner-09 passes29/29 through the unchanged FeedReopen handler test,
 controller `admin-aggregation-controller/819a220e367d484890db57b3650ab4b1`, worker
