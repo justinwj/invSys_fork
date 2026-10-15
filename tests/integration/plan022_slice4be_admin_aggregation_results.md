@@ -1,5 +1,34 @@
 # Aggregation authority and output ownership evidence
 
+**Current regression checkpoint,2026-10-15 Pacific:** unchanged recording02/
+source1c9bff87 qualifies four groups with identical five-package/all484-tooling
+pins. `regressions-recording02-batch-entry-89/verify.py` reproduces199 distinct
+passing checks; every group has normal preserved Excel/owned closure and zero
+delayed native events.
+
+| Group | PASS | Controller | Worker | Native audit UTC |
+|---|---:|---|---|---|
+| PathComparison | 88 | f69dea69e83c4e5aaeba19cd85156ba8 | 1f18999e8c1f4d5ebcc81ab054fc0a8a | 21:05:07.7022342Z |
+| Ownership | 60 | 91d4cf0b28884815bdc6819afdd4af22 | f0850bca3a634e8093eafabd5f7a9e8c | 21:11:05.1934970Z |
+| Completion | 60 | d87633574a984d9ea6e49cee0da38cd0 | ae1b72aad1914d9a892db5f915130bc4 | 21:27:41.1366407Z |
+| Restart | 14 | a72381add6a24c408ead3fec81a61370 | e13d2ac15b9f4950b2dd0ce7642fed44 | 21:31:00.3298002Z |
+
+The fifth group, NamedReturns trial94, stops40 PASS/1 harness failure on actual
+error5 at21:37:15.1398023Z (14:37:15 Pacific). All40 passing names retain the exact
+earlier57-check prefix; result-return and final group preservation are unreached.
+Controller794db50d73224ba2bb22720295e94bef, worker286d42e743504a708816462620b2bd5a.
+Inactive input, Other desktop and screensaver coincide; Windows lock/cause is not
+established. Settings/pins/owned cleanup and normal closure pass, with zero delayed
+native events through21:37:43.2865463Z. Independent Excel/batch closure is verified
+at21:38:06.3518670Z. This is partial stop evidence, not behavioral RED or whole GREEN.
+
+The user explicitly resumes. Passive inspection is clear at21:39:25.8217256Z
+(Default/active/no screensaver/Excel closed), and every frozen pin matches. Fresh
+unchanged NamedReturns100/FeedReopen101 run in resume batch102; the four completed
+groups are retained without rerunning. No bypass, security change, new proposal or
+product edit occurs. Receiving B0/private pinned input and shared regressions are
+prepared only. Release1 fixture conformance and broader4be-A coverage remain open.
+
 **Independent guide GREEN135,2026-10-15 Pacific:** unchanged recording02/source
 1c9bff87 passes135/135 unique checks, controller
 `admin-aggregation-controller/164449abc4734baf962de307e1f776f2`, worker

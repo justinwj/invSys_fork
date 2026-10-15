@@ -5,6 +5,17 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Current regression checkpoint,2026-10-15 Pacific:** path88/Ownership60/
+Completion60/Restart14 qualify199 distinct checks on unchanged recording02/
+source1c9bff87, with identical five-package/all484 tooling pins and clean preserved
+closure through21:31:00.3298002Z. NamedReturns94 stops40/1 on actual error5 at
+21:37:15.1398023Z; passing prefix retained, clean preserved closure through
+21:37:43.2865463Z. This is partial stop evidence, not product RED or complete GREEN.
+After explicit user resume, passive inspection is clear at21:39:25.8217256Z and
+fresh unchanged NamedReturns100/FeedReopen101 run without repeating completed
+groups. No new approval or product edit. Current B0/shared regressions and Release1
+fixture conformance remain required; see the Aggregation receipt.
+
 **Current guide/cold qualification,2026-10-15 Pacific:** recording02/source1c9bff87
 passes independent guide135 with eight reviewed captures, truthful saved successful/
 Incomplete/Failed conclusions and preserved evidence across all three views.
@@ -22,7 +33,9 @@ from a SKU dictionary, and appends synthetic INVENTORY_CREATE/APPLIED rows with
 SourceInbox HARNESS. The validator also builds Config/Auth/inboxes directly before
 opening packages. Full-chain `New-OrderedLiveValidator` retains that fixture prefix;
 its separate generated Admin-entry gate does not make those canonical seed rows
-owning-service results. No current runtime test was dispatched for this audit.
+owning-service results. Receiving staging and later consumer paths also supply fixed
+identities; the correction must carry owning-service-generated keys through those
+actions. No current runtime test was dispatched for this audit.
 
 This fixture cannot establish the requested current release proof under v4.11 D14
 (System_Key generated once at the owning creation/service boundary) and AGENTS.md's

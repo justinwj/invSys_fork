@@ -6,6 +6,31 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Current Aggregation qualification,2026-10-15 Pacific:** recording02/source
+1c9bff87 has recording104/outcome27 (125 distinct), independent guide135 with eight
+reviewed captures, full static ratchets and all five cold compiles. Exact compiled
+comparison preserves all358 prior components and limits the359-component delta to
+the seven intended additions/changes. Normal preserved closure qualifies through
+20:53:08.0573248Z. Current path88, Ownership60, Completion60 and Restart14
+regressions qualify199 distinct checks with preserved native/owned closure through
+21:31:00.3298002Z. NamedReturns stops40/1 on actual error5 at21:37:15.1398023Z;
+all40 passing checks retain the earlier57-check prefix. Clean preserved closure
+passes through21:37:43.2865463Z. This is partial stop evidence, not behavioral RED
+or complete GREEN. The user resumes; passive desktop inspection is clear at
+21:39:25.8217256Z and all frozen pins match. Fresh unchanged NamedReturns/FeedReopen
+trials100/101 are running in resume batch102; no completed group is rerun.
+These are scoped gates, not full4be-A acceptance; see the
+[Aggregation receipt](plan022_slice4be_admin_aggregation_results.md).
+
+Current Receiving B0 and shared Tester-guide/Settings/recording-lifecycle gates
+are prepared only. Release1's existing live/full-chain fixture must first replace
+synthetic canonical create/applied rows and fixed identities with Admin-generated
+runtimes and owning creation/processing results, preserving every existing check.
+The [remaining Admin coverage audit](plan022_slice4be_admin_remaining_coverage.md)
+records that source-only finding and uncovered entries. No new approval is pending,
+no old runtime result is promoted, and comprehensive coverage/release proof remain
+required. D13 does not require a new RED for this evidence-only checklist update.
+
 **Current capture correction,2026-10-15 Pacific:** owner-09 source45336d88 passes
 FeedReopen29 after21/8 RED, retaining every assertion/order and all481 tooling pins.
 Restored settings cannot revive the old capture; fresh captures persist exact output.
