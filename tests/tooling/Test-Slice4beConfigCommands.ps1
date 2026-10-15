@@ -142,7 +142,8 @@ param(
     [switch]$AdminAggregationBoundaryMatrix,
     [ValidateSet('All','Inspection','Write','Ownership')][string]$AdminAggregationBoundaryGroup='All',
     [ValidateSet('All','UnknownOutputColumn')][string]$AdminAggregationBoundaryCase='All',
-    [ValidateSet('','RedFocus','ConnectionFailed','ConnectionSucceeded','Confirmation','ConfirmationCancelled','ResultCompleted','ResultCompletedSelectionChanged','ResultFailed','BeforeSave','AfterSave','AfterPromotion')][string]$AdminAggregationYieldGroup='',
+    [ValidateSet('','RedFocus','PhaseRedFocus','ConnectionFailed','ConnectionSucceeded','Confirmation','ConfirmationCancelled','ResultCompleted','ResultCompletedSelectionChanged','ResultFailed','BeforeSave','AfterSave','AfterPromotion')][string]$AdminAggregationYieldGroup='',
+    [switch]$AdminAggregationSuppressPhaseRechecksForTest,
     [switch]$AdminAggregationWriteBoundariesOnly,
     [switch]$AdminAggregationRestartOnly,
     [switch]$AdminAggregationCompletionOnly,
@@ -788,6 +789,7 @@ if($CheckAdminUsersRecording -and -not $CheckAdminUsersAuthority){throw 'Recordi
 if($AdminAggregationBoundaryGroup -ne 'All' -and (-not $AdminAggregationOnly -or -not $AdminAggregationBoundaryMatrix -or $AdminAggregationWriteBoundariesOnly -or $AdminAggregationRestartOnly -or $AdminAggregationCompletionOnly -or $AdminAggregationPathComparison)){throw 'A focused Aggregation boundary group requires its matrix and excludes other focused modes.'}
 if($AdminAggregationBoundaryCase -ne 'All' -and $AdminAggregationBoundaryGroup -ne 'Write'){throw 'The focused unknown-column case requires the Write boundary group.'}
 if($AdminAggregationYieldGroup -and (-not $AdminAggregationOnly -or -not $AdminAggregationBoundaryMatrix -or $AdminAggregationBoundaryGroup -ne 'All' -or $AdminAggregationBoundaryCase -ne 'All' -or $AdminAggregationPathComparison -or $AdminAggregationWriteBoundariesOnly -or $AdminAggregationRestartOnly -or $AdminAggregationCompletionOnly)){throw 'Named Aggregation yields require their matrix and exclude other focused modes.'}
+if($AdminAggregationSuppressPhaseRechecksForTest -and ($Phase -ne 'RED' -or $AdminAggregationYieldGroup -notin @('PhaseRedFocus','BeforeSave','AfterSave','AfterPromotion'))){throw 'The isolated missing-phase-check seam is restricted to its RED phase tests.'}
 if($AdminTesterGuideOnly -and (-not $AdminTesterSetupOwnerOnly -or -not $AdminTesterRecording -or -not $AdminTesterRecordingOnly -or -not $AdminTesterGuidePaths)){throw 'Focused Tester guide selection requires its owner, recording-only and guide probes.'}
 if($AdminUsersRecordingOnly -and -not $CheckAdminUsersRecording){throw 'Focused recording requires its probe.'}
 if($AdminUsersGuideOnly -and (-not $CheckAdminUsersRecording -or $AdminUsersRecordingOnly)){throw 'Focused guide requires Users recording and excludes recording-only mode.'}

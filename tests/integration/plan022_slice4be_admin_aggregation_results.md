@@ -46,6 +46,26 @@ procedure maxima are213/83 against1000/200 caps. Only the two intended product
 components differ from38dea294. No exception or deployment is required. Full
 joint-check variants, D13 phase proof and relevant regressions remain open.
 
+**D13 equivalent phase RED,2026-10-15 Pacific:** frozen owner-08 completes24
+PASS/8 expected FAIL through the actual handler, controller
+`admin-aggregation-controller/36b9496cb08846a7b556696c203d70aa`, worker
+`slice4be-admin-aggregation/f9fd1e4d1f634c0d80c39cfa50b593dd`.
+Entry: `-Phase RED -YieldGroup PhaseRedFocus -SuppressPhaseRechecksForTest`.
+This is D13's equivalent isolated seam for previously unprotected phase coverage,
+not a failure of real owner-08: disposable Core copies retain captured ownership
+and entry authorization while omitting repeated joint freshness checks. The switch
+is restricted to RED phase tests and rejected in GREEN mode. No product VBA changes.
+All five compiles, three seam/fault prerequisites and final source preservation
+pass, with no harness exception. Sign-out before and after save changes feed bytes
+and loses retry evidence; after promotion it loses retry evidence while exact
+complete persistence remains independently verified and acknowledged. Operator
+Boolean refusal alone therefore does not establish preserved feed or retained
+ownership evidence. Eight fixed assertions protect those actual effects.
+Settings/package/tooling pins, owned cleanup and normal Excel/controller/monitor
+closure pass; delayed native events are zero through2026-10-15T16:56:25.0524654Z.
+The same phase cases with real checks restored must pass before qualification;
+all source/feed/authority variants and the broader gates remain open.
+
 **Named-return protecting RED,2026-10-15 Pacific:** unchanged owner-07 completes
 50 PASS/7 expected FAIL, controller
 `admin-aggregation-controller/cca897e0af654f38bcd7328ee9585cf9`, worker

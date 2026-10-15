@@ -96,6 +96,23 @@ Public Function ConnectAggregationServerForAdmin(ByVal serverRoot As String, ByV
     ConnectAggregationServerForAdmin = TestAggregation.ConnectionReturn()
 End Function
 '@)
+    if($AdminAggregationSuppressPhaseRechecksForTest){
+        # D13 equivalent seam: preserve captured ownership/entry authorization,
+        # suppress only subsequent joint freshness checks in disposable copies.
+        $command=$packages['invSys.Core.xlam'].VBProject.VBComponents.Item('modAggregationCommands').CodeModule
+        $first=$command.ProcStartLine('CheckPhase',0);$count=$command.ProcCountLines('CheckPhase',0)
+        $body=$command.Lines($first,$count)
+        $joint='    CheckPhase = modAggregationAuthority.Joint(context, mSources)'
+        if(-not $body.Contains($joint)){throw 'Scoped phase-revalidation seam unavailable.'}
+        $body=$body.Replace($joint,"    mSuppressedPhaseChecksForTest = mSuppressedPhaseChecksForTest + 1`r`n    CheckPhase = True")
+        $command.DeleteLines($first,$count);$command.InsertLines($first,$body)
+        $command.AddFromString(@'
+Private mSuppressedPhaseChecksForTest As Long
+Public Function SuppressedPhaseChecksForTest() As Long
+    SuppressedPhaseChecksForTest = mSuppressedPhaseChecksForTest
+End Function
+'@)
+    }
 }
 
 function Test-AggregationYields($Fixture,$Other,$HostBook) {
@@ -115,7 +132,7 @@ function Test-AggregationYields($Fixture,$Other,$HostBook) {
     $changedFeed=Join-Path $runRoot 'yield-changed-feed'
     $owned=[IO.Path]::GetFullPath($runRoot).TrimEnd('\')+'\'
     if(-not [IO.Path]::GetFullPath($changedFeed).StartsWith($owned,[StringComparison]::OrdinalIgnoreCase)){throw 'Yield fault destination escapes disposable scope.'}
-    $groups=if($AdminAggregationYieldGroup -eq 'RedFocus'){@('ConnectionFailed','Confirmation','ConfirmationCancelled','ResultFailed','ResultCompletedSelectionChanged')}else{@($AdminAggregationYieldGroup)}
+    $groups=if($AdminAggregationYieldGroup -eq 'RedFocus'){@('ConnectionFailed','Confirmation','ConfirmationCancelled','ResultFailed','ResultCompletedSelectionChanged')}elseif($AdminAggregationYieldGroup -eq 'PhaseRedFocus'){@('BeforeSave','AfterSave','AfterPromotion')}else{@($AdminAggregationYieldGroup)}
     try {
       foreach($yieldGroup in $groups){
         if($yieldGroup -like 'Connection*'){
@@ -133,7 +150,7 @@ function Test-AggregationYields($Fixture,$Other,$HostBook) {
             Check ('Aggregation.Yield.'+$yieldGroup+'.Control.FeedPreserved') ((SavedHash $Fixture.Output) -ceq $before)
             [void](Call 'CloseForm');[void](Call 'ArmYield' @('',$false))
         }
-        $faults=if($AdminAggregationYieldGroup -eq 'RedFocus'){@('SOURCE_CHANGED')}else{@('SOURCE_CHANGED','SOURCE_MISSING','FEED_CHANGED','SIGN_OUT','RIGHTS_REVOKED')}
+        $faults=if($AdminAggregationYieldGroup -eq 'RedFocus'){@('SOURCE_CHANGED')}elseif($AdminAggregationYieldGroup -eq 'PhaseRedFocus'){@('SIGN_OUT')}else{@('SOURCE_CHANGED','SOURCE_MISSING','FEED_CHANGED','SIGN_OUT','RIGHTS_REVOKED')}
         foreach($fault in $faults){
             $name='Aggregation.Yield.'+$yieldGroup+'.'+$fault
             SelectTarget $Fixture
@@ -159,6 +176,7 @@ function Test-AggregationYields($Fixture,$Other,$HostBook) {
             }
             [void](Call 'ArmYield' @($point,($yieldGroup -eq 'ConnectionSucceeded'),$fault,$Fixture.Snapshot,$Other.Snapshot,$changedFeed))
             if($yieldGroup -eq 'ResultCompletedSelectionChanged'){[void](Call 'ClearSelectionOnReturn' @($true))}
+            if($AdminAggregationSuppressPhaseRechecksForTest){$phaseBefore=[int](Run 'invSys.Core.xlam' 'modAggregationCommands.SuppressedPhaseChecksForTest')}
             if($yieldGroup -eq 'ResultFailed'){
                 [void](Core 'Arm' @('WRITE_FAILURE','BEFORE_SAVE',$Fixture.Snapshot,$Other.Snapshot,$changedFeed))
             }elseif($yieldGroup -in @('BeforeSave','AfterSave','AfterPromotion')){
@@ -172,13 +190,18 @@ function Test-AggregationYields($Fixture,$Other,$HostBook) {
             $injected=[bool](Core 'Injected') -and $returned
             Check ($name+'.ActualFaultReturnReached') $injected
             if(-not $injected){throw 'Named yield fault was not injected; not behavioral RED.'}
+            if($AdminAggregationSuppressPhaseRechecksForTest){
+                $seamReached=[int](Run 'invSys.Core.xlam' 'modAggregationCommands.SuppressedPhaseChecksForTest') -gt $phaseBefore
+                Check ($name+'.ScopedFreshnessSeamReached') $seamReached
+                if(-not $seamReached){throw 'Phase revalidation seam was not reached; not behavioral RED.'}
+            }
             if($yieldGroup -eq 'ResultFailed'){
                 $failedSave=[bool](Call 'PriorFaultInjected') -and [int](Run 'invSys.Core.xlam' 'TestAggregationRoots.Calls') -eq 1
                 Check ($name+'.PrecedingWriteFailureReached') $failedSave
                 if(-not $failedSave){throw 'Result did not follow the injected write failure; not behavioral RED.'}
             }
             $complete=$yieldGroup -in @('ResultCompleted','ResultCompletedSelectionChanged','AfterPromotion')
-            if($complete){
+            if($complete -or ($AdminAggregationSuppressPhaseRechecksForTest -and [bool](Call 'OwnerSuccess'))){
                 # Compare every exact source identity/quantity, without emitting rows.
                 # SOURCE_CHANGED overwrites only the selected fixture; expected rows
                 # therefore come from its captured bytes, restored below before read.
@@ -189,9 +212,11 @@ function Test-AggregationYields($Fixture,$Other,$HostBook) {
                 $exact=$expected.Count -eq $actual.Count
                 foreach($key in $expected.Keys){$exact=$exact -and $actual.ContainsKey($key) -and $actual[$key] -eq $expected[$key]}
                 Check ($name+'.CompleteSelectedSetPersisted') $exact
+                if(-not $exact){throw 'Unexpected persisted output is unverified; independent case preparation stopped.'}
                 Check ($name+'.KnownPersistenceAcknowledged') ([bool](Call 'ClaimsSavedComplete'))
                 if($yieldGroup -eq 'AfterPromotion'){Check ($name+'.NoContinuedSuccessAfterContextChange') (-not [bool](Call 'OwnerSuccess'))}
-            }else{
+            }
+            if(-not $complete){
                 Check ($name+'.ExistingFeedPreserved') ((SavedHash $Fixture.Output) -ceq $before)
                 Check ($name+'.NoFalseCompletion') (-not [bool](Call 'OwnerSuccess'))
             }

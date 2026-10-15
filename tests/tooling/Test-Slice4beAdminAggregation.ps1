@@ -1,9 +1,11 @@
 [CmdletBinding()]
 param([string]$DeployRoot='deploy/validation-tester-recording-02',[ValidateSet('RED','GREEN')][string]$Phase='RED',[string]$DesktopMonitorReport='',[switch]$PathComparison,[switch]$BoundaryMatrix,[switch]$WriteBoundariesOnly,[switch]$RestartOnly,[switch]$CompletionOnly,[ValidateSet('All','Inspection','Write','Ownership')][string]$BoundaryGroup='All',[ValidateSet('All','UnknownOutputColumn')][string]$BoundaryCase='All',
-    [ValidateSet('','RedFocus','ConnectionFailed','ConnectionSucceeded','Confirmation','ConfirmationCancelled','ResultCompleted','ResultCompletedSelectionChanged','ResultFailed','BeforeSave','AfterSave','AfterPromotion')][string]$YieldGroup='')
+    [ValidateSet('','RedFocus','PhaseRedFocus','ConnectionFailed','ConnectionSucceeded','Confirmation','ConfirmationCancelled','ResultCompleted','ResultCompletedSelectionChanged','ResultFailed','BeforeSave','AfterSave','AfterPromotion')][string]$YieldGroup='',
+    [switch]$SuppressPhaseRechecksForTest)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if($BoundaryCase -ne 'All' -and $BoundaryGroup -ne 'Write'){throw 'The focused unknown-column case requires the Write boundary group.'}
 if($YieldGroup -and ($BoundaryGroup -ne 'All' -or $BoundaryCase -ne 'All' -or $PathComparison -or $WriteBoundariesOnly -or $RestartOnly -or $CompletionOnly)){throw 'Named Aggregation yields exclude other focused modes.'}
+if($SuppressPhaseRechecksForTest -and ($Phase -ne 'RED' -or $YieldGroup -notin @('PhaseRedFocus','BeforeSave','AfterSave','AfterPromotion'))){throw 'The isolated missing-phase-check seam is restricted to its RED phase tests.'}
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Aggregation owner gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
 $snapshot=Get-InvSysTestSettingsSnapshot
@@ -31,6 +33,7 @@ try {
     if($BoundaryGroup -ne 'All'){$workerArgs+=@('-AdminAggregationBoundaryGroup',$BoundaryGroup)}
     if($BoundaryCase -ne 'All'){$workerArgs+=@('-AdminAggregationBoundaryCase',$BoundaryCase)}
     if($YieldGroup){$workerArgs+=@('-AdminAggregationYieldGroup',$YieldGroup)}
+    if($SuppressPhaseRechecksForTest){$workerArgs+='-AdminAggregationSuppressPhaseRechecksForTest'}
     if($WriteBoundariesOnly){$workerArgs+='-AdminAggregationWriteBoundariesOnly'}
     if($RestartOnly){$workerArgs+=@('-AdminAggregationRestartOnly','-ViewerStartupPackageStateForTest','SavedCopies','-AggregationOwnedFixtureRootForTest',$ownedFixture)}
     if($CompletionOnly){$workerArgs+='-AdminAggregationCompletionOnly'}
