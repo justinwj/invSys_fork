@@ -5,10 +5,12 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
-**Resumed write tail,2026-10-15 Pacific:** owner-07 passes16/16 for the existing
-unknown-column action and final Write-group source-preservation assertion, with
-clean preserved native/owned closure. The prior56/1 stays partial; full retention,
-remaining groups, actual-yield/phase tests and broader4be-A/B0 remain required.
+**Retained matrix qualified,2026-10-15 Pacific:** owner-07 Ownership60 and authority/
+path88 pass with clean preserved native/owned closure. Exact same-package retention
+proves218 distinct passing assertions covering all215 prior names; the earlier56/1
+keeps its partial status. The composite qualifies passing assertions, not one whole-
+run GREEN. Additional actual-yield/phase tests, relevant regressions, recording/
+guidance and comprehensive4be-A/B0 remain required.
 See the [Aggregation receipt](plan022_slice4be_admin_aggregation_results.md).
 
 **Previous error5 stop,2026-10-14 21:50:25 Pacific:** write-group56/1 is partial after

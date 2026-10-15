@@ -10,6 +10,32 @@ path-only packaged comparison. The approval blocker is cleared. Expanded RED and
 implementation remained pending at approval; local expanded RED is recorded below.
 D8-TESTER-01 remains approved/qualified.
 
+**Retained boundary/path verification,2026-10-15 Pacific:** the same frozen owner-07
+now has218 distinct passing assertions, retaining every name in the earlier215-check
+matrix. `reports/runtime/aggregation-matrix-retention-07/verify.py` and `retention.json`
+prove identical five-package hashes, reviewed selector-only tooling differences,
+preserved settings/pins/owned cleanup, normal owned closure and delayed zero native
+events for all retained trials. The interrupted56/1 retains its exact partial status;
+only its passing assertions enter the composite, with duplicates counted once.
+This is retained-assertion qualification, not a single whole-run GREEN or full D8
+acceptance. The additional closed-yield/phase matrix below remains required.
+
+Ownership passes60/60, controller
+`admin-aggregation-controller/fc53e5944b5046c7be38f65742e330c4`, worker
+`slice4be-admin-aggregation/d92c564928ad4c27b81dcec500a28cab`; native audit through
+2026-10-15T16:14:26.5394079Z. Borrowed clean/dirty outputs remain open with their
+saved state unchanged; dirty/unreadable authority, read-only output, all three
+overlaps, exact-instance closed-original refusal and direct-Core sign-out denial
+pass. Authority/path passes88/88, controller
+`admin-aggregation-controller/e85952fc7865480b9b663fb6b8bd8e2f`, worker
+`slice4be-admin-aggregation/faa88a5bc0214db2949f314580f944f4`; native audit through
+2026-10-15T16:24:56.4940782Z. All four drive/UNC variants use the canonical destination,
+persist the complete selected set and preserve sources. Original workbook binding
+and all retained live-authority denials pass. Both owned monitor/controller wrappers
+and outer tools terminate normally; no desktop stop or protection change occurs.
+Product source remains38dea294; integrity60, retry14, Tester444 and static03 keep
+their documented scopes. Aggregation recording/guidance and4be-A/B0 remain open.
+
 **Resumed write tail GREEN,2026-10-15 Pacific:** frozen owner-07 passes16/16,
 controller `admin-aggregation-controller/6b7d5f9efd21409daf6a516bff1605cf`, worker
 `slice4be-admin-aggregation/83d795bcb546496ba4eeaaca86ca48b9`.

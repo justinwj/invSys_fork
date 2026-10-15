@@ -6,11 +6,12 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
-**Resumed write tail,2026-10-15 Pacific:** owner-07 passes16/16 for the existing
-unknown-column action and final Write-group preservation assertion, with compiles,
-pins/settings/cleanup, normal owned closure and zero delayed native events. The
-earlier56/1 remains partial until exact same-package/assertion retention is proved.
-Remaining groups, yield/phase tests, recording/guidance and4be-A/B0 stay open; see
+**Retained matrix qualified,2026-10-15 Pacific:** owner-07 Ownership60 and authority/
+path88 pass with clean preserved native/owned closure. Reproducible retention proves
+218 distinct passing assertions on identical packages, covering all215 prior names.
+The earlier56/1 stays partial; only its passing portion joins the fresh write tail
+and complete groups. This is not a single whole-run GREEN. Additional actual-yield/
+phase tests, relevant regressions, recording/guidance and4be-A/B0 stay open; see
 the [Aggregation receipt](plan022_slice4be_admin_aggregation_results.md).
 
 **Previous error5 stop,2026-10-14 21:50:25 Pacific:** write-group56 PASS/1 stop-related
