@@ -5,6 +5,13 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Focused return correction,2026-10-15 Pacific:** owner-08 source12b39790 passes
+57/57 after50/7 RED, retaining exact assertion order and all480 tooling pins, with
+preserved sources/output/receipts and clean native/owned closure. Owner-08 cold compile
+and static ratchets also pass. Full variants/phases, relevant regressions and Aggregation
+recording/guidance remain required. Earlier owner-07 evidence retains its scope;
+comprehensive4be-A/B0 remain open. See the Aggregation receipt.
+
 **Retained matrix qualified,2026-10-15 Pacific:** owner-07 Ownership60 and authority/
 path88 pass with clean preserved native/owned closure. Exact same-package retention
 proves218 distinct passing assertions covering all215 prior names; the earlier56/1

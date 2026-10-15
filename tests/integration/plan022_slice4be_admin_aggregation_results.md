@@ -10,15 +10,41 @@ path-only packaged comparison. The approval blocker is cleared. Expanded RED and
 implementation remained pending at approval; local expanded RED is recorded below.
 D8-TESTER-01 remains approved/qualified.
 
-**Source correction, runtime GREEN pending,2026-10-15 Pacific:** following recorded
-RED commit0d4edf6a, only `frmAggregationSources` and `modAggregationCommands` change.
+**Focused return GREEN57,2026-10-15 Pacific:** RED commit0d4edf6a precedes the
+two-component source correction12b39790 and fresh unpromoted owner-08. The unchanged
+`-YieldGroup RedFocus -Phase GREEN` completes57/57, controller
+`admin-aggregation-controller/8b71b81822e64e66a6719cc0e0bc4bfe`, worker
+`slice4be-admin-aggregation/6fb5484be99a4f9b864252b6d4636784`.
+All57 RED assertion names retain exact order, all seven failures turn GREEN and
+every tooling pin matches the RED. Five instrumented compiles, settings/package/
+tooling pins, owned cleanup and final source/authority/snapshot preservation pass.
+Excel and both owned wrappers terminate normally; delayed Excel events are zero
+through2026-10-15T16:47:06.1086058Z, with no desktop stop. The isolated five-package
+build also closes cleanly through16:38:27.7219731Z. No current/NAS promotion occurs.
+Only `frmAggregationSources` and `modAggregationCommands` change in product source.
 Connection failure and success both reach the joint return check after clearing
 transient connection inputs. Aggregate captures its selected paths before dialogs;
 confirmed/cancelled review and result returns validate that same set. A failed result
 preserves its verified command report while requiring reopening. Confirmed Core
 review now distinguishes busy/invalid-context refusal from genuine cancellation.
-No source authority or feed ownership changes. Build a fresh ignored candidate with
-Excel closed, then rerun `-YieldGroup RedFocus` before any GREEN claim.
+No source authority or feed ownership changes. This is focused source-change proof
+at five affected return branches, not the full source/feed/authority matrix. Full
+named-yield/phase variants and relevant regressions remain required; owner-07's
+retained218 matrix does not automatically qualify08. Cold/static gates follow below.
+Aggregation recording/guidance and comprehensive4be-A/B0 remain open.
+
+**Owner-08 cold compile/static gates,2026-10-15 Pacific:** existing cold-start
+Operations dependency resolution and all five project compiles pass, controller
+`aggregation-cold-compile-controller/8dea0d42e5f04753bb53120145465cd3`.
+The sanitized source-hash report contains358 unique package/component keys across
+five packages. Settings/package/tooling pins and normal Excel/owned closure pass;
+delayed Excel events are zero through2026-10-15T16:49:11.1102615Z. Source static04
+and its `verify-ratchet.py`/`ratchet-verification.json` prove365 components,
+6553 procedures,142189 lines,194 duplicate groups and unchanged9 literal/45
+unresolved dynamic calls. Existing oversized modules do not grow; new-component/
+procedure maxima are213/83 against1000/200 caps. Only the two intended product
+components differ from38dea294. No exception or deployment is required. Full
+joint-check variants, D13 phase proof and relevant regressions remain open.
 
 **Named-return protecting RED,2026-10-15 Pacific:** unchanged owner-07 completes
 50 PASS/7 expected FAIL, controller

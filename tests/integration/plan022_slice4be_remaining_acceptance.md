@@ -6,6 +6,13 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Focused named-return correction,2026-10-15 Pacific:** source12b39790 in fresh
+owner-08 passes57/57 after50/7 RED, retaining every assertion in order and all480
+tooling pins. Source/output/receipt preservation and normal native/owned closure
+pass. Owner-08 cold compile and static ratchets also pass. Full source/feed/authority
+return and phase variants, relevant regressions and recording/guidance remain open. Owner-07's
+retained218 below keeps its candidate scope;4be-A/B0 remain incomplete.
+
 **Retained matrix qualified,2026-10-15 Pacific:** owner-07 Ownership60 and authority/
 path88 pass with clean preserved native/owned closure. Reproducible retention proves
 218 distinct passing assertions on identical packages, covering all215 prior names.
