@@ -6,12 +6,22 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Current error5 stop,2026-10-14 19:58:24 Pacific:** inactive input was informational,
+but the passive monitor then observed actual Win32 error5. The Tester recording/
+guide continuation ends251 PASS/1 stop-related harness failure. Four recordings,
+publication and successful guide views pass; interrupted/unconfirmed view tails
+remain incomplete. Preserved settings/pins, owned cleanup, normal Excel closure
+and zero delayed native events pass through2026-10-15T02:59:32.8303505Z; no matching
+test processes remain. Owner-07 GREEN60/static03 stand. No bypass, deployment or
+new implementation was made. Continue only after user resume; Handoff183 and the
+[Tester receipt](plan022_slice4be_admin_tester_recording_results.md) give exact scope.
+
 **Resume clarification,2026-10-14 Pacific:** the user permits continued work
 under inactive input/screensaver conditions if it still functions. Actual error5
 and mouse lock remain stop conditions without security bypasses. The earlier stop
 was the agent's conservative interpretation, not a proven lock or an explicit
-inactive-input stop instruction. Tester recording/guide continuation has resumed
-on frozen owner-07; no new acceptance result is claimed yet.
+inactive-input stop instruction. That continuation subsequently stopped on actual
+error5 as recorded above; the distinction remains in force.
 
 **Historical stop,2026-10-14 18:50:59 Pacific:** the monitor records inactive
 input with Other desktop/screensaver running, zero error5/mouse-lock counts.

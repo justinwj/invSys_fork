@@ -5,12 +5,21 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Current error5 stop,2026-10-14 19:58:24 Pacific:** the monitor records actual
+Win32 error5 after informational inactive input. Tester recording/guide continuation
+ends251 PASS/1 stop-related harness failure; successful guide views pass, while
+interrupted/unconfirmed view tails remain incomplete. Pins/settings/owned cleanup,
+normal Excel closure and zero delayed native events pass; no matching test process
+remains. Owner-07 GREEN60/static03 stand. No security bypass or OLED setting change
+was attempted. Handoff183 records continuation after user resume; broader
+Aggregation/Admin/Operations and4be-A/B0 acceptance remain open.
+
 **Resume clarification,2026-10-14 Pacific:** the user permits continued work
 while input is inactive or the screensaver runs if it still functions. Actual
 error5 and mouse lock require stopping without bypassing security. Inactivity
 alone establishes neither Windows lock nor a need to stop. The earlier stop was
-the agent's conservative interpretation. Tester recording/guide continuation
-runs on unchanged owner-07; no new acceptance result is claimed yet.
+the agent's conservative interpretation. The unchanged owner-07 continuation
+subsequently stopped on actual error5, as recorded above.
 
 **Historical stop,2026-10-14 18:50:59 Pacific:** inactive input coincides with Other
 desktop/screensaver running; Windows lock/cause is not established. Owner-07

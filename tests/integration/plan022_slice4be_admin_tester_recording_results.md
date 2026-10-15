@@ -5,6 +5,46 @@ D8-TESTER-01. Controls1.580 records catalog42/179, preserving catalog41/172.
 **Scoped-qualified on unpromoted tester-recording-02.** No Training-purpose or
 replay change is introduced; overall4be-A is incomplete.
 
+## Owner-07 regression interrupted by desktop error5
+
+Last verified2026-10-14 Pacific. The existing RecordingOnly/CheckGuides selection
+runs against frozen unpromoted `deploy/validation-aggregation-owner-07`, controller
+`admin-tester-guides-controller/f29a462bc1c646299c05bbf2f7e6e8bf`, worker
+`slice4be-admin-tester-owner/4a527555d88046d39cb37db58a96d004`.
+It ends **251 PASS/1 stop-related harness failure**, not completed GREEN or product
+RED. This run supplements, rather than adds totals to, the prior passing164 owner
+prefix on owner-07. Earlier qualified tester-recording-02 evidence below keeps its
+original scope; it does not complete this candidate's regression.
+
+All five instrumented compiles pass. Actual-handler recording, redaction,
+policy/control/user suppression, workbook/session/target changes and actual
+activity-store failure checks pass. Four independent Source/Observed/Interrupted/
+Unconfirmed recordings preserve exact journal chains and prior activity;
+publication preserves exact record references. Guide authoring and Reader refusal
+pass. The successful observed run concludes correctly in How-To, Diagnostic and
+Compare both views, preserving evidence; its four captures were reviewed and are
+readable. Interrupted evaluation's publication, no-Domain-claim and exact unmatched
+step assertions pass before the stop; its rendering tail and the unconfirmed
+evaluation/rendering remain unverified. Do not infer their success.
+
+At **2026-10-15T02:58:24.8356015Z (19:58:24 Pacific)** the passive monitor records
+1546 samples, one inactive-input sample, one actual Win32 error5, Other desktop and
+running screensaver. LockSamples and MouseLockSamples remain zero; the early
+error5 does not prove later mouse checks could run. The exact failing native API,
+Windows lock and screensaver causality are unproved. Inactivity alone was allowed
+to continue under the user's clarification; actual error5 stopped the monitor,
+followed by the macro guard's stale-heartbeat refusal. No desktop rebind, security
+bypass, mouse nudge or OLED setting change was attempted.
+
+Controller closure proves settings/package/tooling preservation, owned fixture
+removal and normal Excel closure. Delayed Application1000/1001/1002 audit has zero
+Excel events through **02:59:32.8303505Z**. A later CIM check finds no Excel or matching
+controller processes. The outer tool session returned143 and no orchestration
+closure receipt exists; do not claim verified normal wrapper closure. Its ignored
+orchestration/monitor files are under `resume-d8-agg-01/tester-guides-green-entry-30/`.
+Stop per the user's error5 rule; Handoff183 contains continuation, without changing
+the permission to work under inactive input when access remains available.
+
 ## Focused evidence
 
 All controller paths are under ignored `reports/runtime/admin-tester-owner-controller/`.
