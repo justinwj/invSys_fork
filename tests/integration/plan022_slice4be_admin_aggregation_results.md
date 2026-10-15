@@ -46,6 +46,20 @@ procedure maxima are213/83 against1000/200 caps. Only the two intended product
 components differ from38dea294. No exception or deployment is required. Full
 joint-check variants, D13 phase proof and relevant regressions remain open.
 
+**Full confirmed-review variants GREEN72,2026-10-15 Pacific:** owner-08 passes72/72,
+controller `admin-aggregation-controller/0beecedc328941eb9fc38a28eb0834f6`, worker
+`slice4be-admin-aggregation/a035c83f0a33466484c2d425d9f957f2`. Changed/missing source,
+changed feed, sign-out and saved-rights revocation all reach the actual confirmation
+return. Both handler and direct Core require reopening without false cancellation;
+no writer runs, exact retry receipts/known feed bytes survive and explicit fresh
+review resolves each known state. Five compiles, source preservation, settings/
+package/tooling pins, owned cleanup and normal Excel/controller/monitor closure
+pass; delayed native events are zero through2026-10-15T17:19:41.4146381Z.
+Joint-matrix retention now verifies150 distinct passing assertions across the three
+completed full groups on identical packages/all480 tooling pins. Restored-feed
+capture behavior is a separate focused follow-up; full cancelled-review/result/
+phase variants and broader4be-A gates remain open. Source12b39790 is unchanged.
+
 **Full connection-return variants GREEN,2026-10-15 Pacific:** owner-08 passes45/45
 for each actual failed/successful connection-return branch. Both include the ordinary
 valid-context control and changed/missing source, changed trusted feed, sign-out and
