@@ -49,8 +49,13 @@ Public Function PlanNewRow(ByVal rowKey As String) As Boolean
 End Function
 
 Public Function Scalar(ByVal rowKey As String, ByVal header As String) As Variant
+    Dim fields As Object
     On Error GoTo Invalid
-    Scalar = mState("Rows")(rowKey)(UCase$(Trim$(header)))(3)
+    If Not mState("Rows").Exists(rowKey) Then Exit Function
+    Set fields = mState("Rows")(rowKey)
+    header = UCase$(Trim$(header))
+    If Not fields.Exists(header) Then Exit Function
+    Scalar = fields(header)(3)
 Invalid:
 End Function
 

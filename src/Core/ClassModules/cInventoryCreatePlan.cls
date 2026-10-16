@@ -13,12 +13,8 @@ Option Explicit
 Private mKey As String, mSku As String, mQty As Double
 Private mLocation As String, mCondition As String, mAttributes As String
 
-Public Property Get Sku() As String
-    Sku = mSku
-End Property
-
 Public Function Plan(ByVal payload As String, ByVal catalog As cInventoryTableInput, _
-        ByVal entities As cInventoryTableInput) As Boolean
+        ByVal entities As cInventoryTableInput, ByRef selectedSku As String) As Boolean
     Dim item As Object, report As String, field As Variant, name As String, value As String
     On Error GoTo Invalid
     payload = Trim$(payload)
@@ -51,7 +47,7 @@ Public Function Plan(ByVal payload As String, ByVal catalog As cInventoryTableIn
             If IsCatalogField(name) Then catalog.PlanValue mSku, name, value
         End If
     Next field
-    Plan = True
+    selectedSku = mSku: Plan = True
 Invalid:
 End Function
 

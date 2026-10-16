@@ -159,13 +159,8 @@ End Function
 Public Function BeginCreate(ByVal payload As String) As Boolean
     If mPhase <> "" Or Not Unchanged() Then Exit Function
     Set mCreate = New cInventoryCreatePlan
-    If Not mCreate.Plan(payload, mCatalog, mEntities) Then Exit Function
-    mSelectedSku = mCreate.Sku
+    If Not mCreate.Plan(payload, mCatalog, mEntities, mSelectedSku) Then Exit Function
     mPhase = "Create": BeginCreate = True
-End Function
-
-Public Function ConfirmCreate(ByVal eventId As String) As Boolean
-    If mPhase = "Create" And eventId <> "" Then ConfirmCreate = ConfirmSavedInputs(eventId)
 End Function
 
 Public Function BeginSave(Optional ByVal expectedPhase As String = "Catalog") As Boolean
@@ -183,8 +178,10 @@ Public Function ConfirmCatalog() As Boolean
     If mPhase = "Catalog" Then ConfirmCatalog = ConfirmSavedInputs()
 End Function
 
-Public Function ConfirmQuantity(ByVal eventId As String) As Boolean
-    If mPhase = "Quantity" And eventId <> "" Then ConfirmQuantity = ConfirmSavedInputs(eventId)
+Public Function ConfirmEventResult(ByVal eventId As String, ByVal expectedPhase As String) As Boolean
+    If eventId = "" Or mPhase <> expectedPhase Then Exit Function
+    If mPhase <> "Quantity" And mPhase <> "Create" Then Exit Function
+    ConfirmEventResult = ConfirmSavedInputs(eventId)
 End Function
 
 Private Function ConfirmSavedInputs(Optional ByVal eventId As String = "") As Boolean

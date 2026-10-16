@@ -264,8 +264,8 @@ Private Function ConfirmResult(ByVal key As String, ByVal kind As Long, _
     Select Case kind
         Case RESULT_CATALOG: confirmed = inputs.ConfirmCatalog()
         Case RESULT_STAGE: confirmed = inputs.ConfirmStageCell()
-        Case RESULT_QUANTITY: confirmed = inputs.ConfirmQuantity(eventId)
-        Case RESULT_CREATE: confirmed = inputs.ConfirmCreate(eventId)
+        Case RESULT_QUANTITY: confirmed = inputs.ConfirmEventResult(eventId, PHASE_QUANTITY)
+        Case RESULT_CREATE: confirmed = inputs.ConfirmEventResult(eventId, "Create")
     End Select
     If Not confirmed Then GoTo Refused
     ConfirmResult = CheckForm(key, report)
