@@ -6,6 +6,16 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Full comparison163 incomplete; cleanup blocked,2026-10-16 Pacific:** source
+3d66ac92/testb7be62d7 observes257/3 over260 checks including a harness exception,
+not completion of the300-check suite. Known Config byte failure remains; the
+first managed-field handler is unreached and its precondition cause is unresolved.
+The test-owned headless Excel process cannot be reached by normal COM/window
+close. No forced termination; the controller retains restoration state. Settings/
+fixture cleanup, final pins and native audit are pending. Keep tooling/packages
+frozen and launch no new Excel cohort until resolved. Qualified23/23 Edit and
+27/27 catalog source scopes stand; no build/deploy or comprehensive acceptance.
+
 **Exact Edit continuation,2026-10-16 Pacific:** source3d66ac92 qualifies
 GREEN16123/23 after meaningful14/9 RED153 and narrowed22/1 comparison157. Exact
 saved quantity results continue; sign-out after processing reports saved partial

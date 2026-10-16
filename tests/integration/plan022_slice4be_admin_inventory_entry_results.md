@@ -1,5 +1,21 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Full comparison163 incomplete; cleanup blocked,2026-10-16 Pacific:** source
+3d66ac92/testb7be62d7 observes257 PASS/3 FAIL over260 emitted checks including one
+harness exception; the expected300-check suite did not finish. The failures are
+the known Config byte assertion, the first managed-field handler not being reached,
+and its harness exception. Entry/setup refusal cause is unresolved; do not count
+that unreached handler as a new product RED. Exact quantity, authority and reached
+replacement controls pass, but the whole comparison is unqualified. Controller
+40bbf65d443d42d197e99607e41d605a; worker5494c1cbd3954d8ba88e3036e8315e65.
+The test-owned headless Excel process remains after normal cleanup attempts; COM
+is unavailable, no visible/main window is available, and normal close reaches no
+window. No force termination occurred. The controller retains restoration state;
+settings/fixture cleanup, final pins and native audit remain unconfirmed. Inspect
+its ignored `partial-receipt.json` before resuming; do not launch another Excel
+cohort, edit pinned tooling, kill its restoration controller or build while pending.
+The earlier23/23 and27/27 qualifications remain scoped and valid.4be-A is incomplete.
+
 **Current catalog regression and maintenance:** source3d66ac92/testab3c4362
 retains the27 actual-Core catalog check names/order and qualifies GREEN16227/27.
 Controller9f989e1e606d4d20a2b4c14f1b9f554e; worker2478a83f37f74902a23f813c0811902b;
@@ -597,6 +613,17 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Full comparison163: unresolved, unqualified**, source3d66ac92/testb7be62d7,
+controller40bbf65d443d42d197e99607e41d605a, worker5494c1cbd3954d8ba88e3036e8315e65.
+Five redacted entry observations preserve Auth. All five Config extractions preserve
+bytes; cells/shapes remain unchanged. Authorized Baseline/ActiveWorkbook controls
+change docProps/core.xml and xl/workbook.bin; denied cases change neither part.
+This does not establish comprehensive semantics or substitute140's record-level
+comparison. The raw byte assertion remains FAIL. Managed-field setup subsequently
+fails and native/owned closure is pending, so no full-cohort qualification is claimed.
+Retain the exact same-source diagnosis artifact and investigate the unreached
+handler precondition after cleanup; no inspection guard is weakened.
 
 **Full-Edit diagnostic/comparison Config limits:**155 and156 use sourceb84093c5,
 tests13bcd79d/1060c83f respectively; controller/worker155
