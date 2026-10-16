@@ -84,9 +84,10 @@ End Function
     $probe=$core.VBComponents.Add(1);$probe.Name='TestInventoryOwnResult'
     $probe.CodeModule.AddFromString(@'
 Option Explicit
-Private mSignOut As Boolean, mReturned As Boolean
+Private mSignOut As Boolean, mReturned As Boolean, mConfirmation As String
 Public Sub Arm(ByVal signOut As Boolean)
     mSignOut = signOut: mReturned = False
+    mConfirmation = ""
     TestInventoryValueTrace.Reset
 End Sub
 Public Sub AfterProcessor()
@@ -96,7 +97,41 @@ End Sub
 Public Function Returned() As Boolean
     Returned = mReturned
 End Function
+Public Sub ConfirmationStage(ByVal stage As String)
+    mConfirmation = stage
+End Sub
+Public Function Confirmation() As String
+    Confirmation = mConfirmation
+End Function
 '@)
+    $inputs=$core.VBComponents.Item('cInventoryCommandInputs').CodeModule
+    $inputCode=$inputs.Lines(1,$inputs.CountOfLines)
+    if($inputCode -match '(?im)^Private Function ConfirmSavedInputs'){
+        $start=$inputs.ProcStartLine('ConfirmSavedInputs',0);$count=$inputs.ProcCountLines('ConfirmSavedInputs',0)
+        $body=$inputs.Lines($start,$count)
+        foreach($point in @(
+            @('    On Error GoTo Invalid','Entered'),
+            @('    If Not mSaving Then Exit Function','Saving'),
+            @('    Set book = ReadSource(owner, borrowed)','SourceRead'),
+            @('    If Not book.Saved Then Exit Function','SourceSaved'),
+            @('    Set persisted = modAggregationFiles.OpenCopy(mPath, copyPath, True)','CopyOpenReturned'),
+            @('    If modTrainingWire.FileSha256(copyPath) <> savedHash Then GoTo CleanExit','CopyHashVerified'),
+            @('        If Not PlanSavedQuantity(persisted, eventId) Then GoTo CleanExit','ReceiptVerified'),
+            @('    If Not mCatalog.MatchesPersistedCopy(modExecutionTarget.Table(persisted, "tblSkuCatalog")) Then GoTo CleanExit','SavedCatalogVerified'),
+            @('    If Not mEntities.MatchesPersistedCopy(modExecutionTarget.Table(persisted, "tblInventoryEntities")) Then GoTo CleanExit','SavedEntitiesVerified'),
+            @('    If modAggregationFiles.Identity(mPath) <> savedIdentity Or modTrainingWire.FileSha256(mPath) <> savedHash Then GoTo CleanExit','StableSourceVerified'),
+            @('    If Not Unchanged() Then GoTo CleanExit','LiveInputsVerified'),
+            @('    If Not mCatalog.Confirm(modExecutionTarget.Table(book, "tblSkuCatalog")) Then GoTo CleanExit','CatalogAdopted'),
+            @('    If Not mEntities.Confirm(modExecutionTarget.Table(book, "tblInventoryEntities")) Then GoTo CleanExit','EntitiesAdopted'),
+            @('    mIdentity = savedIdentity: mHash = savedHash','BaselineBound')
+        )){
+            $pattern='(?im)^'+[regex]::Escape($point[0])+'[\t ]*\r?$'
+            if([regex]::Matches($body,$pattern).Count -ne 1){throw ('Confirmation diagnostic anchor unavailable: '+$point[1])}
+            $mark='    If mPhase = "Quantity" Then TestInventoryOwnResult.ConfirmationStage "'+$point[1]+'"'
+            $body=[regex]::Replace($body,$pattern,[Text.RegularExpressions.MatchEvaluator]{param($m) $m.Value.TrimEnd("`r")+"`r`n"+$mark})
+        }
+        $inputs.DeleteLines($start,$count);$inputs.InsertLines($start,$body)
+    }
     $module=$core.VBComponents.Item('modInventoryQuantityCommands').CodeModule
     $text=$module.Lines(1,$module.CountOfLines)
     $boundary='    processed = modProcessor.RunBatch(warehouse, 0, batchReport, eventId, applied, True)'
@@ -146,6 +181,9 @@ function Test-InventoryOwnResults($Fixture,$Other) {
             if($catalogPhase -cnotin @('Entered','CatalogBegun','WriterBound','FieldsPlanned','BeforeWritePassed','FieldsWritten','BeforeSavePassed','SaveReturned','Confirmed')){throw 'Unknown catalog diagnostic stage.'}
             $noticeFacts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.OwnResultReportFactsForTest')).Split('|')
             $dateFacts=([string](Run 'invSys.Core.xlam' 'TestInventoryValueTrace.Facts')).Split('|')
+            $confirmation=[string](Run 'invSys.Core.xlam' 'TestInventoryOwnResult.Confirmation')
+            if($confirmation -and $confirmation -cnotin @('Entered','Saving','SourceRead','SourceSaved','CopyOpenReturned','CopyHashVerified','ReceiptVerified','SavedCatalogVerified','SavedEntitiesVerified','StableSourceVerified','LiveInputsVerified','CatalogAdopted','EntitiesAdopted','BaselineBound')){throw 'Unknown confirmation stage.'}
+            [pscustomobject]@{Case=$case;ConfirmationStage=$confirmation}|ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'own-result-confirmation-stages.jsonl')
             [pscustomobject]@{Case=$case;CatalogPhase=$catalogPhase;FormShows=$shows;PartialNotice=($noticeFacts[0] -ceq 'True');DirtyNotice=($noticeFacts[1] -ceq 'True');ReadOnlyNotice=($noticeFacts[2] -ceq 'True');SourceNotice=($noticeFacts[3] -ceq 'True');DateComparisons=[int]$dateFacts[0];DateTextRoundTripMismatch=($dateFacts[1] -ceq 'True');RawDateMatches=($dateFacts[2] -ceq 'True')}|ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'own-result-fixed-stages.jsonl')
             Check ($id+'.ExpectedFormContinuation') ($shows -eq $(if($case -ceq 'AuthorityLost'){1}else{2}))
             $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
