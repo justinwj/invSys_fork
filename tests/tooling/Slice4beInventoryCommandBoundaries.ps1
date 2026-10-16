@@ -75,6 +75,7 @@ Private mRoot As String, mWh As String, mSecret As String, mOtherRoot As String
 Private mHost As String, mSku As String, mBefore As String
 Private mShows As Long, mHandler As Long, mYield As Boolean, mPrepared As Boolean
 Private mBound As Boolean, mSignatureReady As Boolean
+Private mInjectedEvents As Long
 Public Function IsDriving() As Boolean
     IsDriving = mDriving
 End Function
@@ -110,6 +111,7 @@ Public Sub Execute(ByVal host As String, ByVal action As String, ByVal caseName 
     mRoot = root: mWh = wh: mSecret = secret
     mShows = 0: mHandler = 0: mYield = False: mPrepared = False: mBound = False
     mBefore = "": mSignatureReady = False
+    mInjectedEvents = 0
     Application.Workbooks(host).Activate
     On Error GoTo Failed
     RibbonOnActionAdmin control
@@ -126,6 +128,7 @@ Public Sub Drive(ByVal form As frmAddInventoryItem)
     mPrepared = form.InventoryCommandPrepareForTest(mAction, mSku)
     If Not mPrepared Then form.InventoryEntryCancelForTest: Exit Sub
     If mPhase = "ModalReturn" Then YieldAt mPhase
+    If mPhase = "UomPrompt" Then form.InventoryCommandUomPromptForTest
     mHandler = mHandler + 1
     form.InventoryCommandInvokeForTest mAction
     If form.Visible Then form.InventoryEntryCancelForTest
@@ -152,6 +155,13 @@ Public Sub YieldAt(ByVal phase As String)
             Set fields = CreateObject("Scripting.Dictionary")
             mYield = modAdmin.UpdateInventoryItemCatalogForWarehouse(mWh, mSku, _
                 "Externally changed fixture catalog", "LB", "CLEARVIEW", , , , , , , fields, report)
+        Case "SourceFeedChanged"
+            modRuntimeWorkbooks.SetCoreDataRootOverride mOtherRoot
+            mYield = True
+        Case "CatalogReplaced", "TableReplaced"
+            mYield = ReplaceFixtureTable(mCase = "CatalogReplaced")
+        Case "EntityChanged"
+            mYield = ChangeExactFixtureEntity()
     End Select
     If mYield Then
         mBefore = InventorySignature()
@@ -159,12 +169,79 @@ Public Sub YieldAt(ByVal phase As String)
     End If
 End Sub
 Public Function DialogAnswer(ByVal prompt As String) As String
+    If InStr(1, prompt, "New UOM:", vbTextCompare) > 0 Then
+        YieldAt "UomPrompt"
+        DialogAnswer = "FIXTUREUOM"
+        Exit Function
+    End If
     If InStr(1, prompt, "Why the edit", vbTextCompare) > 0 Then
         YieldAt "EditReason"
     ElseIf InStr(1, prompt, "deleted from managed", vbTextCompare) > 0 Then
         YieldAt "DeleteReason"
     End If
     DialogAnswer = "Disposable fixture reason"
+End Function
+Public Function InjectedEvents() As Long
+    InjectedEvents = mInjectedEvents
+End Function
+Private Function ReplaceFixtureTable(ByVal catalog As Boolean) As Boolean
+    Dim wb As Workbook, ws As Worksheet, lo As ListObject, selected As ListObject
+    Dim cells As Range, tableName As String
+    If catalog Then
+        Set wb = modInventoryDomainBridge.ResolveInventoryWorkbookBridge(mWh)
+    Else
+        Set wb = Application.Workbooks(mHost)
+    End If
+    For Each ws In wb.Worksheets
+        For Each lo In ws.ListObjects
+            If (catalog And lo.Name = "tblSkuCatalog") Or _
+               (Not catalog And Left$(lo.Name, 17) = "invSys_Inventory_") Then
+                Set selected = lo: Exit For
+            End If
+        Next lo
+        If Not selected Is Nothing Then Exit For
+    Next ws
+    If selected Is Nothing Then Exit Function
+    Set cells = selected.Range: tableName = selected.Name
+    modAdmin.InventoryBoundaryProtectionForTest selected.Parent, False
+    selected.Unlist
+    Set lo = cells.Parent.ListObjects.Add(xlSrcRange, cells, , xlYes)
+    lo.Name = tableName
+    If catalog Then modAdmin.InventoryBoundaryProtectionForTest lo.Parent, True
+    wb.Save
+    If Not catalog Then wb.Activate: lo.DataBodyRange.Cells(1, 1).Select
+    ReplaceFixtureTable = True
+End Function
+Private Function ChangeExactFixtureEntity() As Boolean
+    Dim wb As Workbook, ws As Worksheet, lo As ListObject, r As Long
+    Dim item As Object, key As String, location As String, condition As String
+    Dim payload As String, eventId As String, report As String, confirmed As Boolean
+    Set wb = modInventoryDomainBridge.ResolveInventoryWorkbookBridge(mWh)
+    For Each ws In wb.Worksheets
+        For Each lo In ws.ListObjects
+            If lo.Name = "tblInventoryEntities" Then
+                For r = 1 To lo.ListRows.Count
+                    If CStr(lo.DataBodyRange.Cells(r, lo.ListColumns("SKU").Index).Value2) = mSku And _
+                       CStr(lo.DataBodyRange.Cells(r, lo.ListColumns("InventoryState").Index).Value2) = "ACTIVE" Then
+                        key = CStr(lo.DataBodyRange.Cells(r, lo.ListColumns("System_Key").Index).Value2)
+                        location = CStr(lo.DataBodyRange.Cells(r, lo.ListColumns("Location").Index).Value2)
+                        condition = CStr(lo.DataBodyRange.Cells(r, lo.ListColumns("Condition").Index).Value2)
+                        Exit For
+                    End If
+                Next r
+            End If
+        Next lo
+    Next ws
+    If key = "" Then Exit Function
+    Set item = modRoleEventWriter.CreateInventoryEntityPayloadItem(key, mSku, 1, location, condition)
+    item("IoType") = "ADJUST"
+    payload = modRoleEventWriter.BuildPayloadJson(item)
+    If Not modRoleEventWriter.QueueAdminInventoryAdjustEvent(mWh, "S1", "config-admin", _
+            payload, "External fixture entity change", 0, eventId, report) Then Exit Function
+    modProcessor.RunBatch mWh, 0, report, eventId, confirmed
+    If Not confirmed Then Exit Function
+    mInjectedEvents = 1
+    ChangeExactFixtureEntity = True
 End Function
 Public Function DialogChoice(ByVal prompt As String, ByVal buttons As VbMsgBoxStyle) As VbMsgBoxResult
     If (buttons And vbYesNo) = vbYesNo Then
@@ -247,6 +324,9 @@ Public Sub InventoryCommandInvokeForTest(ByVal action As String)
         Case "Upload": mBtnUploadInventoryTable_Click
     End Select
 End Sub
+Public Sub InventoryCommandUomPromptForTest()
+    mCmbUom.Value = ADD_UOM_OPTION
+End Sub
 Private Function InputBox(ByVal Prompt As String, Optional ByVal Title As String = "", _
                           Optional ByVal Default As String = "") As String
     InputBox = TestInventoryCommands.DialogAnswer(Prompt)
@@ -256,9 +336,14 @@ Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgB
     MsgBox = TestInventoryCommands.DialogChoice(Prompt, Buttons)
 End Function
 '@)
+    $project.VBComponents.Item('modAdmin').CodeModule.AddFromString(@'
+Public Sub InventoryBoundaryProtectionForTest(ByVal ws As Worksheet, ByVal protectAfter As Boolean)
+    SetSheetProtectionAdminLocal ws, protectAfter
+End Sub
+'@)
 }
 
-function Get-InventoryBoundarySku($Fixture) {
+function Get-InventoryBoundarySku($Fixture,[bool]$CountedOnly=$false) {
     $path=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
     $book=$null;$owned=$false
     foreach($b in $excel.Workbooks){if($b.FullName -ieq $path){$book=$b;break}}
@@ -268,6 +353,7 @@ function Get-InventoryBoundarySku($Fixture) {
         foreach($row in $catalog.ListRows){
             $state=[string]$row.Range.Cells.Item(1,$catalog.ListColumns.Item('CATALOG_STATE').Index).Value2
             $sku=[string]$row.Range.Cells.Item(1,$catalog.ListColumns.Item('ITEM_CODE').Index).Value2
+            if($CountedOnly -and [string]$row.Range.Cells.Item(1,$catalog.ListColumns.Item('TRACK_QTY').Index).Value2 -in @('FALSE','False','0')){continue}
             if($sku -and $state -cne 'RETIRED'){return $sku}
         }
         throw 'No generated active catalog item is available; not product RED.'
@@ -317,6 +403,60 @@ function Test-InventoryCommandBoundaries($Fixture,$Other) {
                     Check ($id+'.NoOperatorSaveAfterYield') ($hostHash -ceq (Get-AdminInventoryEntryHash $hostBook.FullName))
                 }
             }finally{$hostBook.Close($false)}
+        }
+    }
+}
+
+function Get-InventoryForeignFixtureFiles($Fixture) {
+    $files=@{}
+    foreach($file in Get-ChildItem -LiteralPath $Fixture.Root -Recurse -File -Force){
+        $files[$file.FullName.ToUpperInvariant()]=Get-AdminInventoryEntryHash $file.FullName
+    }
+    return $files
+}
+
+function Test-InventoryReplacementBoundaries($Fixture,$Other) {
+    $specs=@(
+        @('Add','ModalReturn','CatalogReplaced'),@('Edit','EditReason','CatalogReplaced'),
+        @('Delete','DeleteReason','CatalogReplaced'),@('Edit','EditReason','EntityChanged'),
+        @('Delete','DeleteReason','EntityChanged'),@('Add','ModalReturn','SourceFeedChanged'),
+        @('Create','ModalReturn','SourceFeedChanged'),@('Upload','ModalReturn','TableReplaced'),
+        @('Add','UomPrompt','SignedOut'),@('Add','UomPrompt','ReplacementSession'),
+        @('Delete','DeleteReason','SignedOut'),@('Delete','DeleteReason','ReplacementSession'))
+    foreach($spec in $specs){
+        $action,$phase,$case=$spec
+        SelectTarget $Fixture
+        $hostBook=$excel.Workbooks.Add()
+        $hostBook.SaveAs((Join-Path $runRoot ('replacement-'+$action+'-'+$phase+'-'+$case+'.xlsx')),51)
+        try{
+            $sku=Get-InventoryBoundarySku $Fixture ($case -ceq 'EntityChanged')
+            if($action -ceq 'Upload'){
+                if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareBoundaryTable' @($hostBook.Name))){throw 'Replacement table fixture unavailable; not product RED.'}
+            }
+            $before=Get-AdminInventoryEntryFacts $Fixture -Persisted
+            $hostHash=Get-AdminInventoryEntryHash $hostBook.FullName
+            $foreignBefore=if($case -ceq 'SourceFeedChanged'){Get-InventoryForeignFixtureFiles $Other}else{$null}
+            [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetSelection' @($Other.Root,$sku))
+            [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,$action,$case,$phase,$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
+            $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
+            $injected=[long](Run 'invSys.Admin.xlam' 'TestInventoryCommands.InjectedEvents')
+            $id='InventoryReplacement.'+$action+'.'+$phase+'.'+$case
+            $ready=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[1] -ceq 'True' -and $facts[2] -ceq '1'
+            Check ($id+'.ActualHandlerAndYieldReached') $ready
+            if(-not $ready){throw 'Replacement action or injected fixture change unavailable; not product RED.'}
+            Check ($id+'.OriginalOperatorCaptured') ($facts[3] -ceq 'True')
+            Check ($id+'.NoOwnerInventoryMutation') ($facts[4] -ceq 'True')
+            $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
+            Check ($id+'.NoAdditionalPersistedEvents') ($after.LogRows -eq $before.LogRows+$injected -and $after.AppliedRows -eq $before.AppliedRows+$injected)
+            if($case -cne 'TableReplaced'){Check ($id+'.NoOperatorSaveAfterYield') ($hostHash -ceq (Get-AdminInventoryEntryHash $hostBook.FullName))}
+            if($case -ceq 'SourceFeedChanged'){
+                $foreignAfter=Get-InventoryForeignFixtureFiles $Other
+                $changed=@(@($foreignBefore.Keys)+@($foreignAfter.Keys)|Select-Object -Unique|Where-Object {$foreignBefore[$_] -cne $foreignAfter[$_]})
+                Check ($id+'.ForeignRuntimeFilesPreserved') ($changed.Count -eq 0)
+            }
+        }finally{
+            [void](Run 'invSys.Core.xlam' 'modRuntimeWorkbooks.SetCoreDataRootOverride' @($Fixture.Root))
+            $hostBook.Close($false)
         }
     }
 }

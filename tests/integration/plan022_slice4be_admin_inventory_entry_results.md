@@ -1,5 +1,26 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Config-instrumented RED118 qualified,2026-10-15 Pacific:** source1c9bff87/
+testd9aab17a completes142 PASS/48 FAIL,190 unique checks with all185 prior names/
+order/outcomes retained and no harness exception. Five new read-only extraction
+preservation checks pass. Controller
+`admin-inventory-entry-controller/df977b3ab4df44e49a566d8df18caa97`; worker
+`slice4be-admin-inventory-entry/050026a3468a4cf8875bf9f541738d8c`.
+Five packages/all486 tooling/settings/fixture preservation and normal unforced
+owned/native closure qualify through2026-10-16T04:36:26.4217803Z, without desktop
+stops or Excel failures. The delayed process exit is observed to complete normally;
+no forced cleanup or repeated launch is used. Ignored qualification receipt:
+`reports/runtime/resume-d8-agg-01/admin-inventory-config-diagnosis-red-118/qualification.json`.
+The Config findings are specified in the cohort note below, not treated as closure.
+
+**Next test expansion prepared:**12 actual-action cases append after190 retained
+checks for replaced catalog tables, externally adjusted exact entities, source-root
+changes, replaced worksheet tables, UOM prompts and Delete reason prompts. Entity
+faults use owning queued adjustment/application receipts and generated keys;
+their injected event is excluded from owner-write counts. Source-root cases also
+check unrelated runtime files. No result for this new matrix or product correction
+is claimed yet.
+
 **Expanded packaged RED117 qualified,2026-10-15 Pacific:** source1c9bff87/
 testc8321d65 completes **137 PASS/48 FAIL**,185 unique checks and no harness
 exception. All45 baseline names/order/outcomes from115 are retained. All30 actual
@@ -108,6 +129,26 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Trial118 cohort: unresolved**, source1c9bff87/testd9aab17a, controller
+df977b3ab4df44e49a566d8df18caa97 and worker050026a3468a4cf8875bf9f541738d8c.
+Value-redacted `inventory-config-diagnosis.jsonl` in that worker records:
+
+- All five comparisons preserve extraction file bytes/borrowed Saved state and
+  show zero changed table cells with unchanged table shapes.
+- Baseline, ActiveWorkbook, SignedOut and ReplacementSession each change one
+  metadata ZIP part and one part categorized Other. Their worksheet, style and
+  shared-string categories show no changes. The exact Other part is not identified
+  by the exported counters; do not assume it is the workbook part or harmless.
+- OtherWarehouseAdmin changes no ZIP part. Auth/file-hash observations retain
+  their prior scope; Config remains byte-different after the first create.
+- Cause is **not established**. This comparison narrows the observation beyond a
+  whole-file mismatch but does not prove which save path caused it, the meaning of
+  the Other-part change, or that all Config semantics are preserved.
+- Next diagnostic: identify changed standard package parts with an allowlist of
+  safe fixed part names, and trace the suspected inbox-setup Config-save phase on
+  the same product source. Record any new instrumentation/test/run separately.
+  Do not write raw field values/part contents or close this note on focused GREEN.
 
 **Trial117 cohort: unresolved**, source1c9bff87/testc8321d65, controller
 bd35800798df4b59ba834f457d501e33 and worker1153e819727047d299444b79245c9971.
