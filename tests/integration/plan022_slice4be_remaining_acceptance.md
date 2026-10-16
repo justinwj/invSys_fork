@@ -6,6 +6,21 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Current approval boundary,2026-10-15 Pacific:** actual Add/Edit Inventory
+Ribbon/modal trial115 completes35 PASS/10 FAIL with all45 assertion names/order
+retained and no harness exception. Independent cold reads prove exact persisted
+creates for authorized controls and after sign-out. ROW payload/display and one
+wrong-host capture also fail; other-warehouse Admin does not mutate inventory.
+The source Config-byte-change cause is unresolved; Auth remains unchanged.
+Five packages/all485 tooling/settings/fixture preservation and normal owned closure
+qualify through2026-10-16T00:02:59.4379339Z, with no native failure or desktop stop.
+See the [Inventory diagnostic](plan022_slice4be_admin_inventory_entry_results.md).
+Normative **D8-INV-01 is proposed, approval pending**. No product correction or
+new recording ID is implemented. Expanded real Edit/Delete/worksheet and yield/
+phase RED follows approval before implementation. Qualified receiving121,
+Tester127, Settings202 and recording80 stand; Release1 fixture conformance,
+remaining controls, guidance and comprehensive4be-A acceptance remain open.
+
 **Current shared recording lifecycle qualified,2026-10-15 Pacific:** recording02/
 source1c9bff87 passes80/80 with two original-size reviewed captures, five-package/
 all484 tooling/settings/fixture preservation and normal owned closure. Zero delayed
@@ -87,14 +102,14 @@ trials100/101 are running in resume batch102; no completed group is rerun.
 These are scoped gates, not full4be-A acceptance; see the
 [Aggregation receipt](plan022_slice4be_admin_aggregation_results.md).
 
-Current Receiving behavior evidence and the shared Tester-guide run are qualified
-above; Settings/recording-lifecycle gates remain prepared. Release1's existing
+Current Receiving121, Tester127, Settings202 and recording80 are qualified above.
+Release1's existing
 live/full-chain fixture must first replace
 synthetic canonical create/applied rows and fixed identities with Admin-generated
 runtimes and owning creation/processing results, preserving every existing check.
 The [remaining Admin coverage audit](plan022_slice4be_admin_remaining_coverage.md)
-records that source-only finding and uncovered entries. No new approval is pending,
-no old runtime result is promoted, and comprehensive coverage/release proof remain
+records that source-only finding and uncovered entries. D8-INV-01 approval is
+pending; no old runtime result is promoted, and comprehensive coverage/release proof remain
 required. D13 does not require a new RED for this evidence-only checklist update.
 
 **Current capture correction,2026-10-15 Pacific:** owner-09 source45336d88 passes

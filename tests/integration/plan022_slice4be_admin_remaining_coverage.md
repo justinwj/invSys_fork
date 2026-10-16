@@ -5,6 +5,22 @@ Original source/package audit,2026-10-12, code `a0491583`; candidate
 This map discovers existing entries under D18; it approves no new ControlId,
 outcome, permission, exclusion, replay adapter or business rule.
 
+**Current Add/Edit Inventory decision,2026-10-15 Pacific:** unchanged recording02/
+source1c9bff87 trial115 completes35 PASS/10 FAIL through the actual Ribbon/modal
+entry, without a harness exception. Independent read-only reopen proves exact
+authorized and signed-out persisted creates; ROW payload/display and one wrong
+captured host also fail. Other-warehouse Admin does not mutate inventory. Nine
+identity/authority/host failures are established; the remaining Config-byte
+preservation failure has unresolved cause. All45 checks/order, five packages,
+all485 tooling/settings/fixture preservation and normal owned/native closure
+qualify through2026-10-16T00:02:59.4379339Z, with no desktop stop or Excel failure.
+[Exact diagnostic and limits](plan022_slice4be_admin_inventory_entry_results.md).
+Normative **D8-INV-01 is proposed, approval pending**; no product correction,
+new recording ID or deployment. After approval, expand actual Edit/Delete/worksheet
+and yield/phase RED before implementation. Qualified Tester127/Settings202/
+recording80/Receiving121 stand. Release1 fixture conformance and remaining coverage
+keep4be-A open. The earlier checkpoints below retain their dated scopes.
+
 **Current shared lifecycle qualified,2026-10-15 Pacific:** recording02/source
 1c9bff87 passes80/80 with two reviewed captures and verified five-package/all484
 tooling, settings/fixture and normal owned closure through23:44:34.0908423Z.
@@ -357,7 +373,7 @@ as deliberate actions merely because an event procedure exists.
 | `btnAdminWarehouseRoot` | `modAdmin.Add_WarehouseDirectoryRoot` | Explicit root prompt and `RememberWarehouseScanRoot`; local remembered-root change, then directory presentation. Cancellation, remembering and refresh are distinct facts; no new warehouse is created. |
 | `btnAdminCreateWarehouse` | `modAdmin.Open_CreateWarehouse` | Qualified owner and ten recorded controls: folder helpers, purpose, Create, initial/retried/reopened publication, exact generated Receiving opening and Close. Authority and activity use the captured signed-in source warehouse. Reopened publication reads saved destination identity without bootstrap; local creation and publication retain distinct outcomes. |
 | `btnAdminSetupTesterStation` | `modAdmin.Admin_SetupTesterStation_Click` | `frmSetupTesterStation`: path helpers, captured-source `modTesterCommands.Setup` / `DeleteGenerated`, open generated Receiving workbook, cancel. Core owns interactive provisioning; `modTesterSetup.SetupTesterStation` remains the separate headless fixture facade. Capture only eligible current-context actions; never use existing operational workbooks as disposable fixtures. |
-| `btnAdminAddInventoryItem` | `modAdmin.Add_InventoryItem` | Captures exact warehouse/station/user and operator workbook, then modal `frmAddInventoryItem`: Add/Edit selection, custom fields, sheet workbench create/upload, accept/delete/cancel. Owner command results occur after form acceptance; retain existing System_Key, unknown columns and workflow gates. |
+| `btnAdminAddInventoryItem` | `modAdmin.Add_InventoryItem` | Modal `frmAddInventoryItem`: Add/Edit selection, custom fields, worksheet create/upload, accept/delete/cancel. Trial115 proves persisted signed-out creation, ROW identity and wrong-host capture; the full Edit/Delete/worksheet matrix remains open. D8-INV-01 interactive boundary is proposed, approval pending. Preserve D14, unknown columns and accepted workflow gates. |
 | `btnAdminSeedInventory` | `modAdmin.Seed_DemoInventory` | `frmSeedInventory` selects Seed/Delete/Upload Data Set/Delete Data Set; callback confirmations and `modAdminInventorySeed` results follow. Inbox repair has its own form handler. CSV definition changes are not inventory changes. Existing automation result text is not shared activity proof. |
 | `btnAdminShipmentReconcile` | `modAdminShipmentReconcile.OpenShipmentReconcileTool` | `frmShipmentReconcileSelection`/narrative -> `QueueAdminShipmentReconcileEvent` -> Core live-context gate -> provisioned queue API. D14-RECON-01/D8-RECON-01/D18 pass360 checks: native handlers, catalog34 recording, suppression, references, binding, storage failure and independent recording/publication/CommandCompleted/SourceEventsApplied guide proof. Exact application preserves the other entity, custom values and original Submitted evidence. Local recording eligibility remains open. |
 | `btnAdminHqAggregator` | `modAdmin.Admin_AggregateGlobalSnapshot_Click` | `frmAggregationSources`: discover/add/connect, source selection, `RunHQAggregationFromSourceSet`, Close. Explicit source-set aggregation remains advisory. Connection credentials and source paths are excluded from activity payloads. |

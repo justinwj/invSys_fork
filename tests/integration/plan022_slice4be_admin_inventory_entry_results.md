@@ -1,5 +1,56 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Qualified packaged RED,2026-10-15 Pacific:** trial115 completes **35 PASS /
+10 FAIL**, all45 unique assertion identities/order retained from114 and no
+Harness.Exception. Product source remains1c9bff87; test55868837 and unchanged
+unpromoted `validation-aggregation-recording-02` packages. Controller
+`admin-inventory-entry-controller/f997acde371142d79f956ca8c5502b25`; worker
+`slice4be-admin-inventory-entry/ce2b57b7540e490fb57431fc1775792f`.
+
+All five cases reach the actual modal OK handler after ordinary activation:
+
+| Case | Independently observed result |
+|---|---|
+| Authorized baseline | One new exact System_Key persists at submitted quantity1; ROW is present in payload and display. |
+| Active workbook changed | Captured expected operator remains bound; one new exact entity persists at quantity1; ROW payload/display fail. |
+| Signed out before OK | Sign-out is verified before Accept. A new exact entity persists at quantity1; no-inventory-mutation and ROW-display checks fail. |
+| Other warehouse's Admin | No live inventory mutation, disk write or new persisted entity; ROW-display check fails. |
+| Replacement session | Captured host is OtherWorkbook rather than the expected operator; a new exact entity persists at quantity1. Host and ROW-display checks fail. No prior replacement-session refusal contract is assumed. |
+
+The cold oracle closes only its disposable Inventory workbook with SaveChanges=False,
+reopens read-only, matches the new System_Key and verifies its exact log quantity.
+It never saves on the owner action's behalf. Owner Saved state, disk hash change
+and exact persisted result are separate observations. This proves persisted
+signed-out creation through the packaged action, beyond direct Core dispatch or
+in-memory change. It does not prove unrelated worksheet structure mutation.
+
+Nine failures establish identity, live-authority or captured-host defects:
+two ROW payloads, five ROW displays, signed-out inventory mutation and replacement
+host capture. The tenth is **unresolved Config preservation**: source Auth bytes
+remain unchanged in all five cases; source Config bytes differ from the first
+authorized baseline onward. Cause and semantic significance are not established.
+Unrelated warehouse inventory/authority and workbook structure checks pass. There
+is no corrected-run starting-quantity failure. Do not reuse114's two oracle failures
+as proof of a product save/quantity defect.
+
+Settings, five packages, all485 tooling pins and fixture cleanup are preserved.
+Worker/Excel/controller/monitor close normally and unforced; controller exit1 is
+the expected RED result, monitor exit0. Delayed native audit through
+**2026-10-16T00:02:59.4379339Z** finds zero Excel failures and no desktop stop.
+Ignored qualification receipt:
+`reports/runtime/resume-d8-agg-01/admin-inventory-entry-persisted-red-115/qualification.json`.
+
+**Next decision:** normative v4.11 **D8-INV-01** is explicitly proposed, approval
+pending. It defines the separate Core-owned captured interactive command contract
+for Add/Edit/Delete and worksheet actions; it does not infer that contract from
+D8-AGG-01 approval or from this diagnostic. No product implementation, deployment,
+new ControlId or acceptance occurs here. After approval, expand actual-action RED
+for that complete contract before implementation; retain these45 identities and
+separate the unresolved Config diagnostic. Current Tester127, Settings202,
+recording80 and Receiving121 remain qualified; comprehensive4be-A stays open.
+
+## Earlier attempts and oracle correction
+
 **Actual entry checkpoint,2026-10-15 Pacific:** shared-reader trial114 completes
 33 PASS/12 FAIL without a harness exception. Controller
 `admin-inventory-entry-controller/49f895c7182b452f91c5ee9587e0933e`, worker
@@ -26,7 +77,8 @@ read-only and verifies persisted quantity. It never saves on behalf of the owner
 Fixed per-case booleans distinguish owner Saved state, disk change, exact persisted
 quantity, captured workbook kind and individual Auth/Config preservation. Existing
 45 assertion identities are retained. All485 tooling/four fresh trial scripts parse;
-unchanged-product trial115 is prepared. No product or architecture correction yet.
+unchanged-product trial115 was prepared and subsequently qualified above. No product
+or architecture correction occurs in this diagnostic.
 
 **Initial harness checkpoint,2026-10-15 Pacific:** trial113 ends7 PASS/1 harness
 exception before any modal action. All five instrumented compiles, probe-before-form
@@ -64,13 +116,13 @@ authority/inventory. Replacement-session writes are observed without inventing
 an already approved refusal contract. Saved-file changes are distinguished from
 in-memory mutation; a service call or receipt alone is not persisted-write proof.
 
-Source findings: `frmAddInventoryItem.RefreshGeneratedLabel` displays `ROW`;
+Original source findings: `frmAddInventoryItem.RefreshGeneratedLabel` displays `ROW`;
 `modAdmin.AddInventoryItemForWarehouse` adds a ROW payload field. Current code also
 captures context before modal presentation. These are source findings, not proof
 of actual callback output or unauthorized persistence. Focused expected behavioral
 RED is legacy identity display/payload or a write after lost live authority.
 Compile, fixture, invocation and harness failures do not qualify as product RED.
 
-All485 tooling files and four trial113 scripts parse. Trial113 is prepared but
-not yet run. No runtime result or GREEN is claimed here. Current Tester127,
-Settings202, recording lifecycle80 and Receiving121 are separately qualified.
+Original preparation parsed all485 tooling files and four trial113 scripts.
+The subsequent attempts above supersede its not-yet-run status without turning
+harness failures into behavioral RED or establishing full acceptance.
