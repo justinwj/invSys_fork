@@ -598,7 +598,7 @@ function Test-InventoryExactQuantity($Fixture,$Other,[switch]$RetryQueued) {
             $inboxPath=[string](Run 'invSys.Core.xlam' 'modRoleEventWriter.ResolveInboxWorkbookPath' @('ADMIN_INVENTORY_ADJUST',$Fixture.Warehouse,'S1'))
             $inbox=$excel.Workbooks.Open($inboxPath,0,$true);$found=0
             try{
-                $queued=Table $inbox 'tblInboxReceive'
+                $queued=Table $inbox 'tblInboxProd'
                 foreach($row in $queued.ListRows){if([string]$row.Range.Cells.Item(1,$queued.ListColumns.Item('EventID').Index).Value2 -ceq $firstEvent){$found++}}
             }finally{$inbox.Close($false)}
             Check ($prefix+'.FirstExactQueuedEventSaved') ($firstEvent -ne '' -and $found -eq 1)

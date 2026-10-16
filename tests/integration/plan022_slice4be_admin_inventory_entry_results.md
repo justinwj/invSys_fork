@@ -1,5 +1,15 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Retry attempt129: harness failure**, source306fa2da/test45522d26. Nine checks
+pass before a harness exception: the cold exact-event oracle incorrectly requests
+tblInboxReceive, while ADMIN_INVENTORY_ADJUST uses tblInboxProd. The real first
+Edit/reason action reaches the injected post-queue fault, but no behavioral retry
+RED is qualified. Correct only that table reference and rerun the frozen test on
+the same product candidate; no product retry implementation has changed.
+Controller `admin-inventory-entry-controller/96e5edc4a1d94655944b24855c7f42a9`.
+Normal owned cleanup/restoration completes; the native audit is retained in that
+controller. This harness failure must not be counted as meaningful D13 RED.
+
 **Exact quantity GREEN128 qualified,2026-10-15 Pacific:** source306fa2da and
 test9367159b pass12/12, preserving all focused RED120 assertion names/order.
 The actual modal Edit/reason action now saves the target on the owning generated
@@ -278,6 +288,12 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Trial129 cohort: unresolved/not measured**, source306fa2da/test45522d26,
+controller96e5edc4a1d94655944b24855c7f42a9. The retry oracle fails before its full
+scope; it contains no Config/Auth comparison. No authority-file preservation or
+cause is inferred. The prior cohort evidence and next safe part-name/inbox-save
+diagnostic remain separately labeled below; this attempt cannot close them.
 
 **Trial124 cohort: unresolved/not measured in focused scope**, source08d0e3f1/
 test9367159b, controller c0381259d5eb468192fcabf737b09d9d and worker
