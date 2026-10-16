@@ -22,7 +22,10 @@ the sole baseline failure. Focused input138 is88/20 with clean preserved closure
 through07:03:14.2959637Z. An incomplete, unbuilt Core input prototype is staged;
 automatic approval review blocks the guarded live catalog-write phase. The exact
 unapplied patch/review note are under `tests/proposals/`. D8-INV-01 remains approved;
-specific product-edit authorization and rejected fork pushes are pending. Do not
+specific product-edit authorization is pending. The user-confirmed GitHub workflow
+now publishes [code PR3](https://github.com/soetrain/invSys_fork/pull/3) and
+[docs PR2](https://github.com/soetrain/invSys_docs/pull/2) to soetrain; the earlier
+fork-destination block is resolved. Do not
 build/promote the prototype or count the20 input failures as closed. Complete the
 write/result phases, remaining D13 matrix and broader gates before acceptance.
 

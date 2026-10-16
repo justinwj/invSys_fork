@@ -1,5 +1,15 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**GitHub workflow restored,2026-10-16 Pacific:** the user confirmed upstream pulls
+from soetrain and contributor-branch publication through PRs targeting soetrain.
+Both latest origin/main branches were pulled and were already contained locally.
+Feature publication is authorized to the authenticated justinwj repositories;
+[code draft PR3](https://github.com/soetrain/invSys_fork/pull/3) and
+[docs draft PR2](https://github.com/soetrain/invSys_docs/pull/2) now exist. Git/CLI
+defaults and both AGENTS.md files persist this workflow. The stale fork-destination
+approval block is resolved; the separate rejected catalog edit remains unapplied.
+This housekeeping changes no runtime contract or acceptance gate.
+
 **Config record diagnostic140 qualified,2026-10-16 Pacific:** unchanged validated
 product68949ab0/testfb59319c retains all50 baseline identities/order/outcomes:
 49 PASS/1 FAIL. Authorized controls change core.xml and only record3073 inside
@@ -31,8 +41,8 @@ catalog-write diff is saved but unapplied at
 Automatic review rejected its broad live mutation/save scope twice, including
 after correction to an explicit cleanup Boolean. No new architecture approval is
 requested: D8-INV-01 is already approved. Specific product-edit authorization is
-pending; do not retry indirectly or split the patch to evade review. Separate
-code/docs fork push authorizations also remain pending after review rejections.
+pending; do not retry indirectly or split the patch to evade review. The separate
+GitHub publication authorization was clarified and resolved on2026-10-16 above.
 
 **ROW identity GREEN within baseline137,2026-10-15 Pacific:** product68949ab0/
 testb82dcc9a completes49 PASS/1 FAIL over50 unique checks. All seven retained
