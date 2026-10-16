@@ -122,13 +122,19 @@ function Test-InventoryCatalogPhase($Fixture) {
     foreach($mode in @('Authorized','DirtyBorrowed','PlanningDenied','BeforeWriteDenied','BeforeSaveDenied','SavedUnconfirmed')){
         Copy-Item -LiteralPath $baseline -Destination $path -Force
         $book=$excel.Workbooks.Open($path,0,$false)
+        $componentStep='prepare generated catalog custom column'
         try{
             $table=Table $book 'tblSkuCatalog'
             $sku=[string]$table.ListColumns.Item('SKU').DataBodyRange.Cells.Item(1,1).Value2
+            $table.Parent.Unprotect()
             $extra=$table.ListColumns.Add();$extra.Name='USER KEEP';$extra.DataBodyRange.Cells.Item(1,1).Value2='retained'
+            $table.Parent.Protect()
             $book.Save()
-            if($mode -eq 'DirtyBorrowed'){$extra.DataBodyRange.Cells.Item(1,1).Value2='unsaved user value'}
+            if($mode -eq 'DirtyBorrowed'){
+                $table.Parent.Unprotect();$extra.DataBodyRange.Cells.Item(1,1).Value2='unsaved user value'
+            }
             $memory=Get-CatalogPhaseMemory $table;$hash=(Get-FileHash $path).Hash;$saved=$book.Saved
+            $componentStep='invoke exact source catalog helper'
             $facts=([string](Run 'invSys.Admin.xlam' 'TestCatalogOwner.ExecuteCatalogPhase' @($Fixture.Warehouse,$sku,$mode))).Split('|')
             if($facts.Count -ne 9){throw 'Catalog component facts unavailable; not product RED.'}
             $ok=$facts[0] -eq 'True';$partial=$facts[1] -eq 'True';$changed=(Get-FileHash $path).Hash -cne $hash
@@ -153,6 +159,7 @@ function Test-InventoryCatalogPhase($Fixture) {
                 }
             }
             if($mode -in @('Authorized','SavedUnconfirmed')){
+                $componentStep='independent persisted field read'
                 $book.Close($false);$book=$null
                 $diskHash=(Get-FileHash $path).Hash
                 $cold=$excel.Workbooks.Open($path,0,$true)
@@ -165,7 +172,8 @@ function Test-InventoryCatalogPhase($Fixture) {
                 }finally{$cold.Close($false)}
                 Check ($id+'.ColdReadPreservedBytes') ((Get-FileHash $path).Hash -ceq $diskHash)
             }
-        }finally{if($null -ne $book){$book.Close($false)}}
+        }catch{throw ('Catalog component harness stage: '+$componentStep+'; status='+$_.Exception.HResult)}
+        finally{if($null -ne $book){$book.Close($false)}}
     }
     Check 'CatalogPhase.AuthAndConfigPreserved' ((Get-FileHash $auth).Hash -ceq $authHash -and (Get-FileHash $Fixture.Config).Hash -ceq $configHash)
 }
