@@ -131,10 +131,26 @@ Public Function UploadSelectedInventoryWorksheetTable(ByVal wb As Workbook, _
 
     ' Every pending row has passed preflight before the first catalog/event write.
     For Each record In records
+        If CStr(record("Action")) = "ADD" And interactiveContext <> "" Then
+            If CStr(record("CreateEventId")) = "" Then
+                record("CreateEventId") = modInventoryCreateReceipts.NewEventId(interactiveContext, report)
+                If CStr(record("CreateEventId")) = "" Then GoTo Partial
+            End If
+        End If
         SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_ITEM_CODE, CStr(record("ItemCode")), interactiveContext
         SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_STATUS, "READY", interactiveContext
-        SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_RESULT, "Validated; awaiting upload.", interactiveContext
+        If CStr(record("CreateEventId")) <> "" Then
+            SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_RESULT, _
+                "Inventory upload prepared; application is unconfirmed." & vbCrLf & "Event: " & CStr(record("CreateEventId")), interactiveContext
+        Else
+            SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_RESULT, "Validated; awaiting upload.", interactiveContext
+        End If
     Next record
+    ' The exact event identifier and generated Item Code must be independently
+    ' durable in the existing result boundary before any create can be queued.
+    If interactiveContext <> "" Then
+        If Not SaveInventoryWorksheetWorkbook(wb, interactiveContext, report) Then GoTo Partial
+    End If
 
     For idx = 1 To records.Count
         Set record = records(idx)
@@ -156,7 +172,7 @@ Public Function UploadSelectedInventoryWorksheetTable(ByVal wb As Workbook, _
             remaining = remaining + 1
             SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_STATUS, "NOT IMPORTED", interactiveContext
             SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_RESULT, _
-                "A prior row failed; correct it and upload again."
+                "A prior row failed; correct it and upload again.", interactiveContext
         Next idx
     End If
 
@@ -212,7 +228,7 @@ Public Function PreflightInventoryWorksheetTable(ByVal lo As ListObject, _
                 rowError = ""
                 Set record = Nothing
                 If ValidateInventoryWorksheetRow(lo, rowIndex, warehouseId, baseOrdinal, _
-                        addOrdinal, generatedCodes, record, rowError) Then
+                        addOrdinal, generatedCodes, record, rowError, interactiveContext) Then
                     pending.Add record
                 Else
                     SetInventoryWorksheetValue lo, rowIndex, HDR_STATUS, "VALIDATION ERROR", interactiveContext
@@ -227,7 +243,7 @@ Public Function PreflightInventoryWorksheetTable(ByVal lo As ListObject, _
         For Each record In pending
             SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_STATUS, "NOT UPLOADED", interactiveContext
             SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_RESULT, _
-                "Resolve every validation error before upload."
+                "Resolve every validation error before upload.", interactiveContext
         Next record
         report = "Inventory table validation failed. No inventory or catalog changes were made." & vbCrLf & errors
         Exit Function
@@ -417,7 +433,8 @@ Private Function ValidateInventoryWorksheetRow(ByVal lo As ListObject, _
                                                ByRef addOrdinal As Long, _
                                                ByVal generatedCodes As Object, _
                                                ByRef record As Object, _
-                                               ByRef rowError As String) As Boolean
+                                               ByRef rowError As String, _
+                                                Optional ByVal interactiveContext As String = "") As Boolean
     Dim actionName As String
     Dim sku As String
     Dim itemName As String
@@ -429,7 +446,7 @@ Private Function ValidateInventoryWorksheetRow(ByVal lo As ListObject, _
     Dim editReason As String
     Dim statusText As String
     Dim codeOrdinal As Long
-    Dim customFields As Object
+    Dim customFields As Object, receiptEvent As String
 
     actionName = UCase$(InventoryWorksheetText(lo, rowIndex, HDR_ACTION))
     sku = InventoryWorksheetText(lo, rowIndex, HDR_ITEM_CODE)
@@ -476,15 +493,19 @@ Private Function ValidateInventoryWorksheetRow(ByVal lo As ListObject, _
         hasQty = False
     End If
 
+    receiptEvent = modInventoryCreateReceipts.EventIdFromResult(InventoryWorksheetText(lo, rowIndex, HDR_RESULT))
     If actionName = "ADD" Then
-        If sku <> "" And statusText <> "FAILED" And statusText <> "NOT IMPORTED" Then
+        If receiptEvent <> "" And (sku = "" Or interactiveContext = "") Then
+            rowError = "The prepared create requires its captured source, operator table and Item Code.": Exit Function
+        End If
+        If sku <> "" And receiptEvent = "" And statusText <> "FAILED" And statusText <> "NOT IMPORTED" Then
             rowError = "ADD Item Code is generated by invSys; leave it blank."
             Exit Function
         End If
         addOrdinal = addOrdinal + 1
         codeOrdinal = baseOrdinal + addOrdinal - 1
         If sku = "" Then sku = modAdmin.GenerateInventoryItemCodeForWorksheet(warehouseId, codeOrdinal)
-        If InventoryCatalogContains(warehouseId, sku) Then
+        If receiptEvent = "" And InventoryCatalogContains(warehouseId, sku) Then
             rowError = "Generated ADD Item Code already exists: " & sku & "."
             Exit Function
         End If
@@ -536,7 +557,31 @@ Private Function ValidateInventoryWorksheetRow(ByVal lo As ListObject, _
     record("Picture") = InventoryWorksheetText(lo, rowIndex, HDR_PICTURE)
     record("EditReason") = editReason
     Set record("CustomFields") = customFields
+    record("CreateEventId") = receiptEvent
+    If receiptEvent <> "" Then
+        If Not modAdmin.ValidateWorksheetCreateReceipt(record, interactiveContext, receiptEvent, rowError) Then Exit Function
+    End If
     ValidateInventoryWorksheetRow = True
+End Function
+
+Public Function StoreQueuedCreateReceipt(ByVal context As String, ByVal row As Long, ByVal sku As String, _
+        ByVal eventId As String, ByVal systemKey As String, ByRef report As String) As Boolean
+    Dim book As Workbook, table As ListObject, name As String
+    On Error GoTo Failed
+    name = modInventoryCommands.OperatorWorkbookName(context)
+    If name = "" Then Exit Function
+    Set book = Application.Workbooks(name)
+    Set table = FindInventoryTableByName(book, modInventoryCommands.StagingTableName(context))
+    If table Is Nothing Then Exit Function
+    If InventoryWorksheetText(table, row, HDR_ITEM_CODE) <> sku Then Exit Function
+    SetInventoryWorksheetValue table, row, HDR_STATUS, "QUEUED", context
+    SetInventoryWorksheetValue table, row, HDR_RESULT, _
+        "Inventory event queued; application is unconfirmed." & vbCrLf & "Event: " & eventId & _
+        vbCrLf & "System_Key: " & systemKey, context
+    StoreQueuedCreateReceipt = SaveInventoryWorksheetWorkbook(book, context, report)
+    Exit Function
+Failed:
+    report = "The event was queued, but its worksheet receipt save is unconfirmed. Event: " & eventId
 End Function
 
 Private Function ApplyInventoryWorksheetRecord(ByVal record As Object, _
@@ -782,7 +827,7 @@ Private Function SaveInventoryWorksheetWorkbook(ByVal wb As Workbook, _
     End If
     If Trim$(wb.Path) <> "" Then wb.Save
     If interactiveContext <> "" Then
-        If Not modInventoryCommands.CheckForm(interactiveContext, report) Then Exit Function
+        If Not modInventoryCommands.ConfirmStageSaved(interactiveContext, report) Then Exit Function
     End If
     SaveInventoryWorksheetWorkbook = wb.Saved
 End Function

@@ -430,7 +430,8 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
             warehouseId, stationId, userId, sku, itemName, _
             uom, locationValue, qty, CStr(record("Description")), vendorValue, _
             CStr(record("VendorCode")), categoryValue, CStr(record("ExternalCode")), _
-            CStr(record("Picture")), customFields, report, interactiveContext)
+            CStr(record("Picture")), customFields, report, interactiveContext, _
+            CStr(record("CreateEventId")), CLng(record("TableRow")))
         Exit Function
     End If
     If actionName <> "EDIT" Then report = "Inventory worksheet Action must be ADD or EDIT.": Exit Function
@@ -640,10 +641,9 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
                                              Optional ByVal imagePath As String = "", _
                                              Optional ByVal customFields As Object = Nothing, _
                                              Optional ByRef report As String = "", _
-                                             Optional ByVal interactiveContext As String = "") As Boolean
-    Dim payloadItems As Collection
-    Dim item As Object
-    Dim customKey As Variant
+                                             Optional ByVal interactiveContext As String = "", _
+                                             Optional ByVal creationEventId As String = "", _
+                                             Optional ByVal stagingRow As Long = 0) As Boolean
     Dim payloadJson As String
     Dim eventIdOut As String
     Dim queueError As String
@@ -653,6 +653,7 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
     Dim systemKey As String
     Dim nonCounted As Boolean, applied As Boolean
     Dim sourceValues As Variant
+    Dim receiptFound As Boolean, receiptApplied As Boolean, receiptPayload As String, receiptKey As String
 
     On Error GoTo FailAdd
 
@@ -686,16 +687,105 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
         End If
         If Not modInventoryCommands.CheckForm(interactiveContext, report) Then Exit Function
     End If
+    eventIdOut = creationEventId
+    If creationEventId <> "" Then
+        If interactiveContext = "" Or stagingRow < 1 Then report = "A captured worksheet command is required for receipt retry.": Exit Function
+        If Not modInventoryCreateReceipts.Resolve(interactiveContext, warehouseId, stationId, userId, _
+                eventIdOut, receiptFound, receiptKey, receiptPayload, receiptApplied, report) Then Exit Function
+    End If
+    If Not receiptApplied Then
     If Not EnsureDemoStationInboxes(warehouseId, stationId, inboxReport) Then
         report = inboxReport
         Exit Function
+    End If
     End If
 
     If interactiveContext <> "" Then
         If Not modInventoryCommands.CheckForm(interactiveContext, report) Then Exit Function
     End If
-    Set payloadItems = New Collection
-    systemKey = modRoleEventWriter.CreateSystemKey()
+    If Not receiptFound Then
+        systemKey = modRoleEventWriter.CreateSystemKey()
+    Else
+        systemKey = receiptKey
+    End If
+    payloadJson = BuildInventoryCreatePayloadAdmin(systemKey, sku, itemName, uom, locationVal, qty, _
+        description, vendorName, vendorCode, category, externalCode, imagePath, customFields)
+    If payloadJson = "" Or payloadJson = "[]" Then
+        report = "Inventory item payload was empty."
+        Exit Function
+    End If
+
+    If receiptFound Then
+        If Not modInventoryCreateReceipts.PayloadMatches(payloadJson, receiptPayload) Then
+            report = "The pending row differs from its exact queued create. Reconcile it before retrying.": Exit Function
+        End If
+        If receiptApplied Then
+            batchReport = "Exact previously saved event independently reconciled."
+            GoTo CreateSaved
+        End If
+    End If
+    If interactiveContext <> "" Then
+        If Not modInventoryCommands.BeginCreate(interactiveContext, payloadJson, report) Then Exit Function
+    End If
+    If Not receiptFound Then
+    If Not modRoleEventWriter.QueueInventoryCreateEvent(warehouseId, stationId, userId, payloadJson, _
+                                                        "Admin add inventory item " & sku, _
+                                                        0, Nothing, eventIdOut, queueError, "") Then
+        If interactiveContext <> "" Then modInventoryCommands.Release interactiveContext
+        report = "Inventory item event could not be queued: " & queueError & vbCrLf & _
+                 "Use Users & Roles to grant ADMIN_MAINT to '" & userId & "' for " & warehouseId & " / " & stationId & "."
+        Exit Function
+    End If
+    End If
+    If stagingRow > 0 Then
+        If Not modAdminInventoryWorksheet.StoreQueuedCreateReceipt(interactiveContext, stagingRow, sku, _
+                eventIdOut, systemKey, report) Then GoTo Unconfirmed
+    End If
+
+    If interactiveContext <> "" Then
+        If Not modInventoryCommands.BeginCreateSave(interactiveContext, report) Then GoTo Unconfirmed
+    End If
+    processedCount = modProcessor.RunBatch(warehouseId, 0, batchReport, eventIdOut, applied, True)
+    If Not applied Then
+        report = "Inventory item event queued; exact saved application is unconfirmed." & vbCrLf & batchReport
+        GoTo Unconfirmed
+    End If
+    If interactiveContext <> "" Then
+        If Not modInventoryCommands.ConfirmCreate(interactiveContext, eventIdOut, report) Then
+            report = "Partial result: exact event application was saved, but command confirmation failed." & _
+                     vbCrLf & "Event: " & eventIdOut & vbCrLf & report
+            Exit Function
+        End If
+    End If
+
+CreateSaved:
+    report = "Inventory item added. Exact event application was saved." & vbCrLf & _
+             "Event: " & eventIdOut & vbCrLf & _
+             "Warehouse: " & warehouseId & vbCrLf & _
+             "SKU: " & sku & vbCrLf & _
+             "Item: " & itemName & vbCrLf & _
+             "System_Key: " & systemKey & vbCrLf & _
+             "Starting quantity: " & IIf(nonCounted, "not counted", CStr(qty)) & vbCrLf & _
+             "Processor: " & batchReport & vbCrLf & _
+             "Refresh inventory in any open role workbook to see the new item."
+    AddInventoryItemForWarehouse = True
+    Exit Function
+
+Unconfirmed:
+    If interactiveContext <> "" Then modInventoryCommands.Release interactiveContext
+    If eventIdOut <> "" Then report = report & vbCrLf & "Event: " & eventIdOut & ". Application is unconfirmed."
+    Exit Function
+FailAdd:
+    report = "AddInventoryItem failed: " & Err.Description
+    GoTo Unconfirmed
+End Function
+
+Private Function BuildInventoryCreatePayloadAdmin(ByVal systemKey As String, ByVal sku As String, _
+        ByVal itemName As String, ByVal uom As String, ByVal locationVal As String, ByVal qty As Double, _
+        ByVal description As String, ByVal vendorName As String, ByVal vendorCode As String, _
+        ByVal category As String, ByVal externalCode As String, ByVal imagePath As String, ByVal customFields As Object) As String
+    Dim payloadItems As New Collection, item As Object, customKey As Variant, nonCounted As Boolean
+    nonCounted = IsNonCountedCustomFieldsAdmin(customFields)
     Set item = modRoleEventWriter.CreateInventoryEntityPayloadItem( _
         systemKey, sku, qty, locationVal, "GOOD", "", "Admin add inventory item")
     item("ITEM_CODE") = sku
@@ -721,60 +811,34 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
         Next customKey
     End If
     payloadItems.Add item
+    BuildInventoryCreatePayloadAdmin = modRoleEventWriter.BuildPayloadJsonFromCollection(payloadItems)
+End Function
 
-    payloadJson = modRoleEventWriter.BuildPayloadJsonFromCollection(payloadItems)
-    If payloadJson = "" Or payloadJson = "[]" Then
-        report = "Inventory item payload was empty."
-        Exit Function
-    End If
-
-    If interactiveContext <> "" Then
-        If Not modInventoryCommands.BeginCreate(interactiveContext, payloadJson, report) Then Exit Function
-    End If
-    If Not modRoleEventWriter.QueueInventoryCreateEvent(warehouseId, stationId, userId, payloadJson, _
-                                                        "Admin add inventory item " & sku, _
-                                                        0, Nothing, eventIdOut, queueError, "") Then
-        If interactiveContext <> "" Then modInventoryCommands.Release interactiveContext
-        report = "Inventory item event could not be queued: " & queueError & vbCrLf & _
-                 "Use Users & Roles to grant ADMIN_MAINT to '" & userId & "' for " & warehouseId & " / " & stationId & "."
-        Exit Function
-    End If
-
-    If interactiveContext <> "" Then
-        If Not modInventoryCommands.BeginCreateSave(interactiveContext, report) Then GoTo Unconfirmed
-    End If
-    processedCount = modProcessor.RunBatch(warehouseId, 0, batchReport, eventIdOut, applied, True)
-    If Not applied Then
-        report = "Inventory item event queued; exact saved application is unconfirmed." & vbCrLf & batchReport
-        GoTo Unconfirmed
-    End If
-    If interactiveContext <> "" Then
-        If Not modInventoryCommands.ConfirmCreate(interactiveContext, eventIdOut, report) Then
-            report = "Partial result: exact event application was saved, but command confirmation failed." & _
-                     vbCrLf & "Event: " & eventIdOut & vbCrLf & report
-            Exit Function
+Public Function ValidateWorksheetCreateReceipt(ByVal record As Object, ByVal context As String, _
+        ByVal eventId As String, ByRef report As String) As Boolean
+    Dim values As Variant, found As Boolean, applied As Boolean, systemKey As String, payload As String
+    Dim expected As String, category As String, vendor As String, customFields As Object
+    values = modInventoryCommands.SourceValues(context)
+    If Not IsArray(values) Then Exit Function
+    If Not modInventoryCreateReceipts.Resolve(context, CStr(values(0)), CStr(values(1)), CStr(values(2)), _
+            eventId, found, systemKey, payload, applied, report) Then Exit Function
+    If Not found Then
+        If InventoryItemCatalogContainsForWorksheet(CStr(values(0)), CStr(record("ItemCode"))) Then
+            report = "The prepared Item Code now exists without its exact create receipt.": Exit Function
         End If
+        ValidateWorksheetCreateReceipt = True: Exit Function
     End If
-
-    report = "Inventory item added. Exact event application was saved." & vbCrLf & _
-             "Event: " & eventIdOut & vbCrLf & _
-             "Warehouse: " & warehouseId & vbCrLf & _
-             "SKU: " & sku & vbCrLf & _
-             "Item: " & itemName & vbCrLf & _
-             "System_Key: " & systemKey & vbCrLf & _
-             "Starting quantity: " & IIf(nonCounted, "not counted", CStr(qty)) & vbCrLf & _
-             "Processor: " & batchReport & vbCrLf & _
-             "Refresh inventory in any open role workbook to see the new item."
-    AddInventoryItemForWarehouse = True
-    Exit Function
-
-Unconfirmed:
-    If interactiveContext <> "" Then modInventoryCommands.Release interactiveContext
-    If eventIdOut <> "" Then report = report & vbCrLf & "Event: " & eventIdOut & ". Application is unconfirmed."
-    Exit Function
-FailAdd:
-    report = "AddInventoryItem failed: " & Err.Description
-    GoTo Unconfirmed
+    category = CStr(record("Category")): vendor = CStr(record("Vendors"))
+    Set customFields = record("CustomFields")
+    If IsNonCountedCustomFieldsAdmin(customFields) Then
+        If category = "" Then category = NonCountedItemKindAdmin(customFields)
+        If vendor = "" And NonCountedItemKindAdmin(customFields) = "UTILITY" Then vendor = "Utility"
+    End If
+    expected = BuildInventoryCreatePayloadAdmin(systemKey, CStr(record("ItemCode")), CStr(record("ItemName")), _
+        CStr(record("UOM")), CStr(record("Location")), CDbl(record("Quantity")), CStr(record("Description")), _
+        vendor, CStr(record("VendorCode")), category, CStr(record("ExternalCode")), CStr(record("Picture")), customFields)
+    ValidateWorksheetCreateReceipt = modInventoryCreateReceipts.PayloadMatches(expected, payload)
+    If Not ValidateWorksheetCreateReceipt Then report = "The pending row differs from its exact saved create receipt."
 End Function
 
 Public Function RetireInventoryItemForWarehouse(ByVal warehouseId As String, _

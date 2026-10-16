@@ -8,6 +8,7 @@ Private Const RESULT_STAGE As Long = 2
 Private Const RESULT_QUANTITY As Long = 3
 Private Const RESULT_CREATE As Long = 4
 Private Const RESULT_RETIREMENT As Long = 5
+Private Const RESULT_STAGE_SAVED As Long = 6
 Private Const PHASE_CATALOG As String = "Catalog"
 Private Const PHASE_QUANTITY As String = "Quantity"
 Private Const PHASE_CREATE As String = "Create"
@@ -130,6 +131,24 @@ Public Function SelectSku(ByVal key As String, ByVal sku As String, ByRef report
     Exit Function
 Refused:
     Expire key, report
+End Function
+
+Public Function SourceInventoryPath(ByVal key As String) As String
+    Dim entry As Object, inputs As cInventoryCommandInputs, report As String
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    SourceInventoryPath = inputs.SourcePath
+End Function
+
+Public Function OperatorWorkbookName(ByVal key As String) As String
+    Dim entry As Object, book As Workbook, report As String
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set book = entry("Workbook")
+    OperatorWorkbookName = book.Name
+End Function
+
+Public Function ConfirmStageSaved(ByVal key As String, ByRef report As String) As Boolean
+    ConfirmStageSaved = ConfirmResult(key, RESULT_STAGE_SAVED, "", report)
 End Function
 
 Public Function CheckOperatorWorkbook(ByVal key As String, ByVal workbookName As String, ByRef report As String) As Boolean
@@ -301,6 +320,7 @@ Private Function ConfirmResult(ByVal key As String, ByVal kind As Long, _
     Select Case kind
         Case RESULT_CATALOG: confirmed = inputs.ConfirmCatalog()
         Case RESULT_STAGE: confirmed = inputs.ConfirmStageCell()
+        Case RESULT_STAGE_SAVED: confirmed = inputs.ConfirmStageSaved()
         Case RESULT_QUANTITY: confirmed = inputs.ConfirmEventResult(eventId, PHASE_QUANTITY)
         Case RESULT_CREATE: confirmed = inputs.ConfirmEventResult(eventId, PHASE_CREATE)
         Case RESULT_RETIREMENT: confirmed = inputs.ConfirmEventResult(eventId, PHASE_RETIREMENT)

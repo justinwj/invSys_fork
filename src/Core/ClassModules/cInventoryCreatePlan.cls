@@ -14,7 +14,8 @@ Private mKey As String, mSku As String, mQty As Double
 Private mLocation As String, mCondition As String, mAttributes As String
 
 Public Function Plan(ByVal payload As String, ByVal catalog As cInventoryTableInput, _
-        ByVal entities As cInventoryTableInput, ByRef selectedSku As String) As Boolean
+        ByVal entities As cInventoryTableInput, ByRef selectedSku As String, _
+        Optional ByVal existingResult As Boolean = False) As Boolean
     Dim item As Object, report As String, field As Variant, name As String, value As String
     On Error GoTo Invalid
     payload = Trim$(payload)
@@ -27,7 +28,10 @@ Public Function Plan(ByVal payload As String, ByVal catalog As cInventoryTableIn
     mAttributes = Trim$(CStr(item("AttributesJson")))
     If mKey = "" Or mSku = "" Or mQty < 0 Then Exit Function
     If mCondition = "" Then mCondition = "GOOD"
-    If Not entities.PlanNewRow(mKey) Then Exit Function
+    If Not entities.PlanNewRow(mKey) Then
+        If Not existingResult Then Exit Function
+        If CStr(entities.Scalar(mKey, "SKU")) <> mSku Then Exit Function
+    End If
     entities.PlanValue mKey, "System_Key", mKey
     entities.PlanValue mKey, "SKU", mSku
     entities.PlanValue mKey, "QtyOnHand", mQty
@@ -48,6 +52,18 @@ Public Function Plan(ByVal payload As String, ByVal catalog As cInventoryTableIn
         End If
     Next field
     selectedSku = mSku: Plan = True
+Invalid:
+End Function
+
+Public Function VerifySaved(ByVal book As Workbook, ByVal eventId As String, ByVal payload As String) As Boolean
+    Dim catalog As New cInventoryTableInput, entities As New cInventoryTableInput, selected As String
+    On Error GoTo Invalid
+    If Not catalog.Capture(modExecutionTarget.Table(book, "tblSkuCatalog"), "SKU", False) Then Exit Function
+    If Not entities.Capture(modExecutionTarget.Table(book, "tblInventoryEntities"), "System_Key", False) Then Exit Function
+    If Not Plan(payload, catalog, entities, selected, True) Then Exit Function
+    If Not PlanSaved(book, eventId, entities) Then Exit Function
+    If Not catalog.MatchesPersistedCopy(modExecutionTarget.Table(book, "tblSkuCatalog")) Then Exit Function
+    VerifySaved = entities.MatchesPersistedCopy(modExecutionTarget.Table(book, "tblInventoryEntities"))
 Invalid:
 End Function
 

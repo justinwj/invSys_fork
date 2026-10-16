@@ -121,6 +121,35 @@ Public Function ConfirmStageCell() As Boolean
     ConfirmStageCell = mStaging.Confirm(mStage)
 End Function
 
+Public Function ConfirmStageSaved() As Boolean
+    Dim source As Workbook, copy As Workbook, copyPath As String, hash As String
+    Dim sheet As Worksheet, table As ListObject, persisted As ListObject
+    On Error GoTo Failed
+    If mStaging Is Nothing Or mStage Is Nothing Then Exit Function
+    If Not Unchanged() Then Exit Function
+    Set source = mStage.Parent.Parent
+    If Not source.Saved Then Exit Function
+    hash = modTrainingWire.FileSha256(source.FullName)
+    If hash = "" Then Exit Function
+    Set copy = modAggregationFiles.OpenCopy(source.FullName, copyPath, True)
+    If copy Is Nothing Then GoTo CleanExit
+    If modTrainingWire.FileSha256(copyPath) <> hash Then GoTo CleanExit
+    For Each sheet In copy.Worksheets
+        For Each table In sheet.ListObjects
+            If table.Name = mStage.Name And sheet.Name = mStage.Parent.Name Then Set persisted = table
+        Next table
+    Next sheet
+    If persisted Is Nothing Then GoTo CleanExit
+    If Not mStaging.MatchesPersistedCopy(persisted) Then GoTo CleanExit
+    If hash <> modTrainingWire.FileSha256(source.FullName) Then GoTo CleanExit
+    ConfirmStageSaved = Unchanged()
+CleanExit:
+    If copyPath <> "" Then modAggregationFiles.CloseCopy copy, copyPath
+    Exit Function
+Failed:
+    Resume CleanExit
+End Function
+
 ' The coordinator declares exact intended fields before the corresponding write.
 ' Partial values may match their old or declared value; unrelated changes refuse.
 Public Function BeginCatalog(ByVal sku As String) As Boolean
