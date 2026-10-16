@@ -1,5 +1,23 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**ROW cleanup prepared against retained behavioral RED:** the form no longer
+stores/displays/validates GeneratedRow or a catalog ROW field. Configure/catalog/
+create service callers use the revised signatures; worksheet staging records no
+longer carry RowVal. Add payloads contain only the owning generated System_Key.
+The existing greenfield Item Code time seed/Base36 formatting remains; it is not
+entity identity and no old ROW data is consulted. An uncalled private quantity
+helper retains its procedure and delegates to exact-entity adjustment instead of
+the prohibited migration/ROW route. No scanner candidate is deleted. Both oversized
+Admin components shrink. Packaged verification remains pending after135's closure.
+
+**Static b936503e qualified:** complete generation and schema markers, six reports
+and no pending product diff at verification pass. Compared with1c9bff87, metrics
+are370 components/6568 procedures/142598 lines,194 duplicate candidates and9/45
+literal/unresolved calls. No existing oversized component grows; maximum new
+module/procedure sizes are135/88. No exception. Ignored receipt:
+`reports/runtime/inventory-retry-static-01/ratchet-verification.json`.
+This is the bounded-retry source's static gate, not the later unbuilt ROW cleanup.
+
 **Bounded retry GREEN134 qualified,2026-10-15 Pacific:** source/testb936503e
 passes22/22, preserving every RED132 assertion name/order. Actual fresh-form retry
 reuses/applies the original saved event once, saves the exact selected target,

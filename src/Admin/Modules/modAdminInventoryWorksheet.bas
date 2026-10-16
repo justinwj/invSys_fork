@@ -163,7 +163,7 @@ Public Function PreflightInventoryWorksheetTable(ByVal lo As ListObject, _
     Dim rowError As String
     Dim errors As String
     Dim rowIndex As Long
-    Dim baseRow As Long
+    Dim baseOrdinal As Long
     Dim addOrdinal As Long
     Dim generatedCodes As Object
 
@@ -174,18 +174,18 @@ Public Function PreflightInventoryWorksheetTable(ByVal lo As ListObject, _
     Set generatedCodes = CreateObject("Scripting.Dictionary")
     generatedCodes.CompareMode = vbTextCompare
     If mAutomationEnabled Then
-        baseRow = 1
+        baseOrdinal = 1
     Else
-        baseRow = modAdmin.NextInventoryRowForWorksheet(warehouseId)
+        baseOrdinal = modAdmin.NextInventoryCodeOrdinalForWorksheet(warehouseId)
     End If
-    If baseRow <= 0 Then baseRow = 1
+    If baseOrdinal <= 0 Then baseOrdinal = 1
 
     For rowIndex = 1 To lo.ListRows.Count
         If InventoryWorksheetRowHasBusinessData(lo, rowIndex) Then
             If UCase$(InventoryWorksheetText(lo, rowIndex, HDR_STATUS)) <> "IMPORTED" Then
                 rowError = ""
                 Set record = Nothing
-                If ValidateInventoryWorksheetRow(lo, rowIndex, warehouseId, baseRow, _
+                If ValidateInventoryWorksheetRow(lo, rowIndex, warehouseId, baseOrdinal, _
                         addOrdinal, generatedCodes, record, rowError) Then
                     pending.Add record
                 Else
@@ -387,7 +387,7 @@ End Function
 Private Function ValidateInventoryWorksheetRow(ByVal lo As ListObject, _
                                                ByVal rowIndex As Long, _
                                                ByVal warehouseId As String, _
-                                               ByVal baseRow As Long, _
+                                               ByVal baseOrdinal As Long, _
                                                ByRef addOrdinal As Long, _
                                                ByVal generatedCodes As Object, _
                                                ByRef record As Object, _
@@ -402,7 +402,7 @@ Private Function ValidateInventoryWorksheetRow(ByVal lo As ListObject, _
     Dim hasQty As Boolean
     Dim editReason As String
     Dim statusText As String
-    Dim rowVal As Long
+    Dim codeOrdinal As Long
     Dim customFields As Object
 
     actionName = UCase$(InventoryWorksheetText(lo, rowIndex, HDR_ACTION))
@@ -456,16 +456,16 @@ Private Function ValidateInventoryWorksheetRow(ByVal lo As ListObject, _
             Exit Function
         End If
         addOrdinal = addOrdinal + 1
-        rowVal = baseRow + addOrdinal - 1
-        If sku = "" Then sku = modAdmin.GenerateInventoryItemCodeForWorksheet(warehouseId, rowVal)
-        If InventoryCatalogContains(warehouseId, sku, rowVal) Then
+        codeOrdinal = baseOrdinal + addOrdinal - 1
+        If sku = "" Then sku = modAdmin.GenerateInventoryItemCodeForWorksheet(warehouseId, codeOrdinal)
+        If InventoryCatalogContains(warehouseId, sku) Then
             rowError = "Generated ADD Item Code already exists: " & sku & "."
             Exit Function
         End If
     Else
         If sku = "" Then rowError = "EDIT requires the exact existing Item Code.": Exit Function
         If editReason = "" Then rowError = "EDIT requires Edit Reason.": Exit Function
-        If Not InventoryCatalogContains(warehouseId, sku, rowVal) Then
+        If Not InventoryCatalogContains(warehouseId, sku) Then
             rowError = "EDIT Item Code was not found in the warehouse catalog: " & sku & "."
             Exit Function
         End If
@@ -495,7 +495,6 @@ Private Function ValidateInventoryWorksheetRow(ByVal lo As ListObject, _
     record.CompareMode = vbTextCompare
     record("TableRow") = rowIndex
     record("Action") = actionName
-    record("RowVal") = rowVal
     record("ItemCode") = sku
     record("ItemName") = itemName
     record("UOM") = uom
@@ -533,18 +532,16 @@ Private Function ApplyInventoryWorksheetRecord(ByVal record As Object, _
 End Function
 
 Private Function InventoryCatalogContains(ByVal warehouseId As String, _
-                                          ByVal sku As String, _
-                                          ByRef rowVal As Long) As Boolean
+                                          ByVal sku As String) As Boolean
     If mAutomationEnabled Then
         If Not mAutomationCatalog Is Nothing Then
             If mAutomationCatalog.Exists(sku) Then
-                rowVal = CLng(mAutomationCatalog(sku))
                 InventoryCatalogContains = True
             End If
         End If
     Else
         InventoryCatalogContains = modAdmin.InventoryItemCatalogContainsForWorksheet( _
-            warehouseId, sku, rowVal)
+            warehouseId, sku)
     End If
 End Function
 
