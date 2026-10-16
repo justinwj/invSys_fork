@@ -140,6 +140,7 @@ param(
     [switch]$AdminAggregationOnly,
     [switch]$AdminInventoryEntryOnly,
     [switch]$AdminInventoryExactQuantityOnly,
+    [switch]$AdminInventoryManagedFieldsOnly,
     [switch]$AdminAggregationPathComparison,
     [switch]$AdminAggregationBoundaryMatrix,
     [ValidateSet('All','Inspection','Write','Ownership')][string]$AdminAggregationBoundaryGroup='All',
@@ -847,6 +848,7 @@ if($AdminAggregationOnly){
     Write-Output ('Aggregation evidence: '+$reportRoot)
 }
 if($AdminInventoryExactQuantityOnly -and -not $AdminInventoryEntryOnly){throw 'Exact quantity requires the isolated Inventory gate.'}
+if($AdminInventoryManagedFieldsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryExactQuantityOnly)){throw 'Managed fields require the separate isolated Inventory gate.'}
 if($AdminInventoryEntryOnly){
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-inventory-entry/'+[guid]::NewGuid().ToString('N'))
@@ -2416,6 +2418,9 @@ End Function
     }
     if($AdminAggregationOnly){$step='packaged Aggregation authority and workbook diagnostic'; Test-AdminAggregation $a $b}
     if($AdminInventoryEntryOnly){
+        if($AdminInventoryManagedFieldsOnly){
+            $step='Inventory reserved managed fields through real handlers'; Test-InventoryManagedFields $a $b
+        }else{
         if(-not $AdminInventoryExactQuantityOnly){
             $step='packaged Add/Edit Inventory Ribbon and modal entry audit'; Test-AdminInventoryEntry $a $b
             $step='approved Inventory modal and worksheet authority boundaries'; Test-InventoryCommandBoundaries $a $b
@@ -2423,6 +2428,8 @@ End Function
             $step='Inventory source catalog entity table replacement and remaining prompts'; Test-InventoryReplacementBoundaries $a $b
         }
         $step='exact generated entity Edit target quantity'; Test-InventoryExactQuantity $a $b
+        if(-not $AdminInventoryExactQuantityOnly){$step='Inventory reserved managed fields through real handlers'; Test-InventoryManagedFields $a $b}
+        }
     }
     if(-not $AdminInventoryEntryOnly -and -not $AdminAggregationOnly -and -not $AdminTesterSetupOwnerOnly -and -not $AdminCreateWarehouseOwnerOnly -and -not $AdminSeedOutcomeOnly -and -not $AdminDirectoryColumnsOnly -and -not $AdminConsoleOnly -and -not $AdminVerifyAddinsOnly -and -not $AdminReconcileIdentityOnly -and -not $AdminSettingsCloseOnly -and -not $CheckViewerRefreshFailure -and -not $CheckViewerEventDetail -and -not $CheckViewerEventGroups -and -not $CheckViewerPublishedRead -and $PrintSeedBoundaryForTest -notin @('FreshSeed','BareSeed')) {
     $step='unauthenticated command'

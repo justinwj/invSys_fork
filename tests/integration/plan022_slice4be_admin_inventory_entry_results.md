@@ -1,5 +1,31 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Authority increment comparison123 qualified,2026-10-15 Pacific:** source/test
+08d0e3f1 completes229 PASS/28 FAIL,257 unique checks without a harness exception.
+All251 prior assertion names/order remain;42 action/yield cases reach their actual
+handlers. Tested stale authority, replacement session, capability and changed-root
+refusals pass. Authorized modal/worksheet zero-quantity creates still pass. The28
+failures cover ROW display/payload, changed/replaced catalog/entity/table inputs,
+exact Edit quantity and unresolved Config preservation. This is partial progress,
+not complete Core coordination or D8-INV-01 acceptance.
+
+Controller `admin-inventory-entry-controller/586b25e422364c8fa6aa65ef4a1c2baa`;
+worker `slice4be-admin-inventory-entry/02441468964845f2b8c92bdb58b10e3a`.
+Five packages/all486 tooling/settings/fixture preservation and normal owned/native
+closure qualify through2026-10-16T05:40:51.8753855Z, with no desktop stop or Excel
+failure. Candidate `validation-inventory-authority-01` is unpromoted. Its guarded
+official build121 and cold122 compile all five packages; cold source extraction
+retains all359 prior components and adds only the two declared modules. Static
+generation completes368 components/6564 procedures/142466 lines,194 duplicate
+candidates and9 literal/45 unresolved calls; duplicate/dynamic counts are unchanged.
+
+**Reserved-field test prepared:** actual Ribbon/modal Additional Field and Upload
+handlers test System_Key/Condition rejection, retained ROW rejection and an ordinary
+custom-field positive control. The isolated managed-fields mode adds27 checks
+(33 with shared compiles/pre-form guard); the full matrix appends them to257.
+All486 tooling scripts parse. No behavioral result or guard correction is claimed
+before the focused run. No forged identity is submitted as inventory.
+
 **Focused exact-quantity RED120 qualified,2026-10-15 Pacific:** source1c9bff87/
 testc60fad9f completes11 PASS/1 FAIL. Five instrumented compiles, pre-form guard,
 Admin-created single counted entity and the actual Edit/reason handlers pass.
@@ -198,6 +224,17 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Trial123 cohort: unresolved**, source/test08d0e3f1, controller
+586b25e422364c8fa6aa65ef4a1c2baa and worker02441468964845f2b8c92bdb58b10e3a.
+Auth preservation passes. All five read-only comparisons preserve extraction,
+table shapes and table cells. Baseline/ActiveWorkbook each change one Metadata
+and one unidentified Other ZIP part; SignedOut/OtherWarehouseAdmin/ReplacementSession
+change no parts. Cause remains unestablished. Evidence is the worker's redacted
+`inventory-config-diagnosis.jsonl`; the passing authority checks do not close it.
+Next: identify the changed standard part names using a fixed safe allowlist and
+trace the suspected inbox-setup Config save on this source, without exporting
+raw values/contents. Earlier-source evidence remains separately labeled below.
 
 **Trial120 cohort: unresolved/not measured in focused scope**, source1c9bff87/
 testc60fad9f, controller f9c452648ef745c0b188b550bec3290f and worker

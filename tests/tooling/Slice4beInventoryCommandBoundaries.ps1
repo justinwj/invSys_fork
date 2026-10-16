@@ -77,6 +77,8 @@ Private mShows As Long, mHandler As Long, mYield As Boolean, mPrepared As Boolea
 Private mBound As Boolean, mSignatureReady As Boolean
 Private mInjectedEvents As Long
 Private mQuantityTarget As Double
+Private mCustomHeader As String, mCustomAccepted As Boolean
+Private mHeaderRefused As Boolean
 Public Function IsDriving() As Boolean
     IsDriving = mDriving
 End Function
@@ -107,6 +109,32 @@ End Sub
 Public Sub SetQuantityTarget(ByVal target As Double)
     mQuantityTarget = target
 End Sub
+Public Sub SetCustomHeader(ByVal header As String)
+    mCustomHeader = header
+End Sub
+Public Function CustomFieldAccepted() As Boolean
+    CustomFieldAccepted = mCustomAccepted
+End Function
+Public Function ManagedHeaderRefused() As Boolean
+    ManagedHeaderRefused = mHeaderRefused
+End Function
+Public Function AddManagedFixtureColumn(ByVal host As String, ByVal header As String) As Boolean
+    Dim wb As Workbook, ws As Worksheet, lo As ListObject, col As ListColumn
+    Set wb = Application.Workbooks(host)
+    For Each ws In wb.Worksheets
+        For Each lo In ws.ListObjects
+            If Left$(lo.Name, 17) = "invSys_Inventory_" Then
+                Set col = lo.ListColumns.Add
+                col.Name = header
+                col.DataBodyRange.Cells(1, 1).Value2 = IIf(header = "Condition", "GOOD", "Fixture field value")
+                wb.Save
+                lo.DataBodyRange.Cells(1, 1).Select
+                AddManagedFixtureColumn = True
+                Exit Function
+            End If
+        Next lo
+    Next ws
+End Function
 Public Function PrepareExactQuantityFixture(ByVal warehouse As String, ByVal csv As String) As Boolean
     Dim report As String
     PrepareExactQuantityFixture = modAdminInventorySeed.UploadDemoInventoryForWarehouse( _
@@ -121,6 +149,8 @@ Public Sub Execute(ByVal host As String, ByVal action As String, ByVal caseName 
     mShows = 0: mHandler = 0: mYield = False: mPrepared = False: mBound = False
     mBefore = "": mSignatureReady = False
     mInjectedEvents = 0
+    mCustomAccepted = False
+    mHeaderRefused = False
     Application.Workbooks(host).Activate
     On Error GoTo Failed
     RibbonOnActionAdmin control
@@ -140,7 +170,12 @@ Public Sub Drive(ByVal form As frmAddInventoryItem)
     If mPhase = "ModalReturn" Then YieldAt mPhase
     If mPhase = "UomPrompt" Then form.InventoryCommandUomPromptForTest
     mHandler = mHandler + 1
-    form.InventoryCommandInvokeForTest mAction
+    If mAction = "CustomField" Then
+        mCustomAccepted = form.InventoryCommandCustomFieldForTest(mCustomHeader)
+    Else
+        form.InventoryCommandInvokeForTest mAction
+    End If
+    If mAction = "Upload" Then mHeaderRefused = form.InventoryCommandHeaderRefusalForTest()
     If form.Visible Then form.InventoryEntryCancelForTest
 End Sub
 Public Sub YieldAt(ByVal phase As String)
@@ -340,6 +375,18 @@ End Sub
 Public Sub InventoryCommandTargetForTest(ByVal target As Double)
     mTxtQty.Value = CStr(target)
 End Sub
+Public Function InventoryCommandCustomFieldForTest(ByVal header As String) As Boolean
+    Dim before As Long
+    before = mLstCustomFields.ListCount
+    mTxtCustomName.Value = header
+    mTxtCustomValue.Value = "Fixture field value"
+    mBtnAddField_Click
+    InventoryCommandCustomFieldForTest = (mLstCustomFields.ListCount = before + 1)
+End Function
+Public Function InventoryCommandHeaderRefusalForTest() As Boolean
+    InventoryCommandHeaderRefusalForTest = (InStr(1, mLastInventoryWorksheetReport, _
+        "prohibited header", vbTextCompare) > 0)
+End Function
 Private Function InputBox(ByVal Prompt As String, Optional ByVal Title As String = "", _
                           Optional ByVal Default As String = "") As String
     InputBox = TestInventoryCommands.DialogAnswer(Prompt)
@@ -512,4 +559,52 @@ function Test-InventoryExactQuantity($Fixture,$Other) {
         $otherChanged=@($keys|Where-Object {$_ -cne $choice.Key -and $before.EntityQuantities[$_] -ne $after.EntityQuantities[$_]})
         Check 'InventoryExactQuantity.OtherEntityQuantitiesPreserved' ($otherChanged.Count -eq 0)
     }finally{$hostBook.Close($false)}
+}
+
+function Test-InventoryManagedFields($Fixture,$Other) {
+    SelectTarget $Fixture
+    $seed=[string](Run 'invSys.Admin.xlam' 'modAdminConsole.SeedDemoInventoryForAutomation' @($Fixture.Warehouse,'S1','config-admin'))
+    Check 'InventoryManagedField.GeneratedFixtureSeedApplied' $seed.StartsWith('OK|')
+    if(-not $seed.StartsWith('OK|')){throw 'Managed field fixture unavailable; not product RED.'}
+    foreach($spec in @(@('SystemKey','System_Key',$true),@('Condition','Condition',$true),@('LegacyRow','ROW',$true),@('Ordinary','Fixture note',$false))){
+        $label,$header,$reserved=$spec
+        SelectTarget $Fixture
+        $hostBook=$excel.Workbooks.Add();$hostBook.SaveAs((Join-Path $runRoot ('managed-modal-'+$label+'.xlsx')),51)
+        try{
+            [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetSelection' @($Other.Root,''))
+            [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetCustomHeader' @($header))
+            [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'CustomField','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
+            $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
+            $accepted=[bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.CustomFieldAccepted')
+            $ready=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[1] -ceq 'True' -and $facts[2] -ceq '1'
+            $id='InventoryManagedField.Modal.'+$label
+            Check ($id+'.ActualFieldHandlerReached') $ready
+            if(-not $ready){throw 'Managed field modal action unavailable; not product RED.'}
+            Check ($id+'.OriginalOperatorCaptured') ($facts[3] -ceq 'True')
+            Check ($id+'.ExpectedFieldDisposition') ($accepted -eq (-not $reserved))
+            Check ($id+'.CancelledWithoutInventoryMutation') ($facts[4] -ceq 'True')
+        }finally{$hostBook.Close($false)}
+    }
+    foreach($header in @('System_Key','Condition')){
+        SelectTarget $Fixture
+        $hostBook=$excel.Workbooks.Add();$hostBook.SaveAs((Join-Path $runRoot ('managed-worksheet-'+$header+'.xlsx')),51)
+        try{
+            $ready=[bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareBoundaryTable' @($hostBook.Name))
+            if($ready){$ready=[bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.AddManagedFixtureColumn' @($hostBook.Name,$header))}
+            if(-not $ready){throw 'Managed header staging fixture unavailable; not product RED.'}
+            $before=Get-AdminInventoryEntryFacts $Fixture -Persisted
+            [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetSelection' @($Other.Root,''))
+            [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'Upload','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
+            $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
+            $ready=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[1] -ceq 'True' -and $facts[2] -ceq '1'
+            $id='InventoryManagedField.Worksheet.'+$header
+            Check ($id+'.ActualUploadHandlerReached') $ready
+            if(-not $ready){throw 'Managed header Upload unavailable; not product RED.'}
+            Check ($id+'.OriginalOperatorCaptured') ($facts[3] -ceq 'True')
+            Check ($id+'.HeaderRejectedAtPreflight') ([bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.ManagedHeaderRefused'))
+            Check ($id+'.NoInventoryMutation') ($facts[4] -ceq 'True')
+            $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
+            Check ($id+'.NoPersistedEvents') ($after.LogRows -eq $before.LogRows -and $after.AppliedRows -eq $before.AppliedRows)
+        }finally{$hostBook.Close($false)}
+    }
 }
