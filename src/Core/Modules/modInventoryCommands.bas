@@ -132,6 +132,19 @@ Refused:
     Expire key, report
 End Function
 
+Public Function CheckOperatorWorkbook(ByVal key As String, ByVal workbookName As String, ByRef report As String) As Boolean
+    Dim entry As Object, original As Workbook, candidate As Workbook
+    On Error GoTo Refused
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set original = entry("Workbook")
+    Set candidate = Application.Workbooks(workbookName)
+    If Not (candidate Is original) Then GoTo Refused
+    CheckOperatorWorkbook = True
+    Exit Function
+Refused:
+    Expire key, report
+End Function
+
 Public Function StagingTableName(ByVal key As String) As String
     Dim report As String, entry As Object, inputs As cInventoryCommandInputs
     If Not CheckForm(key, report) Then Exit Function

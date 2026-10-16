@@ -1007,7 +1007,7 @@ Private Sub mBtnUploadInventoryTable_Click()
         Exit Sub
     End If
     succeeded = modAdminInventoryWorksheet.UploadSelectedInventoryWorksheetTable( _
-        mOperatorWorkbook, mWarehouseId, mStationId, mUserId, report)
+        mOperatorWorkbook, mWarehouseId, mStationId, mUserId, report, mInteractiveContext)
     mLastInventoryWorksheetReport = report
     mLblStatus.Caption = report
     If Not modAdminInventoryWorksheet.InventoryWorksheetAutomationEnabled() Then _

@@ -392,7 +392,8 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
                                                           ByVal stationId As String, _
                                                           ByVal userId As String, _
                                                           ByVal record As Object, _
-                                                          ByRef report As String) As Boolean
+                                                          ByRef report As String, _
+                                                          Optional ByVal interactiveContext As String = "") As Boolean
     Dim customFields As Object
     Dim actionName As String
     Dim sku As String
@@ -429,7 +430,7 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
             warehouseId, stationId, userId, sku, itemName, _
             uom, locationValue, qty, CStr(record("Description")), vendorValue, _
             CStr(record("VendorCode")), categoryValue, CStr(record("ExternalCode")), _
-            CStr(record("Picture")), customFields, report)
+            CStr(record("Picture")), customFields, report, interactiveContext)
         Exit Function
     End If
     If actionName <> "EDIT" Then report = "Inventory worksheet Action must be ADD or EDIT.": Exit Function
@@ -443,12 +444,12 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
     actionSucceeded = UpdateInventoryItemCatalogForWarehouse(warehouseId, sku, itemName, _
         uom, locationValue, CStr(record("Description")), vendorValue, _
         CStr(record("VendorCode")), categoryValue, CStr(record("ExternalCode")), _
-        CStr(record("Picture")), customFields, report)
+        CStr(record("Picture")), customFields, report, interactiveContext)
     If actionSucceeded And Not IsNonCountedCustomFieldsAdmin(customFields) And _
             CBool(record("HasQuantity")) Then
         If SetInventoryQuantityForWarehouse(warehouseId, stationId, userId, _
                 sku, itemName, uom, locationValue, qty, _
-                editReason, qtyReport) Then
+                editReason, qtyReport, interactiveContext) Then
             report = report & vbCrLf & vbCrLf & qtyReport
         Else
             report = "Inventory item catalog fields were updated, but set qty failed." & vbCrLf & qtyReport
@@ -755,7 +756,8 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
         End If
     End If
 
-    report = "Inventory item added." & vbCrLf & _
+    report = "Inventory item added. Exact event application was saved." & vbCrLf & _
+             "Event: " & eventIdOut & vbCrLf & _
              "Warehouse: " & warehouseId & vbCrLf & _
              "SKU: " & sku & vbCrLf & _
              "Item: " & itemName & vbCrLf & _
