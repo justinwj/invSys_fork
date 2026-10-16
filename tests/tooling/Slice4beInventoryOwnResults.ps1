@@ -44,8 +44,17 @@ function Test-InventoryOwnResults($Fixture,$Other) {
     Check 'InventoryOwnResult.GeneratedSingleEntityFixtureApplied' $created
     if(-not $created){throw 'Owning own-result fixture unavailable; not product RED.'}
     $original=Get-AdminInventoryEntryFacts $Fixture -Persisted
-    $entityKeys=@($original.EntityQuantities.Keys)
-    if($entityKeys.Count -ne 1){throw 'Own-result fixture requires exactly one generated entity.'}
+    $path=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
+    $book=$excel.Workbooks.Open($path,0,$true)
+    try{
+        $table=Table $book 'tblInventoryEntities';$entityKeys=@()
+        foreach($row in $table.ListRows){
+            if([string]$row.Range.Cells.Item(1,$table.ListColumns.Item('SKU').Index).Value2 -ceq $sku -and [string]$row.Range.Cells.Item(1,$table.ListColumns.Item('InventoryState').Index).Value2 -ceq 'ACTIVE'){
+                $entityKeys+=[string]$row.Range.Cells.Item(1,$table.ListColumns.Item('System_Key').Index).Value2
+            }
+        }
+    }finally{$book.Close($false)}
+    if($entityKeys.Count -ne 1){throw 'Own-result SKU requires exactly one generated active entity.'}
     $key=$entityKeys[0]
     foreach($spec in @(@('NoOp',10),@('Applied',7),@('AuthorityLost',4))){
         $case=[string]$spec[0];$target=[double]$spec[1];$id='InventoryOwnResult.'+$case
@@ -64,7 +73,8 @@ function Test-InventoryOwnResults($Fixture,$Other) {
             $shows=[long](Run 'invSys.Admin.xlam' 'TestInventoryCommands.OwnResultShowsForTest')
             Check ($id+'.ExpectedFormContinuation') ($shows -eq $(if($case -ceq 'AuthorityLost'){1}else{2}))
             $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
-            Check ($id+'.ExactEntityAndTargetSaved') ($after.EntityQuantities.Count -eq 1 -and $after.EntityQuantities.ContainsKey($key) -and $after.EntityQuantities[$key] -eq $target)
+            $othersSame=@($original.EntityQuantities.Keys|Where-Object {$_ -cne $key -and (-not $after.EntityQuantities.ContainsKey($_) -or $after.EntityQuantities[$_] -ne $original.EntityQuantities[$_])}).Count -eq 0
+            Check ($id+'.ExactEntityAndTargetSaved') ($after.EntityQuantities.Count -eq $original.EntityQuantities.Count -and $after.EntityQuantities.ContainsKey($key) -and $after.EntityQuantities[$key] -eq $target -and $othersSame)
             $events=if($case -ceq 'NoOp'){0}else{1}
             Check ($id+'.ExactEventCountSaved') ($after.LogRows -eq $before.LogRows+$events -and $after.AppliedRows -eq $before.AppliedRows+$events)
             $returned=[bool](Run 'invSys.Core.xlam' 'TestInventoryOwnResult.Returned')
