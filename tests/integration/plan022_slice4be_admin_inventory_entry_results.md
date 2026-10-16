@@ -1,5 +1,16 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Retry attempt130: oracle precondition failure**, unchanged source306fa2da/
+testa53830b8, controller2a15ab448cab4dceaa2471c829705d88, worker
+5baf6e73ba18444aa46c66f0e7fafc49. Nine checks pass; the cold server-inbox lookup
+does not find the queued event, then the explicit harness precondition stops the
+run. Source inspection confirms this queue uses the existing local staging JSONL
+boundary before processor synchronization. No missing persistence or retry defect
+is inferred. Correct the read-only oracle to match the exact event in the generated
+warehouse/station's local staging files; preserve20 assertion identities. Normal
+owned/native closure passes through2026-10-16T06:10:20.3372737Z with no Excel
+failure or desktop stop. Product retry code remains unchanged.
+
 **Retry attempt129: harness failure**, source306fa2da/test45522d26. Nine checks
 pass before a harness exception: the cold exact-event oracle incorrectly requests
 tblInboxReceive, while ADMIN_INVENTORY_ADJUST uses tblInboxProd. The real first
@@ -289,8 +300,15 @@ below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
 
+**Trial130 cohort: unresolved/not measured**, source306fa2da/testa53830b8,
+controller2a15ab448cab4dceaa2471c829705d88, worker5baf6e73ba18444aa46c66f0e7fafc49.
+The focused queue oracle stops before retry and contains no Config/Auth comparison.
+No cause/preservation claim is made. Trial123's separately scoped finding and
+the safe part-name/inbox-save diagnostic remain open; focused GREEN cannot close it.
+
 **Trial129 cohort: unresolved/not measured**, source306fa2da/test45522d26,
-controller96e5edc4a1d94655944b24855c7f42a9. The retry oracle fails before its full
+controller96e5edc4a1d94655944b24855c7f42a9, worker e256b284e8fb4aa4ab0265f86a16b511.
+The retry oracle fails before its full
 scope; it contains no Config/Auth comparison. No authority-file preservation or
 cause is inferred. The prior cohort evidence and next safe part-name/inbox-save
 diagnostic remain separately labeled below; this attempt cannot close them.

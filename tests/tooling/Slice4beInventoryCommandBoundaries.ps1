@@ -595,12 +595,16 @@ function Test-InventoryExactQuantity($Fixture,$Other,[switch]$RetryQueued) {
             if(-not $firstReady){throw 'Queued retry first actual action unavailable; not product RED.'}
             Check ($prefix+'.FirstOperatorCaptured') ($first[3] -ceq 'True')
             $firstEvent=[string](Run 'invSys.Core.xlam' 'TestInventoryQuantity.LastEvent')
-            $inboxPath=[string](Run 'invSys.Core.xlam' 'modRoleEventWriter.ResolveInboxWorkbookPath' @('ADMIN_INVENTORY_ADJUST',$Fixture.Warehouse,'S1'))
-            $inbox=$excel.Workbooks.Open($inboxPath,0,$true);$found=0
-            try{
-                $queued=Table $inbox 'tblInboxProd'
-                foreach($row in $queued.ListRows){if([string]$row.Range.Cells.Item(1,$queued.ListColumns.Item('EventID').Index).Value2 -ceq $firstEvent){$found++}}
-            }finally{$inbox.Close($false)}
+            $description=[string](Run 'invSys.Core.xlam' 'modRoleEventWriter.DescribeLocalStagedInboxRows' @('ADMIN_INVENTORY_ADJUST',$Fixture.Warehouse,'S1'))
+            if($description -notmatch '^Path=(.*?); Files='){throw 'Owned queue path unavailable; not product RED.'}
+            $queueRoot=$Matches[1]
+            if((Split-Path $queueRoot -Leaf) -cne 'S1' -or (Split-Path (Split-Path $queueRoot -Parent) -Leaf) -cne $Fixture.Warehouse){throw 'Queue observation escaped the generated fixture identity.'}
+            $found=0
+            foreach($file in @(Get-ChildItem -LiteralPath $queueRoot -File -Filter '*.staging.jsonl' -ErrorAction SilentlyContinue)){
+                foreach($line in Get-Content -LiteralPath $file.FullName){
+                    if($line.Trim()){$queued=$line|ConvertFrom-Json;if($queued.EventID -ceq $firstEvent){$found++}}
+                }
+            }
             Check ($prefix+'.FirstExactQueuedEventSaved') ($firstEvent -ne '' -and $found -eq 1)
             if($firstEvent -eq '' -or $found -ne 1){throw 'Post-queue fault did not reach saved event; not product RED.'}
             $partial=Get-AdminInventoryEntryFacts $Fixture -Persisted
