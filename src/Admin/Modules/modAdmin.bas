@@ -449,7 +449,7 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
     If actionSucceeded And Not IsNonCountedCustomFieldsAdmin(customFields) And _
             CBool(record("HasQuantity")) Then
         If SetInventoryQuantityForWarehouse(warehouseId, stationId, userId, _
-                CLng(record("RowVal")), sku, itemName, uom, locationValue, qty, _
+                sku, itemName, uom, locationValue, qty, _
                 editReason, qtyReport) Then
             report = report & vbCrLf & vbCrLf & qtyReport
         Else
@@ -573,8 +573,8 @@ Sub Add_InventoryItem()
                                                                      formCustomFields, report)
             If actionSucceeded And Not IsNonCountedCustomFieldsAdmin(formCustomFields) Then
                 Dim qtyReport As String
-                If SetInventoryQuantityForWarehouse(warehouseId, stationId, userId, formRow, formSku, _
-                                                    formItemName, formUom, formLocation, formQty, formEditReason, qtyReport) Then
+                If SetInventoryQuantityForWarehouse(warehouseId, stationId, userId, formSku, _
+                                                    formItemName, formUom, formLocation, formQty, formEditReason, qtyReport, interactiveContext) Then
                     report = report & vbCrLf & vbCrLf & qtyReport
                 Else
                     report = "Inventory item catalog fields were updated, but set qty failed." & vbCrLf & qtyReport
@@ -1019,122 +1019,32 @@ End Function
 Private Function SetInventoryQuantityForWarehouse(ByVal warehouseId As String, _
                                                   ByVal stationId As String, _
                                                   ByVal userId As String, _
-                                                  ByVal rowVal As Long, _
                                                   ByVal sku As String, _
                                                   ByVal itemName As String, _
                                                   ByVal uom As String, _
                                                   ByVal locationVal As String, _
                                                   ByVal targetQty As Double, _
                                                   ByVal editReason As String, _
-                                                  ByRef report As String) As Boolean
-    Dim currentQty As Double
-    Dim deltaQty As Double
-    Dim payloadItems As Collection
-    Dim item As Object
-    Dim payloadJson As String
-    Dim eventIdOut As String
-    Dim queueError As String
-    Dim batchReport As String
-    Dim processedCount As Long
-    Dim inboxReport As String
-    Dim noteText As String
-
-    On Error GoTo FailSet
-
-    warehouseId = Trim$(warehouseId)
-    stationId = Trim$(stationId)
-    userId = Trim$(userId)
-    sku = Trim$(sku)
-    itemName = Trim$(itemName)
-    uom = Trim$(uom)
-    locationVal = Trim$(locationVal)
-    editReason = Trim$(editReason)
-
-    If warehouseId = "" Then report = "WarehouseId is required.": Exit Function
-    If stationId = "" Then stationId = modStationIdentity.CurrentComputerStationId()
-    If userId = "" Then report = "Admin user is required.": Exit Function
-    If sku = "" Then report = "SKU is required.": Exit Function
-    If rowVal <= 0 Then report = "Inventory ROW id must be positive.": Exit Function
+                                                  ByRef report As String, _
+                                                  Optional ByVal interactiveContext As String = "") As Boolean
     If targetQty < 0 Then report = "Set qty cannot be negative.": Exit Function
-    If editReason = "" Then report = "Why the edit is required before changing quantity.": Exit Function
-
+    If Trim$(editReason) = "" Then report = "Why the edit is required before changing quantity.": Exit Function
+    If interactiveContext <> "" Then
+        If Not modInventoryCommands.CheckForm(interactiveContext, report) Then Exit Function
+    End If
     If targetQty > 0 And Not InventorySkuHasManagedEntityAdmin(warehouseId, sku) Then
         SetInventoryQuantityForWarehouse = CreateFirstInventoryEntityForCatalogItemAdmin( _
-            warehouseId, stationId, userId, rowVal, sku, itemName, uom, _
+            warehouseId, stationId, userId, sku, itemName, uom, _
             locationVal, targetQty, editReason, report)
-        Exit Function
+    Else
+        SetInventoryQuantityForWarehouse = modInventoryQuantityCommands.SetSingleEntityQuantity( _
+            warehouseId, stationId, userId, sku, targetQty, editReason, report, interactiveContext)
     End If
-
-    currentQty = ResolveInventoryQtyOnHandAdmin(warehouseId, sku)
-    deltaQty = targetQty - currentQty
-    If Abs(deltaQty) < 0.0000001 Then
-        report = "Inventory quantity already matched target." & vbCrLf & _
-                 "Warehouse: " & warehouseId & vbCrLf & _
-                 "SKU: " & sku & vbCrLf & _
-                 "Target quantity: " & CStr(targetQty)
-        SetInventoryQuantityForWarehouse = True
-        Exit Function
-    End If
-
-    If Not EnsureDemoStationInboxes(warehouseId, stationId, inboxReport) Then
-        report = inboxReport
-        Exit Function
-    End If
-
-    noteText = "Admin set inventory quantity. Reason: " & editReason & _
-               "; PreviousQty=" & CStr(currentQty) & "; TargetQty=" & CStr(targetQty)
-
-    Set payloadItems = New Collection
-    Set item = modRoleEventWriter.CreatePayloadItem(rowVal, sku, deltaQty, locationVal, noteText, "ADJUST")
-    item("ITEM_CODE") = sku
-    item("ITEM") = itemName
-    item("UOM") = uom
-    item("LOCATION") = locationVal
-    item("PreviousQty") = currentQty
-    item("TargetQty") = targetQty
-    item("Reason") = editReason
-    payloadItems.Add item
-
-    payloadJson = modRoleEventWriter.BuildPayloadJsonFromCollection(payloadItems)
-    If payloadJson = "" Or payloadJson = "[]" Then
-        report = "Inventory adjustment payload was empty."
-        Exit Function
-    End If
-
-    If Not modRoleEventWriter.QueueAdminInventoryAdjustEvent(warehouseId, stationId, userId, payloadJson, _
-                                                             noteText, 0, eventIdOut, queueError, "") Then
-        report = "Inventory adjustment event could not be queued: " & queueError & vbCrLf & _
-                 "Use Users & Roles to grant ADMIN_MAINT to '" & userId & "' for " & warehouseId & " / " & stationId & "."
-        Exit Function
-    End If
-
-    processedCount = modProcessor.RunBatch(warehouseId, 0, batchReport)
-    If processedCount < 1 Then
-        report = "Inventory adjustment event was queued but not applied. " & batchReport
-        Exit Function
-    End If
-
-    report = "Inventory quantity set." & vbCrLf & _
-             "Warehouse: " & warehouseId & vbCrLf & _
-             "SKU: " & sku & vbCrLf & _
-             "Item: " & itemName & vbCrLf & _
-             "Previous quantity: " & CStr(currentQty) & vbCrLf & _
-             "Target quantity: " & CStr(targetQty) & vbCrLf & _
-             "Adjustment delta: " & CStr(deltaQty) & vbCrLf & _
-             "Reason: " & editReason & vbCrLf & _
-             "Processor: " & batchReport & vbCrLf & _
-             "Refresh inventory in any open role workbook to see the updated quantity."
-    SetInventoryQuantityForWarehouse = True
-    Exit Function
-
-FailSet:
-    report = "SetInventoryQuantity failed: " & Err.Description
 End Function
 
 Private Function CreateFirstInventoryEntityForCatalogItemAdmin(ByVal warehouseId As String, _
                                                                 ByVal stationId As String, _
                                                                 ByVal userId As String, _
-                                                                ByVal rowVal As Long, _
                                                                 ByVal sku As String, _
                                                                 ByVal itemName As String, _
                                                                 ByVal uom As String, _
@@ -1166,7 +1076,6 @@ Private Function CreateFirstInventoryEntityForCatalogItemAdmin(ByVal warehouseId
     Set payloadItems = New Collection
     Set item = modRoleEventWriter.CreateInventoryEntityPayloadItem( _
         systemKey, sku, targetQty, locationVal, "GOOD", "", noteText)
-    item("ROW") = rowVal
     item("ITEM_CODE") = sku
     item("ITEM") = itemName
     item("UOM") = uom

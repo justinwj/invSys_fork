@@ -1,5 +1,23 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Reserved-field GREEN126 qualified,2026-10-15 Pacific:** source73e883b0 and
+unchanged test9367159b pass33/33, retaining every RED124 assertion name/order.
+Controller `admin-inventory-entry-controller/6dfbf83697084fb89c20a04396fcde33`;
+worker identity is recorded in that controller's fixed evidence link. Five packages/
+all486 tooling/settings/fixture preservation and normal owned/native closure qualify
+through2026-10-16T06:00:02.9654160Z, with zero desktop stops/Excel failures. Build125
+qualifies the isolated validation-inventory-fields-01 candidate; no promotion.
+This GREEN covers only reserved fields, not the remaining Inventory contract.
+
+**Exact quantity increment prepared:** Admin's private target-quantity path no
+longer takes ROW. Core resolves one exact active System_Key, refuses ambiguous
+same-SKU entities, preserves Location/Condition/AttributesJson and queues the exact
+delta. Saved application is checked by exact event receipt, not batch count. The
+modal caller passes its captured context; explicit provisioned headless queue
+authorization remains separate. This addresses RED120; packaged verification is
+pending. Full input revalidation, canonical catalog ownership, all remaining ROW,
+partial/retry and later-phase authority checks remain open.
+
 **Reserved-field RED124 qualified,2026-10-15 Pacific:** source08d0e3f1/
 test9367159b completes28 PASS/5 FAIL,33 unique checks without a harness exception.
 Actual modal handlers accept System_Key and Condition as custom names; worksheet
