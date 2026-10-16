@@ -216,4 +216,3 @@ Private Sub SkipJsonWhitespaceRole(ByVal jsonText As String, ByRef pos As Long)
         End Select
     Loop
 End Sub
-

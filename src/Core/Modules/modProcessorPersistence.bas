@@ -29,4 +29,3 @@ Public Function ResolveWorkbookNameProcessor(ByVal wb As Workbook) As String
         ResolveWorkbookNameProcessor = "<unnamed>"
     End If
 End Function
-
