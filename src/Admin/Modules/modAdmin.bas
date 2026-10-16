@@ -584,7 +584,7 @@ Sub Add_InventoryItem()
                                                            formQty, formDescription, _
                                                            formVendorName, formVendorCode, _
                                                            formCategory, formExternalCode, _
-                                                           formImagePath, formCustomFields, report)
+                                                           formImagePath, formCustomFields, report, interactiveContext)
         End If
 
         If actionSucceeded Then
@@ -638,7 +638,8 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
                                              Optional ByVal externalCode As String = "", _
                                              Optional ByVal imagePath As String = "", _
                                              Optional ByVal customFields As Object = Nothing, _
-                                             Optional ByRef report As String = "") As Boolean
+                                             Optional ByRef report As String = "", _
+                                             Optional ByVal interactiveContext As String = "") As Boolean
     Dim payloadItems As Collection
     Dim item As Object
     Dim customKey As Variant
@@ -649,7 +650,8 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
     Dim processedCount As Long
     Dim inboxReport As String
     Dim systemKey As String
-    Dim nonCounted As Boolean
+    Dim nonCounted As Boolean, applied As Boolean
+    Dim sourceValues As Variant
 
     On Error GoTo FailAdd
 
@@ -675,11 +677,22 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
         Exit Function
     End If
 
+    If interactiveContext <> "" Then
+        sourceValues = modInventoryCommands.SourceValues(interactiveContext)
+        If Not IsArray(sourceValues) Then Exit Function
+        If sourceValues(0) <> warehouseId Or sourceValues(1) <> stationId Or sourceValues(2) <> userId Then
+            report = "The captured inventory command source differs. Reopen Add/Edit Inventory.": Exit Function
+        End If
+        If Not modInventoryCommands.CheckForm(interactiveContext, report) Then Exit Function
+    End If
     If Not EnsureDemoStationInboxes(warehouseId, stationId, inboxReport) Then
         report = inboxReport
         Exit Function
     End If
 
+    If interactiveContext <> "" Then
+        If Not modInventoryCommands.CheckForm(interactiveContext, report) Then Exit Function
+    End If
     Set payloadItems = New Collection
     systemKey = modRoleEventWriter.CreateSystemKey()
     Set item = modRoleEventWriter.CreateInventoryEntityPayloadItem( _
@@ -714,18 +727,32 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
         Exit Function
     End If
 
+    If interactiveContext <> "" Then
+        If Not modInventoryCommands.BeginCreate(interactiveContext, payloadJson, report) Then Exit Function
+    End If
     If Not modRoleEventWriter.QueueInventoryCreateEvent(warehouseId, stationId, userId, payloadJson, _
                                                         "Admin add inventory item " & sku, _
                                                         0, Nothing, eventIdOut, queueError, "") Then
+        If interactiveContext <> "" Then modInventoryCommands.Release interactiveContext
         report = "Inventory item event could not be queued: " & queueError & vbCrLf & _
                  "Use Users & Roles to grant ADMIN_MAINT to '" & userId & "' for " & warehouseId & " / " & stationId & "."
         Exit Function
     End If
 
-    processedCount = modProcessor.RunBatch(warehouseId, 0, batchReport)
-    If processedCount < 1 Then
-        report = "Inventory item event was queued but not applied. " & batchReport
-        Exit Function
+    If interactiveContext <> "" Then
+        If Not modInventoryCommands.BeginCreateSave(interactiveContext, report) Then GoTo Unconfirmed
+    End If
+    processedCount = modProcessor.RunBatch(warehouseId, 0, batchReport, eventIdOut, applied, True)
+    If Not applied Then
+        report = "Inventory item event queued; exact saved application is unconfirmed." & vbCrLf & batchReport
+        GoTo Unconfirmed
+    End If
+    If interactiveContext <> "" Then
+        If Not modInventoryCommands.ConfirmCreate(interactiveContext, eventIdOut, report) Then
+            report = "Partial result: exact event application was saved, but command confirmation failed." & _
+                     vbCrLf & "Event: " & eventIdOut & vbCrLf & report
+            Exit Function
+        End If
     End If
 
     report = "Inventory item added." & vbCrLf & _
@@ -739,8 +766,13 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
     AddInventoryItemForWarehouse = True
     Exit Function
 
+Unconfirmed:
+    If interactiveContext <> "" Then modInventoryCommands.Release interactiveContext
+    If eventIdOut <> "" Then report = report & vbCrLf & "Event: " & eventIdOut & ". Application is unconfirmed."
+    Exit Function
 FailAdd:
     report = "AddInventoryItem failed: " & Err.Description
+    GoTo Unconfirmed
 End Function
 
 Public Function RetireInventoryItemForWarehouse(ByVal warehouseId As String, _

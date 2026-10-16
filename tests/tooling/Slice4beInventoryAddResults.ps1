@@ -37,7 +37,7 @@ End Function
     $body=$owner.Lines($start,$count)
     foreach($point in @(
         @('    systemKey = modRoleEventWriter.CreateSystemKey()','    TestInventoryAddResult.RecordKey systemKey'),
-        @('    processedCount = modProcessor.RunBatch(warehouseId, 0, batchReport)','    TestInventoryAddResult.AfterProcessor')
+        @('    processedCount = modProcessor.RunBatch(warehouseId, 0, batchReport, eventIdOut, applied, True)','    TestInventoryAddResult.AfterProcessor')
     )){
         $pattern='(?im)^[\t ]*'+[regex]::Escape($point[0].Trim())+'[\t ]*\r?$'
         if([regex]::Matches($body,$pattern).Count -ne 1){throw 'Add result observation boundary unavailable.'}

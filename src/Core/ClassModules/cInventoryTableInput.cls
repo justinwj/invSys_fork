@@ -39,6 +39,15 @@ Public Sub PlanValue(ByVal rowKey As String, ByVal header As String, ByVal value
     mNewHeaders(header) = True
 End Sub
 
+Public Function PlanNewRow(ByVal rowKey As String) As Boolean
+    Dim header As Variant
+    If rowKey = "" Or mState("Rows").Exists(rowKey) Or mPlanned.Exists(rowKey) Then Exit Function
+    For Each header In mState("Headers").Keys
+        PlanValue rowKey, CStr(header), ""
+    Next header
+    PlanNewRow = True
+End Function
+
 Public Function Scalar(ByVal rowKey As String, ByVal header As String) As Variant
     On Error GoTo Invalid
     Scalar = mState("Rows")(rowKey)(UCase$(Trim$(header)))(3)
@@ -102,7 +111,9 @@ Private Function MatchesState(ByVal table As ListObject, ByVal selectedSku As St
                             If requireResult Then Exit Function
                         End If
                     End If
-                    If Not before Is Nothing Then
+                    If before Is Nothing Then
+                        If actual(header)(0) <> "" Or actual(header)(1) <> "" Then Exit Function
+                    Else
                         If before.Exists(header) Then
                             If actual(header)(2) <> before(header)(2) Then Exit Function
                         ElseIf actual(header)(0) <> "" Or actual(header)(1) <> "" Then

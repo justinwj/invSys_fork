@@ -15,6 +15,7 @@ Private mCatalog As cInventoryTableInput, mEntities As cInventoryTableInput
 Private mStaging As cInventoryTableInput, mStage As ListObject
 Private mSelectedSku As String, mPhase As String, mSaving As Boolean
 Private mInitiallyBorrowed As Boolean
+Private mCreate As cInventoryCreatePlan
 Private mQuantityKey As String, mQuantityBefore As Double, mQuantityTarget As Double
 
 Public Property Get SourcePath() As String
@@ -155,12 +156,26 @@ Public Function BeginQuantity(ByVal systemKey As String, ByVal target As Double)
     mPhase = "Quantity": BeginQuantity = True
 End Function
 
+Public Function BeginCreate(ByVal payload As String) As Boolean
+    If mPhase <> "" Or Not Unchanged() Then Exit Function
+    Set mCreate = New cInventoryCreatePlan
+    If Not mCreate.Plan(payload, mCatalog, mEntities) Then Exit Function
+    mSelectedSku = mCreate.Sku
+    mPhase = "Create": BeginCreate = True
+End Function
+
+Public Function ConfirmCreate(ByVal eventId As String) As Boolean
+    If mPhase = "Create" And eventId <> "" Then ConfirmCreate = ConfirmSavedInputs(eventId)
+End Function
+
 Public Function BeginSave(Optional ByVal expectedPhase As String = "Catalog") As Boolean
     Dim owner As cSnapshotInventorySource, book As Workbook, borrowed As Boolean
     If mPhase <> expectedPhase Or Not Unchanged() Then Exit Function
     Set book = ReadSource(owner, borrowed)
     If book Is Nothing Then Exit Function
-    If Not mCatalog.Matches(modExecutionTarget.Table(book, "tblSkuCatalog"), "", False, True) Then Exit Function
+    If mPhase <> "Create" Then
+        If Not mCatalog.Matches(modExecutionTarget.Table(book, "tblSkuCatalog"), "", False, True) Then Exit Function
+    End If
     mSaving = True: BeginSave = True
 End Function
 
@@ -179,7 +194,7 @@ Private Function ConfirmSavedInputs(Optional ByVal eventId As String = "") As Bo
     If Not mSaving Then Exit Function
     If mPhase = "Catalog" Then
         If Not Unchanged() Then Exit Function
-    ElseIf mPhase <> "Quantity" Then
+    ElseIf mPhase <> "Quantity" And mPhase <> "Create" Then
         Exit Function
     End If
     Set book = ReadSource(owner, borrowed)
@@ -192,6 +207,8 @@ Private Function ConfirmSavedInputs(Optional ByVal eventId As String = "") As Bo
     If modTrainingWire.FileSha256(copyPath) <> savedHash Then GoTo CleanExit
     If mPhase = "Quantity" Then
         If Not PlanSavedQuantity(persisted, eventId) Then GoTo CleanExit
+    ElseIf mPhase = "Create" Then
+        If Not mCreate.PlanSaved(persisted, eventId, mEntities) Then GoTo CleanExit
     End If
     If Not mCatalog.MatchesPersistedCopy(modExecutionTarget.Table(persisted, "tblSkuCatalog")) Then GoTo CleanExit
     If Not mEntities.MatchesPersistedCopy(modExecutionTarget.Table(persisted, "tblInventoryEntities")) Then GoTo CleanExit

@@ -6,6 +6,7 @@ Private mForms As cCapturedFormStore
 Private Const RESULT_CATALOG As Long = 1
 Private Const RESULT_STAGE As Long = 2
 Private Const RESULT_QUANTITY As Long = 3
+Private Const RESULT_CREATE As Long = 4
 Private Const PHASE_CATALOG As String = "Catalog"
 Private Const PHASE_QUANTITY As String = "Quantity"
 
@@ -209,6 +210,26 @@ Refused:
     Expire key, report
 End Function
 
+Public Function BeginCreate(ByVal key As String, ByVal payload As String, ByRef report As String) As Boolean
+    Dim entry As Object, inputs As cInventoryCommandInputs
+    On Error GoTo Refused
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    If Not inputs.BeginCreate(payload) Then GoTo Refused
+    BeginCreate = CheckForm(key, report)
+    Exit Function
+Refused:
+    Expire key, report
+End Function
+
+Public Function BeginCreateSave(ByVal key As String, ByRef report As String) As Boolean
+    BeginCreateSave = BeginResultSave(key, "Create", report)
+End Function
+
+Public Function ConfirmCreate(ByVal key As String, ByVal eventId As String, ByRef report As String) As Boolean
+    ConfirmCreate = ConfirmResult(key, RESULT_CREATE, eventId, report)
+End Function
+
 Public Function BeginQuantitySave(ByVal key As String, ByRef report As String) As Boolean
     BeginQuantitySave = BeginResultSave(key, PHASE_QUANTITY, report)
 End Function
@@ -244,6 +265,7 @@ Private Function ConfirmResult(ByVal key As String, ByVal kind As Long, _
         Case RESULT_CATALOG: confirmed = inputs.ConfirmCatalog()
         Case RESULT_STAGE: confirmed = inputs.ConfirmStageCell()
         Case RESULT_QUANTITY: confirmed = inputs.ConfirmQuantity(eventId)
+        Case RESULT_CREATE: confirmed = inputs.ConfirmCreate(eventId)
     End Select
     If Not confirmed Then GoTo Refused
     ConfirmResult = CheckForm(key, report)
