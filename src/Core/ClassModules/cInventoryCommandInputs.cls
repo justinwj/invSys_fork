@@ -16,6 +16,7 @@ Private mStaging As cInventoryTableInput, mStage As ListObject
 Private mSelectedSku As String, mPhase As String, mSaving As Boolean
 Private mInitiallyBorrowed As Boolean
 Private mCreate As cInventoryCreatePlan
+Private mRetirement As cInventoryRetirementPlan
 Private mQuantityKey As String, mQuantityBefore As Double, mQuantityTarget As Double
 
 Public Property Get SourcePath() As String
@@ -156,6 +157,15 @@ Public Function BeginQuantity(ByVal systemKey As String, ByVal target As Double)
     mPhase = "Quantity": BeginQuantity = True
 End Function
 
+Public Function BeginRetirement(ByVal sku As String, ByVal reason As String, _
+        ByRef payload As String, ByRef count As Long) As Boolean
+    If mPhase <> "" Or Not BindSku(sku) Then Exit Function
+    Set mRetirement = New cInventoryRetirementPlan
+    If Not mRetirement.Plan(mEntities, sku, reason, payload, count) Then Exit Function
+    If count > 0 Then mPhase = "Retirement"
+    BeginRetirement = True
+End Function
+
 Public Function BeginCreate(ByVal payload As String) As Boolean
     If mPhase <> "" Or Not Unchanged() Then Exit Function
     Set mCreate = New cInventoryCreatePlan
@@ -180,7 +190,7 @@ End Function
 
 Public Function ConfirmEventResult(ByVal eventId As String, ByVal expectedPhase As String) As Boolean
     If eventId = "" Or mPhase <> expectedPhase Then Exit Function
-    If mPhase <> "Quantity" And mPhase <> "Create" Then Exit Function
+    If mPhase <> "Quantity" And mPhase <> "Create" And mPhase <> "Retirement" Then Exit Function
     ConfirmEventResult = ConfirmSavedInputs(eventId)
 End Function
 
@@ -191,7 +201,7 @@ Private Function ConfirmSavedInputs(Optional ByVal eventId As String = "") As Bo
     If Not mSaving Then Exit Function
     If mPhase = "Catalog" Then
         If Not Unchanged() Then Exit Function
-    ElseIf mPhase <> "Quantity" And mPhase <> "Create" Then
+    ElseIf mPhase <> "Quantity" And mPhase <> "Create" And mPhase <> "Retirement" Then
         Exit Function
     End If
     Set book = ReadSource(owner, borrowed)
@@ -206,6 +216,8 @@ Private Function ConfirmSavedInputs(Optional ByVal eventId As String = "") As Bo
         If Not PlanSavedQuantity(persisted, eventId) Then GoTo CleanExit
     ElseIf mPhase = "Create" Then
         If Not mCreate.PlanSaved(persisted, eventId, mEntities) Then GoTo CleanExit
+    ElseIf mPhase = "Retirement" Then
+        If Not mRetirement.PlanSaved(persisted, eventId, mEntities) Then GoTo CleanExit
     End If
     If Not mCatalog.MatchesPersistedCopy(modExecutionTarget.Table(persisted, "tblSkuCatalog")) Then GoTo CleanExit
     If Not mEntities.MatchesPersistedCopy(modExecutionTarget.Table(persisted, "tblInventoryEntities")) Then GoTo CleanExit

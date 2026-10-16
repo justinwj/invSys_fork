@@ -2,7 +2,7 @@
 # probes. The save-return seam tests persisted proof; ordinary Save is the control.
 function Install-InventoryCatalogRealProbe {
     $project=$packages['invSys.Core.xlam'].VBProject
-    foreach($name in @('cInventoryTableInput','cInventoryCommandInputs','cInventoryCreatePlan')){
+    foreach($name in @('cInventoryTableInput','cInventoryCommandInputs','cInventoryCreatePlan','cInventoryRetirementPlan')){
         $text=Get-Content (Join-Path $repo ('src/Core/ClassModules/'+$name+'.cls')) -Raw
         $component=$project.VBComponents.Add(2);$component.Name=$name
         $component.CodeModule.AddFromString($text.Substring($text.IndexOf('Option Explicit')))

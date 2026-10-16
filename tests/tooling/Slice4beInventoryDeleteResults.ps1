@@ -55,13 +55,28 @@ Public Function PrepareExtensions(ByVal warehouse As String, ByVal sku As String
     PrepareExtensions = keys
 End Function
 '@)
-    $owner=$project.VBComponents.Item('modAdmin').CodeModule
-    $start=$owner.ProcStartLine('RetireInventoryItemForWarehouse',0);$count=$owner.ProcCountLines('RetireInventoryItemForWarehouse',0)
-    $body=$owner.Lines($start,$count)
-    $pattern='(?im)^[\t ]*processedCount = modProcessor\.RunBatch\(warehouseId, 0, batchReport\)[\t ]*\r?$'
-    if([regex]::Matches($body,$pattern).Count -ne 1){throw 'Delete processor-return observation boundary unavailable.'}
-    $body=[regex]::Replace($body,$pattern,[Text.RegularExpressions.MatchEvaluator]{param($m) $m.Value.TrimEnd("`r")+"`r`n"+'        TestInventoryDeleteResult.AfterProcessor'})
-    $owner.DeleteLines($start,$count);$owner.InsertLines($start,$body)
+    $core=$packages['invSys.Core.xlam'].VBProject
+    $processor=$core.VBComponents.Add(1);$processor.Name='TestInventoryRetirementResult'
+    $processor.CodeModule.AddFromString(@'
+Option Explicit
+Private mLose As Boolean, mReturned As Boolean
+Public Sub Arm(ByVal lose As Boolean)
+    mLose = lose: mReturned = False
+End Sub
+Public Sub AfterProcessor()
+    mReturned = True
+    If mLose Then modAuth.SignOut
+End Sub
+Public Function Returned() As Boolean
+    Returned = mReturned
+End Function
+'@)
+    $owner=$core.VBComponents.Item('modInventoryRetirementCommands').CodeModule
+    $text=$owner.Lines(1,$owner.CountOfLines)
+    $pattern='(?im)^[\t ]*processed = modProcessor\.RunBatch\(warehouse, 0, batchReport, eventId, applied, True\)[\t ]*\r?$'
+    if([regex]::Matches($text,$pattern).Count -ne 1){throw 'Delete processor-return observation boundary unavailable.'}
+    $text=[regex]::Replace($text,$pattern,[Text.RegularExpressions.MatchEvaluator]{param($m) $m.Value.TrimEnd("`r")+"`r`n"+'    TestInventoryRetirementResult.AfterProcessor'})
+    $owner.DeleteLines(1,$owner.CountOfLines);$owner.AddFromString($text)
 }
 
 function Test-InventoryDeleteResults($Fixture,$Other) {
@@ -87,7 +102,7 @@ function Test-InventoryDeleteResults($Fixture,$Other) {
         [void](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Reset')
         $hostBook=$excel.Workbooks.Add();$hostBook.SaveAs((Join-Path $runRoot ('delete-result-'+$case+'.xlsx')),51)
         try{
-            [void](Run 'invSys.Admin.xlam' 'TestInventoryDeleteResult.Arm' @(($case -ceq 'AuthorityLost')))
+            [void](Run 'invSys.Core.xlam' 'TestInventoryRetirementResult.Arm' @(($case -ceq 'AuthorityLost')))
             [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetSelection' @($Other.Root,$sku))
             [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'Delete','Authorized','DeleteConfirmation',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
             $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
@@ -95,7 +110,7 @@ function Test-InventoryDeleteResults($Fixture,$Other) {
             Check ($id+'.ActualDeleteAndConfirmationReached') $ready
             if(-not $ready){throw 'Actual Delete/confirmation unavailable; not product RED.'}
             Check ($id+'.OriginalOperatorCaptured') ($facts[3] -ceq 'True')
-            Check ($id+'.ProcessorReturned') ([bool](Run 'invSys.Admin.xlam' 'TestInventoryDeleteResult.Returned'))
+            Check ($id+'.ProcessorReturned') ([bool](Run 'invSys.Core.xlam' 'TestInventoryRetirementResult.Returned'))
             Check ($id+'.ExpectedContinuation') ([long](Run 'invSys.Admin.xlam' 'TestInventoryCommands.DeleteResultShowsForTest') -eq $(if($case -ceq 'Authorized'){2}else{1}))
             $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $exact=$after.AppliedRows -eq $before.AppliedRows+1 -and $after.LogRows -eq $before.LogRows+2 -and $after.EntityQuantities.Count -eq $before.EntityQuantities.Count

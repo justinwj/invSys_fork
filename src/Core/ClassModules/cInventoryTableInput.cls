@@ -39,6 +39,14 @@ Public Sub PlanValue(ByVal rowKey As String, ByVal header As String, ByVal value
     mNewHeaders(header) = True
 End Sub
 
+Public Function KeysForSku(ByVal sku As String) As Collection
+    Dim result As New Collection, key As Variant
+    For Each key In mState("Skus").Keys
+        If StrComp(CStr(mState("Skus")(key)), sku, vbTextCompare) = 0 Then result.Add CStr(key)
+    Next key
+    Set KeysForSku = result
+End Function
+
 Public Function PlanNewRow(ByVal rowKey As String) As Boolean
     Dim header As Variant
     If rowKey = "" Or mState("Rows").Exists(rowKey) Or mPlanned.Exists(rowKey) Then Exit Function

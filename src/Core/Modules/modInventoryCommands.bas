@@ -7,6 +7,7 @@ Private Const RESULT_CATALOG As Long = 1
 Private Const RESULT_STAGE As Long = 2
 Private Const RESULT_QUANTITY As Long = 3
 Private Const RESULT_CREATE As Long = 4
+Private Const RESULT_RETIREMENT As Long = 5
 Private Const PHASE_CATALOG As String = "Catalog"
 Private Const PHASE_QUANTITY As String = "Quantity"
 
@@ -210,6 +211,27 @@ Refused:
     Expire key, report
 End Function
 
+Public Function BeginRetirement(ByVal key As String, ByVal sku As String, ByVal reason As String, _
+        ByRef payload As String, ByRef count As Long, ByRef report As String) As Boolean
+    Dim entry As Object, inputs As cInventoryCommandInputs
+    On Error GoTo Refused
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    If Not inputs.BeginRetirement(sku, reason, payload, count) Then GoTo Refused
+    BeginRetirement = CheckForm(key, report)
+    Exit Function
+Refused:
+    Expire key, report
+End Function
+
+Public Function BeginRetirementSave(ByVal key As String, ByRef report As String) As Boolean
+    BeginRetirementSave = BeginResultSave(key, "Retirement", report)
+End Function
+
+Public Function ConfirmRetirement(ByVal key As String, ByVal eventId As String, ByRef report As String) As Boolean
+    ConfirmRetirement = ConfirmResult(key, RESULT_RETIREMENT, eventId, report)
+End Function
+
 Public Function BeginCreate(ByVal key As String, ByVal payload As String, ByRef report As String) As Boolean
     Dim entry As Object, inputs As cInventoryCommandInputs
     On Error GoTo Refused
@@ -266,6 +288,7 @@ Private Function ConfirmResult(ByVal key As String, ByVal kind As Long, _
         Case RESULT_STAGE: confirmed = inputs.ConfirmStageCell()
         Case RESULT_QUANTITY: confirmed = inputs.ConfirmEventResult(eventId, PHASE_QUANTITY)
         Case RESULT_CREATE: confirmed = inputs.ConfirmEventResult(eventId, "Create")
+        Case RESULT_RETIREMENT: confirmed = inputs.ConfirmEventResult(eventId, "Retirement")
     End Select
     If Not confirmed Then GoTo Refused
     ConfirmResult = CheckForm(key, report)
