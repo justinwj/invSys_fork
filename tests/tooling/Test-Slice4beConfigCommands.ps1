@@ -2418,6 +2418,7 @@ End Function
         $step='approved Inventory modal and worksheet authority boundaries'; Test-InventoryCommandBoundaries $a $b
         $step='read-only Config diagnosis preservation'; Test-InventoryConfigDiagnosticPreservation
         $step='Inventory source catalog entity table replacement and remaining prompts'; Test-InventoryReplacementBoundaries $a $b
+        $step='exact generated entity Edit target quantity'; Test-InventoryExactQuantity $a $b
     }
     if(-not $AdminInventoryEntryOnly -and -not $AdminAggregationOnly -and -not $AdminTesterSetupOwnerOnly -and -not $AdminCreateWarehouseOwnerOnly -and -not $AdminSeedOutcomeOnly -and -not $AdminDirectoryColumnsOnly -and -not $AdminConsoleOnly -and -not $AdminVerifyAddinsOnly -and -not $AdminReconcileIdentityOnly -and -not $AdminSettingsCloseOnly -and -not $CheckViewerRefreshFailure -and -not $CheckViewerEventDetail -and -not $CheckViewerEventGroups -and -not $CheckViewerPublishedRead -and $PrintSeedBoundaryForTest -notin @('FreshSeed','BareSeed')) {
     $step='unauthenticated command'

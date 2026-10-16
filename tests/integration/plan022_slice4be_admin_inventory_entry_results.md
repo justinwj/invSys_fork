@@ -1,5 +1,34 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Replacement RED119 qualified,2026-10-15 Pacific:** unchanged source1c9bff87/
+testf379ae51 completes183 PASS/68 FAIL,251 unique checks with no harness exception.
+All190 prior names/order/outcomes are retained;42 actual action/yield cases reach
+their intended handlers. Controller
+`admin-inventory-entry-controller/67633994f7cf4b4582894bca6f934e92`; worker
+`slice4be-admin-inventory-entry/49ce09a20c984767adf691d86f6f07b9`.
+
+The12 new cases establish changed/replaced catalog and exact-entity continuation,
+Upload after worksheet-table replacement, and writes after authority changes in
+UOM/Delete-reason prompts. Entity injection uses an exact queued adjustment with
+its saved application receipt; its one event is excluded from subsequent owner
+write counts. With a changed source-root override, Add changes the unrelated
+runtime's file set/bytes while source inventory remains unchanged; contents and
+file types of those foreign changes are not identified by that Boolean proof.
+Create still saves its captured operator after the root changes. Do not turn
+foreign byte changes into an unproved claim about redirected inventory quantities.
+
+Five packages/all486 tooling/settings/fixture preservation and normal unforced
+owned/native closure qualify through2026-10-16T04:54:07.6935062Z. No desktop stop,
+Excel failure event or forced cleanup. All delayed owned processes exit normally.
+Ignored qualification:
+`reports/runtime/resume-d8-agg-01/admin-inventory-replacements-red-119/qualification.json`.
+No product edits or full D8-INV-01 acceptance. Partial/result-save retry, canceled/
+dirty/read-only sources, Core/headless checks and remaining preservation gates stay
+open. The next test appends actual Edit target-quantity proof for one generated
+exact counted entity: source inspection finds a positive ROW guard still preceding
+queueing. This is not114's discarded creation-quantity oracle failure; behavioral
+Edit proof remains to run before correcting that path or testing post-queue retry.
+
 **Config-instrumented RED118 qualified,2026-10-15 Pacific:** source1c9bff87/
 testd9aab17a completes142 PASS/48 FAIL,190 unique checks with all185 prior names/
 order/outcomes retained and no harness exception. Five new read-only extraction
@@ -129,6 +158,15 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Trial119 cohort: unresolved**, source1c9bff87/testf379ae51, controller
+67633994f7cf4b4582894bca6f934e92 and worker49ce09a20c984767adf691d86f6f07b9.
+The retained five Config comparisons reproduce118's zero changed cells/unchanged
+shapes and metadata1/Other1 package changes for four writing baseline cases;
+OtherWarehouseAdmin changes none. Extraction proofs pass. The replacement matrix
+and delayed normal closure do not identify those package parts or their cause.
+The next diagnostic and unresolved questions remain as stated for118; passing
+focused GREEN cannot close them.
 
 **Trial118 cohort: unresolved**, source1c9bff87/testd9aab17a, controller
 df977b3ab4df44e49a566d8df18caa97 and worker050026a3468a4cf8875bf9f541738d8c.

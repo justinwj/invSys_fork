@@ -76,6 +76,7 @@ Private mHost As String, mSku As String, mBefore As String
 Private mShows As Long, mHandler As Long, mYield As Boolean, mPrepared As Boolean
 Private mBound As Boolean, mSignatureReady As Boolean
 Private mInjectedEvents As Long
+Private mQuantityTarget As Double
 Public Function IsDriving() As Boolean
     IsDriving = mDriving
 End Function
@@ -103,6 +104,9 @@ End Function
 Public Sub SetSelection(ByVal otherRoot As String, ByVal sku As String)
     mOtherRoot = otherRoot: mSku = sku
 End Sub
+Public Sub SetQuantityTarget(ByVal target As Double)
+    mQuantityTarget = target
+End Sub
 Public Sub Execute(ByVal host As String, ByVal action As String, ByVal caseName As String, _
                    ByVal phase As String, ByVal root As String, ByVal wh As String, _
                    ByVal secret As String)
@@ -127,6 +131,7 @@ Public Sub Drive(ByVal form As frmAddInventoryItem)
     mBound = form.InventoryEntryOwnerBoundForTest(mHost)
     mPrepared = form.InventoryCommandPrepareForTest(mAction, mSku)
     If Not mPrepared Then form.InventoryEntryCancelForTest: Exit Sub
+    If mCase = "SetQuantity" Then form.InventoryCommandTargetForTest mQuantityTarget
     If mPhase = "ModalReturn" Then YieldAt mPhase
     If mPhase = "UomPrompt" Then form.InventoryCommandUomPromptForTest
     mHandler = mHandler + 1
@@ -137,7 +142,7 @@ Public Sub YieldAt(ByVal phase As String)
     If Not mDriving Or mYield Or phase <> mPhase Then Exit Sub
     Dim signed As String, selected As String, fields As Object, report As String
     Select Case mCase
-        Case "Authorized", "Zero", "Utility"
+        Case "Authorized", "Zero", "Utility", "SetQuantity"
             mYield = True
         Case "SignedOut"
             modAuth.SignOut
@@ -327,6 +332,9 @@ End Sub
 Public Sub InventoryCommandUomPromptForTest()
     mCmbUom.Value = ADD_UOM_OPTION
 End Sub
+Public Sub InventoryCommandTargetForTest(ByVal target As Double)
+    mTxtQty.Value = CStr(target)
+End Sub
 Private Function InputBox(ByVal Prompt As String, Optional ByVal Title As String = "", _
                           Optional ByVal Default As String = "") As String
     InputBox = TestInventoryCommands.DialogAnswer(Prompt)
@@ -459,4 +467,39 @@ function Test-InventoryReplacementBoundaries($Fixture,$Other) {
             $hostBook.Close($false)
         }
     }
+}
+
+function Test-InventoryExactQuantity($Fixture,$Other) {
+    SelectTarget $Fixture
+    $sku=Get-InventoryBoundarySku $Fixture $true
+    $path=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
+    $book=$excel.Workbooks.Open($path,0,$true)
+    try{
+        $table=Table $book 'tblInventoryEntities';$choices=@()
+        foreach($row in $table.ListRows){
+            if([string]$row.Range.Cells.Item(1,$table.ListColumns.Item('SKU').Index).Value2 -ceq $sku -and [string]$row.Range.Cells.Item(1,$table.ListColumns.Item('InventoryState').Index).Value2 -ceq 'ACTIVE'){
+                $choices+=[pscustomobject]@{Key=[string]$row.Range.Cells.Item(1,$table.ListColumns.Item('System_Key').Index).Value2;Quantity=[double]$row.Range.Cells.Item(1,$table.ListColumns.Item('QtyOnHand').Index).Value2}
+            }
+        }
+    }finally{$book.Close($false)}
+    if($choices.Count -ne 1){throw 'Exact quantity test requires one generated active counted entity; not product RED.'}
+    $choice=$choices[0];$target=$choice.Quantity+3
+    $hostBook=$excel.Workbooks.Add();$hostBook.SaveAs((Join-Path $runRoot 'exact-quantity-host.xlsx'),51)
+    try{
+        $before=Get-AdminInventoryEntryFacts $Fixture -Persisted
+        [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetSelection' @($Other.Root,$sku))
+        [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetQuantityTarget' @($target))
+        [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'Edit','SetQuantity','EditReason',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
+        $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
+        $ready=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[1] -ceq 'True' -and $facts[2] -ceq '1'
+        Check 'InventoryExactQuantity.ActualEditAndReasonReached' $ready
+        if(-not $ready){throw 'Exact quantity modal fixture unavailable; not product RED.'}
+        Check 'InventoryExactQuantity.OriginalOperatorCaptured' ($facts[3] -ceq 'True')
+        $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
+        Check 'InventoryExactQuantity.ExactSelectedEntityTargetSaved' ($after.EntityQuantities.ContainsKey($choice.Key) -and $after.EntityQuantities[$choice.Key] -eq $target)
+        $keys=@(@($before.EntityQuantities.Keys)+@($after.EntityQuantities.Keys)|Select-Object -Unique)
+        Check 'InventoryExactQuantity.EntityIdentitySetPreserved' ($keys.Count -eq $before.EntityQuantities.Count -and $keys.Count -eq $after.EntityQuantities.Count)
+        $otherChanged=@($keys|Where-Object {$_ -cne $choice.Key -and $before.EntityQuantities[$_] -ne $after.EntityQuantities[$_]})
+        Check 'InventoryExactQuantity.OtherEntityQuantitiesPreserved' ($otherChanged.Count -eq 0)
+    }finally{$hostBook.Close($false)}
 }
