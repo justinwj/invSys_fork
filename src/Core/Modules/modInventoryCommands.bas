@@ -10,6 +10,8 @@ Private Const RESULT_CREATE As Long = 4
 Private Const RESULT_RETIREMENT As Long = 5
 Private Const PHASE_CATALOG As String = "Catalog"
 Private Const PHASE_QUANTITY As String = "Quantity"
+Private Const PHASE_CREATE As String = "Create"
+Private Const PHASE_RETIREMENT As String = "Retirement"
 
 Public Function Capture(ByVal workbookName As String) As String
     Dim book As Workbook, target As WarehouseTarget, entry As Object
@@ -225,7 +227,7 @@ Refused:
 End Function
 
 Public Function BeginRetirementSave(ByVal key As String, ByRef report As String) As Boolean
-    BeginRetirementSave = BeginResultSave(key, "Retirement", report)
+    BeginRetirementSave = BeginResultSave(key, PHASE_RETIREMENT, report)
 End Function
 
 Public Function ConfirmRetirement(ByVal key As String, ByVal eventId As String, ByRef report As String) As Boolean
@@ -245,7 +247,7 @@ Refused:
 End Function
 
 Public Function BeginCreateSave(ByVal key As String, ByRef report As String) As Boolean
-    BeginCreateSave = BeginResultSave(key, "Create", report)
+    BeginCreateSave = BeginResultSave(key, PHASE_CREATE, report)
 End Function
 
 Public Function ConfirmCreate(ByVal key As String, ByVal eventId As String, ByRef report As String) As Boolean
@@ -287,8 +289,8 @@ Private Function ConfirmResult(ByVal key As String, ByVal kind As Long, _
         Case RESULT_CATALOG: confirmed = inputs.ConfirmCatalog()
         Case RESULT_STAGE: confirmed = inputs.ConfirmStageCell()
         Case RESULT_QUANTITY: confirmed = inputs.ConfirmEventResult(eventId, PHASE_QUANTITY)
-        Case RESULT_CREATE: confirmed = inputs.ConfirmEventResult(eventId, "Create")
-        Case RESULT_RETIREMENT: confirmed = inputs.ConfirmEventResult(eventId, "Retirement")
+        Case RESULT_CREATE: confirmed = inputs.ConfirmEventResult(eventId, PHASE_CREATE)
+        Case RESULT_RETIREMENT: confirmed = inputs.ConfirmEventResult(eventId, PHASE_RETIREMENT)
     End Select
     If Not confirmed Then GoTo Refused
     ConfirmResult = CheckForm(key, report)
