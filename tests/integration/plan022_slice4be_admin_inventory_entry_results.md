@@ -1,5 +1,32 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Managed-field admission resolved; GREEN16533/33,2026-10-16 Pacific:** product
+source remains3d66ac92. Diagnostic164/test3aac64dd proves signed-in admission
+fails because the generated inventory workbook remains open read-write and dirty;
+input/source and command binding refuse, matching the approved contract. Config/
+Auth are closed. Controlleraae8ce687eb5496080f26862aaa34c1a; worker
+6a796d8e0e52429baa026310518afc93; normal preserved audit20:06:05.3552079Z,7/2
+including a harness exception, not behavioral RED. Fixture-only correctioneeec095c
+compares in-memory and cold persisted entities/quantities/log counts, closes only
+the generated workbook without saving, and preserves file bytes. Admission then
+binds and all33 original124 names/order pass in165. Controller
+06e3776916a74f42a0db7516549e982b; workerf74ce700188f4c1481ac61bc212f3217;
+five packages/all490 tooling/eight source/four harness pins/settings/fixtures and
+zero native failures qualify through20:09:55.6993159Z. No product guard or business
+policy changes, no build/deploy. Full comparison166 is running with this setup fix.
+163 also retains the exact first259 names/order of135; it remains an incomplete
+observation with its extra harness exception, not the full300 result.
+
+**Cleanup163 resolved naturally,2026-10-16 Pacific:** the existing worker,
+Excel and controller finish without force. Settings/packages/all490 tooling/eight
+source/four harness pins/fixtures are preserved; zero Excel events qualify through
+19:58:45.3089330Z. The260-check257/3 observation is preserved as incomplete,
+including its harness exception; it is not a300-check or product GREEN. No force
+exception is needed. The next focused managed-field test adds read-only boolean
+admission facts before correcting an unproved fixture/entry cause. The earlier
+cleanup-block records, including handoff192, describe the state before this exit;
+reverify current maintained state and do not resurrect their approval request.
+
 **Full comparison163 incomplete; cleanup blocked,2026-10-16 Pacific:** source
 3d66ac92/testb7be62d7 observes257 PASS/3 FAIL over260 emitted checks including one
 harness exception; the expected300-check suite did not finish. The failures are

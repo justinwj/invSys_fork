@@ -6,6 +6,20 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Managed-field source regression,2026-10-16 Pacific:** unchanged product
+3d66ac92/testeeec095c qualifies GREEN16533/33 with all original124 names/order.
+Diagnostic164 proves the generated seed workbook is open and dirty; refusing it
+is correct. Test setup now independently verifies persisted entities/quantities
+and unchanged bytes, then closes only that owned copy without saving. No product
+guard is weakened. Pins/settings/fixtures and normal native closure qualify through
+20:09:55.6993159Z. Full166 is running; no built-package or comprehensive acceptance.
+
+**Cleanup163 resolved naturally:** the original worker/Excel/controller exit
+unforced with restored settings/fixtures, all pins and zero native failures through
+2026-10-16T19:58:45.3089330Z. The257/3 over260 result remains incomplete. No force
+exception is needed; focused managed-field admission diagnosis is next. Earlier
+cleanup-block records, including handoff192, must be read with this continuation.
+
 **Full comparison163 incomplete; cleanup blocked,2026-10-16 Pacific:** source
 3d66ac92/testb7be62d7 observes257/3 over260 checks including a harness exception,
 not completion of the300-check suite. Known Config byte failure remains; the
