@@ -1,5 +1,106 @@
 # Slice 4be remaining acceptance checklist
 
+**Provisioned-headless GREEN189 qualified:** sourcec693ada6/test05970ae5
+retains all20 RED188 IDs/order and passes20/20. Signed-out provisioned Admin
+creation completes without the interactive worksheet receipt callback; denied
+Reader refuses before Config setup saves. Controller358662faec6d4b3195e74c16eb22f421 /
+worker450c69e4142a4f1cb42f13056cd04e9f; normal preserved native audit
+22:29:49.5814477Z, five package/495 tooling/twelve source/four harness pins,
+zero desktop/native failures. This is a direct provisioned-service source probe,
+not built-package acceptance. Catalog EDIT/no-op, remaining worksheet/Create and
+current-source regression/static gates remain open; no build/deploy.
+
+**Readonly-owner GREEN187 qualified:** sourcee499afaa/test1452c0cf retains all31
+RED186 IDs/order and passes31/31. Readonly operators refuse before buffer changes;
+writable Create remains an actual-handler positive control. Controller
+2b784a5d22d7452d96e8631d3fa89db4 / worker2c9b896abc244eb0b625ce5a25c3834b;
+normal preserved native audit22:19:41.1189450Z, five packages/494 tooling/twelve
+source/four harness pins, zero desktop/native failures. These remain source
+probes, with the owned readonly-save seam; no build or comprehensive acceptance.
+
+**Provisioned-headless RED188 qualified:** unchangede499afaa/test05970ae5
+completes17 PASS/3 FAIL over20 direct service checks. A provisioned Admin with no
+interactive session fails to apply its create because the worksheet receipt
+callback is reached without a context; the denied Reader reaches three Config
+setup saves before queue authorization refuses. Controller
+0e52a7ee8e694585b7bd0ba9baba2fcf / workere96a3a28a62847bbb63d898144debcdc;
+normal preserved native audit22:21:59.2574580Z, five packages/495 tooling/twelve
+source/four harness pins, zero desktop/native failures. Correct these within the
+approved separate headless path; no interactive authority may come from a hint.
+
+
+**Worksheet exact-ID retry GREEN185 qualified,2026-10-16 Pacific:** source
+1b316e4b/test58a1c69d passes64/64 with corrected182 IDs/order retained. The actual
+Upload handler independently saves exact zero active entities and staging results,
+stops later writes after authority/input loss, reports known saved partials, and
+reconciles a failed-result-save fresh retry by the original Event ID/System_Key
+without another create. Controller82f8bf37e03144e0bb0b786bab1a33a5;
+worker0f226933241b400b9edc7e8539b402f8; five package/493 tooling/twelve source/four
+harness pins/settings/fixtures and normal native audit22:10:38.7535964Z qualify,
+zero desktop/native failures. Current-source regressions/static and remaining
+D13/Create/headless/EDIT/imported-row proof remain open; no build or acceptance.
+
+**Readonly-owner RED186 qualified:** unchanged1b316e4b/test1452c0cf records
+27/4 across31 checks. Core accepts readonly operator owners and both Create/Upload
+change their buffers before save refusal. No readonly OS save is attempted by the
+owned-fixture seam; operator files and canonical inventory remain unchanged.
+Controller1bcfa4dbd7cd4cad98f1e65ba697081f;
+workerce086f8319f64442887f64b966de0d0c; all five package/494 tooling/twelve source/
+four harness pins/settings/fixtures and normal audit22:14:10.8049648Z pass.
+This is in-memory refusal coverage, not unauthorized persisted-output proof.
+
+
+**Corrected worksheet comparison183 qualified:** productc486cfc4/testc03741c7
+retains182's64 IDs/order and narrows54/10 to62 PASS/2 FAIL. All tested authority,
+changed-row and actual partial-notice assertions pass. Only failed-save fresh
+retry duplication and retention of the original exact event/entity still fail.
+Controllerb9106d2bb2814d29991aa32a693acfb7; worker275160656d6a4826a44b897309e0dba8;
+normal preserved native audit21:52:43.9458665Z, five packages/493 tooling/eleven
+source/four harness pins and zero desktop/native failures. No whole-gate GREEN.
+
+Source1b316e4b implements durable event IDs and exact queue/canonical lookup in
+the existing Upload Result boundary, with independent staging-save confirmation.
+It introduces no new general store, object bridge, identity mapping or allocation
+policy. Comparison185 is pending;184 is a payload-observer setup failure before
+any behavioral checks, not RED. No XLAM build/deploy or4be-A acceptance.
+
+
+**Corrected worksheet RED182 qualified:** source8d486927 exported directly from
+Git/testc03741c7 retains all64 original IDs/order and reproduces54 PASS/10 FAIL,
+now observing the exact worksheet form MsgBox prompt. Thus all ten failures are
+reproduced with the corrected sensor. Controller0939af0217ca4f81ba7b2566e0541cca;
+worker815b9917d7bc4acaa4726df6cc5c73b5; five package/493 tooling/eleven immutable
+exported-source/four harness pins/settings/fixtures and normal native closure
+qualify through21:45:35.9201880Z, zero desktop/native failures. The working
+implementation was not reset. Currentc486cfc4 comparison183 is pending;181's
+three notice flags remain observation-limited. No build or overall GREEN.
+
+
+**Worksheet notice-observation correction:**180's54/10 and181's observed59/5
+include three partial-notice assertions that read modAdmin's notice buffer rather
+than the actual worksheet form's message. Do not treat those three flags as proven
+presentation failures or fixes. The independent source/operator write and exact
+retry assertions remain valid. Correct the worksheet MsgBox observer and replay
+unchanged original source8d486927, then currentc486cfc4, retaining all64 IDs/order.
+An explicit11-component Git export is prepared for the original-source replay;
+no product-source reset or mixed-source comparison is intended. Add/Delete's own
+modAdmin notice probes and their existing qualified scopes are unaffected.
+
+
+**Worksheet Upload RED180 qualified,2026-10-16 Pacific:** unchanged product
+8d486927/test2dcd0f9c completes54 PASS/10 FAIL over64 actual-handler checks with
+no harness exception. Signed-out preflight still creates/saves output; changed
+pending rows are accepted; post-apply sign-out permits the operator save; result
+save failures and post-save authority loss lack honest partial reporting. A fresh
+retry after failed result save creates a duplicate and does not retain the original
+exact event/entity identifiers. Authorized exact zero creation, active state and
+unknown staging-column controls pass. Controller6bac7d243c034ec291e6ebcf5d20ec1f;
+worker140aab41dc3b47dfa49d3598feb4e459; five package/493 tooling/eleven source/four
+harness pins/settings/fixtures and normal native closure qualify through
+21:32:34.0680181Z. Source changes remain within D8-INV-01; no build/deployment or
+new general receipt store is authorized.4be-A remains incomplete.
+
+
 **Delete continuation GREEN176 qualified,2026-10-16 Pacific:** source8d486927
 passes29/29, retaining RED174's exact names/order. Core coordinates and independently
 verifies the all-active System_Key retirement result; Admin checks authority/inputs

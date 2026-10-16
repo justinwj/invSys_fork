@@ -1,5 +1,106 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Provisioned-headless GREEN189 qualified:** sourcec693ada6/test05970ae5
+retains all20 RED188 IDs/order and passes20/20. Signed-out provisioned Admin
+creation completes without the interactive worksheet receipt callback; denied
+Reader refuses before Config setup saves. Controller358662faec6d4b3195e74c16eb22f421 /
+worker450c69e4142a4f1cb42f13056cd04e9f; normal preserved native audit
+22:29:49.5814477Z, five package/495 tooling/twelve source/four harness pins,
+zero desktop/native failures. This is a direct provisioned-service source probe,
+not built-package acceptance. Catalog EDIT/no-op, remaining worksheet/Create and
+current-source regression/static gates remain open; no build/deploy.
+
+**Readonly-owner GREEN187 qualified:** sourcee499afaa/test1452c0cf retains all31
+RED186 IDs/order and passes31/31. Readonly operators refuse before buffer changes;
+writable Create remains an actual-handler positive control. Controller
+2b784a5d22d7452d96e8631d3fa89db4 / worker2c9b896abc244eb0b625ce5a25c3834b;
+normal preserved native audit22:19:41.1189450Z, five packages/494 tooling/twelve
+source/four harness pins, zero desktop/native failures. These remain source
+probes, with the owned readonly-save seam; no build or comprehensive acceptance.
+
+**Provisioned-headless RED188 qualified:** unchangede499afaa/test05970ae5
+completes17 PASS/3 FAIL over20 direct service checks. A provisioned Admin with no
+interactive session fails to apply its create because the worksheet receipt
+callback is reached without a context; the denied Reader reaches three Config
+setup saves before queue authorization refuses. Controller
+0e52a7ee8e694585b7bd0ba9baba2fcf / workere96a3a28a62847bbb63d898144debcdc;
+normal preserved native audit22:21:59.2574580Z, five packages/495 tooling/twelve
+source/four harness pins, zero desktop/native failures. Correct these within the
+approved separate headless path; no interactive authority may come from a hint.
+
+
+**Worksheet exact-ID retry GREEN185 qualified,2026-10-16 Pacific:** source
+1b316e4b/test58a1c69d passes64/64 with corrected182 IDs/order retained. The actual
+Upload handler independently saves exact zero active entities and staging results,
+stops later writes after authority/input loss, reports known saved partials, and
+reconciles a failed-result-save fresh retry by the original Event ID/System_Key
+without another create. Controller82f8bf37e03144e0bb0b786bab1a33a5;
+worker0f226933241b400b9edc7e8539b402f8; five package/493 tooling/twelve source/four
+harness pins/settings/fixtures and normal native audit22:10:38.7535964Z qualify,
+zero desktop/native failures. Current-source regressions/static and remaining
+D13/Create/headless/EDIT/imported-row proof remain open; no build or acceptance.
+
+**Readonly-owner RED186 qualified:** unchanged1b316e4b/test1452c0cf records
+27/4 across31 checks. Core accepts readonly operator owners and both Create/Upload
+change their buffers before save refusal. No readonly OS save is attempted by the
+owned-fixture seam; operator files and canonical inventory remain unchanged.
+Controller1bcfa4dbd7cd4cad98f1e65ba697081f;
+workerce086f8319f64442887f64b966de0d0c; all five package/494 tooling/twelve source/
+four harness pins/settings/fixtures and normal audit22:14:10.8049648Z pass.
+This is in-memory refusal coverage, not unauthorized persisted-output proof.
+
+
+**Corrected worksheet comparison183 qualified:** productc486cfc4/testc03741c7
+retains182's64 IDs/order and narrows54/10 to62 PASS/2 FAIL. All tested authority,
+changed-row and actual partial-notice assertions pass. Only failed-save fresh
+retry duplication and retention of the original exact event/entity still fail.
+Controllerb9106d2bb2814d29991aa32a693acfb7; worker275160656d6a4826a44b897309e0dba8;
+normal preserved native audit21:52:43.9458665Z, five packages/493 tooling/eleven
+source/four harness pins and zero desktop/native failures. No whole-gate GREEN.
+
+Source1b316e4b implements durable event IDs and exact queue/canonical lookup in
+the existing Upload Result boundary, with independent staging-save confirmation.
+It introduces no new general store, object bridge, identity mapping or allocation
+policy. Comparison185 is pending;184 is a payload-observer setup failure before
+any behavioral checks, not RED. No XLAM build/deploy or4be-A acceptance.
+
+
+**Corrected worksheet RED182 qualified:** source8d486927 exported directly from
+Git/testc03741c7 retains all64 original IDs/order and reproduces54 PASS/10 FAIL,
+now observing the exact worksheet form MsgBox prompt. Thus all ten failures are
+reproduced with the corrected sensor. Controller0939af0217ca4f81ba7b2566e0541cca;
+worker815b9917d7bc4acaa4726df6cc5c73b5; five package/493 tooling/eleven immutable
+exported-source/four harness pins/settings/fixtures and normal native closure
+qualify through21:45:35.9201880Z, zero desktop/native failures. The working
+implementation was not reset. Currentc486cfc4 comparison183 is pending;181's
+three notice flags remain observation-limited. No build or overall GREEN.
+
+
+**Worksheet notice-observation correction:**180's54/10 and181's observed59/5
+include three partial-notice assertions that read modAdmin's notice buffer rather
+than the actual worksheet form's message. Do not treat those three flags as proven
+presentation failures or fixes. The independent source/operator write and exact
+retry assertions remain valid. Correct the worksheet MsgBox observer and replay
+unchanged original source8d486927, then currentc486cfc4, retaining all64 IDs/order.
+An explicit11-component Git export is prepared for the original-source replay;
+no product-source reset or mixed-source comparison is intended. Add/Delete's own
+modAdmin notice probes and their existing qualified scopes are unaffected.
+
+
+**Worksheet Upload RED180 qualified,2026-10-16 Pacific:** unchanged product
+8d486927/test2dcd0f9c completes54 PASS/10 FAIL over64 actual-handler checks with
+no harness exception. Signed-out preflight still creates/saves output; changed
+pending rows are accepted; post-apply sign-out permits the operator save; result
+save failures and post-save authority loss lack honest partial reporting. A fresh
+retry after failed result save creates a duplicate and does not retain the original
+exact event/entity identifiers. Authorized exact zero creation, active state and
+unknown staging-column controls pass. Controller6bac7d243c034ec291e6ebcf5d20ec1f;
+worker140aab41dc3b47dfa49d3598feb4e459; five package/493 tooling/eleven source/four
+harness pins/settings/fixtures and normal native closure qualify through
+21:32:34.0680181Z. Source changes remain within D8-INV-01; no build/deployment or
+new general receipt store is authorized.4be-A remains incomplete.
+
+
 **Delete continuation GREEN176 qualified,2026-10-16 Pacific:** source8d486927
 passes29/29, retaining RED174's exact names/order. Core coordinates and independently
 verifies the all-active System_Key retirement result; Admin checks authority/inputs
@@ -1192,3 +1293,92 @@ Maintenance07 passes six reports/three schemas with375 components/6634 procedure
 modules do not grow versusb936503e. 5 new components max294 lines and69 new
 procedures max69 meet the1000/200 line ratchets; no exception or deletion.
 Runtime/source probes do not establish built-package or comprehensive acceptance.
+
+### Config diagnosis — worksheet RED180, source8d486927/test2dcd0f9c
+
+The controller/worker are named above. Across Authorized, PreflightAuthorityLost,
+AfterApplyAuthorityLost, PendingRowChanged, SaveThrows and SavedAuthorityLost,
+Auth bytes remain unchanged. Read-only Config extraction preserves bytes, table
+cells and shapes. Each initial attempt observes three Config saves/three byte
+changes, with only docProps/core.xml and xl/workbook.bin changed. CauseEstablished
+is false. The preflight-loss attempt still reaches the legacy bootstrap path;
+these observations must not be treated as evidence that denied paths are clean.
+The fresh retry is tested for duplicate output separately and is not included in
+that attempt's Config snapshot window. Full semantic/field causality remains
+unresolved. Inspect the same worker's inventory-config-diagnosis.jsonl and
+worksheet-authority-observations.jsonl; retain the unresolved status and raw-byte
+finding while correcting command guards. The next Config-specific diagnostic
+should isolate the setup/save phase under matching source and cohort identities.
+No evidence from174/176/166 substitutes for this required same-cohort artifact.
+
+### Config diagnosis — corrected worksheet RED182, source8d486927/testc03741c7
+
+The same corrected64-check cohort names its controller/worker above. All six
+initial attempts preserve Auth bytes and read-only Config extraction, table cells
+and shapes. Each observes three Config saves/three byte changes, only core.xml/
+workbook.bin changed, and CauseEstablished=false. This reproduces180's Config
+observation under corrected notice instrumentation; no diagnostic from another
+cohort is substituted. Full semantics/causality remain unresolved. The existing
+setup/save path remains the next isolated diagnostic target; no guard weakening
+or raw-byte assertion waiver is implied. The failed-save fresh retry follows the
+initial-attempt Config window and is not included in that comparison.
+
+Currentc486cfc4 first guard comparison181 retains64 checks at59/5 with normal
+preserved native audit21:41:59.3883051Z; controller
+4e8093d50eb3457b9c646d9219d8b88c / worker88fbc0f252a74326aac0816ad201edaf.
+Three notice flags are observation-limited; only the corrected183 comparison can
+qualify current-source reporting. No whole-gate GREEN or acceptance is claimed.
+
+184 source1b316e4b has0 PASS/1 harness exception because the payload observer
+expected inline construction before the shared builder extraction. Controller
+c0da6180df384bd689e5c78835232d20 / worker3b7c888683d14c9e87e3c6efe90c9a38;
+pins/settings/fixtures and normal native audit21:59:14.0872046Z pass. Test58a1c69d
+observes the completed payload at its owning Add call after the builder returns;
+it does not count readonly receipt preflight as a packaged action.185 reruns the
+unchanged64 assertions.
+
+New protocol scope: event IDs are allocated under captured authority, then saved
+with generated Item Code in the existing Upload Result before queueing. The owning
+creation service generates System_Key only for a genuinely absent event. Queued
+IDs are saved before processing; fresh retry uses the exact existing queue payload
+and canonical APPLIED/log/entity proof. Missing/conflicting proof refuses further
+application. Existing queues and worksheet results are the only receipt boundary;
+no new general store, SKU-as-entity fallback or key mapping. Standalone headless
+creation remains a distinct provisioned-user path. Remaining D13/headless, EDIT
+retry, imported-row proof and Create/write-phase coverage are still required.
+
+### Config diagnosis — readonly-owner RED186, source1b316e4b/test1452c0cf
+
+The same31-check cohort's controller/worker are named above. WritableCreate,
+ReadOnlyCreate and ReadOnlyUpload preserve Auth bytes. Each records zero Config
+saves/byte changes, no changed package parts, unchanged cells/shapes and preserved
+read-only extraction. The readonly save seam applies only to owned operator
+fixtures, normal writable saves remain the positive control, and canonical data
+remain unchanged. There is no observed Config difference to explain in this
+cohort; earlier authorized-bootstrap byte differences remain unresolved under
+their original source/cohort scopes. No blanket causality or waiver follows.
+
+### Config diagnosis — narrowed worksheet comparison183
+
+Sourcec486cfc4/testc03741c7, controllerb9106d2bb2814d29991aa32a693acfb7 /
+worker275160656d6a4826a44b897309e0dba8: all six attempts preserve Auth and readonly
+Config extraction. PreflightAuthorityLost and PendingRowChanged observe zero
+saves/changed parts; Authorized and the three post-apply/save controls observe
+three saves/byte changes, only core.xml/workbook.bin. The guards stop the earlier
+denied bootstrap path. Comprehensive cause/semantics of authorized differences
+remain unresolved; retry follows the initial snapshot window.185's scoped GREEN
+does not silently close that finding.
+
+### Config diagnosis — headless RED188, sourcee499afaa/test05970ae5
+
+Both provisioned Admin and denied Reader run with no interactive session and
+independently verified provisioned grants matching their cases. Auth bytes and
+readonly Config extraction, cells and shapes remain unchanged. Each observes
+three Config saves/three byte changes, only core.xml/workbook.bin changed. The
+denied Reader's observed setup saves violate the protecting preauthorization
+save-count assertion; the source checks its grant only in the later queue call.
+Move that existing grant check ahead of bootstrap; this does not classify all
+changed fields or establish comprehensive Config causality. CauseEstablished
+remains false. The earlier authorized-save semantic question remains unresolved.
+The same cohort's inventory-config-diagnosis.jsonl and headless-authority-
+observations.jsonl support this written artifact; no earlier cohort substitutes.
