@@ -372,7 +372,7 @@ Public Sub YieldAt(ByVal phase As String)
         Case "CatalogChanged"
             Set fields = CreateObject("Scripting.Dictionary")
             mYield = modAdmin.UpdateInventoryItemCatalogForWarehouse(mWh, mSku, _
-                "Externally changed fixture catalog", "LB", "CLEARVIEW", , , , , , , fields, report)
+                "Externally changed fixture catalog", "LB", "CLEARVIEW", , , , , , , fields, report, "", "config-admin", "S1")
         Case "SourceFeedChanged"
             modRuntimeWorkbooks.SetCoreDataRootOverride mOtherRoot
             mYield = True

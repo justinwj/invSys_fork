@@ -446,7 +446,7 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
     actionSucceeded = UpdateInventoryItemCatalogForWarehouse(warehouseId, sku, itemName, _
         uom, locationValue, CStr(record("Description")), vendorValue, _
         CStr(record("VendorCode")), categoryValue, CStr(record("ExternalCode")), _
-        CStr(record("Picture")), customFields, report, interactiveContext)
+        CStr(record("Picture")), customFields, report, interactiveContext, userId, stationId)
     If actionSucceeded And Not IsNonCountedCustomFieldsAdmin(customFields) And _
             CBool(record("HasQuantity")) Then
         If SetInventoryQuantityForWarehouse(warehouseId, stationId, userId, _
@@ -1098,7 +1098,9 @@ Public Function UpdateInventoryItemCatalogForWarehouse(ByVal warehouseId As Stri
                                                        Optional ByVal imagePath As String = "", _
                                                        Optional ByVal customFields As Object = Nothing, _
                                                        Optional ByRef report As String = "", _
-                                                       Optional ByVal interactiveContext As String = "") As Boolean
+                                                       Optional ByVal interactiveContext As String = "", _
+                                                       Optional ByVal headlessUser As String = "", _
+                                                       Optional ByVal headlessStation As String = "") As Boolean
     Dim path As String
     Dim wb As Workbook
     Dim openedHere As Boolean
@@ -1117,6 +1119,12 @@ Public Function UpdateInventoryItemCatalogForWarehouse(ByVal warehouseId As Stri
     If sku = "" Then report = "SKU is required.": Exit Function
     If itemName = "" Then report = "Item name is required.": Exit Function
     If uom = "" Then report = "UOM is required.": Exit Function
+
+    If interactiveContext = "" Then
+        If Trim$(headlessUser) = "" Or Trim$(headlessStation) = "" Then report = "An explicit provisioned user and station are required.": Exit Function
+        If Not modAuth.LoadAuth(warehouseId) Then report = "Provisioned authority could not be loaded.": Exit Function
+        If Not modAuth.HasProvisionedCapabilityForSystem("ADMIN_MAINT", headlessUser, warehouseId, headlessStation) Then report = "The provisioned user lacks ADMIN_MAINT for this warehouse and station.": Exit Function
+    End If
 
     path = modProcessor.ResolveInventoryWorkbookPathForAutomation(warehouseId)
     If path = "" Then report = "Inventory workbook path could not be resolved for " & warehouseId & ".": Exit Function

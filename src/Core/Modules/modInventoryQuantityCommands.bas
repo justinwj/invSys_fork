@@ -2,7 +2,7 @@ Attribute VB_Name = "modInventoryQuantityCommands"
 Option Explicit
 
 ' Primitive command boundary; an empty context selects the explicit provisioned
-' headless path, whose user is independently authorized by the queue service.
+' headless path, whose user is authorized even when no quantity change is needed.
 Public Function SetSingleEntityQuantity(ByVal warehouse As String, ByVal station As String, _
         ByVal user As String, ByVal sku As String, ByVal target As Double, _
         ByVal reason As String, ByRef report As String, Optional ByVal context As String = "") As Boolean
@@ -17,6 +17,12 @@ Public Function SetSingleEntityQuantity(ByVal warehouse As String, ByVal station
         values = modInventoryCommands.SourceValues(context)
         If Not IsArray(values) Then GoTo Refused
         If values(0) <> warehouse Or values(1) <> station Or values(2) <> user Then GoTo Refused
+    Else
+        If Trim$(user) = "" Or Trim$(station) = "" Then report = "An explicit provisioned user and station are required.": Exit Function
+        If Not modAuth.LoadAuth(warehouse) Then report = "Provisioned authority could not be loaded.": Exit Function
+        If Not modAuth.HasProvisionedCapabilityForSystem("ADMIN_MAINT", user, warehouse, station) Then
+            report = "The provisioned user lacks ADMIN_MAINT for this warehouse and station.": Exit Function
+        End If
     End If
     entity = ResolveSingleEntity(warehouse, sku, report)
     If Not IsArray(entity) Then Exit Function
@@ -39,12 +45,6 @@ Public Function SetSingleEntityQuantity(ByVal warehouse As String, ByVal station
     item("TargetQty") = target: item("Reason") = reason
     items.Add item
     payload = modRoleEventWriter.BuildPayloadJsonFromCollection(items)
-    If context = "" Then
-        If Not modAuth.LoadAuth(warehouse) Then report = "Provisioned authority could not be loaded.": Exit Function
-        If Not modAuth.HasProvisionedCapabilityForSystem("ADMIN_MAINT", user, warehouse, station) Then
-            report = "The provisioned user lacks ADMIN_MAINT for this warehouse and station.": Exit Function
-        End If
-    End If
     If Not modInventoryCommandReceipts.FindExact(warehouse, station, user, payload, eventId, report) Then Exit Function
     If context <> "" Then
         If Not modInventoryCommands.BeginQuantity(context, CStr(entity(0)), target, report) Then Exit Function
