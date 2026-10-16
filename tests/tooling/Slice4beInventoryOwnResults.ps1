@@ -50,12 +50,44 @@ End Function
     }
     $owner.DeleteLines($start,$count);$owner.InsertLines($start,$body)
     $core=$packages['invSys.Core.xlam'].VBProject
+    $valueTrace=$core.VBComponents.Add(1);$valueTrace.Name='TestInventoryValueTrace'
+    $valueTrace.CodeModule.AddFromString(@'
+Option Explicit
+Private mChecks As Long, mTextMismatch As Boolean, mRawMatches As Boolean
+Public Sub Reset()
+    mChecks = 0: mTextMismatch = False: mRawMatches = False
+End Sub
+Public Sub Observe(ByVal actual As Variant, ByVal expected As String)
+    If Not IsNumeric(actual(0)) Or Not IsDate(expected) Then Exit Sub
+    mChecks = mChecks + 1
+    mTextMismatch = (CDbl(actual(0)) <> CDbl(CDate(expected)))
+    mRawMatches = (CDbl(actual(3)) = CDbl(CDate(expected)))
+End Sub
+Public Function Facts() As String
+    Facts = CStr(mChecks) & "|" & CStr(mTextMismatch) & "|" & CStr(mRawMatches)
+End Function
+'@)
+    $tableInput=$core.VBComponents.Item('cInventoryTableInput').CodeModule
+    $inputText=$tableInput.Lines(1,$tableInput.CountOfLines)
+    $rawAnchor=' & text & ":" & formula)'
+    $rawPattern='(?i)'+[regex]::Escape($rawAnchor)
+    # The extra observation slot is unused by the unchanged production guard.
+    if([regex]::Matches($inputText,$rawPattern).Count -eq 1){
+        $inputText=[regex]::Replace($inputText,$rawPattern,[Text.RegularExpressions.MatchEvaluator]{param($m) $m.Value.Substring(0,$m.Value.Length-1)+', cell.Value2)'})
+    }elseif([regex]::Matches($inputText,('(?i)'+[regex]::Escape(' & text & ":" & formula, cell.Value2)'))).Count -ne 1){
+        throw 'Read-only raw-value observation anchor unavailable.'
+    }
+    $matchAnchor='(?im)^[\t ]*If PlannedValueMatches\(actual\(header\), plannedValue\) Then GoTo NextField[\t ]*\r?$'
+    if([regex]::Matches($inputText,$matchAnchor).Count -ne 1){throw 'Planned-value observation anchor unavailable.'}
+    $inputText=[regex]::Replace($inputText,$matchAnchor,[Text.RegularExpressions.MatchEvaluator]{param($m) '                            If header = "LAST_EDIT_AT" Then TestInventoryValueTrace.Observe actual(header), plannedValue'+"`r`n"+$m.Value.TrimEnd("`r")})
+    $tableInput.DeleteLines(1,$tableInput.CountOfLines);$tableInput.AddFromString($inputText)
     $probe=$core.VBComponents.Add(1);$probe.Name='TestInventoryOwnResult'
     $probe.CodeModule.AddFromString(@'
 Option Explicit
 Private mSignOut As Boolean, mReturned As Boolean
 Public Sub Arm(ByVal signOut As Boolean)
     mSignOut = signOut: mReturned = False
+    TestInventoryValueTrace.Reset
 End Sub
 Public Sub AfterProcessor()
     mReturned = True
@@ -113,7 +145,8 @@ function Test-InventoryOwnResults($Fixture,$Other) {
             $catalogPhase=[string](Run 'invSys.Admin.xlam' 'TestInventoryCatalogTrace.Phase')
             if($catalogPhase -cnotin @('Entered','CatalogBegun','WriterBound','FieldsPlanned','BeforeWritePassed','FieldsWritten','BeforeSavePassed','SaveReturned','Confirmed')){throw 'Unknown catalog diagnostic stage.'}
             $noticeFacts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.OwnResultReportFactsForTest')).Split('|')
-            [pscustomobject]@{Case=$case;CatalogPhase=$catalogPhase;FormShows=$shows;PartialNotice=($noticeFacts[0] -ceq 'True');DirtyNotice=($noticeFacts[1] -ceq 'True');ReadOnlyNotice=($noticeFacts[2] -ceq 'True');SourceNotice=($noticeFacts[3] -ceq 'True')}|ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'own-result-fixed-stages.jsonl')
+            $dateFacts=([string](Run 'invSys.Core.xlam' 'TestInventoryValueTrace.Facts')).Split('|')
+            [pscustomobject]@{Case=$case;CatalogPhase=$catalogPhase;FormShows=$shows;PartialNotice=($noticeFacts[0] -ceq 'True');DirtyNotice=($noticeFacts[1] -ceq 'True');ReadOnlyNotice=($noticeFacts[2] -ceq 'True');SourceNotice=($noticeFacts[3] -ceq 'True');DateComparisons=[int]$dateFacts[0];DateTextRoundTripMismatch=($dateFacts[1] -ceq 'True');RawDateMatches=($dateFacts[2] -ceq 'True')}|ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'own-result-fixed-stages.jsonl')
             Check ($id+'.ExpectedFormContinuation') ($shows -eq $(if($case -ceq 'AuthorityLost'){1}else{2}))
             $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $othersSame=@($original.EntityQuantities.Keys|Where-Object {$_ -cne $key -and (-not $after.EntityQuantities.ContainsKey($_) -or $after.EntityQuantities[$_] -ne $original.EntityQuantities[$_])}).Count -eq 0
