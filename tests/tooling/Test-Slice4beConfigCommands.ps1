@@ -152,6 +152,7 @@ param(
     [switch]$AdminInventoryAddResultsOnly,
     [switch]$AdminInventoryDeleteResultsOnly,
     [switch]$AdminInventoryWorksheetResultsOnly,
+    [switch]$AdminInventoryReadOnlyOperatorsOnly,
     [switch]$AdminAggregationPathComparison,
     [switch]$AdminAggregationBoundaryMatrix,
     [ValidateSet('All','Inspection','Write','Ownership')][string]$AdminAggregationBoundaryGroup='All',
@@ -870,6 +871,7 @@ if($AdminInventoryOwnResultsOnly -and (-not $AdminInventoryEntryOnly -or $AdminI
 if($AdminInventoryAddResultsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Add results require their separate Inventory entry gate.'}
 if($AdminInventoryDeleteResultsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Delete results require their separate Inventory entry gate.'}
 if($AdminInventoryWorksheetResultsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Worksheet results require their separate Inventory entry gate.'}
+if($AdminInventoryReadOnlyOperatorsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Readonly operator checks require their separate Inventory entry gate.'}
 if($AdminInventoryOverlaySourceRootForTest -and (-not $AdminInventorySourceOverlayForTest -or -not $AdminInventoryEntryOnly)){throw 'An explicit exported source root requires the isolated Inventory source-overlay gate.'}
 if($AdminInventoryEntryOnly){
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
@@ -2229,6 +2231,10 @@ End Function
             Install-InventorySourceOverlay
         }
         Install-AdminInventoryEntryProbe
+        if($AdminInventoryReadOnlyOperatorsOnly){
+            . (Join-Path $PSScriptRoot 'Slice4beInventoryReadOnlyOperators.ps1')
+            Install-InventoryReadOnlyOperatorProbe
+        }
         if($AdminInventoryWorksheetResultsOnly){
             . (Join-Path $PSScriptRoot 'Slice4beInventoryWorksheetResults.ps1')
             Install-InventoryWorksheetResultProbe
@@ -2468,7 +2474,10 @@ End Function
     }
     if($AdminAggregationOnly){$step='packaged Aggregation authority and workbook diagnostic'; Test-AdminAggregation $a $b}
     if($AdminInventoryEntryOnly){
-        if($AdminInventoryWorksheetResultsOnly){
+        if($AdminInventoryReadOnlyOperatorsOnly){
+            $step='actual readonly operator refusal before buffer mutation'
+            Test-InventoryReadOnlyOperators $a $b
+        }elseif($AdminInventoryWorksheetResultsOnly){
             $step='actual worksheet Upload source and result save retry boundaries'
             Test-InventoryWorksheetResults $a $b
         }elseif($AdminInventoryDeleteResultsOnly){
