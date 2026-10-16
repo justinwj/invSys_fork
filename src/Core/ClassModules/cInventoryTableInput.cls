@@ -120,11 +120,12 @@ Private Function PlannedValueMatches(ByVal actual As Variant, ByVal expected As 
     On Error GoTo Invalid
     If actual(0) = expected Or actual(1) = expected Then PlannedValueMatches = True: Exit Function
     ' Keep the existing Excel scalar coercions used by the catalog writer.
-    If IsNumeric(actual(0)) Then
+    ' Keep the typed Excel scalar: CStr(Double) can lose date/number precision.
+    If IsNumeric(actual(3)) Then
         If IsNumeric(expected) Then
-            PlannedValueMatches = (CDbl(actual(0)) = CDbl(expected)): Exit Function
+            PlannedValueMatches = (CDbl(actual(3)) = CDbl(expected)): Exit Function
         ElseIf IsDate(expected) Then
-            PlannedValueMatches = (CDbl(actual(0)) = CDbl(CDate(expected))): Exit Function
+            PlannedValueMatches = (CDbl(actual(3)) = CDbl(CDate(expected))): Exit Function
         End If
     End If
     If LCase$(expected) = "true" Or LCase$(expected) = "false" Then _
@@ -170,7 +171,7 @@ Private Function ReadState(ByVal table As ListObject) As Object
             Set cell = table.DataBodyRange.Cells(row, headers(name))
             If IsError(cell.Value2) Then text = cell.Text Else text = CStr(cell.Value2)
             If IsError(cell.Formula) Then formula = cell.Text Else formula = CStr(cell.Formula)
-            values = Array(text, formula, CStr(VarType(cell.Value2)) & ":" & CStr(Len(text)) & ":" & text & ":" & formula)
+            values = Array(text, formula, CStr(VarType(cell.Value2)) & ":" & CStr(Len(text)) & ":" & text & ":" & formula, cell.Value2)
             fields.Add CStr(name), values
             If text <> "" Or formula <> "" Then populated = True
         Next name
