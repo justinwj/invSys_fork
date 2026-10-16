@@ -369,6 +369,13 @@ Public Sub AfterQueue(ByVal eventId As String)
         Err.Raise vbObjectError + 2213, , "Injected after confirmed queue and before processing."
     End If
 End Sub
+Public Function StageUnrelated(ByVal warehouse As String) As Boolean
+    Dim report As String, ok As Boolean
+    Arm
+    ok = modInventoryQuantityCommands.SetSingleEntityQuantity(warehouse, "S1", "config-admin", _
+        "DEMO-UNRELATED-QUANTITY", 11, "Unrelated pending fixture", report)
+    StageUnrelated = (Not ok And mQueued = 1 And mEvent <> "")
+End Function
 Public Function QueuedCount() As Long
     QueuedCount = mQueued
 End Function
@@ -565,7 +572,9 @@ function Test-InventoryExactQuantity($Fixture,$Other,[switch]$RetryQueued) {
     SelectTarget $Fixture
     $sku=if($RetryQueued){'DEMO-EXACT-RETRY'}else{'DEMO-EXACT-QUANTITY'}
     $csv=Join-Path $runRoot ($prefix+'-fixture.csv')
-    @('ITEM_CODE,ITEM,UOM,LOCATION,QTY,CONDITION',($sku+',Exact quantity fixture,LB,CLEARVIEW,10,GOOD'))|Set-Content -LiteralPath $csv -Encoding ASCII
+    $fixtureRows=@('ITEM_CODE,ITEM,UOM,LOCATION,QTY,CONDITION',($sku+',Exact quantity fixture,LB,CLEARVIEW,10,GOOD'))
+    if($RetryQueued){$fixtureRows+='DEMO-UNRELATED-QUANTITY,Unrelated pending fixture,LB,CLEARVIEW,10,GOOD'}
+    $fixtureRows|Set-Content -LiteralPath $csv -Encoding ASCII
     $created=[bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareExactQuantityFixture' @($Fixture.Warehouse,$csv))
     Check ($prefix+'.GeneratedSingleEntityFixtureApplied') $created
     if(-not $created){throw 'Owning single-entity fixture creation failed; not product RED.'}
@@ -587,6 +596,10 @@ function Test-InventoryExactQuantity($Fixture,$Other,[switch]$RetryQueued) {
         [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetSelection' @($Other.Root,$sku))
         [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetQuantityTarget' @($target))
         if($RetryQueued){
+            $unrelated=[bool](Run 'invSys.Core.xlam' 'TestInventoryQuantity.StageUnrelated' @($Fixture.Warehouse))
+            $unrelatedEvent=[string](Run 'invSys.Core.xlam' 'TestInventoryQuantity.LastEvent')
+            Check ($prefix+'.UnrelatedAdjustmentQueued') ($unrelated -and $unrelatedEvent -ne '')
+            if(-not $unrelated -or $unrelatedEvent -eq ''){throw 'Unrelated pending fixture unavailable; not product RED.'}
             [void](Run 'invSys.Core.xlam' 'TestInventoryQuantity.Arm')
             [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'Edit','SetQuantity','EditReason',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
             $first=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
@@ -629,6 +642,7 @@ function Test-InventoryExactQuantity($Fixture,$Other,[switch]$RetryQueued) {
             Check ($prefix+'.OnlyOneAdjustmentQueued') ([int](Run 'invSys.Core.xlam' 'TestInventoryQuantity.QueuedCount') -eq 1)
             Check ($prefix+'.OnlyOneAdjustmentApplied') ($after.LogRows -eq $before.LogRows+1 -and $after.AppliedRows -eq $before.AppliedRows+1)
             Check ($prefix+'.OriginalExactQueuedEventApplied') ([bool](Run 'invSys.Core.xlam' 'modInventoryDomainBridge.InventoryEventAppliedBridge' @($Fixture.Warehouse,$firstEvent)))
+            Check ($prefix+'.UnrelatedEventRemainsUnapplied') (-not [bool](Run 'invSys.Core.xlam' 'modInventoryDomainBridge.InventoryEventAppliedBridge' @($Fixture.Warehouse,$unrelatedEvent)))
         }
     }finally{$hostBook.Close($false)}
 }

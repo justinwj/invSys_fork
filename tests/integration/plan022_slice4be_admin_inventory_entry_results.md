@@ -1,5 +1,25 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Queued-retry RED131 qualified,2026-10-15 Pacific:** unchanged source306fa2da/
+test0782b2aa completes17 PASS/3 FAIL,20 unique checks without a harness exception.
+The exact local queued event is independently found and remains unapplied after
+the injected failure. The actual fresh-sign-in/form retry queues another delta;
+both apply and overshoot the target. Exact target, single-queue and single-applied
+checks fail; partial reporting and identity/other-entity checks pass. Controller
+b6a0cc3c16f24e9dab81ff54a29d91dc, worker a1ac2542f47e497c88fe889945248387.
+Preserved five packages/all486 tooling/settings/fixtures and normal owned/native
+closure qualify through2026-10-16T06:13:04.2171115Z; no Excel failure/desktop stop.
+
+Automatic approval review rejected the first proposed retry patch because it
+would reconcile every pending adjustment for the source user/station rather than
+the exact failed event/entity. That patch was not applied. The next22-check RED
+adds a separately generated entity with an unrelated saved pending adjustment;
+retry must leave that event unapplied and its quantity unchanged. Match only the
+exact pending payload/event and use a bounded processor action. No broad retry
+drain or new receipt store is authorized. Pure existing queue-read/parser helpers
+are being extracted unchanged to keep the oversized writer from growing; retry
+behavior has not changed in the candidate.
+
 **Retry attempt130: oracle precondition failure**, unchanged source306fa2da/
 testa53830b8, controller2a15ab448cab4dceaa2471c829705d88, worker
 5baf6e73ba18444aa46c66f0e7fafc49. Nine checks pass; the cold server-inbox lookup
@@ -299,6 +319,12 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Trial131 cohort: unresolved/not measured**, source306fa2da/test0782b2aa,
+controllerb6a0cc3c16f24e9dab81ff54a29d91dc, worker a1ac2542f47e497c88fe889945248387.
+The focused retry run records no Config/Auth comparison; no authority-file cause
+or preservation is inferred. Trial123's separate evidence and the safe part-name/
+inbox-save diagnostic remain open through subsequent focused GREEN.
 
 **Trial130 cohort: unresolved/not measured**, source306fa2da/testa53830b8,
 controller2a15ab448cab4dceaa2471c829705d88, worker5baf6e73ba18444aa46c66f0e7fafc49.
