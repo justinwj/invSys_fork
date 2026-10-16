@@ -1,5 +1,42 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Expanded packaged RED117 qualified,2026-10-15 Pacific:** source1c9bff87/
+testc8321d65 completes **137 PASS/48 FAIL**,185 unique checks and no harness
+exception. All45 baseline names/order/outcomes from115 are retained. All30 actual
+action/yield cases reach their intended handlers. New groups: Add20/8, Edit24/4,
+Create23/5, Upload15/13, Delete20/8 (PASS/FAIL).
+Controller `admin-inventory-entry-controller/bd35800798df4b59ba834f457d501e33`;
+worker `slice4be-admin-inventory-entry/1153e819727047d299444b79245c9971`.
+
+Actual modal Add and worksheet Upload each persist a new exact zero-quantity
+entity in their authorized controls. Modal-return Add/worksheet cases, Edit's
+reason prompt and Delete's confirmation expose stale-session and changed-catalog
+continuation. Other-warehouse cases queue no new source events, but worksheet
+Create/Upload still save the operator workbook after that authority switch.
+The catalog-change fixture uses an actual authorized catalog update before the
+action, then compares the full in-memory inventory/catalog state against that
+post-injection baseline; injected fixture changes are not counted as owner writes.
+No raw inventory values are emitted by that comparison.
+
+Five packages/all486 tooling/settings/fixture preservation and normal unforced
+worker/Excel/controller/monitor closure qualify. Delayed native audit through
+2026-10-16T04:22:45.9302285Z finds zero Excel failures; all desktop-stop counters
+are zero. Excel and the owned runner exit normally. Ignored qualification:
+`reports/runtime/resume-d8-agg-01/admin-inventory-command-arity-red-117/qualification.json`.
+This is a first expanded RED, not the complete D8-INV-01 matrix or acceptance.
+Physical source/entity/table replacement, additional reachable yields, partial
+application/result-save retry, separate Core/headless gates and Config diagnosis
+remain required before product implementation/qualification. No product edits.
+
+**Prepared Config diagnostic:** the next unchanged-product cohort adds read-only
+table-cell and XLSB ZIP-part comparisons around the five original callback cases.
+Raw values and part hashes stay in memory; exported facts contain only changed-cell/
+part-category counts, table-shape continuity and extraction-preservation flags.
+Five final preservation assertions append after the185 existing check identities.
+All486 tooling files parse. A synthetic comparison canary proves raw-value/part-hash
+redaction, changed/unchanged counts, no unproved cause claim and honest failed
+preservation. Actual Config comparisons remain to run; no cause is established.
+
 **Expanded attempt116,2026-10-15 Pacific:** approved-contract test494062a2 on
 unchanged source1c9bff87 retains all45 prior names/order and their35 PASS/10 FAIL
 outcomes, then adds one harness exception before the first new matrix action.
@@ -71,6 +108,18 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Trial117 cohort: unresolved**, source1c9bff87/testc8321d65, controller
+bd35800798df4b59ba834f457d501e33 and worker1153e819727047d299444b79245c9971.
+The five retained baseline observations again show Auth unchanged and Config
+changed from the authorized baseline onward. Source inspection identifies
+`AddInventoryItemForWarehouse` -> `EnsureDemoStationInboxes` ->
+`modConfig.EnsureStationInbox` -> `SaveConfigWorkbookIfWritable` as a possible
+write path, but no phase/field/part comparison proves it caused the observed
+change. The passing expanded actions and normal closure do not close this finding.
+Next diagnostic: value-redacted read-only Config table/ZIP-part comparisons on
+source1c9bff87, recording the new instrumentation test commit and run identities
+separately; retain this cohort's cause as unresolved until evidence establishes it.
 
 **Trial116 cohort: unresolved**, source1c9bff87/test494062a2, controller
 e0dd81d17d7148a9ac13a7e899ab69b2 and worker c4a7e200fa53482daa8a144a956e8cdc.

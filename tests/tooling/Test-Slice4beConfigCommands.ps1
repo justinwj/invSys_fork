@@ -2416,6 +2416,7 @@ End Function
     if($AdminInventoryEntryOnly){
         $step='packaged Add/Edit Inventory Ribbon and modal entry audit'; Test-AdminInventoryEntry $a $b
         $step='approved Inventory modal and worksheet authority boundaries'; Test-InventoryCommandBoundaries $a $b
+        $step='read-only Config diagnosis preservation'; Test-InventoryConfigDiagnosticPreservation
     }
     if(-not $AdminInventoryEntryOnly -and -not $AdminAggregationOnly -and -not $AdminTesterSetupOwnerOnly -and -not $AdminCreateWarehouseOwnerOnly -and -not $AdminSeedOutcomeOnly -and -not $AdminDirectoryColumnsOnly -and -not $AdminConsoleOnly -and -not $AdminVerifyAddinsOnly -and -not $AdminReconcileIdentityOnly -and -not $AdminSettingsCloseOnly -and -not $CheckViewerRefreshFailure -and -not $CheckViewerEventDetail -and -not $CheckViewerEventGroups -and -not $CheckViewerPublishedRead -and $PrintSeedBoundaryForTest -notin @('FreshSeed','BareSeed')) {
     $step='unauthenticated command'

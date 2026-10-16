@@ -1,4 +1,70 @@
 # Actual packaged actions on Admin-generated disposable fixtures. Values stay in memory.
+function Get-InventoryConfigDiagnosticSnapshot($Fixture) {
+    $path=[IO.Path]::GetFullPath($Fixture.Config)
+    $expected=[IO.Path]::GetFullPath((Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Config.xlsb')))
+    $ownedRoot=[IO.Path]::GetFullPath($runRoot).TrimEnd('\')+'\'
+    if($path -ine $expected -or -not $path.StartsWith($ownedRoot,[StringComparison]::OrdinalIgnoreCase)){
+        throw 'Config diagnosis requires this run owned generated fixture.'
+    }
+    $beforeHash=Get-AdminInventoryEntryHash $path
+    Add-Type -AssemblyName System.IO.Compression
+    $parts=@{}
+    $stream=[IO.FileStream]::new($path,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::ReadWrite)
+    try {
+        $zip=[IO.Compression.ZipArchive]::new($stream,[IO.Compression.ZipArchiveMode]::Read,$true)
+        try {
+            foreach($entry in $zip.Entries){
+                $part=$entry.Open()
+                try{$parts[$entry.FullName]=(Get-FileHash -InputStream $part).Hash}finally{$part.Dispose()}
+            }
+        }finally{$zip.Dispose()}
+    }finally{$stream.Dispose()}
+    $book=$null;$opened=$false;$prior=$null
+    try{$prior=$excel.ActiveWorkbook}catch{}
+    foreach($candidate in $excel.Workbooks){if($candidate.FullName -ieq $path){$book=$candidate;break}}
+    if($null -eq $book){$book=$excel.Workbooks.Open($path,0,$true);$opened=$true}
+    $saved=$book.Saved;$cells=@{};$shapes=@()
+    try {
+        foreach($sheet in $book.Worksheets){foreach($table in $sheet.ListObjects){
+            $values=$table.Range.Value2
+            $rows=$table.Range.Rows.Count;$columns=$table.Range.Columns.Count
+            $shapes+=($table.Name+'|'+$rows+'|'+$columns)
+            for($r=1;$r -le $rows;$r++){for($c=1;$c -le $columns;$c++){
+                $v=if($values -is [Array]){$values.GetValue($r,$c)}else{$values}
+                $cells[$table.Name+'|'+$r+'|'+$c]=if($null -eq $v){'<EMPTY>'}else{$v.GetType().FullName+'|'+[string]$v}
+            }}
+        }}
+        $memoryPreserved=($book.Saved -eq $saved)
+    }finally{
+        if($opened){$book.Close($false)}
+        if($null -ne $prior){$prior.Activate()}
+    }
+    # Values and part hashes are deliberately memory-only; export comparisons below.
+    [pscustomobject]@{Cells=$cells;Shapes=($shapes -join "`n");Parts=$parts;ReadOnlyProof=($memoryPreserved -and $beforeHash -ceq (Get-AdminInventoryEntryHash $path))}
+}
+
+function Write-InventoryConfigDiagnosticComparison($Before,$After,[string]$Case) {
+    $changed=0
+    foreach($key in @($Before.Cells.Keys)+@($After.Cells.Keys)|Select-Object -Unique){
+        if(-not $Before.Cells.ContainsKey($key) -or -not $After.Cells.ContainsKey($key) -or $Before.Cells[$key] -cne $After.Cells[$key]){$changed++}
+    }
+    $categories=@{Metadata=0;Worksheet=0;Styles=0;SharedStrings=0;Other=0}
+    foreach($key in @($Before.Parts.Keys)+@($After.Parts.Keys)|Select-Object -Unique){
+        if($Before.Parts[$key] -cne $After.Parts[$key]){
+            $category=if($key -like 'docProps/*'){'Metadata'}elseif($key -like 'xl/worksheets/*'){'Worksheet'}elseif($key -like 'xl/styles*'){'Styles'}elseif($key -like 'xl/sharedStrings*'){'SharedStrings'}else{'Other'}
+            $categories[$category]++
+        }
+    }
+    $safe=$Before.ReadOnlyProof -and $After.ReadOnlyProof
+    [void]$script:InventoryConfigReadChecks.Add([pscustomobject]@{Case=$Case;Passed=$safe})
+    [pscustomobject]@{Case=$Case;ReadOnlyExtractionPreserved=$safe;ChangedTableCells=$changed;TableShapesPreserved=($Before.Shapes -ceq $After.Shapes);ChangedPartCategories=$categories;CauseEstablished=$false}|
+        ConvertTo-Json -Depth 4 -Compress|Add-Content (Join-Path $reportRoot 'inventory-config-diagnosis.jsonl')
+}
+
+function Test-InventoryConfigDiagnosticPreservation {
+    foreach($proof in $script:InventoryConfigReadChecks){Check ('InventoryConfigDiagnosis.'+$proof.Case+'.ReadOnlyExtractionPreserved') $proof.Passed}
+}
+
 function Install-InventoryCommandBoundaryProbe {
     $project=$packages['invSys.Admin.xlam'].VBProject
     $probe=$project.VBComponents.Add(1);$probe.Name='TestInventoryCommands'

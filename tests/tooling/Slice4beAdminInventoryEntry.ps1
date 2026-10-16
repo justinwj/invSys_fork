@@ -170,6 +170,7 @@ function Get-AdminInventoryEntryFacts($Fixture,[switch]$Persisted) {
 }
 
 function Test-AdminInventoryEntry($Fixture,$Other) {
+    $script:InventoryConfigReadChecks=[Collections.Generic.List[object]]::new()
     SelectTarget $Fixture
     $seed=[string](Run 'invSys.Admin.xlam' 'modAdminConsole.SeedDemoInventoryForAutomation' @($Fixture.Warehouse,'S1','config-admin'))
     Check 'InventoryEntry.GeneratedFixtureSeedApplied' $seed.StartsWith('OK|')
@@ -188,10 +189,13 @@ function Test-AdminInventoryEntry($Fixture,$Other) {
             SelectTarget $Fixture
             $before=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $target=if($mode -ceq 'OtherWarehouseAdmin'){$Other}else{$Fixture}
+            $configBefore=Get-InventoryConfigDiagnosticSnapshot $Fixture
             [void](Run 'invSys.Admin.xlam' 'TestInventoryEntry.Execute' @($hostBook.Name,$mode,$target.Root,$target.Secret,$otherBook.Name,$Fixture.Root,$Fixture.Warehouse))
             $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryEntry.Facts')).Split('|')
             $after=Get-AdminInventoryEntryFacts $Fixture
             $persisted=Get-AdminInventoryEntryFacts $Fixture -Persisted
+            $configAfter=Get-InventoryConfigDiagnosticSnapshot $Fixture
+            Write-InventoryConfigDiagnosticComparison $configBefore $configAfter $mode
             $newKeys=@($persisted.EntityQuantities.Keys|Where-Object {-not $before.EntityQuantities.ContainsKey($_)})
             $exactSaved=($newKeys.Count -eq 1 -and $persisted.EntityQuantities[$newKeys[0]] -eq 1 -and $persisted.FileHash -cne $before.FileHash)
             $actionReached=$facts.Count -eq 10 -and [int]$facts[1] -eq 1 -and $facts[2] -ceq 'True' -and $facts[3] -ceq 'True'
