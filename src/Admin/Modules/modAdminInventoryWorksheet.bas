@@ -272,7 +272,7 @@ Public Function ValidateInventoryWorksheetHeaders(ByVal lo As ListObject, _
     For Each lc In lo.ListColumns
         normalized = NormalizeInventoryWorksheetHeader(CStr(lc.Name))
         If normalized = Chr$(82) & Chr$(79) & Chr$(87) Or _
-                normalized = "SYSTEMKEY" Or normalized = "SYSTEM_KEY" Then
+                normalized = "SYSTEMKEY" Or normalized = "CONDITION" Then
             report = "Inventory staging tables may not contain the prohibited header " & lc.Name & "."
             Exit Function
         End If

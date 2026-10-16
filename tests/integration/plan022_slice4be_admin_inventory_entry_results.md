@@ -1,5 +1,20 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Reserved-field RED124 qualified,2026-10-15 Pacific:** source08d0e3f1/
+test9367159b completes28 PASS/5 FAIL,33 unique checks without a harness exception.
+Actual modal handlers accept System_Key and Condition as custom names; worksheet
+Upload accepts Condition and persists an event. Existing System_Key/ROW refusal,
+ordinary custom-field acceptance and cancellation controls pass. Controller
+`admin-inventory-entry-controller/c0381259d5eb468192fcabf737b09d9d`; worker
+`slice4be-admin-inventory-entry/02a71ae4c355499c9d495732e0955166`.
+Five-package/all486 tooling/four harness pins, settings/fixture preservation and
+normal owned/native closure qualify through2026-10-16T05:54:59.0013057Z. Desktop
+stop counters and Excel failure events are zero. Ignored qualification is
+`admin-inventory-managed-fields-red-124/qualification.json` under the resume root.
+The two existing reserved-name guards now reject managed identity/Condition fields;
+no new field, control, allocation rule or arbitrary custom-column restriction is
+introduced. Focused GREEN remains to run on a fresh isolated candidate.
+
 **Authority increment comparison123 qualified,2026-10-15 Pacific:** source/test
 08d0e3f1 completes229 PASS/28 FAIL,257 unique checks without a harness exception.
 All251 prior assertion names/order remain;42 action/yield cases reach their actual
@@ -224,6 +239,14 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Trial124 cohort: unresolved/not measured in focused scope**, source08d0e3f1/
+test9367159b, controller c0381259d5eb468192fcabf737b09d9d and worker
+02a71ae4c355499c9d495732e0955166. This reserved-field run contains no Config/Auth
+comparison and makes no cause/preservation claim for authority files. Trial123's
+same-product/different-test comparison stays separately labeled below. Its
+unidentified Other part and suspected inbox-setup save still require the stated
+read-only diagnostic; focused guard GREEN cannot close that finding.
 
 **Trial123 cohort: unresolved**, source/test08d0e3f1, controller
 586b25e422364c8fa6aa65ef4a1c2baa and worker02441468964845f2b8c92bdb58b10e3a.
