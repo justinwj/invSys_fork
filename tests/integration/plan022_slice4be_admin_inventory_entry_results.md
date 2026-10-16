@@ -1,5 +1,55 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Current catalog regression and maintenance:** source3d66ac92/testab3c4362
+retains the27 actual-Core catalog check names/order and qualifies GREEN16227/27.
+Controller9f989e1e606d4d20a2b4c14f1b9f554e; worker2478a83f37f74902a23f813c0811902b;
+five packages/all490 tooling/four harness pins/settings/fixtures and normal
+native closure qualify through19:35:28.8443616Z, zero desktop/native failures.
+This is an unsaved helper/Core scope, not operator packaged acceptance. Its
+Config/Auth comparison is unmeasured and leaves the Config finding open.
+All six final-source maintenance reports are complete, all three schemas validate,
+and the non-growth ratchets pass:372 components/6615 procedures/143171 lines,
+194 duplicate groups,9 literal/45 unresolved dynamic calls and no oversized-module
+growth versusb936503e. No deletions or growth exceptions. The full retained Inventory
+source comparison163 is running; no outcome or build qualification is inferred.
+
+**Exact Edit continuation GREEN161 qualified,2026-10-16 Pacific:** source
+3d66ac92/testb7be62d7 retains all23 RED153 check names/order and passes23/23.
+The timestamp comparison correction214a8713 first changes14/9 to22/1 in157;
+its no-op continuation, exact quantity saves and post-processor authority-loss
+controls pass. Core then plans the exact quantity result, verifies the independently
+saved receipt/log/entity data and adopts only that verified baseline. Numeric
+Value2 timestamps require explicit Date conversion; Core releases its owned
+read-only source before another input check. The successful Edit reopens, and
+post-save sign-out retains the exact saved result while refusing continuation.
+Controller2dcf3611638a40c9a209c0208899c53a; worker97ce08b3168147889e281971e599d3d8;
+five packages/all490 tooling/eight source overlays/four harness pins/settings/
+fixtures and normal owned/native closure qualify through19:32:53.5398853Z, zero
+desktop/native failures. These are actual operator handlers in unsaved overlays,
+not built-package acceptance. Catalog regression162 and the full retained Inventory
+comparison are next. Add/Delete own results, worksheet write/result-save retry,
+separate headless/remaining D13 and broader4be-A gates stay open; no XLAM build/deploy.
+
+**Maintenance follow-up:** c5b82d52's six regenerated reports validate all three
+schemas and return duplicate groups to194, matching the b936503e baseline;9
+literal/45 unresolved dynamic calls and no oversized-module growth remain. The
+shared confirmation guard replaces the duplicated orchestration. Fresh source
+3d66ac92 maintenance is still running and is not inferred fromc5b82d52.
+
+**Full-Edit catalog cause established in156:** sourceb84093c5/test1060c83f
+retains153's exact23 names/order/outcomes,14/9, with normal preserved native audit
+and all pins. Controller61b18146d40749a5ac43a24f37c79ba1; worker
+eb3cfd88e00341d6b7dec47f49d9addc. Across all three cases, the last catalog stage is
+FieldsWritten, timestamp text round-trip comparison mismatches, and the raw Excel
+date double exactly matches the planned Date. Thus the before-save guard rejects
+a correct own timestamp because CStr(Double) loses precision. No values are emitted.
+The214a8713 correction retains the typed scalar for exact numeric/date comparison;
+Qualified157 retains23 names/order and records22/1, with only successful-adjustment
+continuation still failing; native audit19:17:57.9389512Z. This is independent
+of the unresolved Config metadata finding.155 independently localizes the same
+before-save refusal;154's case-sensitive VBE anchor failure is not product RED.
+No XLAM build or deployment.
+
 **Full-Edit continuation RED153 qualified,2026-10-16 Pacific:** sourceb84093c5/
 test21556a44 executes23 unique checks through actual Ribbon/Edit/reason handlers,
 14 PASS/9 FAIL, no harness exception. Even the no-op quantity control does not
@@ -122,7 +172,8 @@ comparison classes, Core facade wiring and SKU-selection binding are staged as a
 incomplete, unbuilt prototype. Do not build/deploy it until write/result phases
 are finished: own verified writes must not expire themselves. The198-line guarded
 catalog-write diff is saved but unapplied at
-`tests/proposals/d8_inv_01_catalog_write_phase.patch`; `git apply --check` passes.
+`tests/proposals/d8_inv_01_catalog_write_phase.patch`; its earlier apply-check
+was against the historical draft source, not the current batch implementation.
 Automatic review rejected its broad live mutation/save scope twice, including
 after correction to an explicit cleanup Boolean. No new architecture approval is
 requested: D8-INV-01 is already approved. The user has now authorized the catalog
@@ -546,6 +597,20 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Full-Edit diagnostic/comparison Config limits:**155 and156 use sourceb84093c5,
+tests13bcd79d/1060c83f respectively; controller/worker155
+ed24a7b65d254010b6cebe947208e357/272121a7817642058c6cb8c752bdf68b,
+156: 61b18146d40749a5ac43a24f37c79ba1/eb3cfd88e00341d6b7dec47f49d9addc.
+157 uses source214a8713/test1060c83f, controller/worker
+e92638d2fcce431eb43e8e9859ec4c37/9f270272598a433dbf2bd58018c30cfc.
+159 uses sourcec5b82d52/test9189b2a5, controller/worker
+06a2d70945f446e49dcac87de0227af5/1be80b4ad5d54b61969bf21f1cc85f73.
+All retain the23 behavioral checks; none measures Config/Auth byte preservation.
+Their Config cause remains unresolved/not measured; timestamp receipt diagnosis
+is a separate defect and cannot substitute for140. GREEN161 also leaves that
+finding open. The next full Inventory comparison must run the retained baseline
+and read-only Config artifact on its own exact source/test cohort.
 
 **Full-Edit153: unresolved/not measured**, sourceb84093c5/test21556a44,
 controllerbdf8a3e57eb5474fb4da1c0b80d78903, worker4560c19e8c2e4da79043019946d1c1d5.
