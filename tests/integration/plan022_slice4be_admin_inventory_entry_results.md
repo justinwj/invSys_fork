@@ -1,5 +1,18 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Expanded attempt116,2026-10-15 Pacific:** approved-contract test494062a2 on
+unchanged source1c9bff87 retains all45 prior names/order and their35 PASS/10 FAIL
+outcomes, then adds one harness exception before the first new matrix action.
+The new adapter supplies nine macro arguments, while the established runner
+supports at most seven. No new matrix behavioral RED is qualified. Controller
+`admin-inventory-entry-controller/e0dd81d17d7148a9ac13a7e899ab69b2`, worker
+`slice4be-admin-inventory-entry/c4a7e200fa53482daa8a144a956e8cdc`.
+Five-package/all486 tooling/settings/fixture preservation and normal unforced
+closure pass; delayed native audit through2026-10-16T04:13:46.7547023Z finds zero
+Excel failures and no desktop stop. The test adapter now separates selection
+setup from its seven-argument Execute; the common runner is unchanged. Expanded
+modal/worksheet matrix remains to run before product edits.
+
 **Qualified packaged RED,2026-10-15 Pacific:** trial115 completes **35 PASS /
 10 FAIL**, all45 unique assertion identities/order retained from114 and no
 Harness.Exception. Product source remains1c9bff87; test55868837 and unchanged
@@ -58,6 +71,14 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Trial116 cohort: unresolved**, source1c9bff87/test494062a2, controller
+e0dd81d17d7148a9ac13a7e899ab69b2 and worker c4a7e200fa53482daa8a144a956e8cdc.
+All five baseline observations again show Auth unchanged and Config changed from
+the authorized baseline onward. No field/part comparison or causal write is proved.
+The expanded matrix's argument-count harness failure does not diagnose or close
+that finding. Next diagnostic remains a redacted read-only comparison at the same
+product source, with new instrumentation/test/run provenance recorded separately.
 
 **Status: unresolved**, recorded2026-10-15 Pacific for RED trial115 only.
 

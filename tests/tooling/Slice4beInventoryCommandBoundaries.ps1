@@ -33,12 +33,15 @@ Public Function PrepareBoundaryTable(ByVal host As String) As Boolean
         Next lo
     Next ws
 End Function
+Public Sub SetSelection(ByVal otherRoot As String, ByVal sku As String)
+    mOtherRoot = otherRoot: mSku = sku
+End Sub
 Public Sub Execute(ByVal host As String, ByVal action As String, ByVal caseName As String, _
                    ByVal phase As String, ByVal root As String, ByVal wh As String, _
-                   ByVal secret As String, ByVal otherRoot As String, ByVal sku As String)
+                   ByVal secret As String)
     Dim control As New TestInventoryEntryRibbon
     mDriving = True: mHost = host: mAction = action: mCase = caseName: mPhase = phase
-    mRoot = root: mWh = wh: mSecret = secret: mOtherRoot = otherRoot: mSku = sku
+    mRoot = root: mWh = wh: mSecret = secret
     mShows = 0: mHandler = 0: mYield = False: mPrepared = False: mBound = False
     mBefore = "": mSignatureReady = False
     Application.Workbooks(host).Activate
@@ -224,7 +227,8 @@ function Test-InventoryCommandBoundaries($Fixture,$Other) {
                 $phase=if($action -eq 'Edit'){'EditReason'}elseif($action -eq 'Delete'){'DeleteConfirmation'}else{'ModalReturn'}
                 # The other warehouse uses its own ephemeral fixture credential.
                 $secret=if($case -ceq 'OtherWarehouseAdmin'){$Other.Secret}else{$Fixture.Secret}
-                [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,$action,$case,$phase,$Fixture.Root,$Fixture.Warehouse,$secret,$Other.Root,$sku))
+                [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetSelection' @($Other.Root,$sku))
+                [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,$action,$case,$phase,$Fixture.Root,$Fixture.Warehouse,$secret))
                 $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
                 $id='InventoryCommand.'+$action+'.'+$phase+'.'+$case
                 $ready=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[1] -ceq 'True' -and $facts[2] -ceq '1'
