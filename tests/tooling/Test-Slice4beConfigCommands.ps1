@@ -152,6 +152,7 @@ param(
     [switch]$AdminInventoryAddResultsOnly,
     [switch]$AdminInventoryDeleteResultsOnly,
     [switch]$AdminInventoryWorksheetResultsOnly,
+    [switch]$AdminInventoryImportedRowsOnly,
     [switch]$AdminInventoryReadOnlyOperatorsOnly,
     [switch]$AdminInventoryHeadlessWorksheetOnly,
     [switch]$AdminAggregationPathComparison,
@@ -875,6 +876,7 @@ if($AdminInventoryWorksheetResultsOnly -and (-not $AdminInventoryEntryOnly -or $
 if($AdminInventoryReadOnlyOperatorsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Readonly operator checks require their separate Inventory entry gate.'}
 if($AdminInventoryHeadlessWorksheetOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryReadOnlyOperatorsOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Provisioned headless checks require their separate Inventory entry gate.'}
 if($AdminInventoryOverlaySourceRootForTest -and (-not $AdminInventorySourceOverlayForTest -or -not $AdminInventoryEntryOnly)){throw 'An explicit exported source root requires the isolated Inventory source-overlay gate.'}
+if($AdminInventoryImportedRowsOnly -and (-not $AdminInventoryWorksheetResultsOnly -or -not $AdminInventorySourceOverlayForTest)){throw 'Imported-row proof requires the isolated source-overlay worksheet gate.'}
 if($AdminInventoryEntryOnly){
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-inventory-entry/'+[guid]::NewGuid().ToString('N'))
@@ -2244,6 +2246,10 @@ End Function
         if($AdminInventoryWorksheetResultsOnly){
             . (Join-Path $PSScriptRoot 'Slice4beInventoryWorksheetResults.ps1')
             Install-InventoryWorksheetResultProbe
+            if($AdminInventoryImportedRowsOnly){
+                . (Join-Path $PSScriptRoot 'Slice4beInventoryImportedRows.ps1')
+                Install-InventoryImportedRowsProbe
+            }
         }
         if($AdminInventoryDeleteResultsOnly){
             . (Join-Path $PSScriptRoot 'Slice4beInventoryDeleteResults.ps1')
@@ -2488,7 +2494,10 @@ End Function
             Test-InventoryReadOnlyOperators $a $b
         }elseif($AdminInventoryWorksheetResultsOnly){
             $step='actual worksheet Upload source and result save retry boundaries'
-            Test-InventoryWorksheetResults $a $b
+            if($AdminInventoryImportedRowsOnly){
+                $step='actual Upload independent imported ADD receipt proof and whole-selection refusal'
+                Test-InventoryImportedRows $a $b
+            }else{Test-InventoryWorksheetResults $a $b}
         }elseif($AdminInventoryDeleteResultsOnly){
             $step='actual Delete handler exact all-active retirement and processor return'
             Test-InventoryDeleteResults $a $b
