@@ -21,14 +21,17 @@ End Property
 Option Explicit
 Private mMode As String, mRoot As String, mSecret As String, mOtherBook As String
 Private mHostName As String, mCapturedHost As Boolean
+Private mSourceRoot As String, mWarehouse As String, mCapturedKind As String
 Private mShows As Long, mAccepts As Long, mNotices As Long
 Private mAccepted As Boolean, mYieldSucceeded As Boolean
 Private mPayloadSeen As Boolean, mLegacyPayload As Boolean, mLegacyDisplay As Boolean
 Public Sub Execute(ByVal hostName As String, ByVal mode As String, _
-                   ByVal targetRoot As String, ByVal secret As String, ByVal otherBook As String)
+                   ByVal targetRoot As String, ByVal secret As String, ByVal otherBook As String, _
+                   ByVal sourceRoot As String, ByVal warehouseId As String)
     Dim control As New TestInventoryEntryRibbon
     mMode = mode: mRoot = targetRoot: mSecret = secret: mOtherBook = otherBook
     mHostName = hostName: mCapturedHost = False
+    mSourceRoot = sourceRoot: mWarehouse = warehouseId: mCapturedKind = "Unavailable"
     mShows = 0: mAccepts = 0: mNotices = 0: mAccepted = False: mYieldSucceeded = False
     mPayloadSeen = False: mLegacyPayload = False: mLegacyDisplay = False
     Application.Workbooks(hostName).Activate
@@ -41,6 +44,7 @@ Public Sub Drive(ByVal form As frmAddInventoryItem)
     If mShows > 1 Then form.InventoryEntryCancelForTest: Exit Sub
     mLegacyDisplay = form.InventoryEntryLegacyDisplayForTest()
     mCapturedHost = form.InventoryEntryOwnerBoundForTest(mHostName)
+    mCapturedKind = form.InventoryEntryCapturedKindForTest(mHostName, mSourceRoot, mWarehouse)
     Select Case mMode
         Case "ActiveWorkbook"
             Application.Workbooks(mOtherBook).Activate
@@ -76,7 +80,7 @@ End Sub
 Public Function Facts() As String
     Facts = CStr(mShows) & "|" & CStr(mAccepts) & "|" & CStr(mAccepted) & "|" & _
             CStr(mYieldSucceeded) & "|" & CStr(mNotices) & "|" & CStr(mPayloadSeen) & "|" & _
-            CStr(mLegacyPayload) & "|" & CStr(mLegacyDisplay) & "|" & CStr(mCapturedHost)
+            CStr(mLegacyPayload) & "|" & CStr(mLegacyDisplay) & "|" & CStr(mCapturedHost) & "|" & mCapturedKind
 End Function
 '@)
     $form=$project.VBComponents.Item('frmAddInventoryItem').CodeModule
@@ -106,6 +110,17 @@ Public Function InventoryEntryOwnerBoundForTest(ByVal hostName As String) As Boo
     Set expected = Application.Workbooks(hostName)
     InventoryEntryOwnerBoundForTest = (mOperatorWorkbook Is expected)
 End Function
+Public Function InventoryEntryCapturedKindForTest(ByVal hostName As String, ByVal root As String, _
+                                                 ByVal warehouseId As String) As String
+    InventoryEntryCapturedKindForTest = "OtherWorkbook"
+    If mOperatorWorkbook Is Nothing Then InventoryEntryCapturedKindForTest = "NoWorkbook": Exit Function
+    If InventoryEntryOwnerBoundForTest(hostName) Then InventoryEntryCapturedKindForTest = "ExpectedOperator": Exit Function
+    Dim prefix As String
+    prefix = root & "\" & warehouseId
+    If StrComp(mOperatorWorkbook.FullName, prefix & ".invSys.Config.xlsb", vbTextCompare) = 0 Then InventoryEntryCapturedKindForTest = "SourceConfig"
+    If StrComp(mOperatorWorkbook.FullName, prefix & ".invSys.Auth.xlsb", vbTextCompare) = 0 Then InventoryEntryCapturedKindForTest = "SourceAuth"
+    If StrComp(mOperatorWorkbook.FullName, prefix & ".invSys.Data.Inventory.xlsb", vbTextCompare) = 0 Then InventoryEntryCapturedKindForTest = "SourceInventory"
+End Function
 '@)
     $owner=$project.VBComponents.Item('modAdmin').CodeModule
     $start=$owner.ProcStartLine('AddInventoryItemForWarehouse',0);$count=$owner.ProcCountLines('AddInventoryItemForWarehouse',0)
@@ -129,17 +144,26 @@ function Get-AdminInventoryEntryHash([string]$Path) {
     finally {$stream.Dispose()}
 }
 
-function Get-AdminInventoryEntryFacts($Fixture) {
+function Get-AdminInventoryEntryFacts($Fixture,[switch]$Persisted) {
     $path=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
     $book=$null;$opened=$false
     foreach($candidate in $excel.Workbooks){if($candidate.FullName -ieq $path){$book=$candidate;break}}
+    # Disposable fixture only: discard unsaved memory, never save for the owner.
+    if($Persisted -and $null -ne $book){$book.Close($false);$book=$null}
     if($null -eq $book){$book=$excel.Workbooks.Open($path,0,$true);$opened=$true}
     try {
         $log=Table $book 'tblInventoryLog';$applied=Table $book 'tblAppliedEvents'
         $legacy=@($book.Worksheets|ForEach-Object {$_.ListObjects}|ForEach-Object {$_.ListColumns}|Where-Object {$_.Name.Trim().ToUpperInvariant() -ceq 'ROW'}).Count
-        $keys=@();foreach($row in $log.ListRows){$key=[string]$row.Range.Cells.Item(1,$log.ListColumns.Item('System_Key').Index).Value2;if($key){$keys+=$key}}
-        $lastDelta=if($log.ListRows.Count){[double]$log.ListRows.Item($log.ListRows.Count).Range.Cells.Item(1,$log.ListColumns.Item('QtyDelta').Index).Value2}else{0}
-        [pscustomobject]@{LogRows=$log.ListRows.Count;AppliedRows=$applied.ListRows.Count;LegacyHeaders=$legacy;DistinctKeys=@($keys|Select-Object -Unique).Count;LastDelta=$lastDelta;Saved=$book.Saved;FileHash=(Get-AdminInventoryEntryHash $path)}
+        $balances=[Collections.Generic.Dictionary[string,double]]::new([StringComparer]::Ordinal)
+        foreach($row in $log.ListRows){
+            $key=[string]$row.Range.Cells.Item(1,$log.ListColumns.Item('System_Key').Index).Value2
+            if($key){
+                $delta=[double]$row.Range.Cells.Item(1,$log.ListColumns.Item('QtyDelta').Index).Value2
+                if(-not $balances.ContainsKey($key)){$balances.Add($key,0)}
+                $balances[$key]+=$delta
+            }
+        }
+        [pscustomobject]@{LogRows=$log.ListRows.Count;AppliedRows=$applied.ListRows.Count;LegacyHeaders=$legacy;DistinctKeys=$balances.Count;EntityQuantities=$balances;Saved=$book.Saved;FileHash=(Get-AdminInventoryEntryHash $path)}
     } finally {if($opened){$book.Close($false)}}
 }
 
@@ -160,12 +184,15 @@ function Test-AdminInventoryEntry($Fixture,$Other) {
     try {
         foreach($mode in @('Baseline','ActiveWorkbook','SignedOut','OtherWarehouseAdmin','ReplacementSession')){
             SelectTarget $Fixture
-            $before=Get-AdminInventoryEntryFacts $Fixture
+            $before=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $target=if($mode -ceq 'OtherWarehouseAdmin'){$Other}else{$Fixture}
-            [void](Run 'invSys.Admin.xlam' 'TestInventoryEntry.Execute' @($hostBook.Name,$mode,$target.Root,$target.Secret,$otherBook.Name))
+            [void](Run 'invSys.Admin.xlam' 'TestInventoryEntry.Execute' @($hostBook.Name,$mode,$target.Root,$target.Secret,$otherBook.Name,$Fixture.Root,$Fixture.Warehouse))
             $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryEntry.Facts')).Split('|')
             $after=Get-AdminInventoryEntryFacts $Fixture
-            $actionReached=$facts.Count -eq 9 -and [int]$facts[1] -eq 1 -and $facts[2] -ceq 'True' -and $facts[3] -ceq 'True'
+            $persisted=Get-AdminInventoryEntryFacts $Fixture -Persisted
+            $newKeys=@($persisted.EntityQuantities.Keys|Where-Object {-not $before.EntityQuantities.ContainsKey($_)})
+            $exactSaved=($newKeys.Count -eq 1 -and $persisted.EntityQuantities[$newKeys[0]] -eq 1 -and $persisted.FileHash -cne $before.FileHash)
+            $actionReached=$facts.Count -eq 10 -and [int]$facts[1] -eq 1 -and $facts[2] -ceq 'True' -and $facts[3] -ceq 'True'
             Check ('InventoryEntry.'+$mode+'.ActualModalAcceptReached') $actionReached
             if(-not $actionReached){throw 'Inventory modal action fixture did not reach OK; not product RED.'}
             Check ('InventoryEntry.'+$mode+'.OriginalHostCapturedBeforeYield') ($facts[8] -ceq 'True')
@@ -173,7 +200,7 @@ function Test-AdminInventoryEntry($Fixture,$Other) {
             if($mode -cin @('Baseline','ActiveWorkbook')){
                 Check ('InventoryEntry.'+$mode+'.OwningCreateApplied') ($after.LogRows -eq $before.LogRows+1 -and $after.AppliedRows -eq $before.AppliedRows+1)
                 Check ('InventoryEntry.'+$mode+'.NewDistinctEntity') ($after.DistinctKeys -eq $before.DistinctKeys+1)
-                Check ('InventoryEntry.'+$mode+'.ExactStartingQuantitySaved') ($after.LastDelta -eq 1 -and $after.Saved -eq $true -and $after.FileHash -cne $before.FileHash)
+                Check ('InventoryEntry.'+$mode+'.ExactStartingQuantitySaved') $exactSaved
                 Check ('InventoryEntry.'+$mode+'.CreatePayloadContainsNoROW') ($facts[5] -ceq 'True' -and $facts[6] -ceq 'False')
             }elseif($mode -cne 'ReplacementSession'){
                 Check ('InventoryEntry.'+$mode+'.NoInventoryMutation') (-not $wrote)
@@ -181,7 +208,7 @@ function Test-AdminInventoryEntry($Fixture,$Other) {
             Check ('InventoryEntry.'+$mode+'.ManagedHeadersContainNoROW') ($after.LegacyHeaders -eq 0)
             Check ('InventoryEntry.'+$mode+'.DisplayContainsNoROWIdentity') ($facts[7] -ceq 'False')
             Check ('InventoryEntry.'+$mode+'.UnrelatedWorkbookStructurePreserved') ($otherBook.Worksheets.Count -eq $otherSheetCount)
-            [pscustomobject]@{Case=$mode;ModalAcceptReached=$actionReached;InventoryWriteObserved=$wrote;SavedInventoryBytesChanged=($after.Saved -eq $true -and $after.FileHash -cne $before.FileHash);ReplacementSessionRefusalContractNotAssumed=($mode -ceq 'ReplacementSession')}|
+            [pscustomobject]@{Case=$mode;ModalAcceptReached=$actionReached;CapturedHostKind=$facts[9];InventoryWriteObserved=$wrote;OwnerWorkbookSavedFlag=$after.Saved;PersistedInventoryBytesChanged=($persisted.FileHash -cne $before.FileHash);ExactNewEntityQuantityPersisted=$exactSaved;SourceAuthUnchanged=($authHash -ceq (Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))));SourceConfigUnchanged=($configHash -ceq (Get-AdminInventoryEntryHash $Fixture.Config));ReplacementSessionRefusalContractNotAssumed=($mode -ceq 'ReplacementSession')}|
                 ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'inventory-entry-observations.jsonl')
         }
         Check 'InventoryEntry.SourceAuthAndConfigPreserved' ($authHash -ceq (Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))) -and $configHash -ceq (Get-AdminInventoryEntryHash $Fixture.Config))

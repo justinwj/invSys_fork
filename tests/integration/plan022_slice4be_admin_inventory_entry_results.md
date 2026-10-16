@@ -1,5 +1,33 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Actual entry checkpoint,2026-10-15 Pacific:** shared-reader trial114 completes
+33 PASS/12 FAIL without a harness exception. Controller
+`admin-inventory-entry-controller/49f895c7182b452f91c5ee9587e0933e`, worker
+`slice4be-admin-inventory-entry/91c54b56e8ed4d2aadaff594939796c3`. All five cases
+reach the actual modal OK handler. Baseline/active-workbook actions create distinct
+entities in the live inventory workbook. Both emit legacy ROW payload fields;
+all five expose the ROW identity label. The first baseline captures another
+workbook, while later original-host checks pass. A signed-out callback changes
+live inventory; the other-warehouse case does not. Source Auth/Config combined
+hash preservation fails; unrelated warehouse inventory/authority and workbook
+structure remain preserved. The source authority byte-change cause is unresolved.
+
+Two quantity/persistence failures are **not qualified**: that oracle assumes the
+last log row identifies the new entity and combines the workbook Saved flag with
+a file hash. Trial114 leaves persisted quantities and unauthorized persistence
+unresolved; its false combined flag proves neither rollback nor absence of disk
+writes. No save failure is inferred. Settings/packages/all485 tooling/fixture
+cleanup and normal owned closure pass; delayed native audit through23:55:06.9299516Z
+finds zero Excel failures, without a desktop stop.
+
+The corrected oracle matches new entities by exact System_Key and independently
+closes only its disposable inventory workbook **without saving**, reopens it
+read-only and verifies persisted quantity. It never saves on behalf of the owner.
+Fixed per-case booleans distinguish owner Saved state, disk change, exact persisted
+quantity, captured workbook kind and individual Auth/Config preservation. Existing
+45 assertion identities are retained. All485 tooling/four fresh trial scripts parse;
+unchanged-product trial115 is prepared. No product or architecture correction yet.
+
 **Initial harness checkpoint,2026-10-15 Pacific:** trial113 ends7 PASS/1 harness
 exception before any modal action. All five instrumented compiles, probe-before-form
 guard and generated Seed pass; an ordinary file-hash read conflicts with Excel's
