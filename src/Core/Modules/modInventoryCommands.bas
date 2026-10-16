@@ -20,7 +20,7 @@ Public Function Capture(ByVal workbookName As String) As String
     Dim inputs As cInventoryCommandInputs
     On Error GoTo Failed
     Set book = Application.Workbooks(workbookName)
-    If book.IsAddin Or book.Path = "" Then Exit Function
+    If book.IsAddin Or book.Path = "" Or book.ReadOnly Then Exit Function
     Set inputs = New cInventoryCommandInputs
     If Not inputs.CaptureSelection(book) Then Exit Function
     context = modAuthUserCommands.CaptureContext()
@@ -86,6 +86,7 @@ Private Function CheckAuthority(ByVal key As String, ByRef report As String) As 
     End If
     If entry("Context") <> modAuthUserCommands.CaptureContext() Then GoTo Refused
     Set original = entry("Workbook")
+    If original.ReadOnly Then GoTo Refused
     For Each book In Application.Workbooks
         If book Is original Then found = True
     Next book

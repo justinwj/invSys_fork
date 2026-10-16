@@ -42,6 +42,10 @@ Public Function CreateInventoryWorksheetTable(ByVal wb As Workbook, _
         report = "The captured Admin operator workbook is unavailable."
         Exit Function
     End If
+    If wb.ReadOnly Then
+        report = "Open the Admin operator workbook for editing before creating an inventory table."
+        Exit Function
+    End If
     If Trim$(wb.Path) = "" Then
         report = "Save the Admin operator workbook before creating an inventory table."
         Exit Function
@@ -99,6 +103,8 @@ Public Function UploadSelectedInventoryWorksheetTable(ByVal wb As Workbook, _
 
     On Error GoTo Failed
     mLastAutomationReport = ""
+    If wb Is Nothing Then report = "The captured Admin operator workbook is unavailable.": Exit Function
+    If wb.ReadOnly Then report = "Open the Admin operator workbook for editing before uploading inventory.": Exit Function
     If interactiveContext <> "" Then
         If Not modInventoryCommands.CheckOperatorWorkbook(interactiveContext, wb.Name, report) Then Exit Function
         values = modInventoryCommands.SourceValues(interactiveContext)
