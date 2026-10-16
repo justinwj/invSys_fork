@@ -8,12 +8,12 @@ function Install-InventoryCatalogPhaseProbe {
         'CatalogCellAdmin','SetCatalogValueAdmin','EnsureCatalogColumnAdmin',
         'NormalizeCatalogColumnNameAdmin','SetSheetProtectionAdminLocal',
         'SetPictureReferencesInCatalogAdmin','ParsePictureReferencesAdmin','AppendCatalogEditHistoryAdmin',
-        'PlanInventoryCatalogFieldsAdmin','PlanInventoryCatalogValueAdmin')
+        'PlanInventoryCatalogFieldsAdmin','PlanInventoryCatalogValueAdmin','WriteInventoryCatalogFieldsAdmin')
     $parts=@('Option Explicit')
     foreach($name in $names){
         $matches=[regex]::Matches($source,('(?ms)^(?:Public|Private) (?:Function|Sub) '+$name+'\b.*?^End (?:Function|Sub)\b'))
         if($matches.Count -ne 1){
-            if($name -like 'PlanInventoryCatalog*' -and $matches.Count -eq 0){continue}
+            if(($name -like 'PlanInventoryCatalog*' -or $name -eq 'WriteInventoryCatalogFieldsAdmin') -and $matches.Count -eq 0){continue}
             throw ('Catalog source procedure unavailable: '+$name)
         }
         $parts+=$matches[0].Value.Replace('modInventoryCommands.','TestCatalogPhase.')

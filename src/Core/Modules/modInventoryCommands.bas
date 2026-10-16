@@ -183,8 +183,11 @@ Public Function PlanCatalogField(ByVal key As String, ByVal sku As String, ByVal
         ByVal value As String, ByRef report As String) As Boolean
     Dim entry As Object, inputs As cInventoryCommandInputs
     On Error GoTo Refused
-    If Not CheckForm(key, report) Then Exit Function
-    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    If mForms Is Nothing Then GoTo Refused
+    Set entry = mForms.Item(key)
+    If entry Is Nothing Then GoTo Refused
+    If entry("Expired") Then GoTo Refused
+    Set inputs = entry("Inputs")
     inputs.PlanCatalogField sku, header, value
     PlanCatalogField = True
     Exit Function

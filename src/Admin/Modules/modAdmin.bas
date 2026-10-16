@@ -566,7 +566,7 @@ Sub Add_InventoryItem()
                                                                      formDescription, formVendorName, _
                                                                      formVendorCode, formCategory, _
                                                                      formExternalCode, formImagePath, _
-                                                                     formCustomFields, report)
+                                                                     formCustomFields, report, interactiveContext)
             If actionSucceeded And Not IsNonCountedCustomFieldsAdmin(formCustomFields) Then
                 Dim qtyReport As String
                 If SetInventoryQuantityForWarehouse(warehouseId, stationId, userId, formSku, _
@@ -1054,13 +1054,14 @@ Public Function UpdateInventoryItemCatalogForWarehouse(ByVal warehouseId As Stri
                                                        Optional ByVal externalCode As String = "", _
                                                        Optional ByVal imagePath As String = "", _
                                                        Optional ByVal customFields As Object = Nothing, _
-                                                       Optional ByRef report As String = "") As Boolean
+                                                       Optional ByRef report As String = "", _
+                                                       Optional ByVal interactiveContext As String = "") As Boolean
     Dim path As String
     Dim wb As Workbook
     Dim openedHere As Boolean
     Dim lo As ListObject
     Dim rowIndex As Long
-    Dim customKey As Variant
+    Dim fields As Object, field As Variant, saveAttempted As Boolean, savedToDisk As Boolean
 
     On Error GoTo FailUpdate
 
@@ -1078,7 +1079,12 @@ Public Function UpdateInventoryItemCatalogForWarehouse(ByVal warehouseId As Stri
     If path = "" Then report = "Inventory workbook path could not be resolved for " & warehouseId & ".": Exit Function
 
     Set wb = FindOpenWorkbookByFullNameAdmin(path)
-    If wb Is Nothing Then
+    If Not wb Is Nothing Then
+        If Not wb.Saved Then
+            report = "Inventory workbook has unsaved changes. Save or close it before editing the catalog."
+            Exit Function
+        End If
+    Else
         If Len(Dir$(path, vbNormal)) = 0 Then
             report = "Inventory workbook was not found: " & path
             Exit Function
@@ -1102,30 +1108,34 @@ Public Function UpdateInventoryItemCatalogForWarehouse(ByVal warehouseId As Stri
         GoTo CleanExit
     End If
 
-    SetSheetProtectionAdminLocal lo.Parent, False
-    SetCatalogValueAdmin lo, rowIndex, "ITEM_CODE", sku
-    SetCatalogValueAdmin lo, rowIndex, "ITEM", itemName
-    SetCatalogValueAdmin lo, rowIndex, "UOM", uom
-    SetCatalogValueAdmin lo, rowIndex, "LOCATION", locationVal
-    SetCatalogValueAdmin lo, rowIndex, "DESCRIPTION", description
-    SetCatalogValueAdmin lo, rowIndex, "VENDOR(s)", vendorName
-    SetCatalogValueAdmin lo, rowIndex, "VENDOR_CODE", vendorCode
-    SetCatalogValueAdmin lo, rowIndex, "CATEGORY", category
-    SetCatalogValueAdmin lo, rowIndex, "EXTERNAL_CODE", externalCode
-    SetPictureReferencesInCatalogAdmin lo, rowIndex, imagePath
-    If Not customFields Is Nothing Then
-        For Each customKey In customFields.Keys
-            If Trim$(CStr(customKey)) <> "" Then
-                If StrComp(Trim$(CStr(customKey)), "EDIT_HISTORY_APPEND", vbTextCompare) = 0 Then
-                    AppendCatalogEditHistoryAdmin lo, rowIndex, CStr(customFields(customKey))
-                Else
-                    SetCatalogValueAdmin lo, rowIndex, Trim$(CStr(customKey)), customFields(customKey)
-                End If
-            End If
-        Next customKey
+    Set fields = PlanInventoryCatalogFieldsAdmin(lo, rowIndex, Array(sku, itemName, uom, _
+        locationVal, description, vendorName, vendorCode, category, externalCode, imagePath), customFields)
+    If interactiveContext <> "" Then
+        If Not modInventoryCommands.BeginCatalog(interactiveContext, sku, report) Then GoTo CleanExit
+        If Not modInventoryCommands.BindCatalogWriter(interactiveContext, wb.Name, report) Then GoTo CleanExit
+        For Each field In fields.Keys
+            If Not modInventoryCommands.PlanCatalogField(interactiveContext, sku, CStr(field), _
+                    CStr(fields(field)), report) Then GoTo CleanExit
+        Next field
+        If Not modInventoryCommands.CheckForm(interactiveContext, report) Then GoTo CleanExit
     End If
-    SetSheetProtectionAdminLocal lo.Parent, True
+    WriteInventoryCatalogFieldsAdmin lo, rowIndex, fields
+    If interactiveContext <> "" Then
+        If Not modInventoryCommands.BeginCatalogSave(interactiveContext, report) Then GoTo CleanExit
+    End If
+    saveAttempted = True
     wb.Save
+    savedToDisk = wb.Saved
+    If Not savedToDisk Then
+        report = "Partial result: catalog save was attempted but is unconfirmed. Reopen and verify before retrying."
+        GoTo CleanExit
+    End If
+    If interactiveContext <> "" Then
+        If Not modInventoryCommands.ConfirmCatalog(interactiveContext, report) Then
+            report = "Partial result: catalog fields were saved, but confirmation failed. Reopen and verify before retrying." & vbCrLf & report
+            GoTo CleanExit
+        End If
+    End If
 
     report = "Inventory item updated." & vbCrLf & _
              "Warehouse: " & warehouseId & vbCrLf & _
@@ -1136,15 +1146,78 @@ Public Function UpdateInventoryItemCatalogForWarehouse(ByVal warehouseId As Stri
 
 CleanExit:
     On Error Resume Next
-    If Not lo Is Nothing Then SetSheetProtectionAdminLocal lo.Parent, True
     If openedHere And Not wb Is Nothing Then wb.Close SaveChanges:=False
     On Error GoTo 0
     Exit Function
 
 FailUpdate:
     report = "UpdateInventoryItemCatalog failed: " & Err.Description
+    If saveAttempted Then report = "Partial result: catalog save was attempted; persisted outcome is unconfirmed. Reopen and verify before retrying." & vbCrLf & report
     Resume CleanExit
 End Function
+
+Private Function PlanInventoryCatalogFieldsAdmin(ByVal lo As ListObject, ByVal rowIndex As Long, _
+        ByVal values As Variant, ByVal customFields As Object) As Object
+    Dim fields As Object, names As Variant, refs As Collection, i As Long, key As Variant
+    Dim text As String, existing As String
+    Set fields = CreateObject("Scripting.Dictionary"): fields.CompareMode = vbTextCompare
+    names = Array("ITEM_CODE", "ITEM", "UOM", "LOCATION", "DESCRIPTION", "VENDOR(s)", "VENDOR_CODE", "CATEGORY", "EXTERNAL_CODE")
+    For i = 0 To UBound(names)
+        PlanInventoryCatalogValueAdmin fields, CStr(names(i)), values(i)
+    Next i
+    Set refs = ParsePictureReferencesAdmin(CStr(values(9)))
+    If refs.Count > 0 Then fields("IMAGE_PATH") = refs(1) Else fields("IMAGE_PATH") = ""
+    For i = 2 To 12
+        text = "IMAGE_PATH_" & CStr(i)
+        If i <= refs.Count Then
+            fields(text) = refs(i)
+        ElseIf ColumnIndexAdminLocal(lo, text) > 0 Then
+            fields(text) = ""
+        End If
+    Next i
+    If Not customFields Is Nothing Then
+        For Each key In customFields.Keys
+            text = Trim$(CStr(key))
+            If StrComp(text, "EDIT_HISTORY_APPEND", vbTextCompare) = 0 Then
+                text = Trim$(CStr(customFields(key)))
+                If text <> "" Then
+                    If fields.Exists("EDIT_HISTORY") Then existing = CStr(fields("EDIT_HISTORY")) Else existing = CatalogCellAdmin(lo, rowIndex, "EDIT_HISTORY")
+                    If existing <> "" Then text = existing & vbLf & text
+                    fields("EDIT_HISTORY") = text
+                End If
+            Else
+                PlanInventoryCatalogValueAdmin fields, text, customFields(key)
+            End If
+        Next key
+    End If
+    Set PlanInventoryCatalogFieldsAdmin = fields
+End Function
+
+Private Sub PlanInventoryCatalogValueAdmin(ByVal fields As Object, ByVal name As String, ByVal value As Variant)
+    name = NormalizeCatalogColumnNameAdmin(name)
+    If name <> "" Then fields(name) = value
+End Sub
+
+Private Sub WriteInventoryCatalogFieldsAdmin(ByVal lo As ListObject, ByVal rowIndex As Long, ByVal fields As Object)
+    Dim events As Boolean, field As Variant, number As Long, description As String
+    events = Application.EnableEvents
+    On Error GoTo Failed
+    Application.EnableEvents = False
+    SetSheetProtectionAdminLocal lo.Parent, False
+    For Each field In fields.Keys
+        SetCatalogValueAdmin lo, rowIndex, CStr(field), fields(field)
+    Next field
+    SetSheetProtectionAdminLocal lo.Parent, True
+    Application.EnableEvents = events
+    Exit Sub
+Failed:
+    number = Err.Number: description = Err.Description
+    On Error Resume Next
+    SetSheetProtectionAdminLocal lo.Parent, True
+    Application.EnableEvents = events
+    On Error GoTo 0
+    Err.Raise number, , description
+End Sub
 
 Private Sub AppendCatalogEditHistoryAdmin(ByVal lo As ListObject, ByVal rowIndex As Long, ByVal entryText As String)
     Dim existingText As String

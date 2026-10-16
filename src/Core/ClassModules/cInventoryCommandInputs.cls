@@ -144,7 +144,11 @@ Invalid:
 End Function
 
 Public Function BeginSave() As Boolean
+    Dim owner As cSnapshotInventorySource, book As Workbook, borrowed As Boolean
     If mPhase = "" Or Not Unchanged() Then Exit Function
+    Set book = ReadSource(owner, borrowed)
+    If book Is Nothing Then Exit Function
+    If Not mCatalog.Matches(modExecutionTarget.Table(book, "tblSkuCatalog"), "", False, True) Then Exit Function
     mSaving = True: BeginSave = True
 End Function
 
