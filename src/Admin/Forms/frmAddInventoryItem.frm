@@ -1368,11 +1368,15 @@ End Sub
 
 Private Sub LoadSelectedEditItemBySku(ByVal sku As String)
     Dim item As Object
+    Dim report As String
 
     sku = Trim$(sku)
     If sku = "" Then Exit Sub
     Set item = FindCatalogItemBySku(sku)
     If item Is Nothing Then Exit Sub
+    If mInteractiveContext <> "" Then
+        If Not modInventoryCommands.SelectSku(mInteractiveContext, sku, report) Then mLblStatus.Caption = report: Exit Sub
+    End If
 
     mSelectedEditSku = sku
     mTxtItemName.Value = CatalogField(item, "ITEM")

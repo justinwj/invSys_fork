@@ -7,9 +7,12 @@ Private mForms As cCapturedFormStore
 Public Function Capture(ByVal workbookName As String) As String
     Dim book As Workbook, target As WarehouseTarget, entry As Object
     Dim context As String, key As String, report As String
+    Dim inputs As cInventoryCommandInputs
     On Error GoTo Failed
     Set book = Application.Workbooks(workbookName)
     If book.IsAddin Or book.Path = "" Then Exit Function
+    Set inputs = New cInventoryCommandInputs
+    If Not inputs.CaptureSelection(book) Then Exit Function
     context = modAuthUserCommands.CaptureContext()
     If context = "" Then Exit Function
     Set target = modNasConnection.GetCurrentTarget()
@@ -29,6 +32,10 @@ Public Function Capture(ByVal workbookName As String) As String
     entry.Add "Expired", False
     If mForms Is Nothing Then Set mForms = New cCapturedFormStore
     key = modSystemIdentity.NewId(): mForms.Add key, entry
+    If Not CheckAuthority(key, report) Then Release key: Exit Function
+    If Not inputs.CaptureSource(target.WarehouseId) Then Release key: Exit Function
+    If modAggregationFiles.SameFile(book.FullName, inputs.SourcePath) Then Release key: Exit Function
+    entry.Add "Inputs", inputs
     If Not CheckForm(key, report) Then Release key: Exit Function
     Capture = key
 Failed:
@@ -43,6 +50,18 @@ Public Function SourceValues(ByVal key As String) As Variant
 End Function
 
 Public Function CheckForm(ByVal key As String, ByRef report As String) As Boolean
+    Dim entry As Object, inputs As cInventoryCommandInputs
+    On Error GoTo Refused
+    If Not CheckAuthority(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    If Not inputs.Unchanged() Then GoTo Refused
+    CheckForm = CheckAuthority(key, report)
+    Exit Function
+Refused:
+    Expire key, report
+End Function
+
+Private Function CheckAuthority(ByVal key As String, ByRef report As String) As Boolean
     Dim entry As Object, original As Workbook, book As Workbook, found As Boolean
     Dim root As String
     report = "The invSys session or inventory source changed. Reopen Add/Edit Inventory."
@@ -78,10 +97,123 @@ Public Function CheckForm(ByVal key As String, ByRef report As String) As Boolea
     If Not modConfig.LoadConfig(CStr(entry("Warehouse")), CStr(entry("Station"))) Then GoTo Refused
     If modConfig.GetString("PathDataRoot", "") <> entry("Feed") Then GoTo Refused
     If entry("Context") <> modAuthUserCommands.CaptureContext() Then GoTo Refused
-    report = "": CheckForm = True
+    report = "": CheckAuthority = True
     Exit Function
 Refused:
     If Not entry Is Nothing Then entry("Expired") = True
+End Function
+
+Private Sub Expire(ByVal key As String, ByRef report As String)
+    Dim entry As Object
+    report = "The selected inventory source, catalog, entity or staging table changed. Reopen Add/Edit Inventory."
+    On Error Resume Next
+    Set entry = mForms.Item(key)
+    If Not entry Is Nothing Then entry("Expired") = True
+End Sub
+
+Public Function SelectSku(ByVal key As String, ByVal sku As String, ByRef report As String) As Boolean
+    Dim entry As Object, inputs As cInventoryCommandInputs
+    On Error GoTo Refused
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    If Not inputs.BindSku(sku) Then GoTo Refused
+    SelectSku = CheckAuthority(key, report)
+    Exit Function
+Refused:
+    Expire key, report
+End Function
+
+Public Function StagingTableName(ByVal key As String) As String
+    Dim report As String, entry As Object, inputs As cInventoryCommandInputs
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    StagingTableName = inputs.StagingName
+End Function
+
+Public Function PlanStageCell(ByVal key As String, ByVal row As Long, ByVal header As String, _
+        ByVal value As String, ByRef report As String) As Boolean
+    Dim entry As Object, inputs As cInventoryCommandInputs
+    On Error GoTo Refused
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    If Not inputs.PlanStageCell(row, header, value) Then GoTo Refused
+    PlanStageCell = True
+    Exit Function
+Refused:
+    Expire key, report
+End Function
+
+Public Function ConfirmStageCell(ByVal key As String, ByRef report As String) As Boolean
+    Dim entry As Object, inputs As cInventoryCommandInputs
+    On Error GoTo Refused
+    If Not CheckAuthority(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    If Not inputs.ConfirmStageCell() Then GoTo Refused
+    ConfirmStageCell = CheckForm(key, report)
+    Exit Function
+Refused:
+    Expire key, report
+End Function
+
+Public Function BeginCatalog(ByVal key As String, ByVal sku As String, ByRef report As String) As Boolean
+    Dim entry As Object, inputs As cInventoryCommandInputs
+    On Error GoTo Refused
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    If Not inputs.BeginCatalog(sku) Then GoTo Refused
+    BeginCatalog = True
+    Exit Function
+Refused:
+    Expire key, report
+End Function
+
+Public Function BindCatalogWriter(ByVal key As String, ByVal workbookName As String, ByRef report As String) As Boolean
+    Dim entry As Object, inputs As cInventoryCommandInputs
+    On Error GoTo Refused
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    If Not inputs.BindCatalogWriter(Application.Workbooks(workbookName)) Then GoTo Refused
+    BindCatalogWriter = True
+    Exit Function
+Refused:
+    Expire key, report
+End Function
+
+Public Function PlanCatalogField(ByVal key As String, ByVal sku As String, ByVal header As String, _
+        ByVal value As String, ByRef report As String) As Boolean
+    Dim entry As Object, inputs As cInventoryCommandInputs
+    On Error GoTo Refused
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    inputs.PlanCatalogField sku, header, value
+    PlanCatalogField = True
+    Exit Function
+Refused:
+    Expire key, report
+End Function
+
+Public Function BeginCatalogSave(ByVal key As String, ByRef report As String) As Boolean
+    Dim entry As Object, inputs As cInventoryCommandInputs
+    On Error GoTo Refused
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    If Not inputs.BeginSave() Then GoTo Refused
+    BeginCatalogSave = True
+    Exit Function
+Refused:
+    Expire key, report
+End Function
+
+Public Function ConfirmCatalog(ByVal key As String, ByRef report As String) As Boolean
+    Dim entry As Object, inputs As cInventoryCommandInputs
+    On Error GoTo Refused
+    If Not CheckAuthority(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    If Not inputs.ConfirmCatalog() Then GoTo Refused
+    ConfirmCatalog = CheckForm(key, report)
+    Exit Function
+Refused:
+    Expire key, report
 End Function
 
 Public Sub Release(ByVal key As String)

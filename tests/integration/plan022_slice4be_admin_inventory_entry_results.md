@@ -1,5 +1,25 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Current input RED138 qualified,2026-10-16 Pacific:** product68949ab0/
+testcee68ca4 records88 PASS/20 FAIL,108 unique checks with no harness exception.
+Authorized controls pass; changed/replaced catalog, entity and staging-table
+continuation remains RED. Controller e5f73851bd9d4872ab5962f9eabfbe4d; worker
+15153aabf55748aca8db6a7646525624. Preserved five packages/all486 tooling/settings/
+fixtures and normal owned/native closure qualify through2026-10-16T07:03:14.2959637Z,
+with zero desktop stops/Excel failures. Qualification is in the ignored138 root.
+
+**Implementation blocked by automatic approval review:** two Core-only input
+comparison classes, Core facade wiring and SKU-selection binding are staged as an
+incomplete, unbuilt prototype. Do not build/deploy it until write/result phases
+are finished: own verified writes must not expire themselves. The198-line guarded
+catalog-write diff is saved but unapplied at
+`tests/proposals/d8_inv_01_catalog_write_phase.patch`; `git apply --check` passes.
+Automatic review rejected its broad live mutation/save scope twice, including
+after correction to an explicit cleanup Boolean. No new architecture approval is
+requested: D8-INV-01 is already approved. Specific product-edit authorization is
+pending; do not retry indirectly or split the patch to evade review. Separate
+code/docs fork push authorizations also remain pending after review rejections.
+
 **ROW identity GREEN within baseline137,2026-10-15 Pacific:** product68949ab0/
 testb82dcc9a completes49 PASS/1 FAIL over50 unique checks. All seven retained
 ROW payload/display assertions now pass; original authorized exact-create controls
@@ -418,14 +438,21 @@ below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
 
+**Trial138 cohort: unresolved/not measured**, product68949ab0/testcee68ca4,
+controller e5f73851bd9d4872ab5962f9eabfbe4d, worker15153aabf55748aca8db6a7646525624.
+This focused input matrix has no Config/Auth comparison and makes no cause or
+authority-file-preservation claim. Its whole cohort qualification does not replace
+137's separately scoped evidence or the pending safe workbook-property diagnostic.
+
 **Trial137 cohort: unresolved**, product68949ab0/testb82dcc9a, controller
 4f96ca1e6a3c46b8b866046c01c0f33a, worker37c1e7ca4f694ca0b63fbc17f0684328.
-The retained Config preservation assertion fails; five read-only extraction checks
-pass. Its same-cohort redacted part/save-phase JSONL is retained for review. The
-ROW assertions turning GREEN do not close Config. Trial135's part/call findings
-remain separately labeled as a different product source; inspect137's exact
-counters before using them. The safe workbook-property/binding diagnostic remains
-required to resolve semantic significance.
+The retained Config preservation assertion fails; Auth and five read-only extraction
+checks pass. Same-cohort JSONL confirms zero changed table cells/unchanged shapes;
+Baseline/ActiveWorkbook change core.xml/workbook.bin, with three save calls/three
+byte changes and zero unavailable comparisons each. Denied cases have no saves or
+part changes. No unidentified changed parts. ROW GREEN does not close the semantic
+question. Trial135 remains separately labeled as a different product source. The
+safe workbook-property/binding diagnostic is still required; no harmlessness claim.
 
 **Trial135 cohort: save phase observed; semantic cause unresolved**, product
 b936503e/testad7b7056, controller10b6b807489c417ab0fc82f16eb868a6, worker
