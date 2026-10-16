@@ -1,15 +1,18 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
-**Unaffected Config diagnostic prepared,2026-10-16 Pacific:** while automatic
-review blocks catalog product edits and fork pushes, the next50-check baseline
-uses unchanged validated product68949ab0 packages. Read-only snapshots add fixed
-workbook properties, named/table bindings, sheet protections, view settings and
-connection count. Raw names, formulas, values and paths remain memory-only;
-reports emit per-group counts and unavailable-read counts, with no claim that
-every workbook semantic is proved. Synthetic changed/unchanged, redaction and
-missing-read canaries pass; all486 tooling scripts parse. Existing file-byte and
-borrowed-Saved preservation guards include the new reads. Actual observations
-remain to run. No prototype build or rejected catalog patch is attempted.
+**Config record diagnostic140 qualified,2026-10-16 Pacific:** unchanged validated
+product68949ab0/testfb59319c retains all50 baseline identities/order/outcomes:
+49 PASS/1 FAIL. Authorized controls change core.xml and only record3073 inside
+workbook.bin; Microsoft identifies that record as Excel runtime metadata
+`brtRevisionPtr`. All40 record headers/order and other record payloads are
+unchanged. Denied cases change no parts or records. Cells, table shapes and all
+observed property/binding groups remain unchanged; `FullCalculationOnLoad` is
+unavailable, so comprehensive semantic preservation is not claimed. The original
+byte-preservation assertion remains FAIL. Five packages/all486 tooling/settings/
+fixtures and normal owned/native closure qualify through07:52:35.9468342Z, with
+zero desktop stops/Excel failures. No prototype build, rejected edit or promotion.
+See the same-cohort cause-or-unresolved note below. This is diagnostic/test work;
+no runtime or architectural contract changes, so no new behavioral RED is required.
 
 **Current input RED138 qualified,2026-10-16 Pacific:** product68949ab0/
 testcee68ca4 records88 PASS/20 FAIL,108 unique checks with no harness exception.
@@ -449,6 +452,47 @@ below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
 
+**Trial140 cohort: byte change isolated; comprehensive semantics unresolved**,
+product68949ab0/testfb59319c, controller1548010385524e579511c60052d4f03e, worker
+22e958a541bc47ef98bea1987e523e02. Exact50 baseline names/order/outcomes are retained,
+49/1; the sole failure is `InventoryEntry.SourceAuthAndConfigPreserved`. Five
+read-only extraction guards and Auth preservation pass. Normal closure, all pins
+and the delayed native audit qualify through2026-10-16T07:52:35.9468342Z. The ignored
+trial root contains `qualification.json`; the worker contains the redacted
+`inventory-config-diagnosis.jsonl` artifact tied to this source/test cohort.
+
+- Baseline/ActiveWorkbook each record three Config-save calls/three byte changes,
+  zero unavailable hash comparisons and exactly core.xml/workbook.bin changed.
+  Both workbook parts parse as40 records; headers and order are preserved. Only
+  record3073 payload differs; every other payload, including BookView, is unchanged.
+- Microsoft lists3073 as [brtRevisionPtr](https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/30e2eaae-0b1e-4e8e-a465-e1ce5575868d),
+  [Excel runtime metadata](https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/fae2cb92-4884-4752-97cb-0c1f31a31e0d).
+  Its payload/document ID/last-save GUID and metadata authors are neither decoded
+  nor exported. The observed byte difference is located in runtime metadata;
+  individual field causality and all workbook semantics remain unproved.
+- All five cases preserve table cells/shapes and observed workbook properties,
+  names, bindings, sheet protections, connections and view geometry. The fixed
+  property `FullCalculationOnLoad` is unavailable in both snapshots. Denied cases
+  record no Config saves, changed ZIP parts or changed workbook records.
+- The extractor preserves file bytes and borrowed Saved state. Synthetic framing,
+  unknown-record/flag, malformed-input, dictionary-count and safe-output canaries
+  pass; all486 tooling scripts parse. No raw payloads, hashes or values are exported.
+
+This satisfies the required written diagnosis artifact, without relabeling the
+raw byte assertion GREEN or proving unauthorized authority mutation. Preserve
+inspection/refusal guards; any future oracle refinement must explicitly protect
+those paths and remain tied to actual packaged outcomes. Product integration and
+broader D8/4be-A acceptance remain open.
+
+**Trial139 cohort: observed properties unchanged; binary cause unresolved**,
+product68949ab0/testb0a01649, controller2e316ff9b89a44dfa4f068146b88d26a, worker
+85c342e498ca449ab96624022c07d088,49/1 over the same50 checks. All six observed
+property groups have zero changes; each snapshot has one unavailable Workbook
+property. Five read-only proofs pass. Preserved closure qualifies through
+2026-10-16T07:40:34.9924596Z. Entry-count metadata for groups with a `Count` key is
+inaccurate in139 because of PowerShell dictionary member resolution; change counts
+use explicit keys and are unaffected.140 corrects the counts and adds record proof.
+
 **Trial138 cohort: unresolved/not measured**, product68949ab0/testcee68ca4,
 controller e5f73851bd9d4872ab5962f9eabfbe4d, worker15153aabf55748aca8db6a7646525624.
 This focused input matrix has no Config/Auth comparison and makes no cause or
@@ -479,7 +523,7 @@ from Add; it does not prove the meaning of the workbook-part changes or establis
 an unauthorized authority mutation. `CauseEstablished` remains false in the raw
 diagnostic. The precise scope is in the worker's redacted JSONL artifact.
 
-Next diagnostic: compare fixed safe workbook properties and named bindings in
+Historical next diagnostic from135: compare fixed safe workbook properties and named bindings in
 memory around the observed saves, emitting only changed-field counts and fixed
 categories, to distinguish bookkeeping/view changes from authority semantics.
 Do not assume the workbook part is harmless or weaken inspection guards based

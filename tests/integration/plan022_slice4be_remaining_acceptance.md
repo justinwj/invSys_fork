@@ -1,10 +1,20 @@
 # Slice 4be remaining acceptance checklist
 
-Last reviewed: 2026-10-15 UTC. **4be-A remains incomplete.** Architecture v4.11,
+Last reviewed: 2026-10-16 UTC. **4be-A remains incomplete.** Architecture v4.11,
 the designated Plan022 and the controls catalog govern; this index records evidence
 and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
+
+**Config diagnostic140,2026-10-16 Pacific:** product68949ab0/testfb59319c retains
+49/1 over the exact50 baseline checks. The byte difference is isolated to core.xml
+and Excel runtime-metadata record3073 in workbook.bin; other record payloads,
+headers/order and observed properties/bindings are unchanged. Denied cases save
+nothing. Read-only guards and preserved native/owned closure qualify through
+07:52:35.9468342Z. The required same-cohort written diagnosis is recorded in the
+[Inventory receipt](plan022_slice4be_admin_inventory_entry_results.md#config-diagnosis).
+Comprehensive semantics remain unproved and the raw byte assertion remains FAIL.
+No blocked product edit, prototype build, deployment or new acceptance is claimed.
 
 **Current continuation boundary,2026-10-16 Pacific:** identity source68949ab0
 turns all seven retained ROW checks GREEN within baseline137's49/1; Config remains
