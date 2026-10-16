@@ -21,6 +21,19 @@ function Install-InventoryCatalogPhaseProbe {
     $hasContext=$parts[1] -match 'Optional ByVal interactiveContext'
     $tail=if($hasContext){', "component-context"'}else{''}
     $parts+=@'
+Public Function PrepareCatalogFixture(ByVal name As String, ByVal dirty As Boolean) As String
+    Dim book As Workbook, lo As ListObject
+    Set book = Application.Workbooks(name)
+    Set lo = FindListObjectByNameAdminLocal(book, "tblSkuCatalog")
+    SetSheetProtectionAdminLocal lo.Parent, False
+    If dirty Then
+        SetCatalogValueAdmin lo, 1, "USER KEEP", "unsaved user value"
+    Else
+        SetCatalogValueAdmin lo, 1, "USER KEEP", "retained"
+        SetSheetProtectionAdminLocal lo.Parent, True
+    End If
+    PrepareCatalogFixture = CatalogCellAdmin(lo, 1, "SKU")
+End Function
 Public Function ExecuteCatalogPhase(ByVal warehouse As String, ByVal sku As String, ByVal mode As String) As String
     Dim fields As Object, report As String, succeeded As Boolean
     Set fields = CreateObject("Scripting.Dictionary")
@@ -125,14 +138,15 @@ function Test-InventoryCatalogPhase($Fixture) {
         $componentStep='prepare generated catalog custom column'
         try{
             $table=Table $book 'tblSkuCatalog'
-            $sku=[string]$table.ListColumns.Item('SKU').DataBodyRange.Cells.Item(1,1).Value2
-            $table.Parent.Unprotect()
-            $extra=$table.ListColumns.Add();$extra.Name='USER KEEP';$extra.DataBodyRange.Cells.Item(1,1).Value2='retained'
-            $table.Parent.Protect()
+            $sku=[string](Run 'invSys.Admin.xlam' 'TestCatalogOwner.PrepareCatalogFixture' @($book.Name,$false))
+            if(-not $sku){throw 'Generated catalog row unavailable.'}
+            $extra=$table.ListColumns.Item('USER KEEP')
+            $componentStep='save prepared generated catalog'
             $book.Save()
             if($mode -eq 'DirtyBorrowed'){
-                $table.Parent.Unprotect();$extra.DataBodyRange.Cells.Item(1,1).Value2='unsaved user value'
+                [void](Run 'invSys.Admin.xlam' 'TestCatalogOwner.PrepareCatalogFixture' @($book.Name,$true))
             }
+            $componentStep='capture generated catalog memory'
             $memory=Get-CatalogPhaseMemory $table;$hash=(Get-FileHash $path).Hash;$saved=$book.Saved
             $componentStep='invoke exact source catalog helper'
             $facts=([string](Run 'invSys.Admin.xlam' 'TestCatalogOwner.ExecuteCatalogPhase' @($Fixture.Warehouse,$sku,$mode))).Split('|')
@@ -172,7 +186,7 @@ function Test-InventoryCatalogPhase($Fixture) {
                 }finally{$cold.Close($false)}
                 Check ($id+'.ColdReadPreservedBytes') ((Get-FileHash $path).Hash -ceq $diskHash)
             }
-        }catch{throw ('Catalog component harness stage: '+$componentStep+'; status='+$_.Exception.HResult)}
+        }catch{throw ('Catalog component harness stage: '+$componentStep+'; status='+$_.Exception.HResult+'; source-line='+$_.InvocationInfo.ScriptLineNumber+'; type='+$_.Exception.GetBaseException().GetType().Name)}
         finally{if($null -ne $book){$book.Close($false)}}
     }
     Check 'CatalogPhase.AuthAndConfigPreserved' ((Get-FileHash $auth).Hash -ceq $authHash -and (Get-FileHash $Fixture.Config).Hash -ceq $configHash)
