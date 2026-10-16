@@ -49,6 +49,47 @@ for that complete contract before implementation; retain these45 identities and
 separate the unresolved Config diagnostic. Current Tester127, Settings202,
 recording80 and Receiving121 remain qualified; comprehensive4be-A stays open.
 
+**Proposal tightening,2026-10-15 Pacific:** D8-INV-01 remains proposed. Its D13
+list now explicitly requires zero-quantity creation through modal Add and worksheet
+ADD without editing D14's locked wording. The modal path must refuse changed/
+replaced catalog sources/selections and affected entities after yields, including
+same-Item-Code replacements and Add before a new entity exists. These are required
+expanded tests, not coverage claimed by the existing45 checks. The Config diagnosis
+below is a required D13 artifact; future focused GREEN cannot silently close it.
+
+## Config diagnosis
+
+**Status: unresolved**, recorded2026-10-15 Pacific for RED trial115 only.
+
+- Product source: `1c9bff87`; diagnostic test: `55868837`.
+- RED controller: `admin-inventory-entry-controller/f997acde371142d79f956ca8c5502b25`.
+- RED worker: `slice4be-admin-inventory-entry/ce2b57b7540e490fb57431fc1775792f`.
+- Evidence: the per-case shared-read file-hash observations report source Auth
+  unchanged in all five cases and source Config changed from the first authorized
+  baseline onward. The final SourceAuthAndConfigPreserved assertion fails. The
+  cohort's qualification receipt, identified above, explicitly records that the
+  Config byte-change cause is not established. Normal closure and input/fixture
+  preservation do not explain that change.
+- Established cause: **none**. Current evidence does not identify a changed
+  managed field, unknown column, workbook metadata, responsible procedure or
+  causal write. It cannot classify the mismatch as an unauthorized semantic
+  change or prove that it is harmless.
+- Remaining questions: which fields or workbook parts changed, at which action
+  phase, and whether that action is permitted by the captured-source and ordinary
+  inspection contracts.
+- Next diagnostic: reproduce trial115's sequence on product source `1c9bff87`,
+  retaining test `55868837` as the original RED baseline. Compare pre-action and
+  post-action Config structure and allowlisted field-change indicators read-only,
+  retaining phase markers and redacting all values; isolate semantic changes from
+  workbook metadata and identify the responsible write if evidence permits. Any
+  added diagnostic instrumentation must carry its own exact test commit and run
+  identifiers. A different product source is a separately labeled comparison.
+
+Keep this finding explicitly unresolved in subsequent D13 reviews until the cause
+and any required correction are established and verified. A passing focused GREEN
+does not close it. Each later RED cohort needs its own source/test/run-bound note;
+do not relabel this trial115 evidence as a diagnosis of a newer source.
+
 ## Earlier attempts and oracle correction
 
 **Actual entry checkpoint,2026-10-15 Pacific:** shared-reader trial114 completes
