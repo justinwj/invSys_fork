@@ -196,13 +196,19 @@ Private Function ConfirmSavedInputs(Optional ByVal eventId As String = "") As Bo
     If Not mCatalog.MatchesPersistedCopy(modExecutionTarget.Table(persisted, "tblSkuCatalog")) Then GoTo CleanExit
     If Not mEntities.MatchesPersistedCopy(modExecutionTarget.Table(persisted, "tblInventoryEntities")) Then GoTo CleanExit
     If modAggregationFiles.Identity(mPath) <> savedIdentity Or modTrainingWire.FileSha256(mPath) <> savedHash Then GoTo CleanExit
-    If Not Unchanged() Then GoTo CleanExit
+    If borrowed Then
+        If Not Unchanged() Then GoTo CleanExit
+    ElseIf Not mStaging Is Nothing Then
+        If Not mStaging.Matches(mStage) Then GoTo CleanExit
+    End If
     If Not mCatalog.Confirm(modExecutionTarget.Table(book, "tblSkuCatalog")) Then GoTo CleanExit
     If Not mEntities.Confirm(modExecutionTarget.Table(book, "tblInventoryEntities")) Then GoTo CleanExit
     If Not mInitiallyBorrowed Then
         mCatalog.ReleaseObjectReference
         mEntities.ReleaseObjectReference
     End If
+    ' Release our read-only source before another read classifies open books.
+    Set book = Nothing: Set owner = Nothing
     mIdentity = savedIdentity: mHash = savedHash
     mPhase = "": mSaving = False
     ConfirmSavedInputs = Unchanged()
@@ -239,11 +245,12 @@ Private Function PlanSavedQuantity(ByVal book As Workbook, ByVal eventId As Stri
             If Not IsNumeric(delta) Then Exit Function
             If Abs(CDbl(delta) - (mQuantityTarget - mQuantityBefore)) > 0.0000001 Then Exit Function
             appliedAt = table.DataBodyRange.Cells(row, fields("AppliedAtUTC")).Value2
+            If IsNumeric(appliedAt) Then appliedAt = CDate(appliedAt)
             If Not IsDate(appliedAt) Then Exit Function
         End If
     Next row
     If lines <> 1 Then Exit Function
-    mEntities.PlanValue mQuantityKey, "LastAppliedUTC", appliedAt
+    mEntities.PlanValue mQuantityKey, "LastAppliedUTC", CDbl(CDate(appliedAt))
     PlanSavedQuantity = True
 Invalid:
 End Function
