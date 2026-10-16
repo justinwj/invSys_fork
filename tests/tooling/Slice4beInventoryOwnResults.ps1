@@ -125,7 +125,7 @@ End Function
             @('    If Not mEntities.Confirm(modExecutionTarget.Table(book, "tblInventoryEntities")) Then GoTo CleanExit','EntitiesAdopted'),
             @('    mIdentity = savedIdentity: mHash = savedHash','BaselineBound')
         )){
-            $pattern='(?im)^'+[regex]::Escape($point[0])+'[\t ]*\r?$'
+            $pattern='(?im)^[\t ]*'+[regex]::Escape($point[0].Trim())+'[\t ]*\r?$'
             if([regex]::Matches($body,$pattern).Count -ne 1){throw ('Confirmation diagnostic anchor unavailable: '+$point[1])}
             $mark='    If mPhase = "Quantity" Then TestInventoryOwnResult.ConfirmationStage "'+$point[1]+'"'
             $body=[regex]::Replace($body,$pattern,[Text.RegularExpressions.MatchEvaluator]{param($m) $m.Value.TrimEnd("`r")+"`r`n"+$mark})
