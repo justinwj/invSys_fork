@@ -9,7 +9,43 @@ Public Function OwnResultPartialForTest() As Boolean
     OwnResultPartialForTest = (InStr(1, mLastNotice, "Exact event application was saved:", vbTextCompare) > 0 _
         And InStr(1, mLastNotice, "Inventory quantity set.", vbTextCompare) = 0)
 End Function
+Public Function OwnResultReportFactsForTest() As String
+    OwnResultReportFactsForTest = CStr(InStr(1, mLastNotice, "Partial result:", vbTextCompare) > 0) & "|" & _
+        CStr(InStr(1, mLastNotice, "unsaved changes", vbTextCompare) > 0) & "|" & _
+        CStr(InStr(1, mLastNotice, "read-only", vbTextCompare) > 0) & "|" & _
+        CStr(InStr(1, mLastNotice, "source", vbTextCompare) > 0)
+End Function
 '@)
+    $trace=$admin.VBComponents.Add(1);$trace.Name='TestInventoryCatalogTrace'
+    $trace.CodeModule.AddFromString(@'
+Option Explicit
+Private mPhase As String
+Public Sub Mark(ByVal phase As String)
+    mPhase = phase
+End Sub
+Public Function Phase() As String
+    Phase = mPhase
+End Function
+'@)
+    $owner=$admin.VBComponents.Item('modAdmin').CodeModule
+    $start=$owner.ProcStartLine('UpdateInventoryItemCatalogForWarehouse',0)
+    $count=$owner.ProcCountLines('UpdateInventoryItemCatalogForWarehouse',0)
+    $body=$owner.Lines($start,$count)
+    foreach($point in @(
+        @('    On Error GoTo FailUpdate','Entered'),
+        @('        If Not modInventoryCommands.BeginCatalog(interactiveContext, sku, report) Then GoTo CleanExit','CatalogBegun'),
+        @('        If Not modInventoryCommands.BindCatalogWriter(interactiveContext, wb.Name, report) Then GoTo CleanExit','WriterBound'),
+        @('        Next field','FieldsPlanned'),
+        @('        If Not modInventoryCommands.CheckForm(interactiveContext, report) Then GoTo CleanExit','BeforeWritePassed'),
+        @('    WriteInventoryCatalogFieldsAdmin lo, rowIndex, fields','FieldsWritten'),
+        @('        If Not modInventoryCommands.BeginCatalogSave(interactiveContext, report) Then GoTo CleanExit','BeforeSavePassed'),
+        @('    wb.Save','SaveReturned'),
+        @('    UpdateInventoryItemCatalogForWarehouse = True','Confirmed')
+    )){
+        if([regex]::Matches($body,[regex]::Escape($point[0])).Count -ne 1){throw 'Catalog fixed-stage anchor unavailable.'}
+        $body=$body.Replace($point[0],($point[0]+"`r`n"+'    TestInventoryCatalogTrace.Mark "'+$point[1]+'"'))
+    }
+    $owner.DeleteLines($start,$count);$owner.InsertLines($start,$body)
     $core=$packages['invSys.Core.xlam'].VBProject
     $probe=$core.VBComponents.Add(1);$probe.Name='TestInventoryOwnResult'
     $probe.CodeModule.AddFromString(@'
@@ -71,6 +107,10 @@ function Test-InventoryOwnResults($Fixture,$Other) {
             Check ($id+'.ActualEditHandlerAndReasonReached') $ready
             if(-not $ready){throw 'Own-result actual Edit handler unavailable; not product RED.'}
             $shows=[long](Run 'invSys.Admin.xlam' 'TestInventoryCommands.OwnResultShowsForTest')
+            $catalogPhase=[string](Run 'invSys.Admin.xlam' 'TestInventoryCatalogTrace.Phase')
+            if($catalogPhase -cnotin @('Entered','CatalogBegun','WriterBound','FieldsPlanned','BeforeWritePassed','FieldsWritten','BeforeSavePassed','SaveReturned','Confirmed')){throw 'Unknown catalog diagnostic stage.'}
+            $noticeFacts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.OwnResultReportFactsForTest')).Split('|')
+            [pscustomobject]@{Case=$case;CatalogPhase=$catalogPhase;FormShows=$shows;PartialNotice=($noticeFacts[0] -ceq 'True');DirtyNotice=($noticeFacts[1] -ceq 'True');ReadOnlyNotice=($noticeFacts[2] -ceq 'True');SourceNotice=($noticeFacts[3] -ceq 'True')}|ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'own-result-fixed-stages.jsonl')
             Check ($id+'.ExpectedFormContinuation') ($shows -eq $(if($case -ceq 'AuthorityLost'){1}else{2}))
             $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $othersSame=@($original.EntityQuantities.Keys|Where-Object {$_ -cne $key -and (-not $after.EntityQuantities.ContainsKey($_) -or $after.EntityQuantities[$_] -ne $original.EntityQuantities[$_])}).Count -eq 0
