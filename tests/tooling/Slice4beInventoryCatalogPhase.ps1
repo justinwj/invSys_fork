@@ -131,7 +131,7 @@ function Test-InventoryCatalogPhase($Fixture) {
     $baseline=Join-Path $runRoot 'catalog-phase-generated-baseline.xlsb'
     Copy-Item -LiteralPath $path -Destination $baseline
     $auth=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb')
-    $authHash=(Get-FileHash $auth).Hash;$configHash=(Get-FileHash $Fixture.Config).Hash
+    $authHash=Get-AdminInventoryEntryHash $auth;$configHash=Get-AdminInventoryEntryHash $Fixture.Config
     foreach($mode in @('Authorized','DirtyBorrowed','PlanningDenied','BeforeWriteDenied','BeforeSaveDenied','SavedUnconfirmed')){
         Copy-Item -LiteralPath $baseline -Destination $path -Force
         $book=$excel.Workbooks.Open($path,0,$false)
@@ -147,11 +147,11 @@ function Test-InventoryCatalogPhase($Fixture) {
                 [void](Run 'invSys.Admin.xlam' 'TestCatalogOwner.PrepareCatalogFixture' @($book.Name,$true))
             }
             $componentStep='capture generated catalog memory'
-            $memory=Get-CatalogPhaseMemory $table;$hash=(Get-FileHash $path).Hash;$saved=$book.Saved
+            $memory=Get-CatalogPhaseMemory $table;$hash=Get-AdminInventoryEntryHash $path;$saved=$book.Saved
             $componentStep='invoke exact source catalog helper'
             $facts=([string](Run 'invSys.Admin.xlam' 'TestCatalogOwner.ExecuteCatalogPhase' @($Fixture.Warehouse,$sku,$mode))).Split('|')
             if($facts.Count -ne 9){throw 'Catalog component facts unavailable; not product RED.'}
-            $ok=$facts[0] -eq 'True';$partial=$facts[1] -eq 'True';$changed=(Get-FileHash $path).Hash -cne $hash
+            $ok=$facts[0] -eq 'True';$partial=$facts[1] -eq 'True';$changed=(Get-AdminInventoryEntryHash $path) -cne $hash
             $id='CatalogPhase.'+$mode
             if($mode -eq 'Authorized'){
                 Check ($id+'.SucceededAndSaved') ($ok -and $changed -and $book.Saved)
@@ -175,7 +175,7 @@ function Test-InventoryCatalogPhase($Fixture) {
             if($mode -in @('Authorized','SavedUnconfirmed')){
                 $componentStep='independent persisted field read'
                 $book.Close($false);$book=$null
-                $diskHash=(Get-FileHash $path).Hash
+                $diskHash=Get-AdminInventoryEntryHash $path
                 $cold=$excel.Workbooks.Open($path,0,$true)
                 try{
                     $stored=Table $cold 'tblSkuCatalog'
@@ -184,10 +184,10 @@ function Test-InventoryCatalogPhase($Fixture) {
                     $exact=$exact -and $stored.ListColumns.Item('IMAGE_PATH_2').DataBodyRange.Cells.Item(1,1).Value2 -ceq 'two.png'
                     Check ($id+'.IndependentPersistedFields') $exact
                 }finally{$cold.Close($false)}
-                Check ($id+'.ColdReadPreservedBytes') ((Get-FileHash $path).Hash -ceq $diskHash)
+                Check ($id+'.ColdReadPreservedBytes') ((Get-AdminInventoryEntryHash $path) -ceq $diskHash)
             }
         }catch{throw ('Catalog component harness stage: '+$componentStep+'; status='+$_.Exception.HResult+'; source-line='+$_.InvocationInfo.ScriptLineNumber+'; type='+$_.Exception.GetBaseException().GetType().Name)}
         finally{if($null -ne $book){$book.Close($false)}}
     }
-    Check 'CatalogPhase.AuthAndConfigPreserved' ((Get-FileHash $auth).Hash -ceq $authHash -and (Get-FileHash $Fixture.Config).Hash -ceq $configHash)
+    Check 'CatalogPhase.AuthAndConfigPreserved' ((Get-AdminInventoryEntryHash $auth) -ceq $authHash -and (Get-AdminInventoryEntryHash $Fixture.Config) -ceq $configHash)
 }
