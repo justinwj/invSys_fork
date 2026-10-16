@@ -26,7 +26,9 @@ function Install-InventorySourceOverlay {
         }
         $module=$component.CodeModule
         if($module.CountOfLines){$module.DeleteLines(1,$module.CountOfLines)}
-        $module.AddFromString($text.Substring($offset))
+        # CodeModule accepts executable code, not exported hidden attributes.
+        $code=[regex]::Replace($text.Substring($offset),'(?m)^Attribute [^\r\n]*\r?\n','')
+        $module.AddFromString($code)
         $pins+=[pscustomobject]@{Source=$source[1];Hash=(Get-FileHash $path).Hash}
     }
     [pscustomobject]@{SourceOverlay=$true;ActualOperatorHandlers=$true;PackagedAction=$false;
