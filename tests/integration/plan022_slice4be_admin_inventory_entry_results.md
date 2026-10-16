@@ -1,5 +1,26 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Full comparison166 qualified,2026-10-16 Pacific:** product3d66ac92/testeeec095c
+completes299 PASS/1 FAIL across300 unique checks, retaining135 names/order with no
+harness exception. Only InventoryEntry.SourceAuthAndConfigPreserved fails. All
+five package/490 tooling/eight source/four harness pins, settings and fixtures
+restore; normal native closure qualifies through20:42:43.7367441Z with zero Excel
+events. Controller050b2f01fc01419e81dbeed4b59010d7;
+worker6ba01fdf595f430f9e11359f71806572. Long normal shutdown finishes without force.
+This qualifies the comparison's observation, not whole-suite GREEN or built-package
+acceptance. Exact quantity, managed fields and bounded retry controls pass.
+
+**Add continuation RED167 qualified:** unchanged product3d66ac92/test9770b233
+reproduces17 PASS/2 FAIL across19 actual-handler checks. Authorized Add saves the
+owning generated zero-quantity entity but does not reopen; post-processor sign-out
+saves that entity without an honest saved-partial notice. Controller
+59b2f023689f4c2d82cebe60a73b26c0; worker0910ffdacbd34942b0592cbf1a88df8f.
+Five package/491 tooling/eight source/four harness pins, settings and fixtures
+restore with normal native audit20:45:45.3429007Z, zero Excel events. D8-INV-01
+requires exact own-result acknowledgement and refusal after authority loss.
+No XLAM build/deployment or comprehensive4be-A acceptance.
+
+
 **Managed-field admission resolved; GREEN16533/33,2026-10-16 Pacific:** product
 source remains3d66ac92. Diagnostic164/test3aac64dd proves signed-in admission
 fails because the generated inventory workbook remains open read-write and dirty;
@@ -983,3 +1004,27 @@ Compile, fixture, invocation and harness failures do not qualify as product RED.
 Original preparation parsed all485 tooling files and four trial113 scripts.
 The subsequent attempts above supersede its not-yet-run status without turning
 harness failures into behavioral RED or establishing full acceptance.
+
+### Config diagnosis — full comparison166, source3d66ac92/testeeec095c
+
+The same completed300-check cohort independently observes unchanged Auth bytes
+across all five entry cases. Both authorized controls show three calls and three
+byte changes during modConfig.SaveConfigWorkbookIfWritable; denied controls show
+no Config save or changed package parts. Read-only extraction preserves bytes,
+table cells and table shapes in all five cases. Only docProps/core.xml and
+xl/workbook.bin change in the authorized controls. The parsed40-record stream
+retains headers/order; changed record types are158 and3073. Observed BookView
+changes identify WindowLeft/WindowTop with no unknown BookView changes. View
+observations also differ in denied cases despite identical persisted bytes.
+
+This differs from140's record3073-only result and must retain its own source and
+cohort scope. Workbook FullCalculationOnLoad remains unavailable; full semantics
+and comprehensive field-level causality remain unresolved. CauseEstablished is
+false. EnsureDemoStationInboxes calls EnsureStationInbox three times, whose
+CleanExit saves Config, providing a source-linked candidate for the observed
+saves, not proof that every changed field is caused by that path. Keep the raw
+byte assertion FAIL and inspection guards intact; this written artifact satisfies
+the diagnosis deliverable without classifying the remaining difference as benign.
+Ignored artifacts: worker6ba01fdf595f430f9e11359f71806572's
+inventory-config-diagnosis.jsonl and inventory-entry-observations.jsonl;
+comparison166/qualification.json records normal preserved closure.
