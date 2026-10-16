@@ -1,0 +1,35 @@
+# Current source runs through the existing operator handlers in unsaved test
+# copies. This does not build, save, deploy or qualify a packaged XLAM.
+function Install-InventorySourceOverlay {
+    $sources=@(
+        @('invSys.Core.xlam','Core/ClassModules/cInventoryTableInput.cls',2),
+        @('invSys.Core.xlam','Core/ClassModules/cInventoryCommandInputs.cls',2),
+        @('invSys.Core.xlam','Core/Modules/modInventoryCommands.bas',1),
+        @('invSys.Core.xlam','Core/Modules/modAggregationFiles.bas',1),
+        @('invSys.Admin.xlam','Admin/Modules/modAdmin.bas',1),
+        @('invSys.Admin.xlam','Admin/Modules/modAdminInventoryWorksheet.bas',1),
+        @('invSys.Admin.xlam','Admin/Forms/frmAddInventoryItem.frm',3)
+    )
+    $pins=@()
+    foreach($source in $sources){
+        $path=Join-Path $repo ('src/'+$source[1])
+        $text=Get-Content $path -Raw
+        $offset=$text.IndexOf('Option Explicit')
+        if($offset -lt 0){throw 'Inventory overlay source code boundary unavailable.'}
+        $name=[IO.Path]::GetFileNameWithoutExtension($path)
+        $project=$packages[$source[0]].VBProject
+        $component=$null
+        foreach($candidate in $project.VBComponents){if($candidate.Name -ceq $name){$component=$candidate;break}}
+        if($null -eq $component){
+            if($source[2] -eq 3){throw 'Inventory form designer unavailable.'}
+            $component=$project.VBComponents.Add($source[2]);$component.Name=$name
+        }
+        $module=$component.CodeModule
+        if($module.CountOfLines){$module.DeleteLines(1,$module.CountOfLines)}
+        $module.AddFromString($text.Substring($offset))
+        $pins+=[pscustomobject]@{Source=$source[1];Hash=(Get-FileHash $path).Hash}
+    }
+    [pscustomobject]@{SourceOverlay=$true;ActualOperatorHandlers=$true;PackagedAction=$false;
+        XlamBuilt=$false;XlamSaved=$false;Sources=$pins}|ConvertTo-Json -Depth 4|
+        Set-Content (Join-Path $reportRoot 'inventory-source-overlay-scope.json')
+}

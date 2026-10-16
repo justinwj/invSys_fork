@@ -146,6 +146,7 @@ param(
     [switch]$AdminInventoryInputsOnly,
     [switch]$AdminInventoryCatalogOnly,
     [switch]$AdminInventoryCatalogRealOnly,
+    [switch]$AdminInventorySourceOverlayForTest,
     [switch]$AdminAggregationPathComparison,
     [switch]$AdminAggregationBoundaryMatrix,
     [ValidateSet('All','Inspection','Write','Ownership')][string]$AdminAggregationBoundaryGroup='All',
@@ -859,6 +860,7 @@ if($AdminInventoryBaselineOnly -and (-not $AdminInventoryEntryOnly -or $AdminInv
 if($AdminInventoryInputsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Input boundaries require the separate isolated Inventory gate.'}
 if($AdminInventoryCatalogOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Catalog component requires its separate Inventory gate.'}
 if($AdminInventoryCatalogRealOnly -and -not $AdminInventoryCatalogOnly){throw 'Real catalog source requires the catalog component gate.'}
+if($AdminInventorySourceOverlayForTest -and (-not $AdminInventoryEntryOnly -or $AdminInventoryCatalogOnly)){throw 'Inventory source overlays require the separate non-catalog Inventory gate.'}
 if($AdminInventoryEntryOnly){
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-inventory-entry/'+[guid]::NewGuid().ToString('N'))
@@ -2212,6 +2214,10 @@ End Function
         Compile-Slice4beEvaluationProbes
     }
     if($AdminInventoryEntryOnly){
+        if($AdminInventorySourceOverlayForTest){
+            . (Join-Path $PSScriptRoot 'Slice4beInventorySourceOverlay.ps1')
+            Install-InventorySourceOverlay
+        }
         Install-AdminInventoryEntryProbe
         if($AdminInventoryCatalogOnly){
             . (Join-Path $PSScriptRoot 'Slice4beInventoryCatalogPhase.ps1')
