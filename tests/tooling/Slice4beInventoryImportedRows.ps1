@@ -41,7 +41,8 @@ function Test-InventoryImportedRows($Fixture,$Other) {
             # Copy only user business input into a second pending ADD. Generated
             # Item Code and all status/result fields remain empty for that row.
             foreach($header in @('Action','Item Name','UOM','Qty Mode','Quantity','Default Location','Category','Description','Vendor(s)','Vendor Code','External Code','Picture Path/URL')){
-                $table.ListColumns.Item($header).DataBodyRange.Cells.Item(2,1).Value2=$table.ListColumns.Item($header).DataBodyRange.Cells.Item(1,1).Value2
+                # Use one stable COM setter type across this mixed-column loop.
+                $table.ListColumns.Item($header).DataBodyRange.Cells.Item(2,1).Value2=[string]$table.ListColumns.Item($header).DataBodyRange.Cells.Item(1,1).Value2
             }
             $table.ListColumns.Item('Item Name').DataBodyRange.Cells.Item(2,1).Value2='Pending second fixture item'
             switch -CaseSensitive ($case){
