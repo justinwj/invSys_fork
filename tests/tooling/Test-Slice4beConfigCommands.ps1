@@ -147,6 +147,7 @@ param(
     [switch]$AdminInventoryCatalogOnly,
     [switch]$AdminInventoryCatalogRealOnly,
     [switch]$AdminInventorySourceOverlayForTest,
+    [switch]$AdminInventoryOwnResultsOnly,
     [switch]$AdminAggregationPathComparison,
     [switch]$AdminAggregationBoundaryMatrix,
     [ValidateSet('All','Inspection','Write','Ownership')][string]$AdminAggregationBoundaryGroup='All',
@@ -861,6 +862,7 @@ if($AdminInventoryInputsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInven
 if($AdminInventoryCatalogOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Catalog component requires its separate Inventory gate.'}
 if($AdminInventoryCatalogRealOnly -and -not $AdminInventoryCatalogOnly){throw 'Real catalog source requires the catalog component gate.'}
 if($AdminInventorySourceOverlayForTest -and (-not $AdminInventoryEntryOnly -or $AdminInventoryCatalogOnly)){throw 'Inventory source overlays require the separate non-catalog Inventory gate.'}
+if($AdminInventoryOwnResultsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Inventory own results require their separate entry gate.'}
 if($AdminInventoryEntryOnly){
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-inventory-entry/'+[guid]::NewGuid().ToString('N'))
@@ -2219,6 +2221,10 @@ End Function
             Install-InventorySourceOverlay
         }
         Install-AdminInventoryEntryProbe
+        if($AdminInventoryOwnResultsOnly){
+            . (Join-Path $PSScriptRoot 'Slice4beInventoryOwnResults.ps1')
+            Install-InventoryOwnResultProbe
+        }
         if($AdminInventoryCatalogOnly){
             . (Join-Path $PSScriptRoot 'Slice4beInventoryCatalogPhase.ps1')
             Install-InventoryCatalogPhaseProbe
@@ -2442,7 +2448,10 @@ End Function
     }
     if($AdminAggregationOnly){$step='packaged Aggregation authority and workbook diagnostic'; Test-AdminAggregation $a $b}
     if($AdminInventoryEntryOnly){
-        if($AdminInventoryCatalogOnly){
+        if($AdminInventoryOwnResultsOnly){
+            $step='actual Edit handler own-result continuation and processor return'
+            Test-InventoryOwnResults $a $b
+        }elseif($AdminInventoryCatalogOnly){
             $step='source catalog component on generated fixture; no XLAM build'
             if($AdminInventoryCatalogRealOnly){Test-InventoryCatalogReal $a}else{Test-InventoryCatalogPhase $a}
         }elseif($AdminInventoryInputsOnly){

@@ -5,6 +5,7 @@ function Install-InventorySourceOverlay {
         @('invSys.Core.xlam','Core/ClassModules/cInventoryTableInput.cls',2),
         @('invSys.Core.xlam','Core/ClassModules/cInventoryCommandInputs.cls',2),
         @('invSys.Core.xlam','Core/Modules/modInventoryCommands.bas',1),
+        @('invSys.Core.xlam','Core/Modules/modInventoryQuantityCommands.bas',1),
         @('invSys.Core.xlam','Core/Modules/modAggregationFiles.bas',1),
         @('invSys.Admin.xlam','Admin/Modules/modAdmin.bas',1),
         @('invSys.Admin.xlam','Admin/Modules/modAdminInventoryWorksheet.bas',1),
