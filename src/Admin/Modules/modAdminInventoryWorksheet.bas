@@ -493,8 +493,8 @@ Private Function ValidateInventoryWorksheetRow(ByVal lo As ListObject, _
         hasQty = False
     End If
 
-    receiptEvent = modInventoryCreateReceipts.EventIdFromResult(InventoryWorksheetText(lo, rowIndex, HDR_RESULT))
     If actionName = "ADD" Then
+        receiptEvent = modInventoryCreateReceipts.EventIdFromResult(InventoryWorksheetText(lo, rowIndex, HDR_RESULT))
         If receiptEvent <> "" And (sku = "" Or interactiveContext = "") Then
             rowError = "The prepared create requires its captured source, operator table and Item Code.": Exit Function
         End If
