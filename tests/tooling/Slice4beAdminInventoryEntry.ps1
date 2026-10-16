@@ -191,12 +191,16 @@ function Test-AdminInventoryEntry($Fixture,$Other) {
             $before=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $target=if($mode -ceq 'OtherWarehouseAdmin'){$Other}else{$Fixture}
             $configBefore=Get-InventoryConfigDiagnosticSnapshot $Fixture
+            [void](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Reset')
             [void](Run 'invSys.Admin.xlam' 'TestInventoryEntry.Execute' @($hostBook.Name,$mode,$target.Root,$target.Secret,$otherBook.Name,$Fixture.Root,$Fixture.Warehouse))
             $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryEntry.Facts')).Split('|')
             $after=Get-AdminInventoryEntryFacts $Fixture
             $persisted=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $configAfter=Get-InventoryConfigDiagnosticSnapshot $Fixture
-            Write-InventoryConfigDiagnosticComparison $configBefore $configAfter $mode
+            $saveFacts=([string](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Facts')).Split('|')
+            if($saveFacts.Count -ne 3){throw 'Config save observation unavailable; not product RED.'}
+            $phase=[pscustomobject]@{Calls=[int]$saveFacts[0];ByteChangesDuringSave=[int]$saveFacts[1];UnavailableHashComparisons=[int]$saveFacts[2];Procedure='modConfig.SaveConfigWorkbookIfWritable'}
+            Write-InventoryConfigDiagnosticComparison $configBefore $configAfter $mode $phase
             $newKeys=@($persisted.EntityQuantities.Keys|Where-Object {-not $before.EntityQuantities.ContainsKey($_)})
             $exactSaved=($newKeys.Count -eq 1 -and $persisted.EntityQuantities[$newKeys[0]] -eq 1 -and $persisted.FileHash -cne $before.FileHash)
             # Historical assertion ID denotes reaching the operator's OK attempt;

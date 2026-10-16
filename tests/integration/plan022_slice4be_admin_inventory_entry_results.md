@@ -1,5 +1,24 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Bounded retry GREEN134 qualified,2026-10-15 Pacific:** source/testb936503e
+passes22/22, preserving every RED132 assertion name/order. Actual fresh-form retry
+reuses/applies the original saved event once, saves the exact selected target,
+preserves the key set/other quantities and leaves the unrelated event unapplied.
+Controller5f890b12469f4c268ffeb36214ea5847; worker5b8b2228d3624accab489338189e1216.
+Five packages/all486 tooling/settings/fixtures and normal owned/native closure
+qualify through2026-10-16T06:24:09.0656757Z, with zero desktop stops/Excel failures.
+Build133 qualifies unpromoted validation-inventory-retry-01. This is the focused
+quantity post-queue case; it is not create/result-save retry or full D8 acceptance.
+
+**Full comparison and Config diagnostic prepared:** retain257 earlier checks,
+append27 managed-field and16 bounded-retry checks for300 total. Same product
+candidate; expanded instrumentation identifies changed standard ZIP parts only
+from a fixed safe allowlist, counts unidentified names, and observes Config-save
+calls/byte changes with memory-only hashes around the actual existing save helper.
+Synthetic canaries pass redaction, allowlist, unknown-name suppression, changed/
+unchanged counts, failed-preservation honesty and no unproved causality; all486
+scripts parse. Actual save-phase/part results remain to run and cause is unresolved.
+
 **Bounded retry RED132 qualified,2026-10-15 Pacific:** source306fa2da/
 testa3d39db0 records17 PASS/5 FAIL,22 unique checks without a harness exception.
 All20 prior names/order remain as a subsequence. The added generated unrelated

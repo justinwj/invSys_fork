@@ -43,21 +43,24 @@ function Get-InventoryConfigDiagnosticSnapshot($Fixture) {
     [pscustomobject]@{Cells=$cells;Shapes=($shapes -join "`n");Parts=$parts;ReadOnlyProof=($memoryPreserved -and $beforeHash -ceq (Get-AdminInventoryEntryHash $path))}
 }
 
-function Write-InventoryConfigDiagnosticComparison($Before,$After,[string]$Case) {
+function Write-InventoryConfigDiagnosticComparison($Before,$After,[string]$Case,$SavePhase=$null) {
     $changed=0
     foreach($key in @($Before.Cells.Keys)+@($After.Cells.Keys)|Select-Object -Unique){
         if(-not $Before.Cells.ContainsKey($key) -or -not $After.Cells.ContainsKey($key) -or $Before.Cells[$key] -cne $After.Cells[$key]){$changed++}
     }
     $categories=@{Metadata=0;Worksheet=0;Styles=0;SharedStrings=0;Other=0}
+    $standard=@('docProps/core.xml','docProps/app.xml','xl/workbook.bin','xl/calcChain.bin','xl/_rels/workbook.bin.rels','[Content_Types].xml','_rels/.rels')
+    $known=@();$unidentified=0
     foreach($key in @($Before.Parts.Keys)+@($After.Parts.Keys)|Select-Object -Unique){
         if($Before.Parts[$key] -cne $After.Parts[$key]){
             $category=if($key -like 'docProps/*'){'Metadata'}elseif($key -like 'xl/worksheets/*'){'Worksheet'}elseif($key -like 'xl/styles*'){'Styles'}elseif($key -like 'xl/sharedStrings*'){'SharedStrings'}else{'Other'}
             $categories[$category]++
+            if($key -cin $standard){$known+=$key}else{$unidentified++}
         }
     }
     $safe=$Before.ReadOnlyProof -and $After.ReadOnlyProof
     [void]$script:InventoryConfigReadChecks.Add([pscustomobject]@{Case=$Case;Passed=$safe})
-    [pscustomobject]@{Case=$Case;ReadOnlyExtractionPreserved=$safe;ChangedTableCells=$changed;TableShapesPreserved=($Before.Shapes -ceq $After.Shapes);ChangedPartCategories=$categories;CauseEstablished=$false}|
+    [pscustomobject]@{Case=$Case;ReadOnlyExtractionPreserved=$safe;ChangedTableCells=$changed;TableShapesPreserved=($Before.Shapes -ceq $After.Shapes);ChangedPartCategories=$categories;ChangedStandardParts=$known;UnidentifiedChangedPartCount=$unidentified;ObservedConfigSavePhase=$SavePhase;CauseEstablished=$false}|
         ConvertTo-Json -Depth 4 -Compress|Add-Content (Join-Path $reportRoot 'inventory-config-diagnosis.jsonl')
 }
 
@@ -66,6 +69,40 @@ function Test-InventoryConfigDiagnosticPreservation {
 }
 
 function Install-InventoryCommandBoundaryProbe {
+    $coreProject=$packages['invSys.Core.xlam'].VBProject
+    $saveProbe=$coreProject.VBComponents.Add(1);$saveProbe.Name='TestInventoryConfigSave'
+    $saveProbe.CodeModule.AddFromString(@'
+Option Explicit
+Private mCalls As Long, mChanges As Long, mUnavailable As Long, mBefore As String
+Public Sub Reset()
+    mCalls = 0: mChanges = 0: mUnavailable = 0: mBefore = ""
+End Sub
+Public Sub BeforeSave(ByVal book As Workbook)
+    If Not LCase$(book.Name) Like "*.invsys.config.xls*" Then Exit Sub
+    mCalls = mCalls + 1
+    mBefore = modTrainingWire.FileSha256(book.FullName)
+End Sub
+Public Sub AfterSave(ByVal book As Workbook)
+    Dim hash As String
+    If Not LCase$(book.Name) Like "*.invsys.config.xls*" Then Exit Sub
+    hash = modTrainingWire.FileSha256(book.FullName)
+    If hash = "" Or mBefore = "" Then
+        mUnavailable = mUnavailable + 1
+    ElseIf hash <> mBefore Then
+        mChanges = mChanges + 1
+    End If
+    mBefore = ""
+End Sub
+Public Function Facts() As String
+    Facts = CStr(mCalls) & "|" & CStr(mChanges) & "|" & CStr(mUnavailable)
+End Function
+'@)
+    $config=$coreProject.VBComponents.Item('modConfig').CodeModule
+    $start=$config.ProcStartLine('SaveConfigWorkbookIfWritable',0);$count=$config.ProcCountLines('SaveConfigWorkbookIfWritable',0)
+    $saveBody=$config.Lines($start,$count);$saveLine='    wb.Save'
+    if([regex]::Matches($saveBody,[regex]::Escape($saveLine)).Count -ne 1){throw 'Config save observation boundary changed; not product RED.'}
+    $saveBody=$saveBody.Replace($saveLine,('    TestInventoryConfigSave.BeforeSave wb'+"`r`n"+$saveLine+"`r`n"+'    TestInventoryConfigSave.AfterSave wb'))
+    $config.DeleteLines($start,$count);$config.InsertLines($start,$saveBody)
     $project=$packages['invSys.Admin.xlam'].VBProject
     $probe=$project.VBComponents.Add(1);$probe.Name='TestInventoryCommands'
     $probe.CodeModule.AddFromString(@'
