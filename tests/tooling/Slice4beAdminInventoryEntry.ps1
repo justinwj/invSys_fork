@@ -198,7 +198,10 @@ function Test-AdminInventoryEntry($Fixture,$Other) {
             Write-InventoryConfigDiagnosticComparison $configBefore $configAfter $mode
             $newKeys=@($persisted.EntityQuantities.Keys|Where-Object {-not $before.EntityQuantities.ContainsKey($_)})
             $exactSaved=($newKeys.Count -eq 1 -and $persisted.EntityQuantities[$newKeys[0]] -eq 1 -and $persisted.FileHash -cne $before.FileHash)
-            $actionReached=$facts.Count -eq 10 -and [int]$facts[1] -eq 1 -and $facts[2] -ceq 'True' -and $facts[3] -ceq 'True'
+            # Historical assertion ID denotes reaching the operator's OK attempt;
+            # an authorized control must accept, while a legal refusal need not.
+            $mustAccept=$mode -cin @('Baseline','ActiveWorkbook')
+            $actionReached=$facts.Count -eq 10 -and [int]$facts[1] -eq 1 -and $facts[3] -ceq 'True' -and (-not $mustAccept -or $facts[2] -ceq 'True')
             Check ('InventoryEntry.'+$mode+'.ActualModalAcceptReached') $actionReached
             if(-not $actionReached){throw 'Inventory modal action fixture did not reach OK; not product RED.'}
             Check ('InventoryEntry.'+$mode+'.OriginalHostCapturedBeforeYield') ($facts[8] -ceq 'True')
@@ -214,7 +217,7 @@ function Test-AdminInventoryEntry($Fixture,$Other) {
             Check ('InventoryEntry.'+$mode+'.ManagedHeadersContainNoROW') ($after.LegacyHeaders -eq 0)
             Check ('InventoryEntry.'+$mode+'.DisplayContainsNoROWIdentity') ($facts[7] -ceq 'False')
             Check ('InventoryEntry.'+$mode+'.UnrelatedWorkbookStructurePreserved') ($otherBook.Worksheets.Count -eq $otherSheetCount)
-            [pscustomobject]@{Case=$mode;ModalAcceptReached=$actionReached;CapturedHostKind=$facts[9];InventoryWriteObserved=$wrote;OwnerWorkbookSavedFlag=$after.Saved;PersistedInventoryBytesChanged=($persisted.FileHash -cne $before.FileHash);ExactNewEntityQuantityPersisted=$exactSaved;SourceAuthUnchanged=($authHash -ceq (Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))));SourceConfigUnchanged=($configHash -ceq (Get-AdminInventoryEntryHash $Fixture.Config));ReplacementSessionRefusalContractNotAssumed=($mode -ceq 'ReplacementSession')}|
+            [pscustomobject]@{Case=$mode;ModalHandlerReached=$actionReached;ModalAcceptReached=($facts[2] -ceq 'True');CapturedHostKind=$facts[9];InventoryWriteObserved=$wrote;OwnerWorkbookSavedFlag=$after.Saved;PersistedInventoryBytesChanged=($persisted.FileHash -cne $before.FileHash);ExactNewEntityQuantityPersisted=$exactSaved;SourceAuthUnchanged=($authHash -ceq (Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))));SourceConfigUnchanged=($configHash -ceq (Get-AdminInventoryEntryHash $Fixture.Config));OriginalDiagnosticDidNotAssertReplacementRefusal=($mode -ceq 'ReplacementSession')}|
                 ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'inventory-entry-observations.jsonl')
         }
         Check 'InventoryEntry.SourceAuthAndConfigPreserved' ($authHash -ceq (Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))) -and $configHash -ceq (Get-AdminInventoryEntryHash $Fixture.Config))

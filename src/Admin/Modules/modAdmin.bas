@@ -495,11 +495,7 @@ Sub Add_InventoryItem()
     Dim formCustomFields As Object
     Dim editStamp As String
     Dim actionSucceeded As Boolean
-
-    If Not ResolveAdminCurrentTargetContext(warehouseId, stationId, userId, report) Then
-        MsgBox report, vbExclamation, "invSys Admin"
-        Exit Sub
-    End If
+    Dim interactiveContext As String, sourceValues As Variant
 
     Set targetWb = ResolveInteractiveAdminWorkbook(False)
     If targetWb Is Nothing Then
@@ -508,14 +504,25 @@ Sub Add_InventoryItem()
         Exit Sub
     End If
 
+    interactiveContext = modInventoryCommands.Capture(targetWb.Name)
+    sourceValues = modInventoryCommands.SourceValues(interactiveContext)
+    If Not IsArray(sourceValues) Then
+        MsgBox "Sign in to the current source warehouse as an authorized Admin and reopen Add/Edit Inventory.", vbExclamation, "invSys Admin"
+        modInventoryCommands.Release interactiveContext
+        Exit Sub
+    End If
+    warehouseId = CStr(sourceValues(0)): stationId = CStr(sourceValues(1)): userId = CStr(sourceValues(2))
+
     rowVal = NextInventoryRowSuggestionAdmin(warehouseId)
     sku = GenerateInventorySkuAdmin(warehouseId, rowVal)
     defaultLocation = Trim$(modConfig.GetString("DefaultLocation", ""))
     Set catalogItems = LoadInventoryCatalogItemsAdmin(warehouseId)
 
+    If Not modInventoryCommands.CheckForm(interactiveContext, report) Then GoTo CleanExit
     Set addForm = New frmAddInventoryItem
     addForm.Configure warehouseId, stationId, userId, sku, rowVal, defaultLocation
     addForm.SetOperatorWorkbook targetWb
+    addForm.SetInteractiveContext interactiveContext
     LoadCatalogItemsIntoAddInventoryForm addForm, catalogItems
 
     Do
@@ -525,6 +532,7 @@ Sub Add_InventoryItem()
         accepted = addForm.Accepted
         On Error GoTo 0
         If Not accepted Then Exit Do
+        If Not modInventoryCommands.CheckForm(interactiveContext, report) Then Exit Do
 
         On Error GoTo FormUnavailable
         isEdit = addForm.EditMode
@@ -585,20 +593,25 @@ Sub Add_InventoryItem()
 
         If actionSucceeded Then
             MsgBox report, vbInformation, "invSys Admin"
+            If Not modInventoryCommands.CheckForm(interactiveContext, report) Then Exit Do
             rowVal = NextInventoryRowSuggestionAdmin(warehouseId)
             sku = GenerateInventorySkuAdmin(warehouseId, rowVal)
             Set catalogItems = LoadInventoryCatalogItemsAdmin(warehouseId)
+            If Not modInventoryCommands.CheckForm(interactiveContext, report) Then Exit Do
             addForm.Configure warehouseId, stationId, userId, sku, rowVal, defaultLocation
             addForm.SetOperatorWorkbook targetWb
+            addForm.SetInteractiveContext interactiveContext
             LoadCatalogItemsIntoAddInventoryForm addForm, catalogItems
         Else
             MsgBox report, vbExclamation, "invSys Admin"
+            If Not modInventoryCommands.CheckForm(interactiveContext, report) Then Exit Do
         End If
     Loop
 
 CleanExit:
     On Error Resume Next
     Unload addForm
+    modInventoryCommands.Release interactiveContext
     On Error GoTo 0
     Exit Sub
 
@@ -1706,45 +1719,6 @@ Private Function SanitizeSeedCallbackErrorText(ByVal valueText As String) As Str
     End If
     If valueText = "" Then valueText = "<none>"
     SanitizeSeedCallbackErrorText = valueText
-End Function
-
-Private Function ResolveAdminCurrentTargetContext(ByRef warehouseId As String, _
-                                                  ByRef stationId As String, _
-                                                  ByRef userId As String, _
-                                                  ByRef report As String) As Boolean
-    Dim target As WarehouseTarget
-    Dim accessReport As String
-
-    If Not modRoleUiAccess.CanCurrentUserPerformCapabilityCached("ADMIN_MAINT", accessReport) Then
-        report = accessReport
-        If Trim$(report) = "" Then report = "Sign in as an admin user and connect a warehouse target first."
-        Exit Function
-    End If
-
-    Set target = modNasConnection.GetCurrentTarget()
-    If target Is Nothing Then
-        report = "Connect a warehouse target first."
-        Exit Function
-    End If
-
-    warehouseId = Trim$(target.WarehouseId)
-    stationId = Trim$(target.StationId)
-    userId = Trim$(modAuth.GetCurrentUserId())
-    If stationId = "" Then stationId = modStationIdentity.CurrentComputerStationId()
-    If warehouseId = "" Then
-        report = "Current warehouse target is missing WarehouseId."
-        Exit Function
-    End If
-    If userId = "" Then
-        report = "Current invSys user is not signed in."
-        Exit Function
-    End If
-    If Not modConfig.LoadConfig(warehouseId, stationId) Then
-        report = "Config load failed: " & modConfig.Validate()
-        Exit Function
-    End If
-
-    ResolveAdminCurrentTargetContext = True
 End Function
 
 Private Function NextInventoryRowSuggestionAdmin(ByVal warehouseId As String) As Long

@@ -92,6 +92,7 @@ Private mInitStep As String
 Private mAllowUomPrompt As Boolean
 Private mImagePlaceholderActive As Boolean
 Private mOperatorWorkbook As Workbook
+Private mInteractiveContext As String
 Private mLastInventoryTableName As String
 Private mLastInventoryWorksheetReport As String
 Private mConfiguredDefaultLocation As String
@@ -426,6 +427,16 @@ Public Sub SetOperatorWorkbook(ByVal wb As Workbook)
     Set mOperatorWorkbook = wb
 Unavailable:
 End Sub
+
+Public Sub SetInteractiveContext(ByVal context As String)
+    mInteractiveContext = context
+End Sub
+
+Private Function CurrentContextAllowed() As Boolean
+    Dim report As String
+    CurrentContextAllowed = modInventoryCommands.CheckForm(mInteractiveContext, report)
+    If Not CurrentContextAllowed Then mLblStatus.Caption = report
+End Function
 
 Public Sub Configure(ByVal warehouseId As Variant, _
                      ByVal stationId As Variant, _
@@ -846,56 +857,6 @@ Private Sub HideEditItemSearchResults()
     mLstEditItemResults.Clear
 End Sub
 
-Private Function MaxLongAdminForm(ByVal leftValue As Long, ByVal rightValue As Long) As Long
-    If leftValue >= rightValue Then
-        MaxLongAdminForm = leftValue
-    Else
-        MaxLongAdminForm = rightValue
-    End If
-End Function
-
-Private Function MinLongAdminForm(ByVal leftValue As Long, ByVal rightValue As Long) As Long
-    If leftValue <= rightValue Then
-        MinLongAdminForm = leftValue
-    Else
-        MinLongAdminForm = rightValue
-    End If
-End Function
-
-Private Function AdminNormalizeSearchText(ByVal valueIn As String) As String
-    Dim textOut As String
-
-    textOut = Trim$(CStr(valueIn))
-    textOut = Replace(textOut, vbTab, " ")
-    Do While InStr(1, textOut, "  ", vbBinaryCompare) > 0
-        textOut = Replace(textOut, "  ", " ")
-    Loop
-    AdminNormalizeSearchText = LCase$(textOut)
-End Function
-
-Private Function AdminTextMatchesSearch(ByVal candidate As String, ByVal searchTerm As String) As Boolean
-    If searchTerm = "" Then
-        AdminTextMatchesSearch = True
-    Else
-        AdminTextMatchesSearch = (InStr(1, AdminNormalizeSearchText(candidate), searchTerm, vbTextCompare) > 0)
-    End If
-End Function
-
-Private Function AdminAnyTextMatchesSearch(ByVal searchTerm As String, ParamArray candidates() As Variant) As Boolean
-    Dim i As Long
-
-    If searchTerm = "" Then
-        AdminAnyTextMatchesSearch = True
-        Exit Function
-    End If
-    For i = LBound(candidates) To UBound(candidates)
-        If AdminTextMatchesSearch(CStr(candidates(i)), searchTerm) Then
-            AdminAnyTextMatchesSearch = True
-            Exit Function
-        End If
-    Next i
-End Function
-
 Private Sub LoadQuantityOptions()
     If mTxtQty Is Nothing Then Exit Sub
     mTxtQty.Clear
@@ -1023,6 +984,7 @@ Private Sub mBtnCreateInventoryTable_Click()
     Dim tableName As String
 
     On Error GoTo Failed
+    If Not CurrentContextAllowed() Then Exit Sub
     If mOperatorWorkbook Is Nothing Then
         mLblStatus.Caption = "The captured Admin operator workbook is unavailable."
         Exit Sub
@@ -1050,6 +1012,7 @@ Private Sub mBtnUploadInventoryTable_Click()
     Dim succeeded As Boolean
 
     On Error GoTo Failed
+    If Not CurrentContextAllowed() Then Exit Sub
     If mOperatorWorkbook Is Nothing Then
         mLblStatus.Caption = "The captured Admin operator workbook is unavailable."
         Exit Sub
@@ -1071,10 +1034,12 @@ Failed:
 End Sub
 
 Private Sub mBtnOK_Click()
+    If Not CurrentContextAllowed() Then Exit Sub
     If Not ValidateForm Then Exit Sub
     If mEditMode Then
         If Not PromptForEditReason Then Exit Sub
     End If
+    If Not CurrentContextAllowed() Then Exit Sub
     mDeleteRequested = False
     mDeleteReason = ""
     mAccepted = True
@@ -1113,6 +1078,7 @@ Private Sub mBtnDeleteItem_Click()
     Dim answer As VbMsgBoxResult
     Dim reason As String
 
+    If Not CurrentContextAllowed() Then Exit Sub
     If Not mEditMode Or mSelectedEditSku = "" Then
         mLblStatus.Caption = "Choose an inventory item to delete."
         Exit Sub
@@ -1127,6 +1093,7 @@ Private Sub mBtnDeleteItem_Click()
             "Catalog and event history will be retained.", _
             vbQuestion Or vbYesNo Or vbDefaultButton2, "invSys Admin - Delete Item")
         If answer <> vbYes Then Exit Sub
+        If Not CurrentContextAllowed() Then Exit Sub
         reason = Trim$(InputBox("Why is this item being deleted from managed inventory?", _
             "invSys Admin - Delete Item"))
     End If
@@ -1134,6 +1101,7 @@ Private Sub mBtnDeleteItem_Click()
         mLblStatus.Caption = "Why the deletion is required."
         Exit Sub
     End If
+    If Not CurrentContextAllowed() Then Exit Sub
 
     mDeleteReason = Trim$(reason)
     mDeleteRequested = True
@@ -1240,6 +1208,7 @@ Private Sub mCmbUom_Change()
     End If
 
     newUom = UCase$(Trim$(InputBox("New UOM:", "invSys Admin - Add UOM")))
+    If Not CurrentContextAllowed() Then Exit Sub
     If newUom = "" Then
         If mPreviousUom <> "" Then
             mCmbUom.Value = mPreviousUom

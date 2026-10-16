@@ -1,5 +1,35 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Focused exact-quantity RED120 qualified,2026-10-15 Pacific:** source1c9bff87/
+testc60fad9f completes11 PASS/1 FAIL. Five instrumented compiles, pre-form guard,
+Admin-created single counted entity and the actual Edit/reason handlers pass.
+The only failure is `InventoryExactQuantity.ExactSelectedEntityTargetSaved`;
+the owning generated key set and other entity quantities are preserved. Controller
+`admin-inventory-entry-controller/f9c452648ef745c0b188b550bec3290f`; worker
+`slice4be-admin-inventory-entry/3a10db8e7a2b480da45d13aa9a0daf13`.
+Five packages/all486 tooling/settings/fixture preservation and normal owned/native
+closure qualify through2026-10-16T05:01:20.9278151Z, without desktop stop or Excel
+failure. Ignored qualification: `admin-inventory-exact-quantity-red-120/qualification.json`
+under the usual resume root. This is focused quantity RED, not a rerun of251 or
+post-queue retry evidence. The legacy positive ROW guard is the source finding
+consistent with this unfulfilled valid Edit target; no legacy row is injected.
+
+**First implementation increment in progress:** Core `modInventoryCommands`
+captures a primitive handle bound to the original workbook and live source/session,
+rechecks ADMIN_MAINT/root/feed and expires invalid contexts. The launcher captures
+the workbook before inspection; modal/worksheet actions and reachable prompts use
+that Core check. Five pure search helpers move unchanged into an Admin-private
+module; the oversized form and owner module shrink. This is not the completed
+command coordinator: catalog/entity/table revalidation, moving/guarding all writes,
+D14 quantity/payload correction and partial retry remain required. No GREEN,
+package build or acceptance is claimed yet.
+
+The original fixed `.ActualModalAcceptReached` assertion IDs remain, but now
+measure reaching the OK attempt: authorized controls must still accept; denied
+actions may return Accepted=False. Separate mutation/persistence assertions are
+unchanged. New observations distinguish `ModalHandlerReached` from actual
+`ModalAcceptReached`, so a correct form refusal is not mislabeled a harness failure.
+
 **Replacement RED119 qualified,2026-10-15 Pacific:** unchanged source1c9bff87/
 testf379ae51 completes183 PASS/68 FAIL,251 unique checks with no harness exception.
 All190 prior names/order/outcomes are retained;42 actual action/yield cases reach
@@ -168,6 +198,15 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Trial120 cohort: unresolved/not measured in focused scope**, source1c9bff87/
+testc60fad9f, controller f9c452648ef745c0b188b550bec3290f and worker
+3a10db8e7a2b480da45d13aa9a0daf13. This focused Edit run records no Config/Auth
+byte/part comparison, so no source-authority preservation or cause is inferred
+from it. Trial119's same-product/different-test evidence remains separately labeled
+below; it is not relabeled as120's diagnostic. Full Config comparisons and remaining
+part/cause investigation are still required in subsequent D13 review. The existing
+finding stays unresolved through implementation and cannot close on focused GREEN.
 
 **Trial119 cohort: unresolved**, source1c9bff87/testf379ae51, controller
 67633994f7cf4b4582894bca6f934e92 and worker49ce09a20c984767adf691d86f6f07b9.
