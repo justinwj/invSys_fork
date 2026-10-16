@@ -65,6 +65,7 @@ End Function
 }
 
 function Test-InventoryDeleteResults($Fixture,$Other) {
+    $script:InventoryConfigReadChecks=[Collections.Generic.List[object]]::new()
     foreach($case in @('Authorized','AuthorityLost')){
         SelectTarget $Fixture
         $sku='DEMO-DELETE-'+$case.ToUpperInvariant()
@@ -81,6 +82,9 @@ function Test-InventoryDeleteResults($Fixture,$Other) {
         [pscustomobject]@{Case=$case;Stage='BeforeColdBaseline';FileExists=(Test-Path $path);Ready=[bool]$excel.Ready}|ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'delete-fixture-stages.jsonl')
         $before=Get-AdminInventoryEntryFacts $Fixture -Persisted
         [pscustomobject]@{Case=$case;Stage='ColdBaselineRead'}|ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'delete-fixture-stages.jsonl')
+        $configBefore=Get-InventoryConfigDiagnosticSnapshot $Fixture
+        $authBefore=Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))
+        [void](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Reset')
         $hostBook=$excel.Workbooks.Add();$hostBook.SaveAs((Join-Path $runRoot ('delete-result-'+$case+'.xlsx')),51)
         try{
             [void](Run 'invSys.Admin.xlam' 'TestInventoryDeleteResult.Arm' @(($case -ceq 'AuthorityLost')))
@@ -115,6 +119,13 @@ function Test-InventoryDeleteResults($Fixture,$Other) {
             }finally{$book.Close($false)}
             Check ($id+'.ColdInspectionPreservedBytes') ((Get-AdminInventoryEntryHash $path) -ceq $hash)
             if($case -ceq 'AuthorityLost'){Check ($id+'.HonestSavedPartialReported') ([bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.DeleteResultPartialForTest'))}
+            $configAfter=Get-InventoryConfigDiagnosticSnapshot $Fixture
+            $saveFacts=([string](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Facts')).Split('|')
+            if($saveFacts.Count -ne 3){throw 'Config save facts unavailable.'}
+            $phase=[pscustomobject]@{Calls=[int]$saveFacts[0];ByteChangesDuringSave=[int]$saveFacts[1];UnavailableHashComparisons=[int]$saveFacts[2];Procedure='modConfig.SaveConfigWorkbookIfWritable'}
+            Write-InventoryConfigDiagnosticComparison $configBefore $configAfter $case $phase
+            [pscustomobject]@{Case=$case;AuthBytesPreserved=($authBefore -ceq (Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))))}|
+                ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'delete-authority-observations.jsonl')
         }finally{$hostBook.Close($false)}
     }
 }
