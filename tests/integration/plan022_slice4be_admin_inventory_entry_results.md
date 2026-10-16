@@ -1,5 +1,26 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Exact quantity GREEN128 qualified,2026-10-15 Pacific:** source306fa2da and
+test9367159b pass12/12, preserving all focused RED120 assertion names/order.
+The actual modal Edit/reason action now saves the target on the owning generated
+System_Key and preserves the key set/other entity quantities. Controller
+`admin-inventory-entry-controller/c809a5125cee4e61af7e48e7b5874607`; worker
+`slice4be-admin-inventory-entry/9f3c8340643f422f95f95c4aacea7ae6`.
+Five packages/all486 tooling/settings/fixture preservation and normal owned/native
+closure qualify through2026-10-16T06:05:02.7430579Z, with zero desktop stops/Excel
+failures. Build127 qualifies validation-inventory-quantity-01; no promotion.
+Config is unmeasured in this focused scope and remains unresolved. Ambiguous
+targets, source replacement and retry require separate evidence;12/12 does not
+qualify the full contract.
+
+**Queued-retry test prepared:** the same owning single-entity fixture and real
+Edit/reason handlers now support a separate retry mode. A test-only injected fault
+occurs after confirmed queue save and before processing. A cold inbox check matches
+the exact event; a fresh sign-in/form retries the same target. Assertions require
+honest partial reporting, exact target/identity preservation, one queued/applied
+adjustment and the original event's saved application. No runtime result is claimed
+before the20-check focused run. All486 tooling scripts parse.
+
 **Reserved-field GREEN126 qualified,2026-10-15 Pacific:** source73e883b0 and
 unchanged test9367159b pass33/33, retaining every RED124 assertion name/order.
 Controller `admin-inventory-entry-controller/6dfbf83697084fb89c20a04396fcde33`;

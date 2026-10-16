@@ -79,6 +79,14 @@ Private mInjectedEvents As Long
 Private mQuantityTarget As Double
 Private mCustomHeader As String, mCustomAccepted As Boolean
 Private mHeaderRefused As Boolean
+Private mLastNotice As String
+Public Sub RecordNotice(ByVal text As String)
+    mLastNotice = text
+End Sub
+Public Function PartialQueueOutcomeReported() As Boolean
+    PartialQueueOutcomeReported = (InStr(1, mLastNotice, "Event:", vbTextCompare) > 0 And _
+        InStr(1, mLastNotice, "unconfirmed", vbTextCompare) > 0)
+End Function
 Public Function IsDriving() As Boolean
     IsDriving = mDriving
 End Function
@@ -151,6 +159,7 @@ Public Sub Execute(ByVal host As String, ByVal action As String, ByVal caseName 
     mInjectedEvents = 0
     mCustomAccepted = False
     mHeaderRefused = False
+    mLastNotice = ""
     Application.Workbooks(host).Activate
     On Error GoTo Failed
     RibbonOnActionAdmin control
@@ -338,6 +347,36 @@ Public Function Facts() As String
         CStr(mBound) & "|" & CStr(mSignatureReady And unchanged)
 End Function
 '@)
+    if($AdminInventoryQuantityRetryOnly -or -not($AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly)){
+        $core=$packages['invSys.Core.xlam'].VBProject
+        $quantity=$core.VBComponents.Item('modInventoryQuantityCommands').CodeModule
+        $text=$quantity.Lines(1,$quantity.CountOfLines)
+        $needle='    processed = modProcessor.RunBatch(warehouse, 0, batchReport, eventId, applied)'
+        if([regex]::Matches($text,[regex]::Escape($needle)).Count -ne 1){throw 'Exact quantity queue fault boundary changed; not product RED.'}
+        $text=$text.Replace($needle,('    TestInventoryQuantity.AfterQueue eventId'+"`r`n"+$needle))
+        $quantity.DeleteLines(1,$quantity.CountOfLines);$quantity.AddFromString($text)
+        $quantityProbe=$core.VBComponents.Add(1);$quantityProbe.Name='TestInventoryQuantity'
+        $quantityProbe.CodeModule.AddFromString(@'
+Option Explicit
+Private mFail As Boolean, mQueued As Long, mEvent As String
+Public Sub Arm()
+    mFail = True: mQueued = 0: mEvent = ""
+End Sub
+Public Sub AfterQueue(ByVal eventId As String)
+    mQueued = mQueued + 1: mEvent = eventId
+    If mFail Then
+        mFail = False
+        Err.Raise vbObjectError + 2213, , "Injected after confirmed queue and before processing."
+    End If
+End Sub
+Public Function QueuedCount() As Long
+    QueuedCount = mQueued
+End Function
+Public Function LastEvent() As String
+    LastEvent = mEvent
+End Function
+'@)
+    }
     $form=$project.VBComponents.Item('frmAddInventoryItem').CodeModule
     $form.AddFromString(@'
 Public Function InventoryCommandPrepareForTest(ByVal action As String, ByVal sku As String) As Boolean
@@ -521,13 +560,14 @@ function Test-InventoryReplacementBoundaries($Fixture,$Other) {
     }
 }
 
-function Test-InventoryExactQuantity($Fixture,$Other) {
+function Test-InventoryExactQuantity($Fixture,$Other,[switch]$RetryQueued) {
+    $prefix=if($RetryQueued){'InventoryQuantityRetry'}else{'InventoryExactQuantity'}
     SelectTarget $Fixture
-    $sku='DEMO-EXACT-QUANTITY'
-    $csv=Join-Path $runRoot 'exact-quantity-generated-fixture.csv'
-    @('ITEM_CODE,ITEM,UOM,LOCATION,QTY,CONDITION','DEMO-EXACT-QUANTITY,Exact quantity fixture,LB,CLEARVIEW,10,GOOD')|Set-Content -LiteralPath $csv -Encoding ASCII
+    $sku=if($RetryQueued){'DEMO-EXACT-RETRY'}else{'DEMO-EXACT-QUANTITY'}
+    $csv=Join-Path $runRoot ($prefix+'-fixture.csv')
+    @('ITEM_CODE,ITEM,UOM,LOCATION,QTY,CONDITION',($sku+',Exact quantity fixture,LB,CLEARVIEW,10,GOOD'))|Set-Content -LiteralPath $csv -Encoding ASCII
     $created=[bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareExactQuantityFixture' @($Fixture.Warehouse,$csv))
-    Check 'InventoryExactQuantity.GeneratedSingleEntityFixtureApplied' $created
+    Check ($prefix+'.GeneratedSingleEntityFixtureApplied') $created
     if(-not $created){throw 'Owning single-entity fixture creation failed; not product RED.'}
     $path=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
     $book=$excel.Workbooks.Open($path,0,$true)
@@ -541,23 +581,51 @@ function Test-InventoryExactQuantity($Fixture,$Other) {
     }finally{$book.Close($false)}
     if($choices.Count -ne 1){throw 'Exact quantity test requires one generated active counted entity; not product RED.'}
     $choice=$choices[0];$target=$choice.Quantity+3
-    $hostBook=$excel.Workbooks.Add();$hostBook.SaveAs((Join-Path $runRoot 'exact-quantity-host.xlsx'),51)
+    $hostBook=$excel.Workbooks.Add();$hostBook.SaveAs((Join-Path $runRoot ($prefix+'-host.xlsx')),51)
     try{
         $before=Get-AdminInventoryEntryFacts $Fixture -Persisted
         [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetSelection' @($Other.Root,$sku))
         [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetQuantityTarget' @($target))
+        if($RetryQueued){
+            [void](Run 'invSys.Core.xlam' 'TestInventoryQuantity.Arm')
+            [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'Edit','SetQuantity','EditReason',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
+            $first=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
+            $firstReady=$first.Count -eq 5 -and $first[0] -ceq 'True' -and $first[1] -ceq 'True' -and $first[2] -ceq '1'
+            Check ($prefix+'.FirstEditAndReasonReached') $firstReady
+            if(-not $firstReady){throw 'Queued retry first actual action unavailable; not product RED.'}
+            Check ($prefix+'.FirstOperatorCaptured') ($first[3] -ceq 'True')
+            $firstEvent=[string](Run 'invSys.Core.xlam' 'TestInventoryQuantity.LastEvent')
+            $inboxPath=[string](Run 'invSys.Core.xlam' 'modRoleEventWriter.ResolveInboxWorkbookPath' @('ADMIN_INVENTORY_ADJUST',$Fixture.Warehouse,'S1'))
+            $inbox=$excel.Workbooks.Open($inboxPath,0,$true);$found=0
+            try{
+                $queued=Table $inbox 'tblInboxReceive'
+                foreach($row in $queued.ListRows){if([string]$row.Range.Cells.Item(1,$queued.ListColumns.Item('EventID').Index).Value2 -ceq $firstEvent){$found++}}
+            }finally{$inbox.Close($false)}
+            Check ($prefix+'.FirstExactQueuedEventSaved') ($firstEvent -ne '' -and $found -eq 1)
+            if($firstEvent -eq '' -or $found -ne 1){throw 'Post-queue fault did not reach saved event; not product RED.'}
+            $partial=Get-AdminInventoryEntryFacts $Fixture -Persisted
+            Check ($prefix+'.FirstQueueRemainsUnapplied') ($partial.EntityQuantities[$choice.Key] -eq $choice.Quantity -and $partial.AppliedRows -eq $before.AppliedRows)
+            Check ($prefix+'.PartialOutcomeReported') ([bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PartialQueueOutcomeReported'))
+            SelectTarget $Fixture
+            $hostBook.Activate()
+        }
         [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'Edit','SetQuantity','EditReason',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
         $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
         $ready=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[1] -ceq 'True' -and $facts[2] -ceq '1'
-        Check 'InventoryExactQuantity.ActualEditAndReasonReached' $ready
+        Check ($prefix+'.ActualEditAndReasonReached') $ready
         if(-not $ready){throw 'Exact quantity modal fixture unavailable; not product RED.'}
-        Check 'InventoryExactQuantity.OriginalOperatorCaptured' ($facts[3] -ceq 'True')
+        Check ($prefix+'.OriginalOperatorCaptured') ($facts[3] -ceq 'True')
         $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
-        Check 'InventoryExactQuantity.ExactSelectedEntityTargetSaved' ($after.EntityQuantities.ContainsKey($choice.Key) -and $after.EntityQuantities[$choice.Key] -eq $target)
+        Check ($prefix+'.ExactSelectedEntityTargetSaved') ($after.EntityQuantities.ContainsKey($choice.Key) -and $after.EntityQuantities[$choice.Key] -eq $target)
         $keys=@(@($before.EntityQuantities.Keys)+@($after.EntityQuantities.Keys)|Select-Object -Unique)
-        Check 'InventoryExactQuantity.EntityIdentitySetPreserved' ($keys.Count -eq $before.EntityQuantities.Count -and $keys.Count -eq $after.EntityQuantities.Count)
+        Check ($prefix+'.EntityIdentitySetPreserved') ($keys.Count -eq $before.EntityQuantities.Count -and $keys.Count -eq $after.EntityQuantities.Count)
         $otherChanged=@($keys|Where-Object {$_ -cne $choice.Key -and $before.EntityQuantities[$_] -ne $after.EntityQuantities[$_]})
-        Check 'InventoryExactQuantity.OtherEntityQuantitiesPreserved' ($otherChanged.Count -eq 0)
+        Check ($prefix+'.OtherEntityQuantitiesPreserved') ($otherChanged.Count -eq 0)
+        if($RetryQueued){
+            Check ($prefix+'.OnlyOneAdjustmentQueued') ([int](Run 'invSys.Core.xlam' 'TestInventoryQuantity.QueuedCount') -eq 1)
+            Check ($prefix+'.OnlyOneAdjustmentApplied') ($after.LogRows -eq $before.LogRows+1 -and $after.AppliedRows -eq $before.AppliedRows+1)
+            Check ($prefix+'.OriginalExactQueuedEventApplied') ([bool](Run 'invSys.Core.xlam' 'modInventoryDomainBridge.InventoryEventAppliedBridge' @($Fixture.Warehouse,$firstEvent)))
+        }
     }finally{$hostBook.Close($false)}
 }
 

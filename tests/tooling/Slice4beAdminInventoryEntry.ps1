@@ -134,6 +134,7 @@ End Function
 Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgBoxStyle = vbOKOnly, _
                         Optional ByVal Title As String = "") As VbMsgBoxResult
     TestInventoryEntry.Notice
+    TestInventoryCommands.RecordNotice Prompt
     MsgBox = vbOK
 End Function
 '@)
