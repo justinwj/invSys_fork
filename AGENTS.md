@@ -84,10 +84,14 @@ review information must be verified.
 Do not infer the current specification, plan, or handoff from filesystem
 timestamps or the highest filename alone.
 
-## GitHub contribution workflow
+## GitHub contribution workflow — this computer only
 
-The user confirmed this workflow on 2026-10-16. It applies to both repositories
-and persists across chats:
+The user confirmed this workflow on 2026-10-16 for **this computer only** (the
+current Windows laptop). It applies to both local repositories and persists
+across chats on this computer. Although this file is versioned, this section does
+not establish the GitHub workflow for another computer or clone. Other computers
+must use their own user-authorized workflow; do not automatically copy these
+remote, push or PR defaults to them.
 
 - `soetrain/invSys_fork` and `soetrain/invSys_docs`, branch `main`, are the
   authoritative upstream repositories. Remote `origin` points to the matching
