@@ -1,7 +1,20 @@
-# D8-INV-01 catalog-write phase: automatic approval review block
+# D8-INV-01 catalog-write phase: approved restructuring
 
-D8-INV-01 remains approved. This requests authorization for the concrete product
-edit blocked by automatic review, not new architectural or feature acceptance.
+D8-INV-01 remains approved. On2026-10-16 the user explicitly authorized the
+catalog write phase after restructuring: plan all fields, one check, write the
+whole batch, check, save, confirm. Refuse already-open workbooks with unsaved
+changes. A saved-but-unconfirmed outcome is partial. Do not build or deploy until
+focused GREEN. This resolves the concrete product-edit permission block within
+those conditions; no further architectural approval is requested.
+
+The adjacent198-line patch is historical and remains unapplied. Its per-field
+plan/check/write interleaving does not satisfy the approved batch sequence;
+do not apply it unchanged. The new component test executes source catalog helpers
+on Admin-generated disposable inventory with deterministic guard outcomes and
+independent persisted-field reads. It builds/saves no XLAM and supplements the
+required packaged callback/input matrix. Component RED/GREEN are pending.
+
+## Historical rejected draft
 
 The adjacent `d8_inv_01_catalog_write_phase.patch` is an unapplied198-line diff
 against current Admin source. It adds the captured Core context to interactive
@@ -32,6 +45,6 @@ the catalog phase needs independent persisted-result verification. Require focus
 GREEN, applicable regressions and maintenance gates before acceptance or promotion.
 Do not deploy this draft.
 
-Requested authorization: permit applying this guarded live catalog-write phase
-and completing/testing its approved D8-INV-01 integration. Automatic review is the
-source of this extra request; architectural approval has already been given.
+The earlier authorization request is superseded by the user's conditional
+approval above. Preserve its write ordering, dirty refusal and honest partial
+result requirements while completing the approved integration.

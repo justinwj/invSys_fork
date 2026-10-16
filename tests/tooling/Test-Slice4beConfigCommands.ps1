@@ -144,6 +144,7 @@ param(
     [switch]$AdminInventoryQuantityRetryOnly,
     [switch]$AdminInventoryBaselineOnly,
     [switch]$AdminInventoryInputsOnly,
+    [switch]$AdminInventoryCatalogOnly,
     [switch]$AdminAggregationPathComparison,
     [switch]$AdminAggregationBoundaryMatrix,
     [ValidateSet('All','Inspection','Write','Ownership')][string]$AdminAggregationBoundaryGroup='All',
@@ -855,6 +856,7 @@ if($AdminInventoryManagedFieldsOnly -and (-not $AdminInventoryEntryOnly -or $Adm
 if($AdminInventoryQuantityRetryOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly)){throw 'Quantity retry requires the separate isolated Inventory gate.'}
 if($AdminInventoryBaselineOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Baseline requires the separate isolated Inventory gate.'}
 if($AdminInventoryInputsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Input boundaries require the separate isolated Inventory gate.'}
+if($AdminInventoryCatalogOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Catalog component requires its separate Inventory gate.'}
 if($AdminInventoryEntryOnly){
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-inventory-entry/'+[guid]::NewGuid().ToString('N'))
@@ -2209,6 +2211,10 @@ End Function
     }
     if($AdminInventoryEntryOnly){
         Install-AdminInventoryEntryProbe
+        if($AdminInventoryCatalogOnly){
+            . (Join-Path $PSScriptRoot 'Slice4beInventoryCatalogPhase.ps1')
+            Install-InventoryCatalogPhaseProbe
+        }
         . (Join-Path $PSScriptRoot 'Slice4beEvaluationNativeTrace.ps1')
         Compile-Slice4beEvaluationProbes
         $noForms=[long](Run 'invSys.Admin.xlam' 'TestD5Commands.LoadedFormsForTest') -eq 0
@@ -2424,7 +2430,10 @@ End Function
     }
     if($AdminAggregationOnly){$step='packaged Aggregation authority and workbook diagnostic'; Test-AdminAggregation $a $b}
     if($AdminInventoryEntryOnly){
-        if($AdminInventoryInputsOnly){
+        if($AdminInventoryCatalogOnly){
+            $step='source catalog component on generated fixture; no XLAM build'
+            Test-InventoryCatalogPhase $a
+        }elseif($AdminInventoryInputsOnly){
             $step='Inventory captured inputs and authorized controls'
             SelectTarget $a
             $seed=[string](Run 'invSys.Admin.xlam' 'modAdminConsole.SeedDemoInventoryForAutomation' @($a.Warehouse,'S1','config-admin'))

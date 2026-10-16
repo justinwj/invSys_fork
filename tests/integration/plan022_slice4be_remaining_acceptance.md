@@ -6,6 +6,13 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Catalog phase approved for restructuring,2026-10-16 Pacific:** user authorized
+plan all fields, one check, write the whole batch, recheck, save, confirm; refuse
+dirty borrowed workbooks and report saved-but-unconfirmed as partial. Focused GREEN
+must precede build/deploy. The prepared source-component gate builds no XLAM and
+supplements required packaged coverage. All487 tooling scripts parse; execution
+awaits closure of an existing Excel process. No implementation/RED/GREEN is claimed.
+
 **Config diagnostic140,2026-10-16 Pacific:** product68949ab0/testfb59319c retains
 49/1 over the exact50 baseline checks. The byte difference is isolated to core.xml
 and Excel runtime-metadata record3073 in workbook.bin; other record payloads,
@@ -22,7 +29,8 @@ the sole baseline failure. Focused input138 is88/20 with clean preserved closure
 through07:03:14.2959637Z. An incomplete, unbuilt Core input prototype is staged;
 automatic approval review blocks the guarded live catalog-write phase. The exact
 unapplied patch/review note are under `tests/proposals/`. D8-INV-01 remains approved;
-specific product-edit authorization is pending. The user-confirmed GitHub workflow
+catalog phase authorization is now recorded above, with restructuring required.
+The user-confirmed GitHub workflow
 now publishes [code PR3](https://github.com/soetrain/invSys_fork/pull/3) and
 [docs PR2](https://github.com/soetrain/invSys_docs/pull/2) to soetrain; the earlier
 fork-destination block is resolved. Do not

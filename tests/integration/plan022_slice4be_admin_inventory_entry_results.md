@@ -1,5 +1,18 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Catalog phase authorized,2026-10-16 Pacific:** user approval resolves the
+concrete edit block after restructuring to plan all fields, one joint check,
+write all fields, recheck, save, confirm. Refuse dirty already-open workbooks and
+report saved-but-unconfirmed as partial. Focused GREEN is required before any
+build/deploy. The old198-line per-field interleaving patch is historical/unapplied.
+`AdminInventoryCatalogOnly` prepares a component gate using exact source helpers
+in an unsaved probe, deterministic Core guard outcomes, Admin-generated inventory
+and independent persisted-field reads. It builds/saves no XLAM and does not replace
+the actual packaged callbacks/input matrix. All487 tooling scripts parse. An
+existing Excel process prevents isolated dispatch; no RED/GREEN or product fix is
+claimed yet. Config/Auth byte checks are included in the prepared gate; actual
+same-cohort diagnosis remains to be recorded after it runs.
+
 **GitHub workflow restored,2026-10-16 Pacific:** the user confirmed upstream pulls
 from soetrain and contributor-branch publication through PRs targeting soetrain.
 Both latest origin/main branches were pulled and were already contained locally.
@@ -32,7 +45,7 @@ continuation remains RED. Controller e5f73851bd9d4872ab5962f9eabfbe4d; worker
 fixtures and normal owned/native closure qualify through2026-10-16T07:03:14.2959637Z,
 with zero desktop stops/Excel failures. Qualification is in the ignored138 root.
 
-**Implementation blocked by automatic approval review:** two Core-only input
+**Incomplete prototype and historical review block:** two Core-only input
 comparison classes, Core facade wiring and SKU-selection binding are staged as an
 incomplete, unbuilt prototype. Do not build/deploy it until write/result phases
 are finished: own verified writes must not expire themselves. The198-line guarded
@@ -40,9 +53,9 @@ catalog-write diff is saved but unapplied at
 `tests/proposals/d8_inv_01_catalog_write_phase.patch`; `git apply --check` passes.
 Automatic review rejected its broad live mutation/save scope twice, including
 after correction to an explicit cleanup Boolean. No new architecture approval is
-requested: D8-INV-01 is already approved. Specific product-edit authorization is
-pending; do not retry indirectly or split the patch to evade review. The separate
-GitHub publication authorization was clarified and resolved on2026-10-16 above.
+requested: D8-INV-01 is already approved. The user has now authorized the catalog
+phase with the batch sequence and refusal/partial conditions above; do not apply
+the rejected interleaving unchanged. GitHub publication is also authorized.
 
 **ROW identity GREEN within baseline137,2026-10-15 Pacific:** product68949ab0/
 testb82dcc9a completes49 PASS/1 FAIL over50 unique checks. All seven retained
