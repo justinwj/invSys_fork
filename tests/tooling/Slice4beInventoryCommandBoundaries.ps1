@@ -2,8 +2,9 @@
 function Get-InventoryConfigSemanticSnapshot($Book) {
     $groups=@{Workbook=@{};Names=@{};Tables=@{};Views=@{};Sheets=@{};Connections=@{}}
     $unavailable=@{Workbook=0;Names=0;Tables=0;Views=0;Sheets=0;Connections=0}
+    $missingWorkbookProperties=@()
     foreach($name in @('Date1904','PrecisionAsDisplayed','ProtectStructure','ProtectWindows','ReadOnlyRecommended','SaveLinkValues','UpdateRemoteReferences','CheckCompatibility','ForceFullCalculation','FullCalculationOnLoad','CalculationVersion')){
-        try{$groups.Workbook[$name]=[string]$Book.$name}catch{$unavailable.Workbook++}
+        try{$groups.Workbook[$name]=[string]$Book.$name}catch{$unavailable.Workbook++;$missingWorkbookProperties+=$name}
     }
     try{
         $groups.Names['Count']=[string]$Book.Names.Count
@@ -31,7 +32,7 @@ function Get-InventoryConfigSemanticSnapshot($Book) {
         $index=0
         foreach($window in $Book.Windows){
             $index++
-            foreach($name in @('Visible','DisplayWorkbookTabs','DisplayHorizontalScrollBar','DisplayVerticalScrollBar','TabRatio','WindowState','Zoom','ScrollRow','ScrollColumn')){
+            foreach($name in @('Visible','DisplayWorkbookTabs','DisplayHorizontalScrollBar','DisplayVerticalScrollBar','TabRatio','WindowState','Zoom','ScrollRow','ScrollColumn','Left','Top','Width','Height')){
                 try{$groups.Views[$index.ToString()+'|'+$name]=[string]$window.$name}catch{$unavailable.Views++}
             }
             try{$groups.Views[$index.ToString()+'|ActiveSheet']=[string]$window.ActiveSheet.Name}catch{$unavailable.Views++}
@@ -39,7 +40,7 @@ function Get-InventoryConfigSemanticSnapshot($Book) {
     }catch{$unavailable.Views++}
     # Do not read connection strings, credentials, document authors or raw properties.
     try{$groups.Connections['Count']=[string]$Book.Connections.Count}catch{$unavailable.Connections++}
-    [pscustomobject]@{Groups=$groups;Unavailable=$unavailable}
+    [pscustomobject]@{Groups=$groups;Unavailable=$unavailable;MissingWorkbookProperties=$missingWorkbookProperties}
 }
 
 function Compare-InventoryConfigSemanticSnapshot($Before,$After) {
@@ -51,10 +52,65 @@ function Compare-InventoryConfigSemanticSnapshot($Before,$After) {
         }
         $missing=[int]$Before.Unavailable[$group]+[int]$After.Unavailable[$group]
         if($missing){$complete=$false}
-        $result[$group]=[pscustomobject]@{BeforeCount=$a.Count;AfterCount=$b.Count;ChangedCount=$changed;UnavailableReads=$missing}
+        $result[$group]=[pscustomobject]@{BeforeCount=$a.Keys.Count;AfterCount=$b.Keys.Count;ChangedCount=$changed;UnavailableReads=$missing}
     }
     # Keys, formulas, values, author identities and paths are never emitted.
-    [pscustomobject]@{CompleteForObservedProperties=$complete;Groups=[pscustomobject]$result;AllWorkbookSemanticsProven=$false}
+    $missing=@()
+    if($Before.PSObject.Properties['MissingWorkbookProperties'] -and $After.PSObject.Properties['MissingWorkbookProperties']){
+        $missing=@(@($Before.MissingWorkbookProperties)+@($After.MissingWorkbookProperties)|Select-Object -Unique)
+    }
+    [pscustomobject]@{CompleteForObservedProperties=$complete;Groups=[pscustomobject]$result;UnavailableWorkbookProperties=$missing;AllWorkbookSemanticsProven=$false}
+}
+
+# MS-XLSB 2.1.4 record framing; payloads/hashes remain memory-only.
+# https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/acc8aa92-1f02-4167-99f5-84f9f676b95a
+function Get-InventoryConfigBinaryRecords([byte[]]$Bytes) {
+    $position=0;$records=@{};$sequence=[Collections.Generic.List[string]]::new();$ordinals=@{}
+    $sha=[Security.Cryptography.SHA256]::Create()
+    try{
+        while($position -lt $Bytes.Length){
+            $start=$position;$first=[int]$Bytes[$position++];$type=$first -band 127
+            if($first -band 128){
+                if($position -ge $Bytes.Length){throw 'Truncated record type.'}
+                $next=[int]$Bytes[$position++];if($next -band 128){throw 'Invalid record type.'}
+                $type=$type -bor (($next -band 127) -shl 7)
+                if($type -lt 128){throw 'Noncanonical record type.'}
+            }
+            $size=0;$done=$false
+            for($shift=0;$shift -lt 4;$shift++){
+                if($position -ge $Bytes.Length){throw 'Truncated record size.'}
+                $next=[int]$Bytes[$position++];$size=$size -bor (($next -band 127) -shl (7*$shift))
+                if(-not($next -band 128) -or $shift -eq 3){$done=$true;break}
+            }
+            if(-not $done -or $size -gt $Bytes.Length-$position){throw 'Truncated record data.'}
+            $ordinal=if($ordinals.ContainsKey($type)){[int]$ordinals[$type]+1}else{1};$ordinals[$type]=$ordinal
+            $key=[string]$type+':'+[string]$ordinal;$data=[byte[]]::new($size)
+            [Array]::Copy($Bytes,$position,$data,0,$size)
+            $records[$key]=[pscustomobject]@{Type=$type;Data=$data;Hash=[Convert]::ToBase64String($sha.ComputeHash($data));HeaderHash=[Convert]::ToBase64String($sha.ComputeHash($Bytes,$start,$position-$start))}
+            $sequence.Add($key);$position+=$size
+        }
+        [pscustomobject]@{Parsed=$true;Records=$records;Sequence=($sequence -join '|')}
+    }catch{[pscustomobject]@{Parsed=$false;Records=@{};Sequence=''}}finally{$sha.Dispose()}
+}
+
+function Compare-InventoryConfigBinaryRecords($Before,$After) {
+    if($null -eq $Before -or $null -eq $After -or -not $Before.Parsed -or -not $After.Parsed){return [pscustomobject]@{Parsed=$false}}
+    $types=@{};$viewFields=@{};$headersSame=$true;$unknownView=$false
+    foreach($key in @($Before.Records.Keys)+@($After.Records.Keys)|Select-Object -Unique){
+        if(-not $Before.Records.ContainsKey($key) -or -not $After.Records.ContainsKey($key)){$types[[int]($key -split ':')[0]]=$true;$headersSame=$false;continue}
+        $a=$Before.Records[$key];$b=$After.Records[$key]
+        if($a.HeaderHash -cne $b.HeaderHash){$headersSame=$false}
+        if($a.Hash -ceq $b.Hash){continue}
+        $types[[int]$a.Type]=$true
+        # MS-XLSB BrtBookView is type158; only its fixed29-byte layout is decoded.
+        if($a.Type -eq 158){
+            if($a.Data.Length -ne 29 -or $b.Data.Length -ne 29){$unknownView=$true;continue}
+            $names=@('WindowLeft','WindowTop','WindowWidth','WindowHeight','TabRatio','FirstSheetIndex','ActiveSheetIndex')
+            for($i=0;$i -lt 7;$i++){if([BitConverter]::ToUInt32($a.Data,4*$i) -ne [BitConverter]::ToUInt32($b.Data,4*$i)){$viewFields[$names[$i]]=$true}}
+            if($a.Data[28] -ne $b.Data[28]){$viewFields['ViewFlags']=$true;if(($a.Data[28] -bxor $b.Data[28]) -band 128){$unknownView=$true}}
+        }
+    }
+    [pscustomobject]@{Parsed=$true;BeforeRecordCount=$Before.Records.Keys.Count;AfterRecordCount=$After.Records.Keys.Count;RecordOrderPreserved=($Before.Sequence -ceq $After.Sequence);RecordHeadersPreserved=$headersSame;ChangedRecordTypes=@($types.Keys|Sort-Object);ChangedBookViewFields=@($viewFields.Keys|Sort-Object);UnknownBookViewChange=$unknownView;AllWorkbookSemanticsProven=$false}
 }
 
 function Get-InventoryConfigDiagnosticSnapshot($Fixture) {
@@ -66,7 +122,7 @@ function Get-InventoryConfigDiagnosticSnapshot($Fixture) {
     }
     $beforeHash=Get-AdminInventoryEntryHash $path
     Add-Type -AssemblyName System.IO.Compression
-    $parts=@{}
+    $parts=@{};$binaryRecords=$null
     $stream=[IO.FileStream]::new($path,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::ReadWrite)
     try {
         $zip=[IO.Compression.ZipArchive]::new($stream,[IO.Compression.ZipArchiveMode]::Read,$true)
@@ -74,6 +130,10 @@ function Get-InventoryConfigDiagnosticSnapshot($Fixture) {
             foreach($entry in $zip.Entries){
                 $part=$entry.Open()
                 try{$parts[$entry.FullName]=(Get-FileHash -InputStream $part).Hash}finally{$part.Dispose()}
+                if($entry.FullName -ceq 'xl/workbook.bin'){
+                    $part=$entry.Open();$memory=[IO.MemoryStream]::new()
+                    try{$part.CopyTo($memory);$binaryRecords=Get-InventoryConfigBinaryRecords $memory.ToArray()}finally{$memory.Dispose();$part.Dispose()}
+                }
             }
         }finally{$zip.Dispose()}
     }finally{$stream.Dispose()}
@@ -99,7 +159,7 @@ function Get-InventoryConfigDiagnosticSnapshot($Fixture) {
         if($null -ne $prior){$prior.Activate()}
     }
     # Values and part hashes are deliberately memory-only; export comparisons below.
-    [pscustomobject]@{Cells=$cells;Shapes=($shapes -join "`n");Parts=$parts;Semantics=$semantics;ReadOnlyProof=($memoryPreserved -and $beforeHash -ceq (Get-AdminInventoryEntryHash $path))}
+    [pscustomobject]@{Cells=$cells;Shapes=($shapes -join "`n");Parts=$parts;Semantics=$semantics;BinaryRecords=$binaryRecords;ReadOnlyProof=($memoryPreserved -and $beforeHash -ceq (Get-AdminInventoryEntryHash $path))}
 }
 
 function Write-InventoryConfigDiagnosticComparison($Before,$After,[string]$Case,$SavePhase=$null) {
@@ -122,8 +182,12 @@ function Write-InventoryConfigDiagnosticComparison($Before,$After,[string]$Case,
     if($Before.PSObject.Properties['Semantics'] -and $After.PSObject.Properties['Semantics']){
         $semantics=Compare-InventoryConfigSemanticSnapshot $Before.Semantics $After.Semantics
     }
+    $binary=$null
+    if($Before.PSObject.Properties['BinaryRecords'] -and $After.PSObject.Properties['BinaryRecords']){
+        $binary=Compare-InventoryConfigBinaryRecords $Before.BinaryRecords $After.BinaryRecords
+    }
     [void]$script:InventoryConfigReadChecks.Add([pscustomobject]@{Case=$Case;Passed=$safe})
-    [pscustomobject]@{Case=$Case;ReadOnlyExtractionPreserved=$safe;ChangedTableCells=$changed;TableShapesPreserved=($Before.Shapes -ceq $After.Shapes);ChangedPartCategories=$categories;ChangedStandardParts=$known;UnidentifiedChangedPartCount=$unidentified;ObservedConfigSavePhase=$SavePhase;ObservedSemanticComparison=$semantics;CauseEstablished=$false}|
+    [pscustomobject]@{Case=$Case;ReadOnlyExtractionPreserved=$safe;ChangedTableCells=$changed;TableShapesPreserved=($Before.Shapes -ceq $After.Shapes);ChangedPartCategories=$categories;ChangedStandardParts=$known;UnidentifiedChangedPartCount=$unidentified;ObservedConfigSavePhase=$SavePhase;ObservedSemanticComparison=$semantics;ObservedBinaryComparison=$binary;CauseEstablished=$false}|
         ConvertTo-Json -Depth 6 -Compress|Add-Content (Join-Path $reportRoot 'inventory-config-diagnosis.jsonl')
 }
 
