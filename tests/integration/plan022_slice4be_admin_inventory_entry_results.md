@@ -1492,3 +1492,12 @@ pass. Comprehensive field/semantic causality of the authorized bootstrap byte
 difference remains unresolved and CauseEstablished=false. The worker named above
 contains the same-cohort inventory-config-diagnosis.jsonl and catalog-completion-
 authority-observations.jsonl; no earlier scope substitutes for this artifact.
+
+Imported-row attempt194, sourcee6b2809b/test28cd427f, stops at8 PASS/1 harness
+exception while copying mixed numeric/text COM cells into its second staging row.
+The original owning ADD saves, but no imported-row behavioral assertion runs; this
+is not RED. Controller89343713a8c249d4b104078447f92953 / worker
+96707b75f8f24b10a9cc03dc74b783e3; five package/497 tooling/thirteen source/four
+harness pins/settings/fixtures and normal native audit23:13:34.2893059Z pass,
+zero desktop/native failures. Testab86b07f gives that copy loop a consistent text
+setter type;195 retries the unchanged assertions on unchanged product source.
