@@ -63,11 +63,19 @@ Public Function Facts() As String
     Facts = CStr(mReached) & "|" & CStr(mApplied) & "|" & CStr(unchanged) & "|" & CStr(mSavesAfterLoss)
 End Function
 '@)
+    # Observe the exact worksheet form message shown to the operator.
+    $form=$project.VBComponents.Item('frmAddInventoryItem').CodeModule
+    $start=$form.ProcStartLine('MsgBox',0);$count=$form.ProcCountLines('MsgBox',0)
+    $body=$form.Lines($start,$count)
+    $notice='(?im)^[\t ]*MsgBox = TestInventoryCommands\.DialogChoice\(Prompt, Buttons\)[\t ]*\r?$'
+    if([regex]::Matches($body,$notice).Count -ne 1){throw 'Actual worksheet notice observation unavailable.'}
+    $body=[regex]::Replace($body,$notice,[Text.RegularExpressions.MatchEvaluator]{param($m) '    TestInventoryCommands.RecordNotice Prompt'+"`r`n"+$m.Value.TrimEnd("`r")})
+    $form.DeleteLines($start,$count);$form.InsertLines($start,$body)
     $owner=$project.VBComponents.Item('modAdminInventoryWorksheet').CodeModule
     $start=$owner.ProcStartLine('UploadSelectedInventoryWorksheetTable',0);$count=$owner.ProcCountLines('UploadSelectedInventoryWorksheetTable',0)
     $body=$owner.Lines($start,$count)
     $before='(?im)^[\t ]*If records Is Nothing Or records.Count = 0 Then[\t ]*\r?$'
-    $after='(?im)^[\t ]*If ApplyInventoryWorksheetRecord\(record, warehouseId, stationId, userId, applyReport, interactiveContext\) Then[\t ]*\r?$'
+    $after='(?im)^[\t ]*If ApplyInventoryWorksheetRecord\(record, warehouseId, stationId, userId, applyReport(?:, interactiveContext)?\) Then[\t ]*\r?$'
     if([regex]::Matches($body,$before).Count -ne 1 -or [regex]::Matches($body,$after).Count -ne 1){throw 'Worksheet action observation boundary unavailable.'}
     $body=[regex]::Replace($body,$before,[Text.RegularExpressions.MatchEvaluator]{param($m) '    TestInventoryWorksheetResult.AfterPreflight'+"`r`n"+$m.Value.TrimEnd("`r")})
     $body=[regex]::Replace($body,$after,[Text.RegularExpressions.MatchEvaluator]{param($m) $m.Value.TrimEnd("`r")+"`r`n"+'            TestInventoryWorksheetResult.AfterApply'})

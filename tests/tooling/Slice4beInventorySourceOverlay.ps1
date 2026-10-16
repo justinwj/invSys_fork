@@ -14,9 +14,21 @@ function Install-InventorySourceOverlay {
         @('invSys.Admin.xlam','Admin/Modules/modAdminInventoryWorksheet.bas',1),
         @('invSys.Admin.xlam','Admin/Forms/frmAddInventoryItem.frm',3)
     )
+    $sourceRoot=Join-Path $repo 'src';$export=$null
+    if($AdminInventoryOverlaySourceRootForTest){
+        $sourceRoot=(Resolve-Path -LiteralPath $AdminInventoryOverlaySourceRootForTest).Path
+        $owned=[IO.Path]::GetFullPath((Join-Path $repo 'reports/runtime')).TrimEnd('\')+'\'
+        if(-not $sourceRoot.StartsWith($owned,[StringComparison]::OrdinalIgnoreCase)){throw 'Exported test source must be in the owned runtime report tree.'}
+        $export=Get-Content (Join-Path $sourceRoot 'source-export-manifest.json') -Raw|ConvertFrom-Json
+        if(-not $export.ReadOnlySourceExport -or $export.XlamBuilt -or $export.SourceCommit -notmatch '^[a-f0-9]{8,40}$' -or $export.Sources.Count -ne $sources.Count){throw 'Explicit source export manifest is invalid.'}
+    }
     $pins=@()
     foreach($source in $sources){
-        $path=Join-Path $repo ('src/'+$source[1])
+        $path=Join-Path $sourceRoot $source[1]
+        if($null -ne $export){
+            $expected=@($export.Sources|Where-Object Source -CEQ $source[1])
+            if($expected.Count -ne 1 -or (Get-FileHash $path).Hash -cne $expected[0].Hash){throw 'Exported source hash changed.'}
+        }
         $text=Get-Content $path -Raw
         $offset=$text.IndexOf('Option Explicit')
         if($offset -lt 0){throw 'Inventory overlay source code boundary unavailable.'}
@@ -50,7 +62,7 @@ Public Function Facts(ByVal host As String, ByVal warehouse As String) As String
     If key <> "" Then modInventoryCommands.Release key
 End Function
 '@)
-    [pscustomobject]@{SourceOverlay=$true;ActualOperatorHandlers=$true;PackagedAction=$false;
+    [pscustomobject]@{SourceRoot=$sourceRoot;ExportedSourceCommit=if($null -ne $export){$export.SourceCommit}else{''};SourceOverlay=$true;ActualOperatorHandlers=$true;PackagedAction=$false;
         XlamBuilt=$false;XlamSaved=$false;Sources=$pins}|ConvertTo-Json -Depth 4|
         Set-Content (Join-Path $reportRoot 'inventory-source-overlay-scope.json')
 }

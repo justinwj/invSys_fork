@@ -147,6 +147,7 @@ param(
     [switch]$AdminInventoryCatalogOnly,
     [switch]$AdminInventoryCatalogRealOnly,
     [switch]$AdminInventorySourceOverlayForTest,
+    [string]$AdminInventoryOverlaySourceRootForTest='',
     [switch]$AdminInventoryOwnResultsOnly,
     [switch]$AdminInventoryAddResultsOnly,
     [switch]$AdminInventoryDeleteResultsOnly,
@@ -869,6 +870,7 @@ if($AdminInventoryOwnResultsOnly -and (-not $AdminInventoryEntryOnly -or $AdminI
 if($AdminInventoryAddResultsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Add results require their separate Inventory entry gate.'}
 if($AdminInventoryDeleteResultsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Delete results require their separate Inventory entry gate.'}
 if($AdminInventoryWorksheetResultsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Worksheet results require their separate Inventory entry gate.'}
+if($AdminInventoryOverlaySourceRootForTest -and (-not $AdminInventorySourceOverlayForTest -or -not $AdminInventoryEntryOnly)){throw 'An explicit exported source root requires the isolated Inventory source-overlay gate.'}
 if($AdminInventoryEntryOnly){
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-inventory-entry/'+[guid]::NewGuid().ToString('N'))
