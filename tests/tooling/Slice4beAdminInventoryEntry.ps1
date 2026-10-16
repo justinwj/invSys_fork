@@ -127,8 +127,15 @@ End Function
     $start=$owner.ProcStartLine('AddInventoryItemForWarehouse',0);$count=$owner.ProcCountLines('AddInventoryItemForWarehouse',0)
     $body=$owner.Lines($start,$count)
     $boundary='    payloadJson = modRoleEventWriter.BuildPayloadJsonFromCollection(payloadItems)'
-    if([regex]::Matches($body,[regex]::Escape($boundary)).Count -ne 1){throw 'Inventory payload observation boundary changed; not product RED.'}
-    $body=$body.Replace($boundary,($boundary+"`r`n"+'    TestInventoryEntry.RecordPayload payloadJson'))
+    if([regex]::Matches($body,[regex]::Escape($boundary)).Count -eq 1){
+        $body=$body.Replace($boundary,($boundary+"`r`n"+'    TestInventoryEntry.RecordPayload payloadJson'))
+    }else{
+        # The owning Add boundary still observes the completed payload after the
+        # shared builder returns; readonly receipt preflight is not an action.
+        $pattern='(?im)^[\t ]*payloadJson = BuildInventoryCreatePayloadAdmin\([^\r\n]*\r?\n[^\r\n]*customFields\)[\t ]*\r?$'
+        if([regex]::Matches($body,$pattern).Count -ne 1){throw 'Inventory payload observation boundary changed; not product RED.'}
+        $body=[regex]::Replace($body,$pattern,[Text.RegularExpressions.MatchEvaluator]{param($m) $m.Value.TrimEnd("`r")+"`r`n"+'    TestInventoryEntry.RecordPayload payloadJson'})
+    }
     $owner.DeleteLines($start,$count);$owner.InsertLines($start,$body)
     $owner.AddFromString(@'
 Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgBoxStyle = vbOKOnly, _
