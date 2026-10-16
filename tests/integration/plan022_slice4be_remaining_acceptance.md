@@ -6,6 +6,19 @@ and remaining verification, not a new contract or a percentage estimate.
 
 ## Current 4be-A completion audit
 
+**Latest Inventory implementation checkpoint,2026-10-15 Pacific:** approved
+D8-INV-01 has scoped authority progress, reserved-field GREEN33, exact Edit quantity
+GREEN12 and bounded retry GREEN22. Full productb936503e/testad7b7056 comparison135
+records272/28 over300 checks, with preserved packages/tooling/settings/fixtures and
+normal native/owned closure through2026-10-16T06:43:57.8070488Z. Remaining failures
+cover ROW, changed inputs and unresolved Config semantics. ROW source68949ab0 is
+prepared, unbuilt. Full source/input continuity, coordinated write phases, create/
+result-save retry, direct Core/headless and remaining recording/guidance gates stay
+open. Older Release1/Receiving/Tester/Settings/recording qualifications below retain
+their original1c9bff87 package scope and require applicable regression after product
+work; they are not silently promoted to the new candidate. See the maintained
+[Inventory receipt](plan022_slice4be_admin_inventory_entry_results.md) for exact IDs.
+
 **Current approval boundary,2026-10-15 Pacific:** actual Add/Edit Inventory
 Ribbon/modal trial115 completes35 PASS/10 FAIL with all45 assertion names/order
 retained and no harness exception. Independent cold reads prove exact persisted

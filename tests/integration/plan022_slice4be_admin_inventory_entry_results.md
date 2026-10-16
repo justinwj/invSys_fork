@@ -1,5 +1,26 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Full comparison135 qualified,2026-10-15 Pacific:** sourceb936503e/testad7b7056
+records272 PASS/28 FAIL,300 unique checks without a harness exception. All257
+prior names/order are the exact prefix; managed-field and bounded-retry additions
+pass. Remaining failures are seven ROW payload/display checks,20 changed/replaced
+catalog/entity/table continuation checks and the unresolved Config byte check.
+The corrected Edit quantity now exposes an additional event after an externally
+changed entity; this is retained failure evidence, not an accepted rebind.
+Controller10b6b807489c417ab0fc82f16eb868a6; worker47686c71defe4d41bf89028bd100218b.
+Five-package/all486 tooling/settings/fixture preservation and normal unforced
+owned/native closure qualify through2026-10-16T06:43:57.8070488Z, with zero desktop
+stops/Excel failures. Cleanup takes several minutes and completes naturally.
+Ignored qualification: `admin-inventory-retry01-comparison-135/qualification.json`.
+
+The next isolated baseline mode runs the retained45 entry checks plus five Config
+read-preservation assertions. It supplements the300-check comparison and protects
+ROW removal without replacing the full matrix. Existing source regressions pass
+5/8/7/8/8 for Edit/worksheet/Add/retirement/zero; the worksheet assertion is maintained
+against the normalized SYSTEMKEY guard, already protected behaviorally by33/33.
+This test-source maintenance is not behavioral RED. ROW source68949ab0 is unbuilt;
+no new package or identity GREEN is claimed yet.
+
 **ROW cleanup prepared against retained behavioral RED:** the form no longer
 stores/displays/validates GeneratedRow or a catalog ROW field. Configure/catalog/
 create service callers use the revised signatures; worksheet staging records no
@@ -378,6 +399,26 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Trial135 cohort: save phase observed; semantic cause unresolved**, product
+b936503e/testad7b7056, controller10b6b807489c417ab0fc82f16eb868a6, worker
+47686c71defe4d41bf89028bd100218b. Auth preservation passes. All five read-only
+extractions preserve bytes/borrowed Saved state, table shapes and table-cell values.
+Baseline and ActiveWorkbook each change exactly `docProps/core.xml` and
+`xl/workbook.bin`, with zero unidentified changed parts. Each records three calls
+to `modConfig.SaveConfigWorkbookIfWritable`, each changing Config file bytes;
+all six before/after hash comparisons are available and memory-only. The three
+denied cases record no save calls or changed parts. This directly locates byte
+changes during the existing save helper. Source has the three inbox-setup calls
+from Add; it does not prove the meaning of the workbook-part changes or establish
+an unauthorized authority mutation. `CauseEstablished` remains false in the raw
+diagnostic. The precise scope is in the worker's redacted JSONL artifact.
+
+Next diagnostic: compare fixed safe workbook properties and named bindings in
+memory around the observed saves, emitting only changed-field counts and fixed
+categories, to distinguish bookkeeping/view changes from authority semantics.
+Do not assume the workbook part is harmless or weaken inspection guards based
+only on unchanged table cells. Focused GREEN and ROW cleanup cannot close this note.
 
 **Trial132 cohort: unresolved/not measured**, source306fa2da/testa3d39db0,
 controllerb082233606af4421be50811beba36289, worker e7d5afd5f4a7443593b272c5b8f8585c.
