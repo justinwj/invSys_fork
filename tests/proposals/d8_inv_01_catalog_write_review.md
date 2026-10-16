@@ -12,7 +12,10 @@ plan/check/write interleaving does not satisfy the approved batch sequence;
 do not apply it unchanged. The new component test executes source catalog helpers
 on Admin-generated disposable inventory with deterministic guard outcomes and
 independent persisted-field reads. It builds/saves no XLAM and supplements the
-required packaged callback/input matrix. Component RED/GREEN are pending.
+required packaged callback/input matrix. Component RED14516/16 becomes GREEN146
+32/32; actual-Core confirmation RED14724/3 becomes GREEN14827/27 onb84093c5.
+The component gate remains GREEN14932/32 on that source. These unsaved probes
+qualify no built XLAM. Exact cohort and Config limits are in the Inventory receipt.
 
 ## Historical rejected draft
 

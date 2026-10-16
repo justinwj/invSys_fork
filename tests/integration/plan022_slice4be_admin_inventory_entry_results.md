@@ -1,5 +1,43 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Catalog source component qualified,2026-10-16 Pacific:** the approved batch
+sequence has behavioral RED14516 PASS/16 FAIL on unchanged Admin source06714307/
+testbcdd64b4, then GREEN14632/32 on source/test5e7b81b4, retaining all32 names/order.
+Tests execute exact Admin source helpers in unsaved probes with deterministic Core
+guard outcomes, generated inventory and independent persisted-field reads. They
+are not packaged callback acceptance. Dirty borrowed workbooks remain untouched;
+all fields are planned before one write check, the synchronous event-suppressed
+batch is rechecked before save, and failed confirmation reports partial without
+claiming rollback. Both cohorts preserve five packages/all487 tooling/four harness
+pins/settings/fixtures and normal owned/native closure, zero desktop/Excel failures.
+RED audit18:25:54.4982300Z; GREEN audit18:31:17.5710093Z. No XLAM build/deployment.
+
+**Real Core confirmation RED147 qualified:** source5e7b81b4/testab3c4362 overlays
+actual Core input classes/facade and Admin helpers only in unsaved probes.27 checks
+give24 PASS/3 FAIL, with no harness exception. Actual authorized capture/save and
+independent persisted fields pass, as does authority loss after a real save. A
+save-return seam marks unsaved memory Saved without persisting it; Core wrongly
+confirms it, reports success and permits the old context to continue. This exposes
+a real persisted-confirmation gap, not a missing fixture. Required correction:
+verify the planned catalog/entity data from saved bytes independently before
+adopting the new baseline. Controllerf65c2258f54045498a32378f9f4dee99; worker
+cca381c5422e444681508c63b0727f20; clean preserved native audit18:36:55.6018270Z,
+five packages/all488 tooling/four harness pins. No package build or full acceptance.
+
+**Persisted confirmation GREEN148 qualified,2026-10-16 Pacific:** source
+b84093c5/testab3c4362 retains all27 RED147 names/order and passes27/27. Core checks
+an independent read-only saved-byte copy, exact planned catalog/entity content
+and stable source/copy hashes before adopting the saved baseline. Memory-only
+Saved flags refuse; post-save authority loss stays partial. Controller
+1e55236b0cd243de8f6e875c0b57b7ac; worker9e5a6aab4ddb4335b0134022ccbab6db;
+clean preserved native audit18:43:57.8289793Z. The retained deterministic-guard
+component gate also passes32/32 on this source in149, exact146 names/order,
+controller6883471c8b064b83a0d8d3ae99cf514a, workerbb758ba5ff5d4dc98aba28636feedb53,
+audit18:48:12.8617567Z. Both preserve five existing packages,488 tooling scripts,
+four harness pins, settings and fixtures with zero desktop/native failures.
+These27- and32-check scopes share harness assertions; counts are not additive
+unique coverage. No XLAM build/deploy or packaged acceptance.
+
 **Catalog phase authorized,2026-10-16 Pacific:** user approval resolves the
 concrete edit block after restructuring to plan all fields, one joint check,
 write all fields, recheck, save, confirm. Refuse dirty already-open workbooks and
@@ -8,10 +46,9 @@ build/deploy. The old198-line per-field interleaving patch is historical/unappli
 `AdminInventoryCatalogOnly` prepares a component gate using exact source helpers
 in an unsaved probe, deterministic Core guard outcomes, Admin-generated inventory
 and independent persisted-field reads. It builds/saves no XLAM and does not replace
-the actual packaged callbacks/input matrix. All487 tooling scripts parse. An
-existing Excel process prevents isolated dispatch; no RED/GREEN or product fix is
-claimed yet. Config/Auth byte checks are included in the prepared gate; actual
-same-cohort diagnosis remains to be recorded after it runs.
+the actual packaged callbacks/input matrix. The component RED/GREEN results and same-cohort Config notes are recorded above
+and below. Excel was closed with user authorization; normal closure is also
+authorized for subsequent owned tests.
 
 **GitHub workflow restored,2026-10-16 Pacific:** the user confirmed upstream pulls
 from soetrain and contributor-branch publication through PRs targeting soetrain.
@@ -474,6 +511,21 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Catalog component145/146:** source06714307/testbcdd64b4 RED145 (controller
+b1b8c0bcf35644049c05223f6a417697, worker2b978f17cee4497683b6962af2546c55) and
+source/test5e7b81b4 GREEN146 (controller7091f70ad6854ee8a8f92f3764dfc4b0,
+worker dafdd051c92841be86f6f19e2d56a49b) each explicitly preserve Config/Auth bytes
+after generated-fixture setup. Independent cold inventory reads also preserve
+file bytes. This catalog helper scope has no first-create inbox provisioning;
+it does not substitute for baseline140's remaining Config byte assertion.
+
+**Real Core cohort147: unresolved/not measured**, source5e7b81b4/testab3c4362,
+controllerf65c2258f54045498a32378f9f4dee99, workercca381c5422e444681508c63b0727f20.
+This source-component test measures exact saved catalog output and read preservation,
+not Config/Auth comparisons. No authority-file preservation/cause is inferred from
+146 or140. Carry the earlier Config finding forward; the next real-Core comparison
+must retain these scope limits rather than silently closing it with focused GREEN.
 
 **Trial140 cohort: byte change isolated; comprehensive semantics unresolved**,
 product68949ab0/testfb59319c, controller1548010385524e579511c60052d4f03e, worker
