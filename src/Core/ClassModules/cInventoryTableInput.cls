@@ -29,14 +29,21 @@ End Function
 
 Public Sub PlanValue(ByVal rowKey As String, ByVal header As String, ByVal value As Variant)
     Dim fields As Object
+    If IsObject(value) Or IsArray(value) Or IsError(value) Or IsNull(value) Then Err.Raise 5, , "A planned scalar is required."
     header = UCase$(Trim$(header))
     If Not mPlanned.Exists(rowKey) Then
         Set fields = CreateObject("Scripting.Dictionary")
         mPlanned.Add rowKey, fields
     End If
-    mPlanned(rowKey)(header) = CStr(value)
+    mPlanned(rowKey)(header) = value
     mNewHeaders(header) = True
 End Sub
+
+Public Function Scalar(ByVal rowKey As String, ByVal header As String) As Variant
+    On Error GoTo Invalid
+    Scalar = mState("Rows")(rowKey)(UCase$(Trim$(header)))(3)
+Invalid:
+End Function
 
 Public Function Matches(ByVal table As ListObject, Optional ByVal selectedSku As String = "", _
         Optional ByVal headersOnly As Boolean = False, Optional ByVal requireResult As Boolean = False) As Boolean
@@ -57,7 +64,7 @@ End Function
 Private Function MatchesState(ByVal table As ListObject, ByVal selectedSku As String, _
         ByVal headersOnly As Boolean, ByVal requireResult As Boolean) As Boolean
     Dim current As Object, header As Variant, key As Variant, before As Object, actual As Object
-    Dim keys As Object, relevant As Boolean, plannedValue As String
+    Dim keys As Object, relevant As Boolean, plannedValue As Variant
     On Error GoTo Invalid
     If mState Is Nothing Then Exit Function
     Set current = ReadState(table)
@@ -90,7 +97,7 @@ Private Function MatchesState(ByVal table As ListObject, ByVal selectedSku As St
                 For Each header In current("Headers").Keys
                     If mPlanned.Exists(key) Then
                         If mPlanned(key).Exists(header) Then
-                            plannedValue = CStr(mPlanned(key)(header))
+                            plannedValue = mPlanned(key)(header)
                             If PlannedValueMatches(actual(header), plannedValue) Then GoTo NextField
                             If requireResult Then Exit Function
                         End If
@@ -116,9 +123,8 @@ NextField:
 Invalid:
 End Function
 
-Private Function PlannedValueMatches(ByVal actual As Variant, ByVal expected As String) As Boolean
+Private Function PlannedValueMatches(ByVal actual As Variant, ByVal expected As Variant) As Boolean
     On Error GoTo Invalid
-    If actual(0) = expected Or actual(1) = expected Then PlannedValueMatches = True: Exit Function
     ' Keep the existing Excel scalar coercions used by the catalog writer.
     ' Keep the typed Excel scalar: CStr(Double) can lose date/number precision.
     If IsNumeric(actual(3)) Then
@@ -128,6 +134,7 @@ Private Function PlannedValueMatches(ByVal actual As Variant, ByVal expected As 
             PlannedValueMatches = (CDbl(actual(3)) = CDbl(CDate(expected))): Exit Function
         End If
     End If
+    If actual(0) = CStr(expected) Or actual(1) = CStr(expected) Then PlannedValueMatches = True: Exit Function
     If LCase$(expected) = "true" Or LCase$(expected) = "false" Then _
         PlannedValueMatches = (LCase$(CStr(actual(0))) = LCase$(expected))
 Invalid:

@@ -15,6 +15,7 @@ Private mCatalog As cInventoryTableInput, mEntities As cInventoryTableInput
 Private mStaging As cInventoryTableInput, mStage As ListObject
 Private mSelectedSku As String, mPhase As String, mSaving As Boolean
 Private mInitiallyBorrowed As Boolean
+Private mQuantityKey As String, mQuantityBefore As Double, mQuantityTarget As Double
 
 Public Property Get SourcePath() As String
     SourcePath = mPath
@@ -143,9 +144,20 @@ Public Function BindCatalogWriter(ByVal book As Workbook) As Boolean
 Invalid:
 End Function
 
-Public Function BeginSave() As Boolean
+Public Function BeginQuantity(ByVal systemKey As String, ByVal target As Double) As Boolean
+    Dim before As Variant
+    If mPhase <> "" Or Not Unchanged() Or target < 0 Then Exit Function
+    If CStr(mEntities.Scalar(systemKey, "SKU")) <> mSelectedSku Then Exit Function
+    before = mEntities.Scalar(systemKey, "QtyOnHand")
+    If IsEmpty(before) Or Not IsNumeric(before) Then Exit Function
+    mQuantityKey = systemKey: mQuantityBefore = CDbl(before): mQuantityTarget = target
+    mEntities.PlanValue systemKey, "QtyOnHand", target
+    mPhase = "Quantity": BeginQuantity = True
+End Function
+
+Public Function BeginSave(Optional ByVal expectedPhase As String = "Catalog") As Boolean
     Dim owner As cSnapshotInventorySource, book As Workbook, borrowed As Boolean
-    If mPhase = "" Or Not Unchanged() Then Exit Function
+    If mPhase <> expectedPhase Or Not Unchanged() Then Exit Function
     Set book = ReadSource(owner, borrowed)
     If book Is Nothing Then Exit Function
     If Not mCatalog.Matches(modExecutionTarget.Table(book, "tblSkuCatalog"), "", False, True) Then Exit Function
@@ -153,37 +165,87 @@ Public Function BeginSave() As Boolean
 End Function
 
 Public Function ConfirmCatalog() As Boolean
+    If mPhase = "Catalog" Then ConfirmCatalog = ConfirmSavedInputs()
+End Function
+
+Public Function ConfirmQuantity(ByVal eventId As String) As Boolean
+    If mPhase = "Quantity" And eventId <> "" Then ConfirmQuantity = ConfirmSavedInputs(eventId)
+End Function
+
+Private Function ConfirmSavedInputs(Optional ByVal eventId As String = "") As Boolean
     Dim owner As cSnapshotInventorySource, book As Workbook, borrowed As Boolean
     Dim persisted As Workbook, copyPath As String, savedHash As String, savedIdentity As String
     On Error GoTo Invalid
-    If mPhase <> "Catalog" Or Not mSaving Then Exit Function
-    If Not Unchanged() Then Exit Function
+    If Not mSaving Then Exit Function
+    If mPhase = "Catalog" Then
+        If Not Unchanged() Then Exit Function
+    ElseIf mPhase <> "Quantity" Then
+        Exit Function
+    End If
     Set book = ReadSource(owner, borrowed)
     If book Is Nothing Then Exit Function
     If Not book.Saved Then Exit Function
-    If Not mEntities.Matches(modExecutionTarget.Table(book, "tblInventoryEntities"), mSelectedSku) Then Exit Function
     savedIdentity = modAggregationFiles.Identity(mPath): savedHash = modTrainingWire.FileSha256(mPath)
     If savedIdentity = "" Or savedHash = "" Then Exit Function
     Set persisted = modAggregationFiles.OpenCopy(mPath, copyPath, True)
     If persisted Is Nothing Then GoTo CleanExit
     If modTrainingWire.FileSha256(copyPath) <> savedHash Then GoTo CleanExit
+    If mPhase = "Quantity" Then
+        If Not PlanSavedQuantity(persisted, eventId) Then GoTo CleanExit
+    End If
     If Not mCatalog.MatchesPersistedCopy(modExecutionTarget.Table(persisted, "tblSkuCatalog")) Then GoTo CleanExit
     If Not mEntities.MatchesPersistedCopy(modExecutionTarget.Table(persisted, "tblInventoryEntities")) Then GoTo CleanExit
     If modAggregationFiles.Identity(mPath) <> savedIdentity Or modTrainingWire.FileSha256(mPath) <> savedHash Then GoTo CleanExit
     If Not Unchanged() Then GoTo CleanExit
     If Not mCatalog.Confirm(modExecutionTarget.Table(book, "tblSkuCatalog")) Then GoTo CleanExit
+    If Not mEntities.Confirm(modExecutionTarget.Table(book, "tblInventoryEntities")) Then GoTo CleanExit
     If Not mInitiallyBorrowed Then
         mCatalog.ReleaseObjectReference
         mEntities.ReleaseObjectReference
     End If
     mIdentity = savedIdentity: mHash = savedHash
     mPhase = "": mSaving = False
-    ConfirmCatalog = Unchanged()
+    ConfirmSavedInputs = Unchanged()
 CleanExit:
     If copyPath <> "" Then modAggregationFiles.CloseCopy persisted, copyPath
     Exit Function
 Invalid:
     Resume CleanExit
+End Function
+
+Private Function PlanSavedQuantity(ByVal book As Workbook, ByVal eventId As String) As Boolean
+    Dim table As ListObject, fields As Object, row As Long, receipts As Long, lines As Long
+    Dim appliedAt As Variant, delta As Variant
+    On Error GoTo Invalid
+    Set table = modExecutionTarget.Table(book, "tblAppliedEvents")
+    Set fields = modAggregationSources.RequiredColumns(table, Array("EventID", "Status"))
+    If fields Is Nothing Then Exit Function
+    For row = 1 To table.ListRows.Count
+        If CStr(table.DataBodyRange.Cells(row, fields("EventID")).Value2) = eventId Then
+            receipts = receipts + 1
+            If CStr(table.DataBodyRange.Cells(row, fields("Status")).Value2) <> "APPLIED" Then Exit Function
+        End If
+    Next row
+    If receipts <> 1 Then Exit Function
+    Set table = modExecutionTarget.Table(book, "tblInventoryLog")
+    Set fields = modAggregationSources.RequiredColumns(table, Array("EventID", "System_Key", "SKU", "QtyDelta", "AppliedAtUTC"))
+    If fields Is Nothing Then Exit Function
+    For row = 1 To table.ListRows.Count
+        If CStr(table.DataBodyRange.Cells(row, fields("EventID")).Value2) = eventId Then
+            lines = lines + 1
+            If CStr(table.DataBodyRange.Cells(row, fields("System_Key")).Value2) <> mQuantityKey Then Exit Function
+            If CStr(table.DataBodyRange.Cells(row, fields("SKU")).Value2) <> mSelectedSku Then Exit Function
+            delta = table.DataBodyRange.Cells(row, fields("QtyDelta")).Value2
+            If Not IsNumeric(delta) Then Exit Function
+            If Abs(CDbl(delta) - (mQuantityTarget - mQuantityBefore)) > 0.0000001 Then Exit Function
+            appliedAt = table.DataBodyRange.Cells(row, fields("AppliedAtUTC")).Value2
+            If Not IsDate(appliedAt) Then Exit Function
+        End If
+    Next row
+    If lines <> 1 Then Exit Function
+    mEntities.PlanValue mQuantityKey, "LastAppliedUTC", appliedAt
+    PlanSavedQuantity = True
+Invalid:
 End Function
 
 Private Function ReadSource(ByRef owner As cSnapshotInventorySource, ByRef borrowed As Boolean) As Workbook

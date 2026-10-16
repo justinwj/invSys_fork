@@ -3,6 +3,11 @@ Option Explicit
 
 ' D8-INV-01 interactive facade. Handles are transient and grant no headless authority.
 Private mForms As cCapturedFormStore
+Private Const RESULT_CATALOG As Long = 1
+Private Const RESULT_STAGE As Long = 2
+Private Const RESULT_QUANTITY As Long = 3
+Private Const PHASE_CATALOG As String = "Catalog"
+Private Const PHASE_QUANTITY As String = "Quantity"
 
 Public Function Capture(ByVal workbookName As String) As String
     Dim book As Workbook, target As WarehouseTarget, entry As Object
@@ -144,15 +149,7 @@ Refused:
 End Function
 
 Public Function ConfirmStageCell(ByVal key As String, ByRef report As String) As Boolean
-    Dim entry As Object, inputs As cInventoryCommandInputs
-    On Error GoTo Refused
-    If Not CheckAuthority(key, report) Then Exit Function
-    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
-    If Not inputs.ConfirmStageCell() Then GoTo Refused
-    ConfirmStageCell = CheckForm(key, report)
-    Exit Function
-Refused:
-    Expire key, report
+    ConfirmStageCell = ConfirmResult(key, RESULT_STAGE, "", report)
 End Function
 
 Public Function BeginCatalog(ByVal key As String, ByVal sku As String, ByRef report As String) As Boolean
@@ -196,24 +193,60 @@ Refused:
 End Function
 
 Public Function BeginCatalogSave(ByVal key As String, ByRef report As String) As Boolean
+    BeginCatalogSave = BeginResultSave(key, PHASE_CATALOG, report)
+End Function
+
+Public Function BeginQuantity(ByVal key As String, ByVal systemKey As String, _
+        ByVal target As Double, ByRef report As String) As Boolean
     Dim entry As Object, inputs As cInventoryCommandInputs
     On Error GoTo Refused
     If Not CheckForm(key, report) Then Exit Function
     Set entry = mForms.Item(key): Set inputs = entry("Inputs")
-    If Not inputs.BeginSave() Then GoTo Refused
-    BeginCatalogSave = True
+    If Not inputs.BeginQuantity(systemKey, target) Then GoTo Refused
+    BeginQuantity = CheckForm(key, report)
+    Exit Function
+Refused:
+    Expire key, report
+End Function
+
+Public Function BeginQuantitySave(ByVal key As String, ByRef report As String) As Boolean
+    BeginQuantitySave = BeginResultSave(key, PHASE_QUANTITY, report)
+End Function
+
+Private Function BeginResultSave(ByVal key As String, ByVal phase As String, ByRef report As String) As Boolean
+    Dim entry As Object, inputs As cInventoryCommandInputs
+    On Error GoTo Refused
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    If Not inputs.BeginSave(phase) Then GoTo Refused
+    BeginResultSave = True
     Exit Function
 Refused:
     Expire key, report
 End Function
 
 Public Function ConfirmCatalog(ByVal key As String, ByRef report As String) As Boolean
+    ConfirmCatalog = ConfirmResult(key, RESULT_CATALOG, "", report)
+End Function
+
+Public Function ConfirmQuantity(ByVal key As String, ByVal eventId As String, ByRef report As String) As Boolean
+    ConfirmQuantity = ConfirmResult(key, RESULT_QUANTITY, eventId, report)
+End Function
+
+Private Function ConfirmResult(ByVal key As String, ByVal kind As Long, _
+        ByVal eventId As String, ByRef report As String) As Boolean
     Dim entry As Object, inputs As cInventoryCommandInputs
+    Dim confirmed As Boolean
     On Error GoTo Refused
     If Not CheckAuthority(key, report) Then Exit Function
     Set entry = mForms.Item(key): Set inputs = entry("Inputs")
-    If Not inputs.ConfirmCatalog() Then GoTo Refused
-    ConfirmCatalog = CheckForm(key, report)
+    Select Case kind
+        Case RESULT_CATALOG: confirmed = inputs.ConfirmCatalog()
+        Case RESULT_STAGE: confirmed = inputs.ConfirmStageCell()
+        Case RESULT_QUANTITY: confirmed = inputs.ConfirmQuantity(eventId)
+    End Select
+    If Not confirmed Then GoTo Refused
+    ConfirmResult = CheckForm(key, report)
     Exit Function
 Refused:
     Expire key, report

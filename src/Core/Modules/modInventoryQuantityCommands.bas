@@ -47,11 +47,12 @@ Public Function SetSingleEntityQuantity(ByVal warehouse As String, ByVal station
     End If
     If Not modInventoryCommandReceipts.FindExact(warehouse, station, user, payload, eventId, report) Then Exit Function
     If context <> "" Then
-        If Not modInventoryCommands.CheckForm(context, report) Then Exit Function
+        If Not modInventoryCommands.BeginQuantity(context, CStr(entity(0)), target, report) Then Exit Function
     End If
     If eventId = "" Then
         If Not modRoleEventWriter.QueueAdminInventoryAdjustEvent(warehouse, station, user, payload, _
                 "Admin set inventory quantity. Reason: " & reason, 0, eventId, queueError, "") Then
+            If context <> "" Then modInventoryCommands.Release context
             report = "Inventory adjustment could not be queued: " & queueError: Exit Function
         End If
     End If
@@ -60,15 +61,20 @@ Public Function SetSingleEntityQuantity(ByVal warehouse As String, ByVal station
             report = report & vbCrLf & "Queued event: " & eventId & ". Application is unconfirmed."
             Exit Function
         End If
+        If Not modInventoryCommands.BeginQuantitySave(context, report) Then
+            report = report & vbCrLf & "Queued event: " & eventId & ". Application is unconfirmed."
+            Exit Function
+        End If
     End If
     processed = modProcessor.RunBatch(warehouse, 0, batchReport, eventId, applied, True)
     If Not applied Then
         report = "Inventory adjustment queued; exact saved application is unconfirmed." & _
                  vbCrLf & "Event: " & eventId & vbCrLf & batchReport
+        If context <> "" Then modInventoryCommands.Release context
         Exit Function
     End If
     If context <> "" Then
-        If Not modInventoryCommands.CheckForm(context, report) Then
+        If Not modInventoryCommands.ConfirmQuantity(context, eventId, report) Then
             report = report & vbCrLf & "Exact event application was saved: " & eventId
             Exit Function
         End If
@@ -88,6 +94,7 @@ Refused:
     report = "The invSys session or inventory source changed. Reopen Add/Edit Inventory."
     Exit Function
 Failed:
+    If context <> "" Then modInventoryCommands.Release context
     report = "Inventory quantity command failed."
     If eventId <> "" Then report = report & vbCrLf & "Event: " & eventId & ". Application is unconfirmed."
 End Function
