@@ -107,6 +107,11 @@ End Sub
 Public Sub SetQuantityTarget(ByVal target As Double)
     mQuantityTarget = target
 End Sub
+Public Function PrepareExactQuantityFixture(ByVal warehouse As String, ByVal csv As String) As Boolean
+    Dim report As String
+    PrepareExactQuantityFixture = modAdminInventorySeed.UploadDemoInventoryForWarehouse( _
+        warehouse, "S1", "config-admin", csv, report)
+End Function
 Public Sub Execute(ByVal host As String, ByVal action As String, ByVal caseName As String, _
                    ByVal phase As String, ByVal root As String, ByVal wh As String, _
                    ByVal secret As String)
@@ -471,7 +476,12 @@ function Test-InventoryReplacementBoundaries($Fixture,$Other) {
 
 function Test-InventoryExactQuantity($Fixture,$Other) {
     SelectTarget $Fixture
-    $sku=Get-InventoryBoundarySku $Fixture $true
+    $sku='DEMO-EXACT-QUANTITY'
+    $csv=Join-Path $runRoot 'exact-quantity-generated-fixture.csv'
+    @('ITEM_CODE,ITEM,UOM,LOCATION,QTY,CONDITION','DEMO-EXACT-QUANTITY,Exact quantity fixture,LB,CLEARVIEW,10,GOOD')|Set-Content -LiteralPath $csv -Encoding ASCII
+    $created=[bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareExactQuantityFixture' @($Fixture.Warehouse,$csv))
+    Check 'InventoryExactQuantity.GeneratedSingleEntityFixtureApplied' $created
+    if(-not $created){throw 'Owning single-entity fixture creation failed; not product RED.'}
     $path=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
     $book=$excel.Workbooks.Open($path,0,$true)
     try{

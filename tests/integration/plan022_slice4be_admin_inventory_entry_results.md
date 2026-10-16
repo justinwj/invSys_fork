@@ -29,6 +29,16 @@ exact counted entity: source inspection finds a positive ROW guard still precedi
 queueing. This is not114's discarded creation-quantity oracle failure; behavioral
 Edit proof remains to run before correcting that path or testing post-queue retry.
 
+The new `-AdminInventoryExactQuantityOnly` supplements the isolated Inventory
+gate with a focused run, not a replacement for the251-check qualification.
+Admin's demo-upload service creates one counted entity with an owning generated
+System_Key; the real Edit/reason handlers submit an explicit higher target.
+The cold oracle checks that exact key, unchanged key set and other entities'
+quantities. The full gate appends these six fixture/action assertions after251;
+focused mode runs them with the same five compiles and pre-form probe guard.
+No ROW or System_Key is fabricated or injected to get past the legacy quantity
+guard. Fixture creation/compile failures remain harness failures, not behavioral RED.
+
 **Config-instrumented RED118 qualified,2026-10-15 Pacific:** source1c9bff87/
 testd9aab17a completes142 PASS/48 FAIL,190 unique checks with all185 prior names/
 order/outcomes retained and no harness exception. Five new read-only extraction
