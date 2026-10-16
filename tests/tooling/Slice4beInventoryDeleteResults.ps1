@@ -25,6 +25,35 @@ End Sub
 Public Function Returned() As Boolean
     Returned = mReturned
 End Function
+Public Function PrepareExtensions(ByVal warehouse As String, ByVal sku As String) As String
+    Dim book As Workbook, sheet As Worksheet, table As ListObject, extra As ListColumn
+    Dim row As Long, keys As String
+    Set book = modInventoryDomainBridge.ResolveInventoryWorkbookBridge(warehouse)
+    For Each sheet In book.Worksheets
+        For Each table In sheet.ListObjects
+            If table.Name = "tblInventoryEntities" Or table.Name = "tblSkuCatalog" Then
+                modAdmin.InventoryBoundaryProtectionForTest sheet, False
+                Set extra = Nothing
+                On Error Resume Next
+                Set extra = table.ListColumns("DELETE UNKNOWN")
+                On Error GoTo 0
+                If extra Is Nothing Then Set extra = table.ListColumns.Add: extra.Name = "DELETE UNKNOWN"
+                extra.DataBodyRange.Value2 = "Preserved extension"
+                If table.Name = "tblInventoryEntities" Then
+                    For row = 1 To table.ListRows.Count
+                        If CStr(table.DataBodyRange.Cells(row, table.ListColumns("SKU").Index).Value2) = sku Then
+                            If keys <> "" Then keys = keys & "|"
+                            keys = keys & CStr(table.DataBodyRange.Cells(row, table.ListColumns("System_Key").Index).Value2)
+                        End If
+                    Next row
+                End If
+                modAdmin.InventoryBoundaryProtectionForTest sheet, True
+            End If
+        Next table
+    Next sheet
+    book.Save
+    PrepareExtensions = keys
+End Function
 '@)
     $owner=$project.VBComponents.Item('modAdmin').CodeModule
     $start=$owner.ProcStartLine('RetireInventoryItemForWarehouse',0);$count=$owner.ProcCountLines('RetireInventoryItemForWarehouse',0)
@@ -46,22 +75,12 @@ function Test-InventoryDeleteResults($Fixture,$Other) {
         Check ($id+'.OwningGeneratedFixtureApplied') $created
         if(-not $created){throw 'Generated retirement fixture unavailable.'}
         $path=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
-        $keys=@();$book=$excel.Workbooks.Open($path,0,$false)
-        try{
-            $entities=Table $book 'tblInventoryEntities';$catalog=Table $book 'tblSkuCatalog'
-            foreach($table in @($entities,$catalog)){
-                $table.Parent.Unprotect()
-                $extra=$null;try{$extra=$table.ListColumns.Item('DELETE UNKNOWN')}catch{}
-                if($null -eq $extra){$extra=$table.ListColumns.Add();$extra.Name='DELETE UNKNOWN'}
-                $extra.DataBodyRange.Value2='Preserved extension'
-                $table.Parent.Protect()
-            }
-            foreach($row in $entities.ListRows){if([string]$row.Range.Cells.Item(1,$entities.ListColumns.Item('SKU').Index).Value2 -ceq $sku){$keys+=[string]$row.Range.Cells.Item(1,$entities.ListColumns.Item('System_Key').Index).Value2}}
-            $book.Save()
-        }finally{$book.Close($false)}
+        $keys=([string](Run 'invSys.Admin.xlam' 'TestInventoryDeleteResult.PrepareExtensions' @($Fixture.Warehouse,$sku))).Split('|')
         Check ($id+'.TwoDistinctGeneratedEntities') ($keys.Count -eq 2 -and $keys[0] -cne $keys[1])
         if($keys.Count -ne 2){throw 'Exact all-active fixture unavailable.'}
+        [pscustomobject]@{Case=$case;Stage='BeforeColdBaseline';FileExists=(Test-Path $path);Ready=[bool]$excel.Ready}|ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'delete-fixture-stages.jsonl')
         $before=Get-AdminInventoryEntryFacts $Fixture -Persisted
+        [pscustomobject]@{Case=$case;Stage='ColdBaselineRead'}|ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'delete-fixture-stages.jsonl')
         $hostBook=$excel.Workbooks.Add();$hostBook.SaveAs((Join-Path $runRoot ('delete-result-'+$case+'.xlsx')),51)
         try{
             [void](Run 'invSys.Admin.xlam' 'TestInventoryDeleteResult.Arm' @(($case -ceq 'AuthorityLost')))
