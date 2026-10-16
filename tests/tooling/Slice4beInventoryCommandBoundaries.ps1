@@ -821,6 +821,19 @@ function Test-InventoryManagedFields($Fixture,$Other) {
         SelectTarget $Fixture
         $hostBook=$excel.Workbooks.Add();$hostBook.SaveAs((Join-Path $runRoot ('managed-modal-'+$label+'.xlsx')),51)
         try{
+            if($AdminInventorySourceOverlayForTest -and $AdminInventoryManagedFieldsOnly){
+                $books=@()
+                foreach($kind in @('Config','Auth','Data.Inventory')){
+                    $path=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.'+$kind+'.xlsb')
+                    $found=$null
+                    foreach($candidate in $excel.Workbooks){if($candidate.FullName -ieq $path){$found=$candidate;break}}
+                    $books+=[pscustomobject]@{Kind=$kind;Open=($null -ne $found);Saved=if($null -ne $found){[bool]$found.Saved}else{$null};ReadOnly=if($null -ne $found){[bool]$found.ReadOnly}else{$null}}
+                }
+                $admission=([string](Run 'invSys.Core.xlam' 'TestInventoryAdmission.Facts' @($hostBook.Name,$Fixture.Warehouse))).Split('|')
+                if($admission.Count -ne 3){throw 'Fixed admission facts unavailable.'}
+                [pscustomobject]@{Case=$label;HostSaved=[bool]$hostBook.Saved;SignedIn=($admission[0] -ceq 'True');InputSourceBound=($admission[1] -ceq 'True');CommandCaptured=($admission[2] -ceq 'True');Books=$books}|
+                    ConvertTo-Json -Depth 4 -Compress|Add-Content (Join-Path $reportRoot 'managed-admission-facts.jsonl')
+            }
             [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetSelection' @($Other.Root,''))
             [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetCustomHeader' @($header))
             [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'CustomField','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))

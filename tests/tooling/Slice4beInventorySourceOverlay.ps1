@@ -32,6 +32,21 @@ function Install-InventorySourceOverlay {
         $module.AddFromString($code)
         $pins+=[pscustomobject]@{Source=$source[1];Hash=(Get-FileHash $path).Hash}
     }
+    $probe=$packages['invSys.Core.xlam'].VBProject.VBComponents.Add(1)
+    $probe.Name='TestInventoryAdmission'
+    $probe.CodeModule.AddFromString(@'
+Option Explicit
+Public Function Facts(ByVal host As String, ByVal warehouse As String) As String
+    Dim inputs As cInventoryCommandInputs, sourceBound As Boolean, key As String
+    Set inputs = New cInventoryCommandInputs
+    sourceBound = inputs.CaptureSource(warehouse)
+    Set inputs = Nothing
+    Application.Workbooks(host).Activate
+    key = modInventoryCommands.Capture(host)
+    Facts = CStr(modAuth.IsSignedIn()) & "|" & CStr(sourceBound) & "|" & CStr(key <> "")
+    If key <> "" Then modInventoryCommands.Release key
+End Function
+'@)
     [pscustomobject]@{SourceOverlay=$true;ActualOperatorHandlers=$true;PackagedAction=$false;
         XlamBuilt=$false;XlamSaved=$false;Sources=$pins}|ConvertTo-Json -Depth 4|
         Set-Content (Join-Path $reportRoot 'inventory-source-overlay-scope.json')
