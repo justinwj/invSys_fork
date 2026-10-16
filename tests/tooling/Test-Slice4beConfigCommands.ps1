@@ -149,6 +149,7 @@ param(
     [switch]$AdminInventorySourceOverlayForTest,
     [switch]$AdminInventoryOwnResultsOnly,
     [switch]$AdminInventoryAddResultsOnly,
+    [switch]$AdminInventoryDeleteResultsOnly,
     [switch]$AdminAggregationPathComparison,
     [switch]$AdminAggregationBoundaryMatrix,
     [ValidateSet('All','Inspection','Write','Ownership')][string]$AdminAggregationBoundaryGroup='All',
@@ -865,6 +866,7 @@ if($AdminInventoryCatalogRealOnly -and -not $AdminInventoryCatalogOnly){throw 'R
 if($AdminInventorySourceOverlayForTest -and (-not $AdminInventoryEntryOnly -or $AdminInventoryCatalogOnly)){throw 'Inventory source overlays require the separate non-catalog Inventory gate.'}
 if($AdminInventoryOwnResultsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Inventory own results require their separate entry gate.'}
 if($AdminInventoryAddResultsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Add results require their separate Inventory entry gate.'}
+if($AdminInventoryDeleteResultsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Delete results require their separate Inventory entry gate.'}
 if($AdminInventoryEntryOnly){
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-inventory-entry/'+[guid]::NewGuid().ToString('N'))
@@ -2223,6 +2225,10 @@ End Function
             Install-InventorySourceOverlay
         }
         Install-AdminInventoryEntryProbe
+        if($AdminInventoryDeleteResultsOnly){
+            . (Join-Path $PSScriptRoot 'Slice4beInventoryDeleteResults.ps1')
+            Install-InventoryDeleteResultProbe
+        }
         if($AdminInventoryAddResultsOnly){
             . (Join-Path $PSScriptRoot 'Slice4beInventoryAddResults.ps1')
             Install-InventoryAddResultProbe
@@ -2454,7 +2460,10 @@ End Function
     }
     if($AdminAggregationOnly){$step='packaged Aggregation authority and workbook diagnostic'; Test-AdminAggregation $a $b}
     if($AdminInventoryEntryOnly){
-        if($AdminInventoryAddResultsOnly){
+        if($AdminInventoryDeleteResultsOnly){
+            $step='actual Delete handler exact all-active retirement and processor return'
+            Test-InventoryDeleteResults $a $b
+        }elseif($AdminInventoryAddResultsOnly){
             $step='actual Add handler exact saved result and processor return'
             Test-InventoryAddResults $a $b
         }elseif($AdminInventoryOwnResultsOnly){
