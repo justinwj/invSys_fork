@@ -117,14 +117,17 @@ Invalid:
     If handle <> 0 And handle <> -1 Then CloseHandle handle
 End Function
 
-Public Function OpenCopy(ByVal path As String, ByRef copyPath As String) As Workbook
-    Dim folder As String, fso As Object, security As Long, events As Boolean, book As Workbook
+Public Function OpenCopy(ByVal path As String, ByRef copyPath As String, _
+        Optional ByVal uniqueName As Boolean = False) As Workbook
+    Dim folder As String, fso As Object, security As Long, events As Boolean, book As Workbook, leaf As String
     On Error GoTo Failed
     security = Application.AutomationSecurity: events = Application.EnableEvents
     Set fso = CreateObject("Scripting.FileSystemObject")
     folder = fso.BuildPath(fso.GetSpecialFolder(2), "invSysAggRead_" & modSystemIdentity.NewId())
     fso.CreateFolder folder
-    copyPath = fso.BuildPath(folder, fso.GetFileName(path))
+    leaf = fso.GetFileName(path)
+    If uniqueName Then leaf = "verified_" & modSystemIdentity.NewId() & "." & fso.GetExtensionName(path)
+    copyPath = fso.BuildPath(folder, leaf)
     fso.CopyFile path, copyPath, False
     Application.AutomationSecurity = 3: Application.EnableEvents = False
     Set book = Application.Workbooks.Open(copyPath, UpdateLinks:=0, ReadOnly:=True, Notify:=False, AddToMru:=False, IgnoreReadOnlyRecommended:=True)

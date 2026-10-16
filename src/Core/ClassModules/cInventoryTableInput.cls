@@ -40,13 +40,26 @@ End Sub
 
 Public Function Matches(ByVal table As ListObject, Optional ByVal selectedSku As String = "", _
         Optional ByVal headersOnly As Boolean = False, Optional ByVal requireResult As Boolean = False) As Boolean
+    On Error GoTo Invalid
+    If Not mOriginal Is Nothing Then
+        If Not (table Is mOriginal) Then Exit Function
+    End If
+    Matches = MatchesState(table, selectedSku, headersOnly, requireResult)
+Invalid:
+End Function
+
+' Only the coordinator's independent saved-byte copy uses content comparison.
+' Ordinary live-input checks above retain the captured object identity guard.
+Public Function MatchesPersistedCopy(ByVal table As ListObject) As Boolean
+    MatchesPersistedCopy = MatchesState(table, "", False, True)
+End Function
+
+Private Function MatchesState(ByVal table As ListObject, ByVal selectedSku As String, _
+        ByVal headersOnly As Boolean, ByVal requireResult As Boolean) As Boolean
     Dim current As Object, header As Variant, key As Variant, before As Object, actual As Object
     Dim keys As Object, relevant As Boolean, plannedValue As String
     On Error GoTo Invalid
     If mState Is Nothing Then Exit Function
-    If Not mOriginal Is Nothing Then
-        If Not (table Is mOriginal) Then Exit Function
-    End If
     Set current = ReadState(table)
     If current Is Nothing Then Exit Function
     For Each header In mState("Headers").Keys
@@ -55,7 +68,7 @@ Public Function Matches(ByVal table As ListObject, Optional ByVal selectedSku As
     For Each header In current("Headers").Keys
         If Not mState("Headers").Exists(header) And Not mNewHeaders.Exists(header) Then Exit Function
     Next header
-    If headersOnly Then Matches = True: Exit Function
+    If headersOnly Then MatchesState = True: Exit Function
     Set keys = CreateObject("Scripting.Dictionary"): keys.CompareMode = vbBinaryCompare
     For Each key In mState("Rows").Keys: keys(key) = True: Next key
     For Each key In current("Rows").Keys: keys(key) = True: Next key
@@ -99,7 +112,7 @@ NextField:
             End If
         End If
     Next key
-    Matches = True
+    MatchesState = True
 Invalid:
 End Function
 

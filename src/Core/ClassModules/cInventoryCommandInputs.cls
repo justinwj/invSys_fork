@@ -154,6 +154,7 @@ End Function
 
 Public Function ConfirmCatalog() As Boolean
     Dim owner As cSnapshotInventorySource, book As Workbook, borrowed As Boolean
+    Dim persisted As Workbook, copyPath As String, savedHash As String, savedIdentity As String
     On Error GoTo Invalid
     If mPhase <> "Catalog" Or Not mSaving Then Exit Function
     If Not Unchanged() Then Exit Function
@@ -161,16 +162,28 @@ Public Function ConfirmCatalog() As Boolean
     If book Is Nothing Then Exit Function
     If Not book.Saved Then Exit Function
     If Not mEntities.Matches(modExecutionTarget.Table(book, "tblInventoryEntities"), mSelectedSku) Then Exit Function
-    If Not mCatalog.Confirm(modExecutionTarget.Table(book, "tblSkuCatalog")) Then Exit Function
+    savedIdentity = modAggregationFiles.Identity(mPath): savedHash = modTrainingWire.FileSha256(mPath)
+    If savedIdentity = "" Or savedHash = "" Then Exit Function
+    Set persisted = modAggregationFiles.OpenCopy(mPath, copyPath, True)
+    If persisted Is Nothing Then GoTo CleanExit
+    If modTrainingWire.FileSha256(copyPath) <> savedHash Then GoTo CleanExit
+    If Not mCatalog.MatchesPersistedCopy(modExecutionTarget.Table(persisted, "tblSkuCatalog")) Then GoTo CleanExit
+    If Not mEntities.MatchesPersistedCopy(modExecutionTarget.Table(persisted, "tblInventoryEntities")) Then GoTo CleanExit
+    If modAggregationFiles.Identity(mPath) <> savedIdentity Or modTrainingWire.FileSha256(mPath) <> savedHash Then GoTo CleanExit
+    If Not Unchanged() Then GoTo CleanExit
+    If Not mCatalog.Confirm(modExecutionTarget.Table(book, "tblSkuCatalog")) Then GoTo CleanExit
     If Not mInitiallyBorrowed Then
         mCatalog.ReleaseObjectReference
         mEntities.ReleaseObjectReference
     End If
-    mIdentity = modAggregationFiles.Identity(mPath): mHash = modTrainingWire.FileSha256(mPath)
-    If mIdentity = "" Or mHash = "" Then Exit Function
+    mIdentity = savedIdentity: mHash = savedHash
     mPhase = "": mSaving = False
     ConfirmCatalog = Unchanged()
+CleanExit:
+    If copyPath <> "" Then modAggregationFiles.CloseCopy persisted, copyPath
+    Exit Function
 Invalid:
+    Resume CleanExit
 End Function
 
 Private Function ReadSource(ByRef owner As cSnapshotInventorySource, ByRef borrowed As Boolean) As Workbook

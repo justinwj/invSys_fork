@@ -1132,7 +1132,7 @@ Public Function UpdateInventoryItemCatalogForWarehouse(ByVal warehouseId As Stri
     End If
     If interactiveContext <> "" Then
         If Not modInventoryCommands.ConfirmCatalog(interactiveContext, report) Then
-            report = "Partial result: catalog fields were saved, but confirmation failed. Reopen and verify before retrying." & vbCrLf & report
+            report = "Partial result: catalog save returned, but persisted fields could not be confirmed. Reopen and verify before retrying." & vbCrLf & report
             GoTo CleanExit
         End If
     End If
