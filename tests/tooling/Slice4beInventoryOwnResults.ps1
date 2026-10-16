@@ -1,4 +1,6 @@
-# Operator Edit path with independent saved results. No synthetic canonical rows.
+# Operator Edit with independent saved results; first23 use owning event fixtures.
+# Separate completion cases use the explicitly scoped synthetic catalog-only fixture.
+. (Join-Path $PSScriptRoot 'Slice4beInventoryCatalogCompletion.ps1')
 function Install-InventoryOwnResultProbe {
     $admin=$packages['invSys.Admin.xlam'].VBProject
     $admin.VBComponents.Item('TestInventoryCommands').CodeModule.AddFromString(@'
@@ -138,6 +140,7 @@ End Function
     if([regex]::Matches($text,[regex]::Escape($boundary)).Count -ne 1){throw 'Quantity processor-return test boundary unavailable.'}
     $module.DeleteLines(1,$module.CountOfLines)
     $module.AddFromString($text.Replace($boundary,($boundary+"`r`n"+'    TestInventoryOwnResult.AfterProcessor')))
+    Install-InventoryCatalogCompletionProbe
 }
 
 function Test-InventoryOwnResults($Fixture,$Other) {
@@ -198,4 +201,5 @@ function Test-InventoryOwnResults($Fixture,$Other) {
             }
         }finally{$hostBook.Close($false)}
     }
+    Test-InventoryCatalogCompletionResults $Fixture $Other
 }
