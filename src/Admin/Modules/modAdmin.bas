@@ -406,7 +406,7 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
     Dim editReason As String
     Dim actionSucceeded As Boolean
     Dim qtyReport As String
-    Dim editStamp As String
+    Dim editStamp As String, receiptRow As Long
 
     On Error GoTo Failed
     If record Is Nothing Then report = "Inventory worksheet record is unavailable.": Exit Function
@@ -426,12 +426,13 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
     End If
 
     If actionName = "ADD" Then
+        If interactiveContext <> "" Then receiptRow = CLng(record("TableRow"))
         ApplyInventoryWorksheetRecordForWarehouse = AddInventoryItemForWarehouse( _
             warehouseId, stationId, userId, sku, itemName, _
             uom, locationValue, qty, CStr(record("Description")), vendorValue, _
             CStr(record("VendorCode")), categoryValue, CStr(record("ExternalCode")), _
             CStr(record("Picture")), customFields, report, interactiveContext, _
-            CStr(record("CreateEventId")), CLng(record("TableRow")))
+            CStr(record("CreateEventId")), receiptRow)
         Exit Function
     End If
     If actionName <> "EDIT" Then report = "Inventory worksheet Action must be ADD or EDIT.": Exit Function
@@ -686,6 +687,11 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
             report = "The captured inventory command source differs. Reopen Add/Edit Inventory.": Exit Function
         End If
         If Not modInventoryCommands.CheckForm(interactiveContext, report) Then Exit Function
+    Else
+        If Not modAuth.LoadAuth(warehouseId) Then report = "Provisioned authority could not be loaded.": Exit Function
+        If Not modAuth.HasProvisionedCapabilityForSystem("ADMIN_MAINT", userId, warehouseId, stationId) Then
+            report = "The provisioned user lacks ADMIN_MAINT for this warehouse and station.": Exit Function
+        End If
     End If
     eventIdOut = creationEventId
     If creationEventId <> "" Then
