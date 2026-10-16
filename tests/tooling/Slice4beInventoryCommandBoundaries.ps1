@@ -351,9 +351,9 @@ End Function
         $core=$packages['invSys.Core.xlam'].VBProject
         $quantity=$core.VBComponents.Item('modInventoryQuantityCommands').CodeModule
         $text=$quantity.Lines(1,$quantity.CountOfLines)
-        $needle='    processed = modProcessor.RunBatch(warehouse, 0, batchReport, eventId, applied)'
-        if([regex]::Matches($text,[regex]::Escape($needle)).Count -ne 1){throw 'Exact quantity queue fault boundary changed; not product RED.'}
-        $text=$text.Replace($needle,('    TestInventoryQuantity.AfterQueue eventId'+"`r`n"+$needle))
+        $queueTail='(?m)^[\t ]*report = "Inventory adjustment could not be queued: " & queueError: Exit Function\r?\n[\t ]*End If'
+        if([regex]::Matches($text,$queueTail).Count -ne 1){throw 'Exact quantity queue fault boundary changed; not product RED.'}
+        $text=[regex]::Replace($text,$queueTail,('$0'+"`r`n"+'    TestInventoryQuantity.AfterQueue eventId'))
         $quantity.DeleteLines(1,$quantity.CountOfLines);$quantity.AddFromString($text)
         $quantityProbe=$core.VBComponents.Add(1);$quantityProbe.Name='TestInventoryQuantity'
         $quantityProbe.CodeModule.AddFromString(@'

@@ -8,7 +8,7 @@ Public Function SetSingleEntityQuantity(ByVal warehouse As String, ByVal station
         ByVal reason As String, ByRef report As String, Optional ByVal context As String = "") As Boolean
     Dim entity As Variant, current As Variant, values As Variant, delta As Double
     Dim items As Collection, item As Object, eventId As String, queueError As String
-    Dim batchReport As String, applied As Boolean, processed As Long
+    Dim batchReport As String, applied As Boolean, processed As Long, payload As String
     On Error GoTo Failed
     If target < 0 Or Trim$(reason) = "" Then
         report = "A nonnegative target quantity and edit reason are required.": Exit Function
@@ -38,10 +38,22 @@ Public Function SetSingleEntityQuantity(ByVal warehouse As String, ByVal station
     item("IoType") = "ADJUST": item("PreviousQty") = CDbl(entity(1))
     item("TargetQty") = target: item("Reason") = reason
     items.Add item
-    If Not modRoleEventWriter.QueueAdminInventoryAdjustEvent(warehouse, station, user, _
-            modRoleEventWriter.BuildPayloadJsonFromCollection(items), _
-            "Admin set inventory quantity. Reason: " & reason, 0, eventId, queueError, "") Then
-        report = "Inventory adjustment could not be queued: " & queueError: Exit Function
+    payload = modRoleEventWriter.BuildPayloadJsonFromCollection(items)
+    If context = "" Then
+        If Not modAuth.LoadAuth(warehouse) Then report = "Provisioned authority could not be loaded.": Exit Function
+        If Not modAuth.HasProvisionedCapabilityForSystem("ADMIN_MAINT", user, warehouse, station) Then
+            report = "The provisioned user lacks ADMIN_MAINT for this warehouse and station.": Exit Function
+        End If
+    End If
+    If Not modInventoryCommandReceipts.FindExact(warehouse, station, user, payload, eventId, report) Then Exit Function
+    If context <> "" Then
+        If Not modInventoryCommands.CheckForm(context, report) Then Exit Function
+    End If
+    If eventId = "" Then
+        If Not modRoleEventWriter.QueueAdminInventoryAdjustEvent(warehouse, station, user, payload, _
+                "Admin set inventory quantity. Reason: " & reason, 0, eventId, queueError, "") Then
+            report = "Inventory adjustment could not be queued: " & queueError: Exit Function
+        End If
     End If
     If context <> "" Then
         If Not modInventoryCommands.CheckForm(context, report) Then
@@ -49,10 +61,22 @@ Public Function SetSingleEntityQuantity(ByVal warehouse As String, ByVal station
             Exit Function
         End If
     End If
-    processed = modProcessor.RunBatch(warehouse, 0, batchReport, eventId, applied)
+    processed = modProcessor.RunBatch(warehouse, 0, batchReport, eventId, applied, True)
     If Not applied Then
         report = "Inventory adjustment queued; exact saved application is unconfirmed." & _
                  vbCrLf & "Event: " & eventId & vbCrLf & batchReport
+        Exit Function
+    End If
+    If context <> "" Then
+        If Not modInventoryCommands.CheckForm(context, report) Then
+            report = report & vbCrLf & "Exact event application was saved: " & eventId
+            Exit Function
+        End If
+    End If
+    current = ResolveSingleEntity(warehouse, sku, report)
+    If Not IsArray(current) Then Exit Function
+    If current(0) <> entity(0) Or Abs(CDbl(current(1)) - target) > 0.0000001 Then
+        report = "Exact event application was saved, but the selected quantity differs from the target." & vbCrLf & "Event: " & eventId
         Exit Function
     End If
     report = "Inventory quantity set. Exact event application was saved." & vbCrLf & _

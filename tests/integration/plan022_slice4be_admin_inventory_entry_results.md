@@ -1,5 +1,27 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Bounded retry RED132 qualified,2026-10-15 Pacific:** source306fa2da/
+testa3d39db0 records17 PASS/5 FAIL,22 unique checks without a harness exception.
+All20 prior names/order remain as a subsequence. The added generated unrelated
+entity has its own saved pending adjustment. Retry overshoots its target, queues/
+applies a duplicate and also applies the unrelated event/quantity. Controller
+b082233606af4421be50811beba36289; worker e7d5afd5f4a7443593b272c5b8f8585c.
+Five packages/all486 tooling/settings/fixtures and normal owned/native closure
+qualify through2026-10-16T06:17:55.4929262Z, with zero desktop stops/Excel failures.
+
+**Bounded retry correction prepared:** match the exact serialized adjustment
+payload and source/user/station against existing local/server queue receipts,
+deduplicate only the same event ID and refuse multiple matching event IDs. Reuse
+that event without queueing another. The quantity command uses an optional exact-
+receipt processor filter; ordinary batch callers retain their default behavior.
+Only the selected event may apply, and exact saved receipt plus resulting key/
+quantity are verified. Separate provisioned headless capability checks remain.
+Existing queue-read/flat-JSON procedures and one processor name formatter move
+unchanged into private helper modules to prevent oversized-component growth.
+The test-only post-queue fault now attaches immediately after the successful queue
+branch, so reusing an existing receipt does not falsely count as a new queue.
+Packaged GREEN, static regeneration and broader regression remain to run.
+
 **Queued-retry RED131 qualified,2026-10-15 Pacific:** unchanged source306fa2da/
 test0782b2aa completes17 PASS/3 FAIL,20 unique checks without a harness exception.
 The exact local queued event is independently found and remains unapplied after
@@ -319,6 +341,12 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Trial132 cohort: unresolved/not measured**, source306fa2da/testa3d39db0,
+controllerb082233606af4421be50811beba36289, worker e7d5afd5f4a7443593b272c5b8f8585c.
+The focused retry test has no Config/Auth comparison; no cause/preservation claim
+is inferred. Trial123's labeled comparison and the safe part-name/inbox-save
+diagnostic remain required through this correction and any focused GREEN.
 
 **Trial131 cohort: unresolved/not measured**, source306fa2da/test0782b2aa,
 controllerb6a0cc3c16f24e9dab81ff54a29d91dc, worker a1ac2542f47e497c88fe889945248387.
