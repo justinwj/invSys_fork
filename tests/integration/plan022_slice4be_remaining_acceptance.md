@@ -1,5 +1,27 @@
 # Slice 4be remaining acceptance checklist
 
+**Provisioned catalog/no-op GREEN191 qualified:** sourceb8efb0fc/testa29daaff
+(with the explicit-authorized boundary fixture caller updated inb8efb0fc) retains
+all56 RED190 IDs/order and passes56/56. Headless catalog edits require an explicit
+provisioned actor/station; denied and missing actors preserve the persisted file.
+Quantity no-ops check that same authority before returning success. Signed-out
+provisioned Admin creation/edit/no-op controls pass. Controller
+83496307d251469191b784bb0ccf9f49 / workerec492b5db2a24418bf4cd85daf1ab9cb;
+normal preserved native audit22:41:44.4515244Z, five package/495 tooling/twelve
+source/four harness pins, zero desktop/native failures. Source/direct service
+scope; current integrated and packaged/recording gates remain open. No build/deploy.
+
+**Provisioned catalog/no-op RED190 qualified:** unchangedsourcec693ada6/testa29daaff
+completes50 PASS/6 FAIL over56 checks, retaining189's20 identities in order.
+Denied Reader EDIT and the no-actor catalog helper both report success and persist
+changed catalog content. Denied Reader/no-actor quantity no-ops report success
+without event/quantity mutation. Authorized Admin controls pass. Controller
+f671771284ba4d5fa603b45a139f5b78 / worker6c2c85dd517e4e959a0e55f6d50b6b7a;
+normal preserved native audit22:36:52.2742456Z, five package/495 tooling/twelve
+source/four harness pins, zero desktop/native failures. Direct service source
+scope only. Require explicit provisioned catalog actor/station and check quantity
+authority before no-op return under D8-INV-01; focused GREEN remains pending.
+
 **Provisioned-headless GREEN189 qualified:** sourcec693ada6/test05970ae5
 retains all20 RED188 IDs/order and passes20/20. Signed-out provisioned Admin
 creation completes without the interactive worksheet receipt callback; denied

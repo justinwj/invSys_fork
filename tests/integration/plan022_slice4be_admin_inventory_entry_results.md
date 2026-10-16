@@ -1,5 +1,27 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Provisioned catalog/no-op GREEN191 qualified:** sourceb8efb0fc/testa29daaff
+(with the explicit-authorized boundary fixture caller updated inb8efb0fc) retains
+all56 RED190 IDs/order and passes56/56. Headless catalog edits require an explicit
+provisioned actor/station; denied and missing actors preserve the persisted file.
+Quantity no-ops check that same authority before returning success. Signed-out
+provisioned Admin creation/edit/no-op controls pass. Controller
+83496307d251469191b784bb0ccf9f49 / workerec492b5db2a24418bf4cd85daf1ab9cb;
+normal preserved native audit22:41:44.4515244Z, five package/495 tooling/twelve
+source/four harness pins, zero desktop/native failures. Source/direct service
+scope; current integrated and packaged/recording gates remain open. No build/deploy.
+
+**Provisioned catalog/no-op RED190 qualified:** unchangedsourcec693ada6/testa29daaff
+completes50 PASS/6 FAIL over56 checks, retaining189's20 identities in order.
+Denied Reader EDIT and the no-actor catalog helper both report success and persist
+changed catalog content. Denied Reader/no-actor quantity no-ops report success
+without event/quantity mutation. Authorized Admin controls pass. Controller
+f671771284ba4d5fa603b45a139f5b78 / worker6c2c85dd517e4e959a0e55f6d50b6b7a;
+normal preserved native audit22:36:52.2742456Z, five package/495 tooling/twelve
+source/four harness pins, zero desktop/native failures. Direct service source
+scope only. Require explicit provisioned catalog actor/station and check quantity
+authority before no-op return under D8-INV-01; focused GREEN remains pending.
+
 **Provisioned-headless GREEN189 qualified:** sourcec693ada6/test05970ae5
 retains all20 RED188 IDs/order and passes20/20. Signed-out provisioned Admin
 creation completes without the interactive worksheet receipt callback; denied
@@ -61,8 +83,8 @@ source/four harness pins and zero desktop/native failures. No whole-gate GREEN.
 Source1b316e4b implements durable event IDs and exact queue/canonical lookup in
 the existing Upload Result boundary, with independent staging-save confirmation.
 It introduces no new general store, object bridge, identity mapping or allocation
-policy. Comparison185 is pending;184 is a payload-observer setup failure before
-any behavioral checks, not RED. No XLAM build/deploy or4be-A acceptance.
+policy. Comparison185 qualifies64/64 as recorded above;184 is a payload-observer
+setup failure before any behavioral checks, not RED. No XLAM build/deploy or4be-A acceptance.
 
 
 **Corrected worksheet RED182 qualified:** source8d486927 exported directly from
@@ -1382,3 +1404,39 @@ changed fields or establish comprehensive Config causality. CauseEstablished
 remains false. The earlier authorized-save semantic question remains unresolved.
 The same cohort's inventory-config-diagnosis.jsonl and headless-authority-
 observations.jsonl support this written artifact; no earlier cohort substitutes.
+
+### Config diagnosis — headless GREEN189, sourcec693ada6/test05970ae5
+
+The same20-check cohort's controller/worker are named above. Auth bytes, readonly
+Config extraction, table cells and shapes remain unchanged. Provisioned Admin
+creation records three saves/byte changes, only core.xml/workbook.bin. Denied
+Reader records zero Config saves/byte changes and no changed parts. The earlier
+preauthorization-save defect is corrected in this scope. Comprehensive semantics
+and causality of the authorized bootstrap byte difference remain unresolved;
+CauseEstablished=false. No earlier cohort or later GREEN silently closes that
+question. These are the same worker's inventory-config-diagnosis.jsonl and
+headless-authority-observations.jsonl, not a substitute diagnostic.
+
+### Config diagnosis — catalog/no-op RED190, sourcec693ada6/testa29daaff
+
+The56-check cohort's controller/worker are named above. All eight cases preserve
+Auth bytes, readonly Config extraction, cells and shapes. Provisioned Admin ADD
+observes three saves/byte changes, only core.xml/workbook.bin. The seven denied,
+catalog EDIT and quantity no-op cases observe zero Config saves/byte changes and
+no changed parts. The unauthorized catalog mutations are independently observed
+in the Inventory file, not inferred from Config differences. CauseEstablished=false
+remains for the authorized Config difference; full field/semantic causality is
+unresolved. The same worker's inventory-config-diagnosis.jsonl and headless-
+authority-observations.jsonl are the required cohort-bound written artifact.
+
+### Config diagnosis — catalog/no-op GREEN191, sourceb8efb0fc/testa29daaff
+
+The56-check comparison retains RED190's exact assertion order. All eight cases
+preserve Auth bytes, readonly Config extraction, cells and shapes. Provisioned
+Admin ADD still records three saves/byte changes limited to core.xml/workbook.bin;
+the other seven cases record zero saves/changed parts. Catalog refusal and no-op
+authorization now pass without changing or waiving the authorized Config-byte
+finding. Comprehensive field/semantic causality remains unresolved and
+CauseEstablished=false in the same worker's inventory-config-diagnosis.jsonl.
+The explicit-authorized CatalogChanged boundary fixture caller is updated in
+b8efb0fc; the56 protecting assertions remain testa29daaff's unchanged set.
