@@ -1,4 +1,62 @@
 # Actual packaged actions on Admin-generated disposable fixtures. Values stay in memory.
+function Get-InventoryConfigSemanticSnapshot($Book) {
+    $groups=@{Workbook=@{};Names=@{};Tables=@{};Views=@{};Sheets=@{};Connections=@{}}
+    $unavailable=@{Workbook=0;Names=0;Tables=0;Views=0;Sheets=0;Connections=0}
+    foreach($name in @('Date1904','PrecisionAsDisplayed','ProtectStructure','ProtectWindows','ReadOnlyRecommended','SaveLinkValues','UpdateRemoteReferences','CheckCompatibility','ForceFullCalculation','FullCalculationOnLoad','CalculationVersion')){
+        try{$groups.Workbook[$name]=[string]$Book.$name}catch{$unavailable.Workbook++}
+    }
+    try{
+        $groups.Names['Count']=[string]$Book.Names.Count
+        foreach($binding in $Book.Names){
+            $groups.Names[$binding.Name+'|RefersTo']=[string]$binding.RefersTo
+            $groups.Names[$binding.Name+'|Visible']=[string]$binding.Visible
+        }
+    }catch{$unavailable.Names++}
+    foreach($sheet in $Book.Worksheets){
+        foreach($name in @('Visible','EnableCalculation','ProtectContents','ProtectDrawingObjects','ProtectScenarios','CodeName')){
+            try{$groups.Sheets[$sheet.Name+'|'+$name]=[string]$sheet.$name}catch{$unavailable.Sheets++}
+        }
+        foreach($table in $sheet.ListObjects){
+            try{
+                $groups.Tables[$table.Name+'|Sheet']=[string]$sheet.Name
+                $groups.Tables[$table.Name+'|Range']=[string]$table.Range.Address($false,$false,1,$false)
+                $groups.Tables[$table.Name+'|SourceType']=[string]$table.SourceType
+                $groups.Tables[$table.Name+'|DisplayName']=[string]$table.DisplayName
+                $groups.Tables[$table.Name+'|ShowTotals']=[string]$table.ShowTotals
+            }catch{$unavailable.Tables++}
+        }
+    }
+    try{
+        $groups.Views['Count']=[string]$Book.Windows.Count
+        $index=0
+        foreach($window in $Book.Windows){
+            $index++
+            foreach($name in @('Visible','DisplayWorkbookTabs','DisplayHorizontalScrollBar','DisplayVerticalScrollBar','TabRatio','WindowState','Zoom','ScrollRow','ScrollColumn')){
+                try{$groups.Views[$index.ToString()+'|'+$name]=[string]$window.$name}catch{$unavailable.Views++}
+            }
+            try{$groups.Views[$index.ToString()+'|ActiveSheet']=[string]$window.ActiveSheet.Name}catch{$unavailable.Views++}
+        }
+    }catch{$unavailable.Views++}
+    # Do not read connection strings, credentials, document authors or raw properties.
+    try{$groups.Connections['Count']=[string]$Book.Connections.Count}catch{$unavailable.Connections++}
+    [pscustomobject]@{Groups=$groups;Unavailable=$unavailable}
+}
+
+function Compare-InventoryConfigSemanticSnapshot($Before,$After) {
+    $result=[ordered]@{};$complete=$true
+    foreach($group in @('Workbook','Names','Tables','Views','Sheets','Connections')){
+        $a=$Before.Groups[$group];$b=$After.Groups[$group];$changed=0
+        foreach($key in @($a.Keys)+@($b.Keys)|Select-Object -Unique){
+            if(-not $a.ContainsKey($key) -or -not $b.ContainsKey($key) -or $a[$key] -cne $b[$key]){$changed++}
+        }
+        $missing=[int]$Before.Unavailable[$group]+[int]$After.Unavailable[$group]
+        if($missing){$complete=$false}
+        $result[$group]=[pscustomobject]@{BeforeCount=$a.Count;AfterCount=$b.Count;ChangedCount=$changed;UnavailableReads=$missing}
+    }
+    # Keys, formulas, values, author identities and paths are never emitted.
+    [pscustomobject]@{CompleteForObservedProperties=$complete;Groups=[pscustomobject]$result;AllWorkbookSemanticsProven=$false}
+}
+
 function Get-InventoryConfigDiagnosticSnapshot($Fixture) {
     $path=[IO.Path]::GetFullPath($Fixture.Config)
     $expected=[IO.Path]::GetFullPath((Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Config.xlsb')))
@@ -34,13 +92,14 @@ function Get-InventoryConfigDiagnosticSnapshot($Fixture) {
                 $cells[$table.Name+'|'+$r+'|'+$c]=if($null -eq $v){'<EMPTY>'}else{$v.GetType().FullName+'|'+[string]$v}
             }}
         }}
+        $semantics=Get-InventoryConfigSemanticSnapshot $book
         $memoryPreserved=($book.Saved -eq $saved)
     }finally{
         if($opened){$book.Close($false)}
         if($null -ne $prior){$prior.Activate()}
     }
     # Values and part hashes are deliberately memory-only; export comparisons below.
-    [pscustomobject]@{Cells=$cells;Shapes=($shapes -join "`n");Parts=$parts;ReadOnlyProof=($memoryPreserved -and $beforeHash -ceq (Get-AdminInventoryEntryHash $path))}
+    [pscustomobject]@{Cells=$cells;Shapes=($shapes -join "`n");Parts=$parts;Semantics=$semantics;ReadOnlyProof=($memoryPreserved -and $beforeHash -ceq (Get-AdminInventoryEntryHash $path))}
 }
 
 function Write-InventoryConfigDiagnosticComparison($Before,$After,[string]$Case,$SavePhase=$null) {
@@ -59,9 +118,13 @@ function Write-InventoryConfigDiagnosticComparison($Before,$After,[string]$Case,
         }
     }
     $safe=$Before.ReadOnlyProof -and $After.ReadOnlyProof
+    $semantics=$null
+    if($Before.PSObject.Properties['Semantics'] -and $After.PSObject.Properties['Semantics']){
+        $semantics=Compare-InventoryConfigSemanticSnapshot $Before.Semantics $After.Semantics
+    }
     [void]$script:InventoryConfigReadChecks.Add([pscustomobject]@{Case=$Case;Passed=$safe})
-    [pscustomobject]@{Case=$Case;ReadOnlyExtractionPreserved=$safe;ChangedTableCells=$changed;TableShapesPreserved=($Before.Shapes -ceq $After.Shapes);ChangedPartCategories=$categories;ChangedStandardParts=$known;UnidentifiedChangedPartCount=$unidentified;ObservedConfigSavePhase=$SavePhase;CauseEstablished=$false}|
-        ConvertTo-Json -Depth 4 -Compress|Add-Content (Join-Path $reportRoot 'inventory-config-diagnosis.jsonl')
+    [pscustomobject]@{Case=$Case;ReadOnlyExtractionPreserved=$safe;ChangedTableCells=$changed;TableShapesPreserved=($Before.Shapes -ceq $After.Shapes);ChangedPartCategories=$categories;ChangedStandardParts=$known;UnidentifiedChangedPartCount=$unidentified;ObservedConfigSavePhase=$SavePhase;ObservedSemanticComparison=$semantics;CauseEstablished=$false}|
+        ConvertTo-Json -Depth 6 -Compress|Add-Content (Join-Path $reportRoot 'inventory-config-diagnosis.jsonl')
 }
 
 function Test-InventoryConfigDiagnosticPreservation {
