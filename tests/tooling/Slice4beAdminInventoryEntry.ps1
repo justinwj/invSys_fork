@@ -40,6 +40,7 @@ Public Sub Execute(ByVal hostName As String, ByVal mode As String, _
 End Sub
 Public Sub Drive(ByVal form As frmAddInventoryItem)
     Dim selected As String, signed As String
+    If TestInventoryCommands.IsDriving Then TestInventoryCommands.Drive form: Exit Sub
     mShows = mShows + 1
     If mShows > 1 Then form.InventoryEntryCancelForTest: Exit Sub
     mLegacyDisplay = form.InventoryEntryLegacyDisplayForTest()
@@ -136,6 +137,7 @@ Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgB
     MsgBox = vbOK
 End Function
 '@)
+    Install-InventoryCommandBoundaryProbe
 }
 
 function Get-AdminInventoryEntryHash([string]$Path) {

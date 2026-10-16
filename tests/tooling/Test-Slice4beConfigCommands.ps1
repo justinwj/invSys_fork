@@ -850,6 +850,7 @@ if($AdminInventoryEntryOnly){
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-inventory-entry/'+[guid]::NewGuid().ToString('N'))
     Write-Output ('Inventory entry evidence: '+$reportRoot)
     . (Join-Path $PSScriptRoot 'Slice4beAdminInventoryEntry.ps1')
+    . (Join-Path $PSScriptRoot 'Slice4beInventoryCommandBoundaries.ps1')
 }
 if($AdminConsoleOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-console/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin Console evidence: '+$reportRoot)}
 if($AdminSeedOutcomeOnly){$reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-seed-outcome/'+[guid]::NewGuid().ToString('N'));Write-Output ('Admin Seed outcome evidence: '+$reportRoot)}
@@ -2412,7 +2413,10 @@ End Function
         if($AdminTesterRecording){Test-AdminTesterRecording $a $b}
     }
     if($AdminAggregationOnly){$step='packaged Aggregation authority and workbook diagnostic'; Test-AdminAggregation $a $b}
-    if($AdminInventoryEntryOnly){$step='packaged Add/Edit Inventory Ribbon and modal entry audit'; Test-AdminInventoryEntry $a $b}
+    if($AdminInventoryEntryOnly){
+        $step='packaged Add/Edit Inventory Ribbon and modal entry audit'; Test-AdminInventoryEntry $a $b
+        $step='approved Inventory modal and worksheet authority boundaries'; Test-InventoryCommandBoundaries $a $b
+    }
     if(-not $AdminInventoryEntryOnly -and -not $AdminAggregationOnly -and -not $AdminTesterSetupOwnerOnly -and -not $AdminCreateWarehouseOwnerOnly -and -not $AdminSeedOutcomeOnly -and -not $AdminDirectoryColumnsOnly -and -not $AdminConsoleOnly -and -not $AdminVerifyAddinsOnly -and -not $AdminReconcileIdentityOnly -and -not $AdminSettingsCloseOnly -and -not $CheckViewerRefreshFailure -and -not $CheckViewerEventDetail -and -not $CheckViewerEventGroups -and -not $CheckViewerPublishedRead -and $PrintSeedBoundaryForTest -notin @('FreshSeed','BareSeed')) {
     $step='unauthenticated command'
     [void](Run 'invSys.Core.xlam' 'modAuth.SignOut')

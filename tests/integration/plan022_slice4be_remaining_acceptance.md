@@ -15,9 +15,10 @@ The source Config-byte-change cause is unresolved; Auth remains unchanged.
 Five packages/all485 tooling/settings/fixture preservation and normal owned closure
 qualify through2026-10-16T00:02:59.4379339Z, with no native failure or desktop stop.
 See the [Inventory diagnostic](plan022_slice4be_admin_inventory_entry_results.md).
-Normative **D8-INV-01 is proposed, approval pending**. No product correction or
-new recording ID is implemented. Expanded real Edit/Delete/worksheet and yield/
-phase RED follows approval before implementation. Qualified receiving121,
+Normative **D8-INV-01 is approved,2026-10-15 Pacific**, including docs98f63d7's
+three tightenings. No product correction or new recording ID is implemented at
+approval. Expanded real Edit/Delete/worksheet and yield/phase RED is next before
+implementation; Config diagnosis remains explicitly unresolved. Qualified Receiving121,
 Tester127, Settings202 and recording80 stand; Release1 fixture conformance,
 remaining controls, guidance and comprehensive4be-A acceptance remain open.
 
@@ -108,8 +109,8 @@ live/full-chain fixture must first replace
 synthetic canonical create/applied rows and fixed identities with Admin-generated
 runtimes and owning creation/processing results, preserving every existing check.
 The [remaining Admin coverage audit](plan022_slice4be_admin_remaining_coverage.md)
-records that source-only finding and uncovered entries. D8-INV-01 approval is
-pending; no old runtime result is promoted, and comprehensive coverage/release proof remain
+records that source-only finding and uncovered entries. D8-INV-01 is approved for
+test-first implementation; no old runtime result is promoted, and comprehensive coverage/release proof remain
 required. D13 does not require a new RED for this evidence-only checklist update.
 
 **Current capture correction,2026-10-15 Pacific:** owner-09 source45336d88 passes

@@ -40,16 +40,16 @@ the expected RED result, monitor exit0. Delayed native audit through
 Ignored qualification receipt:
 `reports/runtime/resume-d8-agg-01/admin-inventory-entry-persisted-red-115/qualification.json`.
 
-**Next decision:** normative v4.11 **D8-INV-01** is explicitly proposed, approval
-pending. It defines the separate Core-owned captured interactive command contract
+**Approved2026-10-15 Pacific:** the user explicitly approved tightened normative
+v4.11 **D8-INV-01** (docs98f63d7). It defines the separate Core-owned captured interactive command contract
 for Add/Edit/Delete and worksheet actions; it does not infer that contract from
 D8-AGG-01 approval or from this diagnostic. No product implementation, deployment,
-new ControlId or acceptance occurs here. After approval, expand actual-action RED
+new ControlId or acceptance occurs at approval. Next, expand actual-action RED
 for that complete contract before implementation; retain these45 identities and
 separate the unresolved Config diagnostic. Current Tester127, Settings202,
 recording80 and Receiving121 remain qualified; comprehensive4be-A stays open.
 
-**Proposal tightening,2026-10-15 Pacific:** D8-INV-01 remains proposed. Its D13
+**Approved tightenings,2026-10-15 Pacific:** D8-INV-01's D13
 list now explicitly requires zero-quantity creation through modal Add and worksheet
 ADD without editing D14's locked wording. The modal path must refuse changed/
 replaced catalog sources/selections and affected entities after yields, including
