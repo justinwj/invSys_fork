@@ -42,8 +42,11 @@ End Function
         @('    wb.Save','SaveReturned'),
         @('    UpdateInventoryItemCatalogForWarehouse = True','Confirmed')
     )){
-        if([regex]::Matches($body,[regex]::Escape($point[0])).Count -ne 1){throw 'Catalog fixed-stage anchor unavailable.'}
-        $body=$body.Replace($point[0],($point[0]+"`r`n"+'    TestInventoryCatalogTrace.Mark "'+$point[1]+'"'))
+        # VBE may recase identifiers when it inserts source into a project.
+        $pattern='(?im)^'+[regex]::Escape($point[0])+'[\t ]*\r?$'
+        if([regex]::Matches($body,$pattern).Count -ne 1){throw ('Catalog fixed-stage anchor unavailable: '+$point[1])}
+        $mark='    TestInventoryCatalogTrace.Mark "'+$point[1]+'"'
+        $body=[regex]::Replace($body,$pattern,[Text.RegularExpressions.MatchEvaluator]{param($m) $m.Value.TrimEnd("`r")+"`r`n"+$mark})
     }
     $owner.DeleteLines($start,$count);$owner.InsertLines($start,$body)
     $core=$packages['invSys.Core.xlam'].VBProject
