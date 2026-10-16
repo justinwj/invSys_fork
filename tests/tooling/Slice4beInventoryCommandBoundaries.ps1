@@ -816,6 +816,18 @@ function Test-InventoryManagedFields($Fixture,$Other) {
     $seed=[string](Run 'invSys.Admin.xlam' 'modAdminConsole.SeedDemoInventoryForAutomation' @($Fixture.Warehouse,'S1','config-admin'))
     Check 'InventoryManagedField.GeneratedFixtureSeedApplied' $seed.StartsWith('OK|')
     if(-not $seed.StartsWith('OK|')){throw 'Managed field fixture unavailable; not product RED.'}
+    # Seed's owned open workbook may retain unsaved bookkeeping. Admission must
+    # still refuse dirty books. Verify persisted business fixture data, discard
+    # only that owned in-memory copy, and never save on the owner's behalf.
+    $memory=Get-AdminInventoryEntryFacts $Fixture
+    $cold=Get-AdminInventoryEntryFacts $Fixture -Persisted
+    $same=$memory.LogRows -eq $cold.LogRows -and $memory.AppliedRows -eq $cold.AppliedRows -and $memory.EntityQuantities.Count -eq $cold.EntityQuantities.Count -and $memory.FileHash -ceq $cold.FileHash
+    foreach($key in $memory.EntityQuantities.Keys){
+        if(-not $cold.EntityQuantities.ContainsKey($key) -or $memory.EntityQuantities[$key] -ne $cold.EntityQuantities[$key]){$same=$false}
+    }
+    [pscustomobject]@{GeneratedFixtureOnly=$true;MemoryAndPersistedEntitiesMatch=$same;ClosedWithoutSave=$true;FileBytesPreserved=($memory.FileHash -ceq $cold.FileHash)}|
+        ConvertTo-Json -Compress|Set-Content (Join-Path $reportRoot 'managed-fixture-cold-proof.json')
+    if(-not $same){throw 'Generated managed-field seed is not independently persisted; not product RED.'}
     foreach($spec in @(@('SystemKey','System_Key',$true),@('Condition','Condition',$true),@('LegacyRow','ROW',$true),@('Ordinary','Fixture note',$false))){
         $label,$header,$reserved=$spec
         SelectTarget $Fixture
