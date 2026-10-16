@@ -143,6 +143,7 @@ param(
     [switch]$AdminInventoryManagedFieldsOnly,
     [switch]$AdminInventoryQuantityRetryOnly,
     [switch]$AdminInventoryBaselineOnly,
+    [switch]$AdminInventoryInputsOnly,
     [switch]$AdminAggregationPathComparison,
     [switch]$AdminAggregationBoundaryMatrix,
     [ValidateSet('All','Inspection','Write','Ownership')][string]$AdminAggregationBoundaryGroup='All',
@@ -853,6 +854,7 @@ if($AdminInventoryExactQuantityOnly -and -not $AdminInventoryEntryOnly){throw 'E
 if($AdminInventoryManagedFieldsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryExactQuantityOnly)){throw 'Managed fields require the separate isolated Inventory gate.'}
 if($AdminInventoryQuantityRetryOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly)){throw 'Quantity retry requires the separate isolated Inventory gate.'}
 if($AdminInventoryBaselineOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Baseline requires the separate isolated Inventory gate.'}
+if($AdminInventoryInputsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Input boundaries require the separate isolated Inventory gate.'}
 if($AdminInventoryEntryOnly){
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-inventory-entry/'+[guid]::NewGuid().ToString('N'))
@@ -2422,7 +2424,15 @@ End Function
     }
     if($AdminAggregationOnly){$step='packaged Aggregation authority and workbook diagnostic'; Test-AdminAggregation $a $b}
     if($AdminInventoryEntryOnly){
-        if($AdminInventoryBaselineOnly){
+        if($AdminInventoryInputsOnly){
+            $step='Inventory captured inputs and authorized controls'
+            SelectTarget $a
+            $seed=[string](Run 'invSys.Admin.xlam' 'modAdminConsole.SeedDemoInventoryForAutomation' @($a.Warehouse,'S1','config-admin'))
+            Check 'InventoryInputs.GeneratedFixtureSeedApplied' $seed.StartsWith('OK|')
+            if(-not $seed.StartsWith('OK|')){throw 'Input boundary fixture unavailable; not product RED.'}
+            Test-InventoryCommandBoundaries $a $b -InputCasesOnly
+            Test-InventoryReplacementBoundaries $a $b
+        }elseif($AdminInventoryBaselineOnly){
             $step='retained Inventory Ribbon modal entry and Config diagnosis'; Test-AdminInventoryEntry $a $b
             Test-InventoryConfigDiagnosticPreservation
         }elseif($AdminInventoryQuantityRetryOnly){

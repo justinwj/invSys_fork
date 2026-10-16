@@ -503,8 +503,8 @@ function Get-InventoryBoundarySku($Fixture,[bool]$CountedOnly=$false) {
     }finally{if($owned){$book.Close($false)}}
 }
 
-function Test-InventoryCommandBoundaries($Fixture,$Other) {
-    $cases=@('Authorized','SignedOut','ReplacementSession','Reader','OtherWarehouseAdmin','CatalogChanged')
+function Test-InventoryCommandBoundaries($Fixture,$Other,[switch]$InputCasesOnly) {
+    $cases=if($InputCasesOnly){@('Authorized','CatalogChanged')}else{@('Authorized','SignedOut','ReplacementSession','Reader','OtherWarehouseAdmin','CatalogChanged')}
     foreach($action in @('Add','Edit','Create','Upload','Delete')){
         foreach($case in $cases){
             SelectTarget $Fixture

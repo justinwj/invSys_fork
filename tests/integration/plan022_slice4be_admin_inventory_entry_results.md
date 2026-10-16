@@ -1,5 +1,23 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**ROW identity GREEN within baseline137,2026-10-15 Pacific:** product68949ab0/
+testb82dcc9a completes49 PASS/1 FAIL over50 unique checks. All seven retained
+ROW payload/display assertions now pass; original authorized exact-create controls
+and five Config extraction-preservation checks pass. The sole failure remains
+InventoryEntry.SourceAuthAndConfigPreserved, separately diagnosed below. This is
+seven identity REDs to GREEN, not whole-baseline or D8 acceptance. Controller
+4f96ca1e6a3c46b8b866046c01c0f33a; worker37c1e7ca4f694ca0b63fbc17f0684328.
+Preserved five packages/all486 tooling/settings/fixtures and normal owned/native
+closure qualify through2026-10-16T06:54:02.7961962Z, with zero desktop stops/Excel
+failures. Build136 qualifies unpromoted validation-inventory-identity-01.
+
+**Focused input comparison prepared:** the new isolated mode retains the existing
+authorized/CatalogChanged cases and all12 replacement/prompt cases. Together with
+one owning seed check and six shared compile/probe checks it runs108 checks, using
+the same handler assertions and oracles as the300-check comparison. It protects
+captured source/catalog/entity/staging-table continuation before the next guard
+changes; it does not replace the full matrix or imply remaining phase coverage.
+
 **Full comparison135 qualified,2026-10-15 Pacific:** sourceb936503e/testad7b7056
 records272 PASS/28 FAIL,300 unique checks without a harness exception. All257
 prior names/order are the exact prefix; managed-field and bounded-retry additions
@@ -399,6 +417,15 @@ expanded tests, not coverage claimed by the existing45 checks. The Config diagno
 below is a required D13 artifact; future focused GREEN cannot silently close it.
 
 ## Config diagnosis
+
+**Trial137 cohort: unresolved**, product68949ab0/testb82dcc9a, controller
+4f96ca1e6a3c46b8b866046c01c0f33a, worker37c1e7ca4f694ca0b63fbc17f0684328.
+The retained Config preservation assertion fails; five read-only extraction checks
+pass. Its same-cohort redacted part/save-phase JSONL is retained for review. The
+ROW assertions turning GREEN do not close Config. Trial135's part/call findings
+remain separately labeled as a different product source; inspect137's exact
+counters before using them. The safe workbook-property/binding diagnostic remains
+required to resolve semantic significance.
 
 **Trial135 cohort: save phase observed; semantic cause unresolved**, product
 b936503e/testad7b7056, controller10b6b807489c417ab0fc82f16eb868a6, worker
