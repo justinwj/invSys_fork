@@ -12,6 +12,7 @@ function Install-InventorySourceOverlay {
         @('invSys.Core.xlam','Core/Modules/modInventoryQuantityCommands.bas',1),
         @('invSys.Core.xlam','Core/Modules/modAggregationFiles.bas',1),
         @('invSys.Admin.xlam','Admin/Modules/modAdmin.bas',1),
+        @('invSys.Admin.xlam','Admin/Modules/modAdminInventoryCreate.bas',1),
         @('invSys.Admin.xlam','Admin/Modules/modAdminInventoryWorksheet.bas',1),
         @('invSys.Admin.xlam','Admin/Forms/frmAddInventoryItem.frm',3)
     )

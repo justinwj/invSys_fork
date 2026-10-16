@@ -1003,7 +1003,7 @@ Private Function SetInventoryQuantityForWarehouse(ByVal warehouseId As String, _
     If targetQty > 0 And Not InventorySkuHasManagedEntityAdmin(warehouseId, sku) Then
         SetInventoryQuantityForWarehouse = CreateFirstInventoryEntityForCatalogItemAdmin( _
             warehouseId, stationId, userId, sku, itemName, uom, _
-            locationVal, targetQty, editReason, report)
+            locationVal, targetQty, editReason, report, interactiveContext)
     Else
         SetInventoryQuantityForWarehouse = modInventoryQuantityCommands.SetSingleEntityQuantity( _
             warehouseId, stationId, userId, sku, targetQty, editReason, report, interactiveContext)
@@ -1019,70 +1019,11 @@ Private Function CreateFirstInventoryEntityForCatalogItemAdmin(ByVal warehouseId
                                                                 ByVal locationVal As String, _
                                                                 ByVal targetQty As Double, _
                                                                 ByVal editReason As String, _
-                                                                ByRef report As String) As Boolean
-    Dim payloadItems As Collection
-    Dim item As Object
-    Dim payloadJson As String
-    Dim eventIdOut As String
-    Dim queueError As String
-    Dim batchReport As String
-    Dim processedCount As Long
-    Dim inboxReport As String
-    Dim systemKey As String
-    Dim noteText As String
-
-    On Error GoTo Failed
-
-    If Not EnsureDemoStationInboxes(warehouseId, stationId, inboxReport) Then
-        report = inboxReport
-        Exit Function
-    End If
-
-    systemKey = modRoleEventWriter.CreateSystemKey()
-    noteText = "Admin completed catalog-only inventory item. Reason: " & editReason & _
-               "; SubmittedQty=" & CStr(targetQty)
-    Set payloadItems = New Collection
-    Set item = modRoleEventWriter.CreateInventoryEntityPayloadItem( _
-        systemKey, sku, targetQty, locationVal, "GOOD", "", noteText)
-    item("ITEM_CODE") = sku
-    item("ITEM") = itemName
-    item("UOM") = uom
-    item("LOCATION") = locationVal
-    item("TOTAL INV") = targetQty
-    item("QtyAvailable") = targetQty
-    item("Reason") = editReason
-    payloadItems.Add item
-
-    payloadJson = modRoleEventWriter.BuildPayloadJsonFromCollection(payloadItems)
-    If payloadJson = "" Or payloadJson = "[]" Then
-        report = "Inventory creation payload was empty."
-        Exit Function
-    End If
-    If Not modRoleEventWriter.QueueInventoryCreateEvent(warehouseId, stationId, userId, _
-            payloadJson, noteText, 0, Nothing, eventIdOut, queueError, "") Then
-        report = "Inventory creation event could not be queued: " & queueError
-        Exit Function
-    End If
-
-    processedCount = modProcessor.RunBatch(warehouseId, 0, batchReport)
-    If processedCount < 1 Then
-        report = "Inventory creation event was queued but not applied. " & batchReport
-        Exit Function
-    End If
-
-    report = "Catalog-only inventory item completed as a managed entity." & vbCrLf & _
-             "Warehouse: " & warehouseId & vbCrLf & _
-             "SKU: " & sku & vbCrLf & _
-             "System_Key: " & systemKey & vbCrLf & _
-             "Starting quantity: " & CStr(targetQty) & vbCrLf & _
-             "Reason: " & editReason & vbCrLf & _
-             "Processor: " & batchReport & vbCrLf & _
-             "Refresh Inventory Viewer and Production to see the item."
-    CreateFirstInventoryEntityForCatalogItemAdmin = True
-    Exit Function
-
-Failed:
-    report = "Complete catalog-only inventory item failed: " & Err.Description
+                                                                ByRef report As String, _
+                                                                Optional ByVal interactiveContext As String = "") As Boolean
+    CreateFirstInventoryEntityForCatalogItemAdmin = modAdminInventoryCreate.CompleteCatalogItem( _
+        warehouseId, stationId, userId, sku, itemName, uom, locationVal, targetQty, _
+        editReason, report, interactiveContext)
 End Function
 
 Public Function UpdateInventoryItemCatalogForWarehouse(ByVal warehouseId As String, _

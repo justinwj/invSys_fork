@@ -51,9 +51,13 @@ Public Function Facts(ByVal expectedKey As String) As String
     Facts = CStr(mReturned) & "|" & CStr(mKey <> "" And mKey = expectedKey)
 End Function
 '@)
-    $owner=$project.VBComponents.Item('modAdmin').CodeModule
-    $start=$owner.ProcStartLine('CreateFirstInventoryEntityForCatalogItemAdmin',0)
-    $count=$owner.ProcCountLines('CreateFirstInventoryEntityForCatalogItemAdmin',0)
+    $componentName='modAdmin';$procedureName='CreateFirstInventoryEntityForCatalogItemAdmin'
+    foreach($component in $project.VBComponents){
+        if($component.Name -ceq 'modAdminInventoryCreate'){$componentName=$component.Name;$procedureName='CompleteCatalogItem';break}
+    }
+    $owner=$project.VBComponents.Item($componentName).CodeModule
+    $start=$owner.ProcStartLine($procedureName,0)
+    $count=$owner.ProcCountLines($procedureName,0)
     $body=$owner.Lines($start,$count)
     foreach($point in @(
         @('(?im)^[\t ]*systemKey = modRoleEventWriter\.CreateSystemKey\(\)[\t ]*\r?$','    TestInventoryCatalogCompletion.RecordKey systemKey'),
