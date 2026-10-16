@@ -1,5 +1,36 @@
 # Slice 4be remaining acceptance checklist
 
+**Delete processor-return RED,2026-10-16 Pacific:** product47b50ef7/test0fbdfb99
+qualifies17326 PASS/3 FAIL over29 actual Delete checks; diagnostic174/testd1ef4360
+retains all names/order and26/3. Both generated same-SKU entities retire exactly
+and unknown columns survive, but authorized continuation fails and post-processor
+sign-out still permits the catalog retirement save without an honest partial notice.
+174's five package/492 tooling/nine source/four harness pins, settings/fixtures and
+normal native closure qualify through21:12:26.6508251Z. Source28d4306e now moves
+exact retirement coordination into Core and guards the later catalog batch;
+focused comparison175 is pending. No build/deploy or comprehensive acceptance.
+
+
+**Add continuation GREEN169 qualified,2026-10-16 Pacific:** source47b50ef7
+passes19/19, retaining RED167's exact names/order. Core plans the owning create's
+catalog/entity fields before queueing and independently verifies exact saved
+receipt/log/catalog/entities before adopting its own result. The authorized Add
+reopens; post-processor sign-out reports saved partial and stops continuation.
+Controllerbbe148228055406bb49e8e5cc081c07c; worker9f83528556b145efa0e9f478c4aa1ba4;
+five packages/491 tooling/nine source/four harness pins/settings/fixtures and
+normal native closure qualify through20:59:40.5041125Z, zero desktop/native errors.
+The incomplete168 comparison identifies a missing-key Dictionary lookup corrected
+by47b50ef7; it is not an additional RED or GREEN. Edit17023/23 and catalog17127/27 now qualify with
+retained names/order and normal native audits21:02:38.6318834Z and
+21:04:50.5011782Z. Static06 qualifies all six reports/three schemas with373 components/6624
+procedures/143367 lines,194 duplicate groups and9/45 dynamic calls. There is no
+oversized growth; three new components max282 lines and59 new procedures max63
+pass the size ratchets versusb936503e. These are unsaved real-handler source overlays,
+not built packages. Delete/worksheet/result-save retry and broader4be-A remain open.
+Config/Auth are unmeasured in169;166's unresolved diagnosis retains its own3d66ac92
+source scope. No build/deployment or new control IDs.
+
+
 Last reviewed: 2026-10-16 UTC. **4be-A remains incomplete.** Architecture v4.11,
 the designated Plan022 and the controls catalog govern; this index records evidence
 and remaining verification, not a new contract or a percentage estimate.

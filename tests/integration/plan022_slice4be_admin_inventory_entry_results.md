@@ -1,5 +1,36 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Delete processor-return RED,2026-10-16 Pacific:** product47b50ef7/test0fbdfb99
+qualifies17326 PASS/3 FAIL over29 actual Delete checks; diagnostic174/testd1ef4360
+retains all names/order and26/3. Both generated same-SKU entities retire exactly
+and unknown columns survive, but authorized continuation fails and post-processor
+sign-out still permits the catalog retirement save without an honest partial notice.
+174's five package/492 tooling/nine source/four harness pins, settings/fixtures and
+normal native closure qualify through21:12:26.6508251Z. Source28d4306e now moves
+exact retirement coordination into Core and guards the later catalog batch;
+focused comparison175 is pending. No build/deploy or comprehensive acceptance.
+
+
+**Add continuation GREEN169 qualified,2026-10-16 Pacific:** source47b50ef7
+passes19/19, retaining RED167's exact names/order. Core plans the owning create's
+catalog/entity fields before queueing and independently verifies exact saved
+receipt/log/catalog/entities before adopting its own result. The authorized Add
+reopens; post-processor sign-out reports saved partial and stops continuation.
+Controllerbbe148228055406bb49e8e5cc081c07c; worker9f83528556b145efa0e9f478c4aa1ba4;
+five packages/491 tooling/nine source/four harness pins/settings/fixtures and
+normal native closure qualify through20:59:40.5041125Z, zero desktop/native errors.
+The incomplete168 comparison identifies a missing-key Dictionary lookup corrected
+by47b50ef7; it is not an additional RED or GREEN. Edit17023/23 and catalog17127/27 now qualify with
+retained names/order and normal native audits21:02:38.6318834Z and
+21:04:50.5011782Z. Static06 qualifies all six reports/three schemas with373 components/6624
+procedures/143367 lines,194 duplicate groups and9/45 dynamic calls. There is no
+oversized growth; three new components max282 lines and59 new procedures max63
+pass the size ratchets versusb936503e. These are unsaved real-handler source overlays,
+not built packages. Delete/worksheet/result-save retry and broader4be-A remain open.
+Config/Auth are unmeasured in169;166's unresolved diagnosis retains its own3d66ac92
+source scope. No build/deployment or new control IDs.
+
+
 **Full comparison166 qualified,2026-10-16 Pacific:** product3d66ac92/testeeec095c
 completes299 PASS/1 FAIL across300 unique checks, retaining135 names/order with no
 harness exception. Only InventoryEntry.SourceAuthAndConfigPreserved fails. All
@@ -1028,3 +1059,81 @@ the diagnosis deliverable without classifying the remaining difference as benign
 Ignored artifacts: worker6ba01fdf595f430f9e11359f71806572's
 inventory-config-diagnosis.jsonl and inventory-entry-observations.jsonl;
 comparison166/qualification.json records normal preserved closure.
+
+### Config diagnosis — Add RED167, source3d66ac92/test9770b233
+
+Controller59b2f023689f4c2d82cebe60a73b26c0 / worker
+0910ffdacbd34942b0592cbf1a88df8f measure exact entity/log/event outputs and
+continuation, but do not measure Config/Auth bytes or semantic changes. Those
+results are explicitly unmeasured for167; no preservation or causality claim is
+made. Full166 is a separate comparison on the same product source with different
+tooling and scope, documented above. Config causality remains unresolved. The
+next Config comparison must retain its own source/test/cohort identities and
+read-only byte/semantic observations; passing the Add gate cannot close it.
+
+### Add comparison168 — incomplete implementation check
+
+Source2e2d4b0e reaches the real Add handler but refuses before queue/processor;
+8 PASS/4 FAIL over12 emitted checks includes a harness exception for missing
+creation output. This is not a completed19-check comparison or a new behavioral
+RED. Controllerc1f2be3f995f4f1dac04dc9ead17788f; worker
+97fe4a8c95574e9793690c9fa68ee17c. Five packages/491 tooling/nine source/four harness
+pins, settings/fixtures and normal native closure pass through20:53:08.9686339Z.
+Source inspection locates a missing-key Scalar lookup that can insert an Empty
+Dictionary entry, making PlanNewRow refuse its own expected key. Correct the
+lookup, then rerun167's original assertions. Config/Auth are unmeasured here.
+
+### Current-source Add regressions —47b50ef7
+
+Edit170 retains161's exact23 check names/order,23/23; controller
+953844c1f92f4c2ca0325c372158d924, workeraf9ef8715cd6449b920b30f787212d3d.
+Five package/491 tooling/nine source/four harness pins and normal settings/fixture/
+native closure qualify through21:02:38.6318834Z, zero Excel events. Catalog171
+retains162's exact27 names/order,27/27; controllere0f17450bdfa4bef8e9f55506ffa3a2b,
+worker570d655697b8476b86b9d5c700898e6c, five package/491 tooling/four harness pins
+and normal preserved closure through21:04:50.5011782Z. Catalog is component/helper
+source with real Core and a SaveReturn seam; it has no runtime source-overlay
+pin report and does not establish operator packaged acceptance. Both reject
+post-save authority loss; catalog also rejects memory-only Saved=True. These are
+separate scopes with shared harness checks; do not sum them as distinct acceptance.
+
+Add-source static05 captures2e2d4b0e before the correction,373 components/6626
+procedures/143369 lines with196 duplicate groups and9/45 dynamic calls. Two new
+reported duplicate bodies were reviewed and consolidated in47b50ef7 rather than
+excepted: the Create/Quantity confirmation wrappers and a trivial Sku getter.
+Static06 qualifies all six reports and three schemas on47b50ef7:373 components,
+6624 procedures,143367 lines,194 duplicate groups and9/45 dynamic calls. No
+oversized growth versusb936503e; three new components max282 lines and59 new
+procedures max63 pass size ratchets. No growth exception.
+No runtime or static report is committed and no source-only GREEN authorizes
+prototype build before the remaining integration/focused gates pass.
+
+### Config diagnosis — Delete RED174, source47b50ef7/testd1ef4360
+
+Controller85118b2e178a40ecbc491839c82aecf5; worker361f934171b341af9ace93272554427c.
+Both Authorized and post-processor AuthorityLost controls preserve Auth bytes.
+Read-only Config extraction preserves file bytes, all table cells and shapes.
+Each control observes three saves and three byte changes during
+modConfig.SaveConfigWorkbookIfWritable. Only docProps/core.xml and xl/workbook.bin
+change, with no unidentified changed part. The40-record stream retains order and
+headers; records158/3073 change and BookView differences identify WindowLeft/Top
+with no unknown BookView change. Other observed property groups are unchanged;
+FullCalculationOnLoad is unavailable and comprehensive semantics/causality remain
+unresolved. These saves precede the injected processor-return sign-out; they do
+not excuse the later unauthorized catalog save proved by the focused assertion.
+
+This is174's same-source diagnostic artifact, separate from166 and140. The source
+EnsureDemoStationInboxes → EnsureStationInbox → CleanExit Config save remains a
+candidate for the observed saves, not a proven comprehensive cause. Keep byte
+preservation failure and inspection guards intact. Next diagnostic should isolate
+that setup/save path while retaining source/cohort identities and read-only
+comparisons. Ignored worker artifacts inventory-config-diagnosis.jsonl and
+delete-authority-observations.jsonl support these statements.
+
+173 uses the same product with test0fbdfb99 but leaves Config/Auth unmeasured; its
+controller272cf59b31c54ef1980dd008bfeb8806 / worker85efb60e7131427ba673d6599143c0cb
+qualifies26/3 through21:10:22.1387656Z.172's8/1 over9 contains a fixture-open
+harness exception before the handler and is not behavioral RED; normal preserved
+closure passes through21:07:06.7963292Z. Preparing extensions in the owning VBA
+project resolves entry in173 without changing product guards or assertions; the
+underlying Excel/COM open failure cause is not established.
