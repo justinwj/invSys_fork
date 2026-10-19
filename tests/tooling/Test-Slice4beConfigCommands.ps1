@@ -157,6 +157,7 @@ param(
     [switch]$AdminInventoryReadOnlyOperatorsOnly,
     [switch]$AdminInventoryHeadlessWorksheetOnly,
     [switch]$AdminInventoryPrimitivePayloadOnly,
+    [switch]$AdminInventoryCreatePhasesOnly,
     [switch]$AdminAggregationPathComparison,
     [switch]$AdminAggregationBoundaryMatrix,
     [ValidateSet('All','Inspection','Write','Ownership')][string]$AdminAggregationBoundaryGroup='All',
@@ -881,7 +882,9 @@ if($AdminInventoryOverlaySourceRootForTest -and (-not $AdminInventorySourceOverl
 if($AdminInventoryTesterBaselineOverlayForTest -and (-not $AdminInventorySourceOverlayForTest -or $AdminInventoryOverlaySourceRootForTest)){throw 'The older Tester baseline requires current Inventory source overlays, without an alternate export.'}
 if($AdminInventoryImportedRowsOnly -and (-not $AdminInventoryWorksheetResultsOnly -or -not $AdminInventorySourceOverlayForTest)){throw 'Imported-row proof requires the isolated source-overlay worksheet gate.'}
 if($AdminInventoryPrimitivePayloadOnly -and (-not $AdminInventoryEntryOnly -or -not $AdminInventorySourceOverlayForTest -or $AdminInventoryHeadlessWorksheetOnly -or $AdminInventoryReadOnlyOperatorsOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Primitive payload controls require their separate source-overlay Inventory gate.'}
+if($AdminInventoryCreatePhasesOnly -and -not $AdminInventoryEntryOnly){throw 'Create phases require the separate Inventory entry gate.'}
 if($AdminInventoryEntryOnly){
+    if($AdminInventoryCreatePhasesOnly -and (-not $AdminInventorySourceOverlayForTest -or $AdminInventoryPrimitivePayloadOnly -or $AdminInventoryHeadlessWorksheetOnly -or $AdminInventoryReadOnlyOperatorsOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Create phases require their separate source-overlay Inventory gate.'}
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-inventory-entry/'+[guid]::NewGuid().ToString('N'))
     Write-Output ('Inventory entry evidence: '+$reportRoot)
@@ -2245,6 +2248,10 @@ End Function
             Install-InventorySourceOverlay
         }
         Install-AdminInventoryEntryProbe
+        if($AdminInventoryCreatePhasesOnly){
+            . (Join-Path $PSScriptRoot 'Slice4beInventoryCreatePhases.ps1')
+            Install-InventoryCreatePhaseProbe
+        }
         if($AdminInventoryPrimitivePayloadOnly){
             . (Join-Path $PSScriptRoot 'Slice4beInventoryPrimitivePayload.ps1')
             Install-InventoryPrimitivePayloadProbe
@@ -2500,7 +2507,10 @@ End Function
     }
     if($AdminAggregationOnly){$step='packaged Aggregation authority and workbook diagnostic'; Test-AdminAggregation $a $b}
     if($AdminInventoryEntryOnly){
-        if($AdminInventoryPrimitivePayloadOnly){
+        if($AdminInventoryCreatePhasesOnly){
+            $step='actual Create handler authority write and save phases'
+            Test-InventoryCreatePhases $a $b
+        }elseif($AdminInventoryPrimitivePayloadOnly){
             $step='existing Admin creation payload wire compatibility'
             Test-InventoryPrimitivePayload
         }elseif($AdminInventoryHeadlessWorksheetOnly){

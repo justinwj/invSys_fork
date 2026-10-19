@@ -5,7 +5,7 @@ param(
     [Parameter(Mandatory=$true)][string]$DesktopMonitorReport,
     [switch]$TesterBaselineOverlayForTest,
     [switch]$WorksheetResultsRegression,
-    [ValidateSet('ImportedRows','WorksheetResults','PrimitivePayload','CatalogCompletion','Headless')]
+    [ValidateSet('ImportedRows','WorksheetResults','PrimitivePayload','CatalogCompletion','Headless','CreatePhases')]
     [string]$InventoryCase='ImportedRows'
 )
 # Source-overlay diagnostic only. Preserve frozen packages, tooling, product
@@ -46,6 +46,7 @@ try{
         'PrimitivePayload' {$workerArgs+='-AdminInventoryPrimitivePayloadOnly'}
         'CatalogCompletion' {$workerArgs+='-AdminInventoryOwnResultsOnly'}
         'Headless' {$workerArgs+='-AdminInventoryHeadlessWorksheetOnly'}
+        'CreatePhases' {$workerArgs+='-AdminInventoryCreatePhasesOnly'}
     }
     if(@($workerArgs|Where-Object {$_ -match '["\r\n]'}).Count){throw 'Unsupported character in worker argument.'}
     $launch=[Diagnostics.ProcessStartInfo]::new((Join-Path $PSHOME 'powershell.exe'))
