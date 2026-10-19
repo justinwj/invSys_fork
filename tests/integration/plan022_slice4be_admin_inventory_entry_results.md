@@ -1501,3 +1501,34 @@ is not RED. Controller89343713a8c249d4b104078447f92953 / worker
 harness pins/settings/fixtures and normal native audit23:13:34.2893059Z pass,
 zero desktop/native failures. Testab86b07f gives that copy loop a consistent text
 setter type;195 retries the unchanged assertions on unchanged product source.
+
+The D8-INV-01 primitive-boundary source check on producte6b2809b runs4 tests:
+1 PASS/3 architectural FAIL, with no source/parser setup error. It resolves the
+actual Core signatures used by AddInventoryItemForWarehouse, its payload builder
+and CompleteCatalogItem. The failures identify Workbook, Collection and Object
+contracts on QueueInventoryCreateEvent, BuildPayloadJsonFromCollection and
+CreateInventoryEntityPayloadItem. CreateSystemKey's String result passes the
+positive control. This supplements actual-handler evidence; it is not runtime or
+packaged RED. Protecting check: tests/architecture/test_inventory_primitive_boundaries.py.
+Replace only the affected legacy calls with declared primitive/serialized Core
+facades under approved item3; preserve creation, authority, fields, headless calls
+and exact saved results. No new wire version, allocation policy or general store.
+
+Imported-row RED195 completed on unchanged producte6b2809b/testab86b07f:
+46 PASS/10 behavioral FAIL over56, with no Harness failure. The authorized
+previously-confirmed ADD control passes. Each of ForgedImported,
+ChangedImportedQuantity, MissingImportedReceipt, ChangedImportedKey and
+ChangedImportedSku fails two assertions: refuse the whole selection before
+canonical mutation and report the unconfirmed receipt honestly. Existing exact
+events and unknown projection columns remain preserved. This proves a selected
+row preflight/receipt gap; it does not establish unauthorized-user dispatch.
+Controller990a5e8bdc4e4c2c88e30c8bf462e370 / worker
+b3daac40bd9b4904a68445c175c20582. Controller closure records settings restored,
+packages/tooling preserved, owned fixture removed and Excel closed; native audit
+2026-10-17T00:06:10.3167396Z records zero Excel events. The stopped orchestration
+monitor records zero error5, lock, mouse-lock and other failures. These closure
+facts and the56-check result were rechecked on2026-10-19. This is an unsaved
+source-overlay action test, not a new XLAM build or full packaged acceptance.
+The same-worker inventory-config-diagnosis.jsonl remains the Config artifact;
+the authorized bootstrap metadata cause remains unresolved. RED195 does not
+close the earlier raw Config-preservation regression or complete4be-A.
