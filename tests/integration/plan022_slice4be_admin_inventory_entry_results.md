@@ -1693,3 +1693,119 @@ records are limited to3073, with headers/order retained. CauseEstablished remain
 false. Same-worker `inventory-config-diagnosis.jsonl` and
 `worksheet-authority-observations.jsonl` preserve this scope separately from the
 imported-row cohort. Config semantics and the earlier raw-byte gate remain open.
+
+## Inventory creation primitive boundaries, 2026-10-19
+
+Approved D8-INV-01 item3 governs this correction; no business policy, event wire
+version, recording control or new authority rule is introduced. Test87ec7fde
+strengthens the existing4-check architecture test to follow qualified Admin
+helper calls. On product5914b4f8 it retains1 PASS/3 architectural FAIL, identifying
+Workbook/Collection/Object crossings in AddInventoryItemForWarehouse, its payload
+builder and CompleteCatalogItem. This source RED supplements operator evidence.
+
+Before implementation, the new payload controls call the existing private Admin
+builder and compare literal expected JSON, covering zero quantity, scalar custom
+values, null/empty values, escaped text, multiple images and non-counted items.
+Baseline product5914b4f8/test87ec7fde completes9/9, including five instrumented
+compiles: controller09ebb6d1c48e4a10bc0e0f54b2d02013 /
+worker3cf927fd596c42d695a78e561195db4e. Preserved normal closure and zero-fault
+delayed audit qualify through23:16:37.203Z. These pure payload controls do not
+measure Config/Auth preservation or independently prove operator acceptance.
+
+Productd0119c82 adds modInventoryCreateWire. Admin supplies scalar fields in
+parallel primitive arrays and JSON strings; the legacy payload factory,
+collection serializer and Workbook-aware queue helper remain typed calls inside
+Core. Local Admin field preparation preserves the serializer's null treatment
+without passing objects inside Variants. Existing session checks, exact generated
+keys, queue identity and provisioned authorization remain at their current owning
+boundaries. Seed and other legacy/diagnostic callers are outside this scoped edit.
+The explicit35-source Tester-baseline overlay includes the new Core module.
+
+Post-change payload controls retain9/9: controllera6da5b3b93f646efb12678255cf0530a /
+workerb4e25ff19f004f7daceb444c5c657f12, preserved normal closure and zero-fault
+delayed audit through23:18:26.555Z. Product matchesd0119c82; test87ec7fde plus its
+new-module overlay was used. The later source-guard wiring update was not part
+of this payload run. Architecture is4/4 GREEN. The7 maintained4ak checks also
+pass after following the new facade through to the same owning factory/queue;
+their IDs and semantic requirements are retained, not replaced with mere facade
+presence. No current XLAM was built, saved or deployed.
+
+Operator Edit/catalog-completion regression on product/testd0119c82 completes
+50/50: controller0de088be66e643c1b4fb83546ee80f63 /
+worker48f21c79e3c246e5aff045dce08e1789. Exact creation/quantity, existing identities,
+unrelated pending events, form continuation and saved-partial outcomes pass.
+Normal closure at23:23:21.021Z restores settings and preserves all5 package,
+499 tooling and427 source pins. Delayed audit at23:23:41.043Z records zero Excel
+events and Excel closed. No process intervention or desktop failure was observed.
+
+Config diagnosis for that50-check cohort: both extractions preserve bytes and
+table shapes/cells; both Auth comparisons preserve bytes. The command phases
+total6 Config saves/6 byte changes, with only workbook record3073 changing and
+record headers/order retained. CauseEstablished remains false. Same-worker
+`inventory-config-diagnosis.jsonl` and
+`catalog-completion-authority-observations.jsonl` retain the redacted scope.
+Do not substitute this cohort for earlier Config regressions.
+
+Static baseline `inventory-primitive-static-after`:378 components,
+6661 procedures,144119 lines; literal/unresolved Application.Run remains9/45,
+duplicate-body candidates194 and27 oversized modules with no growth. modAdmin
+shrinks by one line. The regression cohorts below qualify this scoped correction;
+they do not complete4be-A acceptance.
+
+Provisioned headless regression on product/testd0119c82 qualifies56/56:
+controller7dfd0d18b7f34df48947d9601f8f70e2 /
+worker0882b608947a409ea82968b456a1ef46. Authorized signed-out creation, reader/
+missing-actor refusal, catalog edits and quantity no-ops retain their separate
+provisioned authority. Normal closure at23:26:14.791Z restores settings and
+preserves all pins; delayed audit at23:26:34.813Z records zero Excel events and
+Excel closed. Desktop observation remains clear; no process intervention.
+Config diagnosis for this cohort:8 read-only extractions and8 Auth comparisons
+preserve inputs, with no table-cell/shape changes. Observed command phases total
+3 Config saves/3 byte changes; only workbook record3073 changes, headers/order
+retained, CauseEstablished=false. Same-worker `inventory-config-diagnosis.jsonl`
+and `headless-authority-observations.jsonl` retain the exact redacted scope.
+
+Worksheet saved-result/retry regression on product/test d0119c82 qualifies64/64:
+controller94f4ccf5643a43a6ae8acd4bc39186da /
+workerc05f375c4cf244b88d45989fb5ff0b85. Failed result-save retry retains the exact
+event/entity without duplication; preflight, pending-row and post-save authority
+controls pass. Normal closure at23:35:36.463Z restores settings and preserves all
+pins; delayed audit at23:35:56.483Z records zero Excel events and Excel closed.
+No process intervention or desktop failure. A fresh bounded cursor check before
+the following imported-row gate reaches its target and restores position.
+Config diagnosis for this cohort:6 read-only extractions and6 Auth comparisons
+preserve inputs; cells/shapes remain unchanged. Command phases total12 Config
+saves/12 byte changes, limited to workbook record3073 with headers/order retained.
+CauseEstablished=false. Same-worker `inventory-config-diagnosis.jsonl` and
+`worksheet-authority-observations.jsonl` preserve the cohort qualification.
+
+Config diagnosis research (not a gate closure): Microsoft's [MS-XLSB record
+table](https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/30e2eaae-0b1e-4e8e-a465-e1ce5575868d)
+maps3073 to `brtRevisionPtr`. Its [record definition](https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/fae2cb92-4884-4752-97cb-0c1f31a31e0d)
+identifies Excel runtime metadata, including revision, document, coauthoring and
+last-save fields. This narrows investigation; it does not identify which field
+changed in these cohorts or justify the calling Config write. Preserve the
+existing false CauseEstablished/raw-byte gate until controlled, redacted
+field-level comparison and calling-phase evidence establish the cause. Do not
+write or normalize this Excel-owned record as a repair.
+
+Imported ADD receipt regression on product/test d0119c82 qualifies56/56:
+controller7dc32dd384854829a981a325edca9acc /
+worker9b4ffba7100a434785062feaf3d1f15f. All retained assertion IDs pass, including
+confirmed prior application, forged/missing receipts and changed quantity/key/SKU.
+Normal closure at23:55:17.478Z restores settings and preserves every package,
+tooling and source pin; delayed audit at23:55:37.488Z records zero Excel events
+and Excel closed. COM finalization took approximately534 seconds; no forced stop,
+desktop rebinding or helper restart was used. Desktop observation remained clear.
+Config diagnosis for this cohort:6 read-only extractions and6 Auth comparisons
+preserve inputs; no table-cell/shape changes. Only the confirmed prior-ADD case
+records Config saves (3 calls/3 byte changes, workbook record3073 only); all five
+invalid cases record zero saves and zero changed parts. Headers/order remain
+unchanged and CauseEstablished=false. Same-worker `inventory-config-diagnosis.jsonl`
+and `imported-row-authority-observations.jsonl` retain the redacted evidence.
+
+This completes the focused primitive creation-boundary correction and its current-
+source regressions. Create authority/write phases, EDIT receipt/retry proof,
+Config diagnosis and final built-package/visible/Release1 gates remain open under
+4be-A. The next action is the actual Create handler's phase-fault RED, before
+changing that implementation; no new approval is pending.
