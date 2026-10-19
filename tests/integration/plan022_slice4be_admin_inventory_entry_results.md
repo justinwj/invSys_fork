@@ -1581,3 +1581,115 @@ remain the same-cohort redacted artifacts; CauseEstablished remains false.
 Next diagnose the exact semantic/binary differences and save callers after
 cleanup is resolved. Local registry settings restoration is a separate pending
 lifecycle gate, not covered by these fixture-file comparisons.
+
+## Local receipt fix continuation, 2026-10-19
+
+The preceding cleanup block describes the earlier stop, not the current state.
+Controller74af347e8cbf4338a11603bfcec49392 subsequently finalized at
+21:59:46.773Z: settings restored, all package/tooling/source pins preserved and
+Excel closed. Its delayed native audit at22:00:06.783Z found zero Excel events.
+The worker-final RED is46 PASS/10 FAIL. The recorded termination interventions
+still prevent calling that earlier run normal closure; qualified RED195 remains
+separate. No process was stopped again during this continuation.
+
+Under approved D8-INV-01, signed-in worksheet ADD preflight now independently
+confirms the saved event and exact System_Key before skipping an IMPORTED row,
+then compares submitted values with the owning saved payload. Invalid receipts
+retain their original result/event for reconciliation and refuse the complete
+selection before any new inventory/catalog write. Separate provisioned/headless
+behavior and imported EDIT proof are not closed by this scoped change.
+
+The first fix attempt uses controller1956d2aee6644163a1f2e077940cf31f /
+worker68c47d4d6b824db98d413aaba5cc19ee. All five instrumented compiles pass.
+Its unchanged56 assertions execute51 PASS/5 FAIL: every whole-selection refusal
+now passes; all five honest-refusal-message checks still fail. Successful
+CheckOperatorWorkbook/ConfirmStageSaved calls clear the preflight report during
+the staging save. Preserve that report only after a successful save; actual
+save/authority failures must retain their own report. This is a behavioral
+reporting RED, not GREEN or packaged acceptance.
+
+Shutdown tracing records Quit and FinalRelease returning by22:35:07.257Z,
+then waits inside Collect/WaitForPendingFinalizers until22:43:46.226Z (about519s).
+Controller closure at22:43:48.343Z confirms settings restored, all five package/
+498 tooling/426 source pins preserved and Excel closed without intervention.
+The delayed native audit at22:44:08.361Z finds zero Excel events. Worker-final
+results confirm51/5. Do not infer exit from Quit returning.
+The passive monitor ended at22:36:07.982Z on a report-file sharing conflict;
+it was restarted with bounded I/O retries. Fresh bounded cursor movement reached
+its target and restored the original position. Record the observation gap;
+no continuous mouse-input or complete desktop-coverage claim is made.
+
+### Config diagnosis: first local fix attempt
+
+This is the controller1956d2ae/worker68c47d4d cohort above, using the pinned
+uncommitted two-module product fix on35ebe3e6 and the pinned shutdown-trace/controller
+tooling changes. Its final56 checks are51/5, not the unchanged-product RED195.
+All six Config extractions preserve bytes and table shapes/cells; all six Auth
+comparisons preserve bytes. Every invalid receipt records zero Config saves and
+zero changed ZIP parts. Only ConfirmedPreviousAdd records three Config saves/
+three byte changes: core.xml and workbook.bin; only workbook record3073 changes,
+with headers/order retained. This narrows this cohort's byte difference to the
+previously identified Excel runtime-metadata category; it does not prove every
+field's cause or close the earlier raw-byte assertion. CauseEstablished remains
+false. Same-worker `inventory-config-diagnosis.jsonl` and
+`imported-row-authority-observations.jsonl` retain the redacted details.
+
+### Corrected receipt GREEN: source/tooling5914b4f8
+
+Controllerbbab1209a5f0482dbd471082e822c1cb /
+workerd7a551fe870d4fccbad7b602bb40553b completes56 PASS/0 FAIL with the same
+assertion identities/order as the prior56-check RED and the failed first fix.
+The three-line reporting correction preserves the preflight explanation only
+after SaveInventoryWorksheetWorkbook succeeds. Its own failure report remains
+authoritative on refusal/save failure. Five instrumented compiles pass.
+
+Normal closure at23:03:34.284Z restores settings and preserves5 packages,
+498 tooling files and426 source files. Delayed native audit at23:03:54.307Z
+records zero Excel events and Excel closed, without process intervention.
+Collect/WaitForPendingFinalizers took about517s; retain that observation instead
+of classifying slow cleanup as a lock. This run's live monitor reports no detected
+desktop failure. Fresh post-run bounded cursor movement/restoration also passes
+(`navigation-cursor/039585de043949f9a475c9e9cfb490d6`). Passive monitoring is not
+continuous mouse-input acceptance.
+
+Config diagnosis for this exact source/test/controller/worker cohort: all6
+read-only extraction checks and6 Auth byte comparisons pass. No table cell/shape
+changes; all5 invalid cases have zero Config saves/changed parts. The valid ADD
+records3 saves/3 byte changes, core.xml/workbook.bin, with only record3073 changed
+and record headers/order retained. CauseEstablished remains false; this is not
+closure of the earlier raw-byte regression. The same-worker diagnostic and Auth
+observation files retain the redacted details.
+
+Final static baseline `inventory-imported-static-final`:377 components,
+6658 procedures,144067 lines; literal/unresolved Application.Run remains9/45,
+duplicate-body candidates194,27 oversized modules with zero growth. The7
+maintained4ak source checks pass. No XLAM build/save/deploy or full packaged,
+native-input, recording or Release1 acceptance is claimed. Retained worksheet
+result/retry regression follows on this exact source.
+
+The unchanged primitive-boundary Python test was also rerun on5914b4f8:
+1 PASS/3 architectural FAIL, matching the previously recorded Workbook,
+Collection and Object boundary violations. A checksum-verified portable Python
+3.13.16 in ignored runtime storage enabled that read-only source check; no system
+installation or runtime acceptance claim. This remains separate work under
+approved D8-INV-01 item3.
+
+### Retained worksheet regression: source/tooling5914b4f8
+
+Controller595e28a6a6e9454ca9af8e01fd6f822a /
+worker4c33b03d9b214187bfc96ee4bd389f0d completes64 PASS/0 FAIL, including five
+instrumented compiles. Authorized zero-quantity creation, preflight/processor/
+post-save authority loss, changed pending input, failed result save and fresh
+retry pass through the existing Upload handler. Independent reopening confirms
+the saved result, unknown column and exact event/entity; retry creates no duplicate.
+Normal closure at23:12:25.881Z restores settings and preserves every package,
+tooling and source pin. Delayed audit at23:12:45.896Z records zero Excel events
+and Excel closed. No process intervention or desktop failure was observed.
+
+Config diagnosis for this same cohort:6 read-only extractions and6 Auth byte
+comparisons preserve their inputs; table cells/shapes remain unchanged. The
+observed command phases total12 Config saves/12 byte changes; changed workbook
+records are limited to3073, with headers/order retained. CauseEstablished remains
+false. Same-worker `inventory-config-diagnosis.jsonl` and
+`worksheet-authority-observations.jsonl` preserve this scope separately from the
+imported-row cohort. Config semantics and the earlier raw-byte gate remain open.
