@@ -62,23 +62,37 @@ class InventoryPrimitiveBoundaries(unittest.TestCase):
         }
         if "modroleeventwriter" not in cls.core:
             raise RuntimeError("Required local Core source is unavailable.")
+        cls.admin = {
+            path.stem.lower(): path
+            for path in (ROOT / "src/Admin/Modules").glob("*.bas")
+        }
 
     def assert_primitive_calls(self, relative_path, name):
-        source = procedures(ROOT / relative_path)
-        if name.lower() not in source:
-            raise RuntimeError("Required Inventory entry source is unavailable: " + name)
-        entry = source[name.lower()]
         violations = []
-        for module, procedure in re.findall(r"\b(mod\w+)\.(\w+)\b", entry["body"], re.I):
-            declarations = self.core.get(module.lower())
-            if declarations is None:
-                continue  # Same-project Admin calls are typed local calls.
-            callee = declarations.get(procedure.lower())
-            if callee is None:
-                raise RuntimeError("Required Core declaration is unavailable: " + module + "." + procedure)
-            types = nonprimitive_types(callee["signature"])
-            if types:
-                violations.append(module + "." + procedure + ": " + ", ".join(types))
+        pending = [(ROOT / relative_path, name.lower())]
+        visited = set()
+        while pending:
+            path, entry_name = pending.pop()
+            if (path, entry_name) in visited:
+                continue
+            visited.add((path, entry_name))
+            source = procedures(path)
+            if entry_name not in source:
+                raise RuntimeError("Required Inventory entry source is unavailable: " + entry_name)
+            entry = source[entry_name]
+            for module, procedure in re.findall(r"\b(mod\w+)\.(\w+)\b", entry["body"], re.I):
+                declarations = self.core.get(module.lower())
+                if declarations is None:
+                    local = self.admin.get(module.lower())
+                    if local is not None:
+                        pending.append((local, procedure.lower()))
+                    continue
+                callee = declarations.get(procedure.lower())
+                if callee is None:
+                    raise RuntimeError("Required Core declaration is unavailable: " + module + "." + procedure)
+                types = nonprimitive_types(callee["signature"])
+                if types:
+                    violations.append(module + "." + procedure + ": " + ", ".join(types))
         self.assertEqual([], sorted(set(violations)), name + " crosses object contracts")
 
     def test_add_command_uses_primitive_core_contracts(self):

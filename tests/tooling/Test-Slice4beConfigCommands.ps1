@@ -156,6 +156,7 @@ param(
     [switch]$AdminInventoryImportedRowsOnly,
     [switch]$AdminInventoryReadOnlyOperatorsOnly,
     [switch]$AdminInventoryHeadlessWorksheetOnly,
+    [switch]$AdminInventoryPrimitivePayloadOnly,
     [switch]$AdminAggregationPathComparison,
     [switch]$AdminAggregationBoundaryMatrix,
     [ValidateSet('All','Inspection','Write','Ownership')][string]$AdminAggregationBoundaryGroup='All',
@@ -879,6 +880,7 @@ if($AdminInventoryHeadlessWorksheetOnly -and (-not $AdminInventoryEntryOnly -or 
 if($AdminInventoryOverlaySourceRootForTest -and (-not $AdminInventorySourceOverlayForTest -or -not $AdminInventoryEntryOnly)){throw 'An explicit exported source root requires the isolated Inventory source-overlay gate.'}
 if($AdminInventoryTesterBaselineOverlayForTest -and (-not $AdminInventorySourceOverlayForTest -or $AdminInventoryOverlaySourceRootForTest)){throw 'The older Tester baseline requires current Inventory source overlays, without an alternate export.'}
 if($AdminInventoryImportedRowsOnly -and (-not $AdminInventoryWorksheetResultsOnly -or -not $AdminInventorySourceOverlayForTest)){throw 'Imported-row proof requires the isolated source-overlay worksheet gate.'}
+if($AdminInventoryPrimitivePayloadOnly -and (-not $AdminInventoryEntryOnly -or -not $AdminInventorySourceOverlayForTest -or $AdminInventoryHeadlessWorksheetOnly -or $AdminInventoryReadOnlyOperatorsOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Primitive payload controls require their separate source-overlay Inventory gate.'}
 if($AdminInventoryEntryOnly){
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
     $reportRoot=Join-Path $repo ('reports/runtime/slice4be-admin-inventory-entry/'+[guid]::NewGuid().ToString('N'))
@@ -2243,6 +2245,10 @@ End Function
             Install-InventorySourceOverlay
         }
         Install-AdminInventoryEntryProbe
+        if($AdminInventoryPrimitivePayloadOnly){
+            . (Join-Path $PSScriptRoot 'Slice4beInventoryPrimitivePayload.ps1')
+            Install-InventoryPrimitivePayloadProbe
+        }
         if($AdminInventoryHeadlessWorksheetOnly){
             . (Join-Path $PSScriptRoot 'Slice4beInventoryHeadlessWorksheet.ps1')
             Install-InventoryHeadlessWorksheetProbe
@@ -2494,7 +2500,10 @@ End Function
     }
     if($AdminAggregationOnly){$step='packaged Aggregation authority and workbook diagnostic'; Test-AdminAggregation $a $b}
     if($AdminInventoryEntryOnly){
-        if($AdminInventoryHeadlessWorksheetOnly){
+        if($AdminInventoryPrimitivePayloadOnly){
+            $step='existing Admin creation payload wire compatibility'
+            Test-InventoryPrimitivePayload
+        }elseif($AdminInventoryHeadlessWorksheetOnly){
             $step='explicit provisioned headless worksheet service authorization'
             Test-InventoryHeadlessWorksheet $a $b
         }elseif($AdminInventoryReadOnlyOperatorsOnly){

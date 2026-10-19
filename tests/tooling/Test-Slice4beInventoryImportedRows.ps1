@@ -4,12 +4,18 @@ param(
     [ValidateSet('RED','GREEN')][string]$Phase='RED',
     [Parameter(Mandatory=$true)][string]$DesktopMonitorReport,
     [switch]$TesterBaselineOverlayForTest,
-    [switch]$WorksheetResultsRegression
+    [switch]$WorksheetResultsRegression,
+    [ValidateSet('ImportedRows','WorksheetResults','PrimitivePayload','CatalogCompletion','Headless')]
+    [string]$InventoryCase='ImportedRows'
 )
 # Source-overlay diagnostic only. Preserve frozen packages, tooling, product
 # source and local settings; audit native shutdown independently of worker exit.
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
-if($WorksheetResultsRegression -and $Phase -ne 'GREEN'){throw 'Retained worksheet regression requires the GREEN phase.'}
+if($WorksheetResultsRegression){
+    if($InventoryCase -notin @('ImportedRows','WorksheetResults')){throw 'Conflicting Inventory case selectors.'}
+    $InventoryCase='WorksheetResults'
+}
+if($InventoryCase -in @('WorksheetResults','CatalogCompletion','Headless') -and $Phase -ne 'GREEN'){throw 'Retained Inventory regressions require the GREEN phase.'}
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Inventory gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
 $repo=Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -29,12 +35,18 @@ Write-Output ('Inventory imported controller: '+$root)
 try{
     $workerArgs=@('-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',
         (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1'),'-DeployRoot',$DeployRoot,
-        '-Phase',$Phase,'-AdminInventoryEntryOnly','-AdminInventoryWorksheetResultsOnly',
+        '-Phase',$Phase,'-AdminInventoryEntryOnly',
         '-AdminInventorySourceOverlayForTest',
         '-CompileEvaluationProbesForTest','-WaitForExcelReadyForTest','-ExcelReadyReadLimitForTest','40',
         '-DesktopMonitorReport',$DesktopMonitorReport)
     if($TesterBaselineOverlayForTest){$workerArgs+='-AdminInventoryTesterBaselineOverlayForTest'}
-    if(-not $WorksheetResultsRegression){$workerArgs+='-AdminInventoryImportedRowsOnly'}
+    switch($InventoryCase){
+        'ImportedRows' {$workerArgs+=@('-AdminInventoryWorksheetResultsOnly','-AdminInventoryImportedRowsOnly')}
+        'WorksheetResults' {$workerArgs+='-AdminInventoryWorksheetResultsOnly'}
+        'PrimitivePayload' {$workerArgs+='-AdminInventoryPrimitivePayloadOnly'}
+        'CatalogCompletion' {$workerArgs+='-AdminInventoryOwnResultsOnly'}
+        'Headless' {$workerArgs+='-AdminInventoryHeadlessWorksheetOnly'}
+    }
     if(@($workerArgs|Where-Object {$_ -match '["\r\n]'}).Count){throw 'Unsupported character in worker argument.'}
     $launch=[Diagnostics.ProcessStartInfo]::new((Join-Path $PSHOME 'powershell.exe'))
     $launch.Arguments=($workerArgs|ForEach-Object {'"'+$_+'"'}) -join ' '
@@ -44,7 +56,7 @@ try{
     $errorFile=[IO.FileStream]::new((Join-Path $root 'worker-error.log'),[IO.FileMode]::Create,[IO.FileAccess]::Write,[IO.FileShare]::Read,1,$true)
     try{
         $worker=[Diagnostics.Process]::Start($launch)
-        [pscustomobject]@{ProcessId=$worker.Id;StartUTC=$worker.StartTime.ToUniversalTime().ToString('o');WorksheetResultsRegression=[bool]$WorksheetResultsRegression}|ConvertTo-Json|Set-Content (Join-Path $root 'worker-identity.json')
+        [pscustomobject]@{ProcessId=$worker.Id;StartUTC=$worker.StartTime.ToUniversalTime().ToString('o');InventoryCase=$InventoryCase}|ConvertTo-Json|Set-Content (Join-Path $root 'worker-identity.json')
         $outputCopy=$worker.StandardOutput.BaseStream.CopyToAsync($outputFile,256)
         $errorCopy=$worker.StandardError.BaseStream.CopyToAsync($errorFile,256)
         $worker.WaitForExit();$outputCopy.Wait();$errorCopy.Wait()
