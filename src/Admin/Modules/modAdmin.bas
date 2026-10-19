@@ -734,9 +734,8 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
         If Not modInventoryCommands.BeginCreate(interactiveContext, payloadJson, report) Then Exit Function
     End If
     If Not receiptFound Then
-    If Not modRoleEventWriter.QueueInventoryCreateEvent(warehouseId, stationId, userId, payloadJson, _
-                                                        "Admin add inventory item " & sku, _
-                                                        0, Nothing, eventIdOut, queueError, "") Then
+    If Not modInventoryCreateWire.QueueCreate(warehouseId, stationId, userId, payloadJson, _
+                                             "Admin add inventory item " & sku, eventIdOut, queueError) Then
         If interactiveContext <> "" Then modInventoryCommands.Release interactiveContext
         report = "Inventory item event could not be queued: " & queueError & vbCrLf & _
                  "Use Users & Roles to grant ADMIN_MAINT to '" & userId & "' for " & warehouseId & " / " & stationId & "."
@@ -790,10 +789,9 @@ Private Function BuildInventoryCreatePayloadAdmin(ByVal systemKey As String, ByV
         ByVal itemName As String, ByVal uom As String, ByVal locationVal As String, ByVal qty As Double, _
         ByVal description As String, ByVal vendorName As String, ByVal vendorCode As String, _
         ByVal category As String, ByVal externalCode As String, ByVal imagePath As String, ByVal customFields As Object) As String
-    Dim payloadItems As New Collection, item As Object, customKey As Variant, nonCounted As Boolean
+    Dim item As Object, customKey As Variant, nonCounted As Boolean
     nonCounted = IsNonCountedCustomFieldsAdmin(customFields)
-    Set item = modRoleEventWriter.CreateInventoryEntityPayloadItem( _
-        systemKey, sku, qty, locationVal, "GOOD", "", "Admin add inventory item")
+    Set item = CreateObject("Scripting.Dictionary"): item.CompareMode = vbTextCompare
     item("ITEM_CODE") = sku
     item("ITEM") = itemName
     item("UOM") = uom
@@ -816,8 +814,9 @@ Private Function BuildInventoryCreatePayloadAdmin(ByVal systemKey As String, ByV
             If Trim$(CStr(customKey)) <> "" Then item(Trim$(CStr(customKey))) = customFields(customKey)
         Next customKey
     End If
-    payloadItems.Add item
-    BuildInventoryCreatePayloadAdmin = modRoleEventWriter.BuildPayloadJsonFromCollection(payloadItems)
+    BuildInventoryCreatePayloadAdmin = modInventoryCreateWire.BuildPayload( _
+        systemKey, sku, qty, locationVal, "GOOD", "", "Admin add inventory item", _
+        item.Keys, modAdminInventoryCreate.PrimitiveFieldValues(item))
 End Function
 
 Public Function ValidateWorksheetCreateReceipt(ByVal record As Object, ByVal context As String, _

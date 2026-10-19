@@ -13,6 +13,7 @@ $controls = Get-Content -LiteralPath (Join-Path $docs "0 plan docs\xlam_invSys\i
 $form = Get-Content -LiteralPath (Join-Path $repo "src\Admin\Forms\frmAddInventoryItem.frm") -Raw
 $admin = Get-Content -LiteralPath (Join-Path $repo "src\Admin\Modules\modAdmin.bas") -Raw
 $catalogCompletion = Get-Content -LiteralPath (Join-Path $repo "src\Admin\Modules\modAdminInventoryCreate.bas") -Raw
+$createWire = Get-Content -LiteralPath (Join-Path $repo "src\Core\Modules\modInventoryCreateWire.bas") -Raw
 $apply = Get-Content -LiteralPath (Join-Path $repo "src\InventoryDomain\Modules\modInventoryApply.bas") -Raw
 $queries = Get-Content -LiteralPath (Join-Path $repo "src\InventoryDomain\Modules\modInventoryQueries.bas") -Raw
 $productionRun = Get-Content -LiteralPath (Join-Path $repo "src\Production\Modules\modProductionReusableRun.bas") -Raw
@@ -27,6 +28,13 @@ $setFunction = [regex]::Match(
 $createPayload = [regex]::Match(
     $admin,
     'Private Function BuildInventoryCreatePayloadAdmin(?s:.*?)End Function').Value
+$wirePayload = [regex]::Match($createWire, 'Public Function BuildPayload(?s:.*?)End Function').Value
+$wireQueue = [regex]::Match($createWire, 'Public Function QueueCreate(?s:.*?)End Function').Value
+$owningCreateWire =
+    $wirePayload.Contains('modRoleEventWriter.CreateInventoryEntityPayloadItem(') -and
+    $wirePayload.Contains('modRoleEventWriter.BuildPayloadJsonFromCollection(items)') -and
+    $wireQueue.Contains('modRoleEventWriter.QueueInventoryCreateEvent(warehouse, station,') -and
+    $wireQueue.Contains('user, payload, note, 0, Nothing, eventId, report, "")')
 
 $checks = [ordered]@{}
 $checks["Docs.Slice4akContract"] =
@@ -36,15 +44,18 @@ $checks["Docs.Slice4akContract"] =
 $checks["Admin.AddCreatesExactEntity"] =
     $addFunction.Contains('CreateSystemKey') -and
     $addFunction.Contains('BuildInventoryCreatePayloadAdmin') -and
-    $createPayload.Contains('CreateInventoryEntityPayloadItem') -and
-    $addFunction.Contains('QueueInventoryCreateEvent') -and
+    $createPayload.Contains('modInventoryCreateWire.BuildPayload(') -and
+    $addFunction.Contains('modInventoryCreateWire.QueueCreate(') -and
+    $owningCreateWire -and
     -not $addFunction.Contains('QueueMigrationSeedEvent')
 $checks["Admin.CatalogOnlyExplicitCompletion"] =
     $admin.Contains("InventorySkuHasManagedEntityAdmin") -and
     $setFunction.Contains("CreateFirstInventoryEntityForCatalogItemAdmin") -and
     $admin.Contains('modAdminInventoryCreate.CompleteCatalogItem(') -and
     $catalogCompletion.Contains('modRoleEventWriter.CreateSystemKey()') -and
-    $catalogCompletion.Contains('CreateInventoryEntityPayloadItem') -and
+    $catalogCompletion.Contains('modInventoryCreateWire.BuildPayload(') -and
+    $catalogCompletion.Contains('modInventoryCreateWire.QueueCreate(') -and
+    $owningCreateWire -and
     $catalogCompletion.Contains('modInventoryCommands.ConfirmCreate(context, eventId, report)')
 $checks["Form.LocationAndCategoryDropdowns"] =
     $form.Contains("Private mCmbLocation As MSForms.ComboBox") -and

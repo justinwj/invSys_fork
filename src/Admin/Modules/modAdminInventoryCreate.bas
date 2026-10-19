@@ -8,7 +8,7 @@ Public Function CompleteCatalogItem(ByVal warehouseId As String, ByVal stationId
         ByVal userId As String, ByVal sku As String, ByVal itemName As String, ByVal uom As String, _
         ByVal locationVal As String, ByVal targetQty As Double, ByVal editReason As String, _
         ByRef report As String, Optional ByVal interactiveContext As String = "") As Boolean
-    Dim payloadItems As New Collection, item As Object, role As Variant, inboxPath As String
+    Dim item As Object, role As Variant, inboxPath As String
     Dim payloadJson As String, eventIdOut As String, queueError As String, batchReport As String
     Dim processedCount As Long, applied As Boolean, systemKey As String, noteText As String
     On Error GoTo Failed
@@ -23,20 +23,19 @@ Public Function CompleteCatalogItem(ByVal warehouseId As String, ByVal stationId
     systemKey = modRoleEventWriter.CreateSystemKey()
     noteText = "Admin completed catalog-only inventory item. Reason: " & editReason & _
                "; SubmittedQty=" & CStr(targetQty)
-    Set item = modRoleEventWriter.CreateInventoryEntityPayloadItem( _
-        systemKey, sku, targetQty, locationVal, "GOOD", "", noteText)
+    Set item = CreateObject("Scripting.Dictionary"): item.CompareMode = vbTextCompare
     item("ITEM_CODE") = sku: item("ITEM") = itemName: item("UOM") = uom
     item("LOCATION") = locationVal: item("TOTAL INV") = targetQty
     item("QtyAvailable") = targetQty: item("Reason") = editReason
-    payloadItems.Add item
-    payloadJson = modRoleEventWriter.BuildPayloadJsonFromCollection(payloadItems)
+    payloadJson = modInventoryCreateWire.BuildPayload(systemKey, sku, targetQty, _
+        locationVal, "GOOD", "", noteText, item.Keys, PrimitiveFieldValues(item))
     If payloadJson = "" Or payloadJson = "[]" Then report = "Inventory creation payload was empty.": Exit Function
     If interactiveContext <> "" Then
         If Not modInventoryCommands.BeginCreate(interactiveContext, payloadJson, report) Then Exit Function
     End If
     If Not CommandCurrent(interactiveContext, warehouseId, stationId, userId, report) Then Exit Function
-    If Not modRoleEventWriter.QueueInventoryCreateEvent(warehouseId, stationId, userId, _
-            payloadJson, noteText, 0, Nothing, eventIdOut, queueError, "") Then
+    If Not modInventoryCreateWire.QueueCreate(warehouseId, stationId, userId, _
+            payloadJson, noteText, eventIdOut, queueError) Then
         report = "Inventory creation event could not be queued: " & queueError: GoTo Unconfirmed
     End If
     If Not CommandCurrent(interactiveContext, warehouseId, stationId, userId, report) Then GoTo Unconfirmed
@@ -65,6 +64,25 @@ Unconfirmed:
 Failed:
     report = "Complete catalog-only inventory item failed: " & Err.Description
     GoTo Unconfirmed
+End Function
+
+Public Function PrimitiveFieldValues(ByVal fields As Object) As Variant
+    Dim values As Variant, key As Variant, i As Long
+    If fields.Count = 0 Then PrimitiveFieldValues = Array(): Exit Function
+    ReDim values(0 To fields.Count - 1)
+    For Each key In fields.Keys
+        If IsObject(fields(key)) Then
+            ' Preserve the existing serializer's null representation locally;
+            ' an object must never cross the XLAM boundary inside a Variant.
+            values(i) = Null
+        ElseIf IsArray(fields(key)) Then
+            Err.Raise vbObjectError + 2192, , "Inventory custom fields must be scalar values."
+        Else
+            values(i) = fields(key)
+        End If
+        i = i + 1
+    Next key
+    PrimitiveFieldValues = values
 End Function
 
 Private Function CommandCurrent(ByVal context As String, ByVal warehouse As String, _

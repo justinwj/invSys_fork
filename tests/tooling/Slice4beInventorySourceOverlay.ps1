@@ -8,6 +8,7 @@ function Install-InventorySourceOverlay {
         @('invSys.Core.xlam','Core/ClassModules/cInventoryRetirementPlan.cls',2),
         @('invSys.Core.xlam','Core/Modules/modInventoryRetirementCommands.bas',1),
         @('invSys.Core.xlam','Core/Modules/modInventoryCreateReceipts.bas',1),
+        @('invSys.Core.xlam','Core/Modules/modInventoryCreateWire.bas',1),
         @('invSys.Core.xlam','Core/Modules/modInventoryCommands.bas',1),
         @('invSys.Core.xlam','Core/Modules/modInventoryQuantityCommands.bas',1),
         @('invSys.Core.xlam','Core/Modules/modAggregationFiles.bas',1),
