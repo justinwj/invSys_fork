@@ -3,11 +3,13 @@ param(
     [string]$DeployRoot='deploy/validation-tester-recording-02',
     [ValidateSet('RED','GREEN')][string]$Phase='RED',
     [Parameter(Mandatory=$true)][string]$DesktopMonitorReport,
-    [switch]$TesterBaselineOverlayForTest
+    [switch]$TesterBaselineOverlayForTest,
+    [switch]$WorksheetResultsRegression
 )
 # Source-overlay diagnostic only. Preserve frozen packages, tooling, product
 # source and local settings; audit native shutdown independently of worker exit.
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
+if($WorksheetResultsRegression -and $Phase -ne 'GREEN'){throw 'Retained worksheet regression requires the GREEN phase.'}
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Inventory gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
 $repo=Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -28,10 +30,11 @@ try{
     $workerArgs=@('-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',
         (Join-Path $PSScriptRoot 'Test-Slice4beConfigCommands.ps1'),'-DeployRoot',$DeployRoot,
         '-Phase',$Phase,'-AdminInventoryEntryOnly','-AdminInventoryWorksheetResultsOnly',
-        '-AdminInventoryImportedRowsOnly','-AdminInventorySourceOverlayForTest',
+        '-AdminInventorySourceOverlayForTest',
         '-CompileEvaluationProbesForTest','-WaitForExcelReadyForTest','-ExcelReadyReadLimitForTest','40',
         '-DesktopMonitorReport',$DesktopMonitorReport)
     if($TesterBaselineOverlayForTest){$workerArgs+='-AdminInventoryTesterBaselineOverlayForTest'}
+    if(-not $WorksheetResultsRegression){$workerArgs+='-AdminInventoryImportedRowsOnly'}
     if(@($workerArgs|Where-Object {$_ -match '["\r\n]'}).Count){throw 'Unsupported character in worker argument.'}
     $launch=[Diagnostics.ProcessStartInfo]::new((Join-Path $PSHOME 'powershell.exe'))
     $launch.Arguments=($workerArgs|ForEach-Object {'"'+$_+'"'}) -join ' '
@@ -41,6 +44,7 @@ try{
     $errorFile=[IO.FileStream]::new((Join-Path $root 'worker-error.log'),[IO.FileMode]::Create,[IO.FileAccess]::Write,[IO.FileShare]::Read,1,$true)
     try{
         $worker=[Diagnostics.Process]::Start($launch)
+        [pscustomobject]@{ProcessId=$worker.Id;StartUTC=$worker.StartTime.ToUniversalTime().ToString('o');WorksheetResultsRegression=[bool]$WorksheetResultsRegression}|ConvertTo-Json|Set-Content (Join-Path $root 'worker-identity.json')
         $outputCopy=$worker.StandardOutput.BaseStream.CopyToAsync($outputFile,256)
         $errorCopy=$worker.StandardError.BaseStream.CopyToAsync($errorFile,256)
         $worker.WaitForExit();$outputCopy.Wait();$errorCopy.Wait()
@@ -63,5 +67,6 @@ if(@($queryErrors|Where-Object FullyQualifiedErrorId -notlike 'NoMatchingEventsF
 $closed=@(Get-Process EXCEL -ErrorAction SilentlyContinue).Count -eq 0
 [pscustomobject]@{StartUTC=$start.ToString('o');AuditUTC=$audit.ToString('o');ExcelEventCount=$events.Count;ExcelClosed=$closed}|ConvertTo-Json|Set-Content (Join-Path $root 'native-audit.json')
 if($events.Count -or -not $closed){throw 'Inventory native closure did not pass.'}
+if((Test-Path (Join-Path $root 'forced-test-excel-stop.json')) -or (Test-Path (Join-Path $root 'native-owned-stop.json'))){throw 'Process intervention was recorded; normal closure is not qualified.'}
 Get-Content (Join-Path $root 'worker.log') -Tail 14
 exit $code

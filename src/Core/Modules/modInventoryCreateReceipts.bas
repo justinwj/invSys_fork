@@ -7,17 +7,42 @@ Public Function NewEventId(ByVal context As String, ByRef report As String) As S
 End Function
 
 Public Function EventIdFromResult(ByVal text As String) As String
+    EventIdFromResult = ResultField(text, "Event:")
+End Function
+
+Private Function ResultField(ByVal text As String, ByVal prefix As String) As String
     Dim line As Variant, value As String, found As String
     text = Replace(text, vbCr, "")
     For Each line In Split(text, vbLf)
-        If StrComp(Left$(Trim$(CStr(line)), 6), "Event:", vbTextCompare) = 0 Then
-            value = Trim$(Mid$(Trim$(CStr(line)), 7))
+        If StrComp(Left$(Trim$(CStr(line)), Len(prefix)), prefix, vbTextCompare) = 0 Then
+            value = Trim$(Mid$(Trim$(CStr(line)), Len(prefix) + 1))
             If value = "" Or InStr(value, " ") > 0 Or Len(value) > 200 Then Exit Function
             If found <> "" And found <> value Then Exit Function
             found = value
         End If
     Next line
-    EventIdFromResult = found
+    ResultField = found
+End Function
+
+' A worksheet success label is not application proof. Confirm the exact saved
+' event and immutable entity identity through the captured live source.
+Public Function ConfirmAppliedResult(ByVal context As String, ByVal result As String, _
+        ByRef report As String) As Boolean
+    Dim values As Variant, eventId As String, expectedKey As String, systemKey As String
+    Dim found As Boolean, applied As Boolean, payload As String
+    On Error GoTo Unconfirmed
+    eventId = EventIdFromResult(result): expectedKey = ResultField(result, "System_Key:")
+    If eventId = "" Or expectedKey = "" Then GoTo Unconfirmed
+    values = modInventoryCommands.SourceValues(context)
+    If Not IsArray(values) Then GoTo Unconfirmed
+    If Not Resolve(context, CStr(values(0)), CStr(values(1)), CStr(values(2)), _
+            eventId, found, systemKey, payload, applied, report) Then GoTo Unconfirmed
+    If Not found Or Not applied Then GoTo Unconfirmed
+    If StrComp(systemKey, expectedKey, vbBinaryCompare) <> 0 Then GoTo Unconfirmed
+    ConfirmAppliedResult = True: report = ""
+    Exit Function
+Unconfirmed:
+    report = "The imported ADD receipt is unconfirmed. No new event was queued."
 End Function
 
 Public Function Resolve(ByVal context As String, ByVal warehouse As String, ByVal station As String, _

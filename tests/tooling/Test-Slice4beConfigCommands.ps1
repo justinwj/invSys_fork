@@ -934,6 +934,12 @@ function Complete-ResultEvidence([string]$ReportPath,[scriptblock]$Cleanup) {
     }
     finally { $results | ConvertTo-Json | Set-Content -Encoding UTF8 -LiteralPath $ReportPath }
 }
+function Write-InventoryShutdownTrace([string]$Stage) {
+    if($AdminInventorySourceOverlayForTest){
+        [pscustomobject]@{UTC=[DateTimeOffset]::UtcNow.ToString('o');Stage=$Stage}|
+            ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'inventory-shutdown.jsonl')
+    }
+}
 function Test-LoadedPackage([string]$Name) {
     try { return ($excel.Workbooks.Item($Name).Name -ieq $Name) }
     catch { return $false }
@@ -2874,20 +2880,34 @@ finally {
         }
         try {
             if(Test-LoadedPackage 'invSys.Admin.xlam') {
+                Write-InventoryShutdownTrace 'BeforeCloseSettings'
                 [void](Run 'invSys.Admin.xlam' 'TestD5Commands.CloseSettings')
+                Write-InventoryShutdownTrace 'AfterCloseSettings'
             }
         } catch {}
         $hasSettingsHostEvidence=$CheckSettingsDiagnostics -and ($null -ne (Get-Command Write-SettingsHostEvidence -ErrorAction SilentlyContinue))
         try {
-            foreach($book in @($excel.Workbooks)){ $book.Close($false) }
+            $closeIndex=0
+            foreach($book in @($excel.Workbooks)){
+                $closeIndex++
+                Write-InventoryShutdownTrace ('BeforeWorkbookClose'+$closeIndex)
+                $book.Close($false)
+                Write-InventoryShutdownTrace ('AfterWorkbookClose'+$closeIndex)
+            }
             if($hasSettingsHostEvidence){Write-SettingsHostEvidence 'BeforeQuit'}
+            Write-InventoryShutdownTrace 'BeforeQuit'
             $excel.Quit()
+            Write-InventoryShutdownTrace 'AfterQuit'
             if($hasSettingsHostEvidence){Write-SettingsHostEvidence 'QuitReturned' $false}
         } catch {}
+        Write-InventoryShutdownTrace 'BeforeFinalRelease'
         [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($excel)
+        Write-InventoryShutdownTrace 'AfterFinalRelease'
         if($hasSettingsHostEvidence){Write-SettingsHostEvidence 'FinalReleaseReturned' $false}
     }
+    Write-InventoryShutdownTrace 'BeforeGarbageCollection'
     [GC]::Collect(); [GC]::WaitForPendingFinalizers()
+    Write-InventoryShutdownTrace 'AfterGarbageCollection'
     if(Test-Path -LiteralPath $settingsRoot) {
         foreach($key in @(Get-Item -LiteralPath $settingsRoot) + @(Get-ChildItem -LiteralPath $settingsRoot -Recurse)) {
             $path='Registry::'+$key.Name

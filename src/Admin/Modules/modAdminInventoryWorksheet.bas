@@ -96,6 +96,7 @@ Public Function UploadSelectedInventoryWorksheetTable(ByVal wb As Workbook, _
     Dim records As Collection
     Dim record As Object
     Dim applyReport As String
+    Dim preflightReport As String
     Dim succeeded As Long
     Dim failed As Long
     Dim remaining As Long
@@ -125,7 +126,9 @@ Public Function UploadSelectedInventoryWorksheetTable(ByVal wb As Workbook, _
         If Not FindSelectedInventoryWorksheetTable(wb, lo, report) Then Exit Function
     End If
     If Not PreflightInventoryWorksheetTable(lo, warehouseId, records, report, interactiveContext) Then
+        preflightReport = report
         If Not SaveInventoryWorksheetWorkbook(wb, interactiveContext, report) Then GoTo Partial
+        report = preflightReport
         mLastAutomationReport = report
         Exit Function
     End If
@@ -242,6 +245,15 @@ Public Function PreflightInventoryWorksheetTable(ByVal lo As ListObject, _
                     If errors <> "" Then errors = errors & vbCrLf
                     errors = errors & "Row " & CStr(rowIndex) & ": " & rowError
                 End If
+            ElseIf interactiveContext <> "" And _
+                    UCase$(InventoryWorksheetText(lo, rowIndex, HDR_ACTION)) = "ADD" Then
+                rowError = ""
+                If Not ConfirmImportedCreateRow(lo, rowIndex, warehouseId, interactiveContext, rowError) Then
+                    ' Retain the original receipt for exact reconciliation; never
+                    ' turn an unconfirmed prior ADD into a new pending create.
+                    If errors <> "" Then errors = errors & vbCrLf
+                    errors = errors & "Row " & CStr(rowIndex) & ": " & rowError
+                End If
             End If
         End If
     Next rowIndex
@@ -265,6 +277,22 @@ Public Function PreflightInventoryWorksheetTable(ByVal lo As ListObject, _
 
 Failed:
     report = "Inventory worksheet preflight failed: " & Err.Description
+End Function
+
+Private Function ConfirmImportedCreateRow(ByVal lo As ListObject, ByVal rowIndex As Long, _
+        ByVal warehouseId As String, ByVal context As String, ByRef report As String) As Boolean
+    Dim codes As Object, record As Object, ordinal As Long, rowError As String
+    If Not modInventoryCreateReceipts.ConfirmAppliedResult(context, _
+            InventoryWorksheetText(lo, rowIndex, HDR_RESULT), report) Then Exit Function
+    Set codes = CreateObject("Scripting.Dictionary"): codes.CompareMode = vbTextCompare
+    ' Validate submitted values against the saved payload without consuming a
+    ' pending-row ordinal or treating this already-applied row as new work.
+    If Not ValidateInventoryWorksheetRow(lo, rowIndex, warehouseId, 1, ordinal, _
+            codes, record, rowError, context) Then
+        report = "The imported ADD receipt does not confirm this row. " & rowError
+        Exit Function
+    End If
+    ConfirmImportedCreateRow = True
 End Function
 
 Public Function FindSelectedInventoryWorksheetTable(ByVal wb As Workbook, _
