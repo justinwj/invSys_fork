@@ -1532,3 +1532,52 @@ source-overlay action test, not a new XLAM build or full packaged acceptance.
 The same-worker inventory-config-diagnosis.jsonl remains the Config artifact;
 the authorized bootstrap metadata cause remains unresolved. RED195 does not
 close the earlier raw Config-preservation regression or complete4be-A.
+
+## Local continuation 2026-10-19: assertions reproduced; native exit blocked
+
+Product source remains e6b2809b (identical src tree at41ce313a/a87aa09b).
+Test commit a87aa09b adds an explicit34-module current-source overlay for the
+locally available frozen `validation-tester-recording-02` baseline546b029b and
+an independent controller. The thirteen-module overlay remains the default;
+the older-baseline option is explicit and excludes alternate source exports.
+No XLAM was built or saved. The existing56 imported-row assertions are unchanged.
+
+Controller `74af347e8cbf4338a11603bfcec49392`; worker evidence
+`8890f62a4eb74c99b7a16bee96049de8`. Five instrumented compiles and the positive
+prior-ADD control pass. The assertion log contains46 PASS/10 FAIL, reproducing
+RED195's five pairs of refusal/reporting failures. This is **not a qualified
+normal-closure run**: the worker has not finalized its result/cleanup, and the
+controller has not restored settings or completed its delayed native audit.
+`assertion-log-red.json` is an explicitly derived log record, not worker-final
+evidence. The prior qualified RED195 is retained separately.
+
+At21:51:51.726Z (14:51:51 Pacific), a direct termination attempt against the
+verified test-owned Excel returned FALSE/error5; WaitForSingleObject remained258
+(unsignaled). Earlier native inspection read exit code0 while the handle was
+unsignaled; .NET HasExited=True alone did not prove completed exit. No visible
+owned dialog was found. The process still had one running thread. The cause is
+unresolved; workbook/package close order is only a hypothesis. Do not claim a
+screen lock: the separate desktop monitor recorded zero error5/lock samples,
+and bounded cursor movement succeeded before the run. No post-run movement test
+was performed after the stop condition. No further tests or product edits ran.
+
+The ordinary-stop and native-stop artifacts explicitly leave normal closure
+unqualified. Independent hashes after the assertions preserve5 packages,
+498 tooling files and426 product-source files. All498 tooling PowerShell files
+parse; diff whitespace checks pass. Static baseline was regenerated under
+`reports/runtime/inventory-imported-static-before`:377 components,6655 procedures,
+144014 lines,9 literal/45 unresolved Application.Run calls,194 duplicate-body
+candidates,27 oversized-module ratchets. Product source did not change.
+
+### Config diagnosis — this local cohort
+
+Same product/test/controller/worker identifiers as above. All six inspections
+preserve Config bytes during extraction; table shapes and cells are unchanged,
+and all six Auth byte comparisons pass. The observed command save phase totals
+18 Config saves/18 byte changes. Changed parts are workbook/metadata categories;
+this does not establish harmlessness or close the earlier Config regression.
+`inventory-config-diagnosis.jsonl` and `imported-row-authority-observations.jsonl`
+remain the same-cohort redacted artifacts; CauseEstablished remains false.
+Next diagnose the exact semantic/binary differences and save callers after
+cleanup is resolved. Local registry settings restoration is a separate pending
+lifecycle gate, not covered by these fixture-file comparisons.
