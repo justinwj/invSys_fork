@@ -1,5 +1,10 @@
 # Slice 4be remaining acceptance checklist
 
+**2026-10-19 source integration:** reviewed code PR3/docs PR2 are merged into main.
+See the [merge review](plan022_slice4be_pr_merge_review.md) for exact heads, fresh
+source checks and limitations. Imported-row RED195 remains46 PASS/10 FAIL; Upload
+receipt preflight is next. This merge is not a build, deployment or4be-A acceptance.
+
 **Modal catalog-only completion GREEN193 qualified:** sourcee6b2809b retains
 all50 RED192 assertion IDs/order and passes50/50 (originaltesta5d7f222; owning
 boundary probe follows the internal module extraction ine6b2809b). The new entity
