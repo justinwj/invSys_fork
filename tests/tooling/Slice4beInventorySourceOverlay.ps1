@@ -16,6 +16,34 @@ function Install-InventorySourceOverlay {
         @('invSys.Admin.xlam','Admin/Modules/modAdminInventoryWorksheet.bas',1),
         @('invSys.Admin.xlam','Admin/Forms/frmAddInventoryItem.frm',3)
     )
+    if($AdminInventoryTesterBaselineOverlayForTest){
+        # Explicit dependencies changed since the frozen tester-recording-02
+        # baseline (546b029b). Existing form designers are retained; only code
+        # modules are replaced, without saving or qualifying these packages.
+        $sources+=@(
+            @('invSys.Admin.xlam','Admin/Forms/frmAggregationSources.frm',3),
+            @('invSys.Admin.xlam','Admin/Modules/modAdminConsole.bas',1),
+            @('invSys.Admin.xlam','Admin/Modules/modInventoryUiText.bas',1),
+            @('invSys.Core.xlam','Core/ClassModules/cCapturedFormStore.cls',2),
+            @('invSys.Core.xlam','Core/Modules/modActivityCatalog.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modAggregationActivityCodes.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modAggregationAuthority.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modAggregationCommands.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modAggregationOutput.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modAggregationRetry.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modAggregationSources.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modEvaluationMatches.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modExpectationDraft.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modHqAggregator.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modInventoryCommandReceipts.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modProcessor.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modProcessorPersistence.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modRoleEventJson.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modRoleEventWriter.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modTesterAuthority.bas',1),
+            @('invSys.Core.xlam','Core/Modules/modTrainingWire.bas',1)
+        )
+    }
     $sourceRoot=Join-Path $repo 'src';$export=$null
     if($AdminInventoryOverlaySourceRootForTest){
         $sourceRoot=(Resolve-Path -LiteralPath $AdminInventoryOverlaySourceRootForTest).Path
@@ -65,6 +93,6 @@ Public Function Facts(ByVal host As String, ByVal warehouse As String) As String
 End Function
 '@)
     [pscustomobject]@{SourceRoot=$sourceRoot;ExportedSourceCommit=if($null -ne $export){$export.SourceCommit}else{''};SourceOverlay=$true;ActualOperatorHandlers=$true;PackagedAction=$false;
-        XlamBuilt=$false;XlamSaved=$false;Sources=$pins}|ConvertTo-Json -Depth 4|
+        XlamBuilt=$false;XlamSaved=$false;TesterBaselineDependencies=[bool]$AdminInventoryTesterBaselineOverlayForTest;Sources=$pins}|ConvertTo-Json -Depth 4|
         Set-Content (Join-Path $reportRoot 'inventory-source-overlay-scope.json')
 }

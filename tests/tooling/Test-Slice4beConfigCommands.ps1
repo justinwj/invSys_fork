@@ -147,6 +147,7 @@ param(
     [switch]$AdminInventoryCatalogOnly,
     [switch]$AdminInventoryCatalogRealOnly,
     [switch]$AdminInventorySourceOverlayForTest,
+    [switch]$AdminInventoryTesterBaselineOverlayForTest,
     [string]$AdminInventoryOverlaySourceRootForTest='',
     [switch]$AdminInventoryOwnResultsOnly,
     [switch]$AdminInventoryAddResultsOnly,
@@ -876,6 +877,7 @@ if($AdminInventoryWorksheetResultsOnly -and (-not $AdminInventoryEntryOnly -or $
 if($AdminInventoryReadOnlyOperatorsOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Readonly operator checks require their separate Inventory entry gate.'}
 if($AdminInventoryHeadlessWorksheetOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryReadOnlyOperatorsOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Provisioned headless checks require their separate Inventory entry gate.'}
 if($AdminInventoryOverlaySourceRootForTest -and (-not $AdminInventorySourceOverlayForTest -or -not $AdminInventoryEntryOnly)){throw 'An explicit exported source root requires the isolated Inventory source-overlay gate.'}
+if($AdminInventoryTesterBaselineOverlayForTest -and (-not $AdminInventorySourceOverlayForTest -or $AdminInventoryOverlaySourceRootForTest)){throw 'The older Tester baseline requires current Inventory source overlays, without an alternate export.'}
 if($AdminInventoryImportedRowsOnly -and (-not $AdminInventoryWorksheetResultsOnly -or -not $AdminInventorySourceOverlayForTest)){throw 'Imported-row proof requires the isolated source-overlay worksheet gate.'}
 if($AdminInventoryEntryOnly){
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
