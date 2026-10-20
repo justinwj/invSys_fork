@@ -1942,3 +1942,32 @@ Shipping and Production inbox-setup saves and compare the outer snapshots with
 the first/last save hashes and continuity between saves, returning only counts
 and flags. Existing save facts retain their three-field envelope. Runtime proof
 is pending; no Config normalization, XLAM build or acceptance waiver is introduced.
+
+Config diagnosis on unchanged product fc2fba93, test9c9548a2, now qualifies18/18.
+Controller8f224d142fe44812996fc0a9649a597b /
+workerb6e5eb446209484fab9e134488a96388 closes normally at01:42:27.891Z,
+with zero Excel faults in the delayed audit at01:42:47.905Z on2026-10-20 UTC.
+Settings, five frozen packages, source and tooling are preserved. Five instrumented
+compiles pass; no build, deployment or native-input acceptance is claimed.
+
+The actual Upload handler confirms the prior ADD and applies only the pending row.
+Its three Config saves are traced to Receiving, Shipping and Production inbox
+setup. Outer snapshot hashes match the first/last save boundaries, with continuity
+between saves. Changed parts are only `xl/workbook.bin` record3073 (`documentId`)
+and `docProps/core.xml` (`modified`); all other compared record bytes and retained
+XML are unchanged. Config table cells/shapes and Auth bytes are preserved; the
+extraction itself changes no input bytes. This establishes the observed cause as
+inbox-setup save metadata for this cohort, not blanket semantic or authorization
+proof. Earlier cohorts retain their own unresolved artifacts; this separate
+comparison must not be substituted for their source-bound evidence.
+
+The first runtime diagnostic on test83391eee reports14 PASS /1 FAIL because
+PowerShell's uppercase hashes were compared case-sensitively with Core's lowercase
+hashes. Controllered2699ce74ef44b6a96b4f527c78fb3a /
+workere04e0a4c138b40c4b6ea1fa0974f07f9 preserves normal closure at01:37:13.056Z
+and zero-fault audit at01:37:33.075Z. This is a diagnostic failure, not product RED.
+Test9c9548a2 normalizes hexadecimal casing and exercises the installed VBA probe
+with matching upper/lowercase, mismatched and empty hashes. All43 synthetic
+redaction/classification checks remain GREEN. Fresh cursor proof
+3c3df9645b9e451fbb82429992033060 reaches the target and restores the cursor;
+the observer records no desktop lock. EDIT receipt/retry and final gates remain.
