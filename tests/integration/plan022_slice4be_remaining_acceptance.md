@@ -19,6 +19,12 @@ recording coverage and the [live/full-chain fixture correction](plan022_slice4be
 remain required. Older cohort-bound RED Config diagnosis gaps remain explicitly
 unresolved; new-source GREEN does not substitute for their diagnosis.
 
+At 2026-10-20 23:22Z, candidate smoke is still waiting for its first native Excel
+exit after more than 43 minutes. No intervention or desktop stop condition was
+observed. Its controller is still active; final results, settings/pin restoration
+and delayed native audit are not yet available. Resolve that cleanup before any
+new Excel test; the Inventory evidence above names the exact runtime directories.
+
 **2026-10-19 source integration:** reviewed code PR3/docs PR2 are merged into main.
 See the [merge review](plan022_slice4be_pr_merge_review.md) for exact heads, fresh
 source checks and limitations. Imported-row RED195 remains46 PASS/10 FAIL; Upload
