@@ -247,7 +247,7 @@ Private Function PendingWriteAvailable(ByVal context As String, ByRef report As 
     PendingWriteAvailable = True
     Exit Function
 Refused:
-    report = "The pending EDIT source could not be confirmed. No new event was queued."
+    report = "The pending EDIT source could not be confirmed."
 End Function
 
 Public Sub ReleaseContext(ByVal context As String)
