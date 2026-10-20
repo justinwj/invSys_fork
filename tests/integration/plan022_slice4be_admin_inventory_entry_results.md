@@ -1971,3 +1971,35 @@ with matching upper/lowercase, mismatched and empty hashes. All43 synthetic
 redaction/classification checks remain GREEN. Fresh cursor proof
 3c3df9645b9e451fbb82429992033060 reaches the target and restores the cursor;
 the observer records no desktop lock. EDIT receipt/retry and final gates remain.
+
+## Worksheet EDIT receipt diagnostic, 2026-10-19
+
+Unchanged product fc2fba93/test13f1ea0c completes32 assertions:28 PASS /4 FAIL.
+Controllerb877e332fa96460396a06cd5476b48cb /
+workerd703db69b36c45229baded93d1d9e425 exercises the actual Upload handler.
+Five instrumented compiles pass. A genuine prior quantity EDIT is independently
+saved; the subsequent Upload preserves its receipt and applies only the pending
+ADD. This control proves the saved adjustment, not a separate durable catalog
+command receipt. ForgedImportedEdit and AddReceiptRelabeledEdit each fail
+whole-selection refusal and honest reporting: the pending ADD is applied despite
+the unconfirmed imported EDIT. Original references/custom columns are retained.
+
+Config diagnosis for this exact cohort: all3 extractions are read-only, Config
+table cells/shapes and Auth bytes are preserved. Each case observes3 inbox-setup
+saves; the classified revision-pointer/core-property changes are bounded by those
+save windows with no other changed parts. CauseEstablished is true for all3.
+The same-worker `inventory-config-diagnosis.jsonl` and
+`imported-row-authority-observations.jsonl` retain the redacted proof.
+
+Normal cleanup and delayed native audit are pending at this checkpoint; assertions
+alone do not qualify RED. No product implementation, build or deployment changed.
+Fresh cursor proof3325bbbdc2544e1f9119cac7775ac1e8 reaches the target and restores
+the original position; the desktop observer has recorded no lock.
+
+Root cause: PreflightInventoryWorksheetTable independently verifies imported ADD,
+but skips every imported EDIT. Existing quantity events cannot prove catalog-only
+or catalog-field application, and current values/human history lack an exact
+durable command identity. Architecture D8-INV-EDIT-01 therefore proposes an explicit,
+scoped Domain-owned worksheet EDIT receipt store under D8-INV-01 items5–6. It is
+not implemented or approved. Existing D8-INV-01 does not implicitly authorize a
+new general receipt store; obtain approval before that architectural extension.
