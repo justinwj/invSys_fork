@@ -1,5 +1,31 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Retained Inventory regressions qualified, 2026-10-20:** draft `8af28d99` /
+product `a9faab9c` now retains worksheet 64/64, Catalog 50/50, headless 56/56 and
+imported ADD 56/56. Every cohort retains its earlier GREEN assertion IDs/order.
+Imported ADD confirms a genuine prior receipt while applying only the pending
+row; all five invalid IMPORTED cases refuse the whole selection before canonical
+mutation and report unconfirmed receipts honestly. Custom columns and original
+event references remain intact. No product change was required.
+
+Imported controller `d6c0fce37f4c4b1ab0bce06e52a1030a`, worker
+`8d4945fec48c4f99abbee5546d7a62cd`, use the standard prefixes below in the draft.
+Five instrumented compiles pass. Normal closure at 22:29:30.772Z restores settings,
+preserves all pins and confirms Excel closed; audit at 22:29:50.778Z records zero
+native events. No intervention occurred. Garbage collection took about 30 minutes;
+its cause remains unresolved. Fresh cursor proof passed and passive monitoring
+stayed clear, then stopped normally. Six Config/Auth comparisons preserve table
+contents/shapes, Auth bytes and read-only extraction; five Config comparisons
+are byte-identical and one metadata change is traced to three inbox-setup saves.
+
+Refreshed static evidence at `reports/runtime/inventory-receipts-final-static`
+retains 385 components, 6711 procedures, 145339 lines, literal Run 9, unresolved
+dynamic calls 45, duplicate groups 194 and 27 oversized-module ratchets. Baseline
+metrics and ratchets match `edit-ownership-final-static`; all three JSON contracts
+pass. The five retained source guards total 36 passing checks after the two
+test-only ownership corrections below. Final built-package, fixture-conformant
+live/full-chain, recording/guide/B0 and visible 4be-A acceptance remain open.
+
 **Source-guard maintenance, 2026-10-20:** worksheet 4ai passes 8/8 and modal
 visibility 4ak passes 7/7 on draft `8af28d99`. The 4am zero-quantity source guard
 reports 7/1 on both unchanged main and draft because it expects payload assembly

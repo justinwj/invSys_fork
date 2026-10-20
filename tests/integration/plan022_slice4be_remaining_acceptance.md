@@ -8,8 +8,10 @@ normally with zero native events. See the [Inventory evidence](plan022_slice4be_
 for exact source/test boundaries and retained REDs. No package promotion or
 4be-A acceptance is implied; the dated checkpoints below are historical.
 
-Current continuation: retained Inventory worksheet/Catalog/headless and relevant
-accepted regressions, then current five-package build/compile/static/layout and
+Retained Inventory worksheet 64/64, Catalog 50/50, headless 56/56 and imported ADD
+56/56 now qualify on product `a9faab9c`, with exact prior IDs/order, normal closure
+and zero native events. The refreshed static metrics/ratchets are unchanged.
+Current continuation: current five-package build/compile/layout and
 recording/guide/Receiving B0/live-role/full-chain/visible acceptance. Inventory
 recording coverage and the [live/full-chain fixture correction](plan022_slice4be_admin_remaining_coverage.md)
 remain required. Older cohort-bound RED Config diagnosis gaps remain explicitly
