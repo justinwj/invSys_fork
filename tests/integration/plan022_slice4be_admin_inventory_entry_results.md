@@ -1,5 +1,24 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**D8-INV-EDIT-01 phase RED qualified,2026-10-19 Pacific:** unchanged product
+fc2fba93/testf2d26e8f completes41 PASS/12 FAIL across53 checks (including six
+harness checks). Actual Upload covers catalog-only, unchanged quantity, changed
+quantity and queue failure with reopened/fresh-session retry. Saved catalog fields,
+reason/custom values and intended quantity effects pass. Missing reciprocal command
+receipts/planned IDs fail; queue-failure retry repeats catalog history. No unintended
+quantity event was observed: the two `NoInventedQuantityEvent` failures require a
+saved explicit no-event receipt, which is missing. Queue-boundary copies preserve
+source bytes. This proves joint durability is absent, not a save-count invariant.
+
+Controller `reports/runtime/inventory-imported-controller/70b4cbfa336d48a4a75741db429c88d7`;
+worker `reports/runtime/slice4be-admin-inventory-entry/f469ebd2536a4fa3b52a4f99e852fbe0`.
+Normal closure2026-10-20T03:33:47.104Z confirms settings restoration and all frozen
+package/tooling/source pins; delayed audit03:34:07.125Z confirms Excel closed and
+zero Excel faults. All five instrumented compiles pass; no desktop error was detected.
+Garbage collection took17m02s without intervention. This is a source-overlay RED,
+not a built-package/native-input acceptance. Remaining save/authority, reciprocal
+input/identity, event-separation and privacy tests precede implementation/GREEN.
+
 **Modal catalog-only completion GREEN193 qualified:** sourcee6b2809b retains
 all50 RED192 assertion IDs/order and passes50/50 (originaltesta5d7f222; owning
 boundary probe follows the internal module extraction ine6b2809b). The new entity

@@ -46,10 +46,25 @@ End Function
     $owner.DeleteLines($start,$count);$owner.InsertLines($start,$body)
 }
 function Get-InventoryEditCell($Row,$Table,[string]$Header) {
-    foreach($column in $Table.ListColumns){
-        if(([string]$column.Name).Trim() -ieq $Header){return [string]$Row.Range.Cells.Item(1,$column.Index).Value2}
-    }
+    if($Row.ContainsKey($Header)){return [string]$Row[$Header]}
     return ''
+}
+function Get-InventoryEditRows($Table) {
+    # Read each header and the data block once. Do not retain per-cell COM objects
+    # across closed books; business values remain private to this owned test.
+    if($Table.ListRows.Count -eq 0){return}
+    $names=@($Table.ListColumns|ForEach-Object {([string]$_.Name).Trim()})
+    $values=$Table.DataBodyRange.Value2
+    if($values -isnot [Array] -or $values.Rank -ne 2){throw 'Owned snapshot block unavailable; not RED.'}
+    for($r=$values.GetLowerBound(0);$r -le $values.GetUpperBound(0);$r++){
+        $row=@{}
+        for($c=$values.GetLowerBound(1);$c -le $values.GetUpperBound(1);$c++){
+            $name=$names[$c-$values.GetLowerBound(1)]
+            if($row.ContainsKey($name)){throw 'Ambiguous owned snapshot headers; not RED.'}
+            $row[$name]=$values.GetValue($r,$c)
+        }
+        $row
+    }
 }
 function Read-InventoryEditReceiptCopy([string]$Path,[string]$Sku,[string]$Command='') {
     $hash=Get-AdminInventoryEntryHash $Path
@@ -57,8 +72,10 @@ function Read-InventoryEditReceiptCopy([string]$Path,[string]$Sku,[string]$Comma
     $result=[pscustomobject]@{CatalogMatches=0;Item='';Reason='';History='';Custom='';Receipts=@();Applied=@();Log=@();Preserved=$false}
     try{
         foreach($sheet in $book.Worksheets){foreach($table in $sheet.ListObjects){
+            if($table.Name -notin @('tblSkuCatalog','tblAppliedEvents','tblInventoryLog','tblInventoryEditReceipts')){continue}
+            $rows=@(Get-InventoryEditRows $table)
             if($table.Name -ieq 'tblSkuCatalog'){
-                foreach($row in $table.ListRows){if((Get-InventoryEditCell $row $table 'ITEM_CODE') -ceq $Sku){
+                foreach($row in $rows){if((Get-InventoryEditCell $row $table 'ITEM_CODE') -ceq $Sku){
                     $result.CatalogMatches++
                     $result.Item=Get-InventoryEditCell $row $table 'ITEM'
                     $result.Reason=Get-InventoryEditCell $row $table 'LAST_EDIT_REASON'
@@ -66,15 +83,15 @@ function Read-InventoryEditReceiptCopy([string]$Path,[string]$Sku,[string]$Comma
                     $result.Custom=Get-InventoryEditCell $row $table 'USER NOTE'
                 }}
             }elseif($table.Name -ieq 'tblAppliedEvents'){
-                foreach($row in $table.ListRows){$result.Applied+=,(Get-InventoryEditCell $row $table 'EventID')}
+                foreach($row in $rows){$result.Applied+=,(Get-InventoryEditCell $row $table 'EventID')}
             }elseif($table.Name -ieq 'tblInventoryLog'){
-                foreach($row in $table.ListRows){
+                foreach($row in $rows){
                     if((Get-InventoryEditCell $row $table 'SKU') -ceq $Sku){
                         $result.Log+=,[pscustomobject]@{Event=(Get-InventoryEditCell $row $table 'EventID');Key=(Get-InventoryEditCell $row $table 'System_Key');Delta=(Get-InventoryEditCell $row $table 'QtyDelta')}
                     }
                 }
             }elseif($table.Name -ieq 'tblInventoryEditReceipts'){
-                foreach($row in $table.ListRows){
+                foreach($row in $rows){
                     $rowSku=Get-InventoryEditCell $row $table 'SKU'
                     $rowCommand=Get-InventoryEditCell $row $table 'CommandId'
                     if($rowSku -ceq $Sku -or ($Command -ne '' -and $rowCommand -ceq $Command)){
@@ -110,7 +127,9 @@ function Test-InventoryEditBinding($Snapshot,$Saved,$Fixture,[string]$Sku) {
     return ($receipt.Command -ceq $Saved.Command -and $receipt.Sku -ceq $Sku -and $receipt.Warehouse -ceq $Fixture.Warehouse -and $receipt.Station -ceq 'S1' -and $receipt.User -ceq 'config-admin')
 }
 function Test-InventoryEditReceiptPhases($Fixture,$Other) {
-    foreach($case in @('CatalogOnly','NoopQuantity','QuantityChange','QueueFailure')){
+    $cases=@('CatalogOnly','NoopQuantity','QuantityChange','QueueFailure')
+    if($AdminInventoryEditReceiptResultsOnly){$cases=@('OperatorSaveThrows','OperatorSaveThrowsLaterQuantity','AfterApplyAuthorityLost')}
+    foreach($case in $cases){
         SelectTarget $Fixture
         $id='InventoryEditReceipt.'+$case
         $hostBook=$excel.Workbooks.Add();$hostPath=Join-Path $runRoot ('edit-receipt-'+$case+'.xlsx');$hostBook.SaveAs($hostPath,51)
@@ -135,14 +154,16 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other) {
             $table.ListColumns.Item('Action').DataBodyRange.Cells.Item(1,1).Value2='EDIT'
             $table.ListColumns.Item('Item Name').DataBodyRange.Cells.Item(1,1).Value2=$item
             $table.ListColumns.Item('Edit Reason').DataBodyRange.Cells.Item(1,1).Value2=$reason
-            $quantity='';if($case -eq 'NoopQuantity'){$quantity='0'}elseif($case -in @('QuantityChange','QueueFailure')){$quantity='5'}
+            $quantity='';if($case -eq 'NoopQuantity'){$quantity='0'}elseif($case -notin @('CatalogOnly','NoopQuantity')){$quantity='5'}
             $table.ListColumns.Item('Quantity').DataBodyRange.Cells.Item(1,1).Value2=$quantity
             $table.ListColumns.Item('Upload Status').DataBodyRange.Cells.Item(1,1).Value2=''
             $table.ListColumns.Item('Upload Result').DataBodyRange.Cells.Item(1,1).Value2=''
             $hostBook.Save();$table.DataBodyRange.Cells.Item(1,1).Select()
             $prefix=Join-Path $runRoot ('before-queue-'+$case)
             [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @($case,$sourcePath,$hostPath,$prefix))
-            [void](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Arm' @('ReceiptEdit',$hostBook.Name))
+            $resultMode='ReceiptEdit'
+            if($case -like 'OperatorSaveThrows*'){$resultMode='SaveThrows'}elseif($case -eq 'AfterApplyAuthorityLost'){$resultMode=$case}
+            [void](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Arm' @($resultMode,$hostBook.Name))
             [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'Upload','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
             $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
             $reached=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[2] -ceq '1' -and $facts[3] -ceq 'True'
@@ -157,13 +178,13 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other) {
             Check ($id+'.ReciprocalSavedCommandAndSource') (Test-InventoryEditBinding $snapshot $saved $Fixture $sku)
             Check ($id+'.CustomValuesPreserved') ($snapshot.Custom -ceq 'Retained receipt extension' -and [string]$extra.DataBodyRange.Cells.Item(1,1).Value2 -ceq 'Retained receipt extension')
             Check ($id+'.ReadOnlyInspectionPreservedBytes') ($snapshot.Preserved -and $saved.Preserved)
-            if($case -ne 'QueueFailure'){Check ($id+'.CompletionSavedInOperator') ($saved.Status -ceq 'IMPORTED')}
-            $delta=0;if($case -eq 'QuantityChange'){$delta=1}
+            if($case -in @('CatalogOnly','NoopQuantity','QuantityChange')){Check ($id+'.CompletionSavedInOperator') ($saved.Status -ceq 'IMPORTED')}
+            $delta=0;if($case -eq 'QuantityChange' -or $AdminInventoryEditReceiptResultsOnly){$delta=1}
             $expectedQty=0;if($delta){$expectedQty=5}
             Check ($id+'.OnlyIntendedQuantityEffect') ($after.LogRows -eq $created.LogRows+$delta -and $after.AppliedRows -eq $created.AppliedRows+$delta -and $after.EntityQuantities.Count -eq $created.EntityQuantities.Count -and $after.EntityQuantities[$key] -eq $expectedQty)
             $queue=([string](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Facts')).Split('|')
             $planned=[string](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.PlannedEventForOwnedTest')
-            if($case -in @('QuantityChange','QueueFailure')){
+            if($case -notin @('CatalogOnly','NoopQuantity')){
                 $observed=$queue.Count -eq 3 -and $queue[0] -ceq 'True' -and $queue[1] -ceq 'True' -and $queue[2] -ceq 'True'
                 Check ($id+'.QueueBoundaryObservedWithoutSourceMutation') $observed
                 if(-not $observed){throw 'Queue boundary snapshot unavailable; not RED.'}
@@ -171,27 +192,57 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other) {
                 $beforeResult=Get-InventoryEditSavedResult ($prefix+'.xlsx')
                 $joint=Test-InventoryEditBinding $beforeQueue $beforeResult $Fixture $sku
                 Check ($id+'.CatalogReceiptAndPlannedEventSavedBeforeQueue') ($joint -and $planned -ne '' -and $beforeQueue.Receipts[0].Event -ceq $planned -and $beforeQueue.Item -ceq $item -and $beforeQueue.Reason -ceq $reason -and $beforeQueue.Preserved -and $beforeResult.Preserved)
-                if($case -eq 'QuantityChange'){
+                if($case -eq 'QuantityChange' -or $AdminInventoryEditReceiptResultsOnly){
                     $exact=@($snapshot.Log|Where-Object {$_.Event -ceq $planned -and $_.Key -ceq $key -and [double]$_.Delta -eq 5})
                     Check ($id+'.PlannedEventHasExactAppliedAndLogProof') ($planned -ne '' -and @($snapshot.Applied|Where-Object {$_ -ceq $planned}).Count -eq 1 -and $exact.Count -eq 1)
                 }
             }else{
+                # This requires an explicit saved no-event receipt, not merely
+                # an absent queue call. A missing receipt fails this assertion.
                 Check ($id+'.NoInventedQuantityEvent') ($queue[0] -ceq 'False' -and $snapshot.Receipts.Count -eq 1 -and $snapshot.Receipts[0].Event -eq '')
             }
-            if($case -eq 'QueueFailure'){
-                Check ($id+'.IncompleteQuantityNotMarkedImported') ($saved.Status -cne 'IMPORTED')
+            if($case -eq 'QueueFailure' -or $AdminInventoryEditReceiptResultsOnly){
+                if($case -eq 'QueueFailure'){Check ($id+'.IncompleteQuantityNotMarkedImported') ($saved.Status -cne 'IMPORTED')}
+                if($AdminInventoryEditReceiptResultsOnly){
+                    $boundary=([string](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Facts')).Split('|')
+                    $boundaryReached=$boundary.Count -eq 4 -and $boundary[0] -ceq 'True' -and $boundary[1] -ceq 'True'
+                    Check ($id+'.ActualResultBoundaryReached') $boundaryReached
+                    if(-not $boundaryReached){throw 'Owned result failure or sign-out boundary unavailable; not RED.'}
+                    Check ($id+'.OperatorBytesPreservedAfterBoundary') ($boundary[2] -ceq 'True' -and $boundary[3] -ceq '0')
+                    Check ($id+'.HonestSavedPartialReported') ([bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.WorksheetResultPartialForTest'))
+                    Check ($id+'.UnconfirmedResultNotDurablyImported') ($saved.Status -cne 'IMPORTED')
+                }
                 $hostBook.Close($false);$hostBook=$excel.Workbooks.Open($hostPath,0,$false)
                 $table=@($hostBook.Worksheets|ForEach-Object {$_.ListObjects}|Where-Object {$_.Name -like 'invSys_Inventory_*'})[0]
                 SelectTarget $Fixture;$hostBook.Activate();$table.DataBodyRange.Cells.Item(1,1).Select()
+                $retryBefore=$after;$retryTarget=5;$retryDelta=1
+                if($AdminInventoryEditReceiptResultsOnly){$retryDelta=0}
+                if($case -eq 'OperatorSaveThrowsLaterQuantity'){
+                    [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @('','','',''))
+                    $moved=[bool](Run 'invSys.Core.xlam' 'modInventoryQuantityCommands.SetSingleEntityQuantity' @($Fixture.Warehouse,'S1','config-admin',$sku,7.0,'Owned later quantity change','',''))
+                    $retryBefore=Get-AdminInventoryEntryFacts $Fixture -Persisted;$retryTarget=7
+                    $moved=$moved -and $retryBefore.EntityQuantities[$key] -eq 7 -and $retryBefore.LogRows -eq $after.LogRows+1 -and $retryBefore.AppliedRows -eq $after.AppliedRows+1
+                    Check ($id+'.LaterOwningQuantityChangeSaved') $moved
+                    if(-not $moved){throw 'Later owning quantity fixture unavailable; not RED.'}
+                    $hostBook.Activate();$table.DataBodyRange.Cells.Item(1,1).Select()
+                }
                 [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @('Retry',$sourcePath,$hostPath,($prefix+'-retry')))
                 [void](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Arm' @('ReceiptRetry',$hostBook.Name))
                 [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'Upload','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
                 $retry=Get-AdminInventoryEntryFacts $Fixture -Persisted
                 $retrySnapshot=Read-InventoryEditReceiptCopy $sourcePath $sku
                 $retryEvent=[string](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.PlannedEventForOwnedTest')
-                Check ($id+'.FreshRetryKeepsPlannedEvent') ($planned -ne '' -and $retryEvent -ceq $planned)
+                $retryFacts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
+                Check ($id+'.FreshRetryActualCapturedHandlerReached') ($retryFacts.Count -eq 5 -and $retryFacts[0] -ceq 'True' -and $retryFacts[2] -ceq '1' -and $retryFacts[3] -ceq 'True')
+                if($case -eq 'QueueFailure'){
+                    Check ($id+'.FreshRetryKeepsPlannedEvent') ($planned -ne '' -and $retryEvent -ceq $planned)
+                }else{
+                    $retryQueue=([string](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Facts')).Split('|')
+                    Check ($id+'.AppliedRetryNeverQueuesAgain') ($retryQueue[0] -ceq 'False')
+                    Check ($id+'.FreshRetryKeepsPlannedEvent') ($planned -ne '' -and $retrySnapshot.Receipts.Count -eq 1 -and $retrySnapshot.Receipts[0].Event -ceq $planned)
+                }
                 Check ($id+'.FreshRetryDoesNotRepeatCatalog') ($retrySnapshot.History -ceq $snapshot.History -and $retrySnapshot.Item -ceq $item -and $retrySnapshot.Preserved)
-                Check ($id+'.FreshRetryAppliesQuantityOnce') ($retry.EntityQuantities.Count -eq $after.EntityQuantities.Count -and $retry.EntityQuantities[$key] -eq 5 -and $retry.LogRows -eq $after.LogRows+1 -and $retry.AppliedRows -eq $after.AppliedRows+1)
+                Check ($id+'.FreshRetryAppliesQuantityOnce') ($retry.EntityQuantities.Count -eq $retryBefore.EntityQuantities.Count -and $retry.EntityQuantities[$key] -eq $retryTarget -and $retry.LogRows -eq $retryBefore.LogRows+$retryDelta -and $retry.AppliedRows -eq $retryBefore.AppliedRows+$retryDelta)
                 $exact=@($retrySnapshot.Log|Where-Object {$_.Event -ceq $planned -and $_.Key -ceq $key -and [double]$_.Delta -eq 5})
                 Check ($id+'.RetryPlannedEventHasExactAppliedAndLogProof') ($planned -ne '' -and @($retrySnapshot.Applied|Where-Object {$_ -ceq $planned}).Count -eq 1 -and $exact.Count -eq 1)
             }
