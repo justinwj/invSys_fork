@@ -1991,15 +1991,23 @@ save windows with no other changed parts. CauseEstablished is true for all3.
 The same-worker `inventory-config-diagnosis.jsonl` and
 `imported-row-authority-observations.jsonl` retain the redacted proof.
 
-Normal cleanup and delayed native audit are pending at this checkpoint; assertions
-alone do not qualify RED. No product implementation, build or deployment changed.
+Normal cleanup subsequently qualifies at02:05:57.094Z on2026-10-20 UTC;
+the delayed native audit at02:06:17.109Z reports zero Excel faults and Excel closed.
+Settings, packages, tooling and source are preserved. Garbage collection ran from
+01:55:59.395Z to02:05:55.280Z without intervention. Controller exit1 reflects the
+four behavioral failures; this is qualified RED28/4, not GREEN or acceptance.
+No product implementation, build or deployment changed.
 Fresh cursor proof3325bbbdc2544e1f9119cac7775ac1e8 reaches the target and restores
 the original position; the desktop observer has recorded no lock.
 
 Root cause: PreflightInventoryWorksheetTable independently verifies imported ADD,
 but skips every imported EDIT. Existing quantity events cannot prove catalog-only
 or catalog-field application, and current values/human history lack an exact
-durable command identity. Architecture D8-INV-EDIT-01 therefore proposes an explicit,
-scoped Domain-owned worksheet EDIT receipt store under D8-INV-01 items5–6. It is
-not implemented or approved. Existing D8-INV-01 does not implicitly authorize a
-new general receipt store; obtain approval before that architectural extension.
+durable command identity. Architecture D8-INV-EDIT-01 now explicitly authorizes a
+scoped Domain-owned worksheet EDIT receipt store under D8-INV-01 items5–6. The user
+approved it with four tightenings on2026-10-19 Pacific: one confirmed catalog/
+receipt/planned-event-ID save before queueing; event-ID proof in canonical applied/
+log tables; Inventory-only privacy from snapshots/roles/aggregation; reciprocal
+staging-row/receipt binding, with modal Edit unchanged. This extends the contract,
+not the coverage of this32-check cohort. Expanded D13 precedes implementation.
+No new Excel tests ran before closure/native qualification was verified.
