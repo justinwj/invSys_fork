@@ -185,7 +185,10 @@ Public Function UploadSelectedInventoryWorksheetTable(ByVal wb As Workbook, _
         End If
         SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_ITEM_CODE, CStr(record("ItemCode")), interactiveContext
         SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_STATUS, "READY", interactiveContext
-        If CStr(record("CreateEventId")) <> "" Then
+        If CStr(record("EditReference")) <> "" Then
+            SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_RESULT, _
+                "Inventory EDIT prepared; application is unconfirmed." & vbCrLf & CStr(record("EditReference")), interactiveContext
+        ElseIf CStr(record("CreateEventId")) <> "" Then
             SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_RESULT, _
                 "Inventory upload prepared; application is unconfirmed." & vbCrLf & "Event: " & CStr(record("CreateEventId")), interactiveContext
         Else
@@ -196,6 +199,7 @@ Public Function UploadSelectedInventoryWorksheetTable(ByVal wb As Workbook, _
     ' durable in the existing result boundary before any create can be queued.
     If interactiveContext <> "" Then
         If Not SaveInventoryWorksheetWorkbook(wb, interactiveContext, report) Then GoTo Partial
+        If Not modInventoryEditCommands.ConfirmPreparedSelection(interactiveContext, report) Then GoTo Partial
     End If
 
     For idx = 1 To records.Count
@@ -218,7 +222,7 @@ Public Function UploadSelectedInventoryWorksheetTable(ByVal wb As Workbook, _
             remaining = remaining + 1
             SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_STATUS, "NOT IMPORTED", interactiveContext
             SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_RESULT, _
-                "A prior row failed; correct it and upload again.", interactiveContext
+                "A prior row failed; correct it and upload again." & vbCrLf & CStr(record("EditReference")), interactiveContext
         Next idx
     End If
 
@@ -253,12 +257,15 @@ Public Function PreflightInventoryWorksheetTable(ByVal lo As ListObject, _
     Dim rowIndex As Long
     Dim baseOrdinal As Long
     Dim addOrdinal As Long
-    Dim generatedCodes As Object
+    Dim generatedCodes As Object, editReference As String
 
     On Error GoTo Failed
     ' Validate every pending row before any authoritative write is attempted.
     If lo Is Nothing Then report = "The selected Inventory table is unavailable.": Exit Function
     If Not ValidateInventoryWorksheetHeaders(lo, report) Then Exit Function
+    If interactiveContext <> "" Then
+        If Not modInventoryEditCommands.CheckSelection(interactiveContext, report) Then Exit Function
+    End If
     Set generatedCodes = CreateObject("Scripting.Dictionary")
     generatedCodes.CompareMode = vbTextCompare
     If mAutomationEnabled Then
@@ -278,7 +285,9 @@ Public Function PreflightInventoryWorksheetTable(ByVal lo As ListObject, _
                     pending.Add record
                 Else
                     SetInventoryWorksheetValue lo, rowIndex, HDR_STATUS, "VALIDATION ERROR", interactiveContext
-                    SetInventoryWorksheetValue lo, rowIndex, HDR_RESULT, rowError, interactiveContext
+                    If modInventoryEditWire.ReferenceField(InventoryWorksheetText(lo, rowIndex, HDR_RESULT), "Command:") = "" Then
+                        SetInventoryWorksheetValue lo, rowIndex, HDR_RESULT, rowError, interactiveContext
+                    End If
                     If errors <> "" Then errors = errors & vbCrLf
                     errors = errors & "Row " & CStr(rowIndex) & ": " & rowError
                 End If
@@ -291,6 +300,13 @@ Public Function PreflightInventoryWorksheetTable(ByVal lo As ListObject, _
                     If errors <> "" Then errors = errors & vbCrLf
                     errors = errors & "Row " & CStr(rowIndex) & ": " & rowError
                 End If
+            ElseIf interactiveContext <> "" And _
+                    UCase$(InventoryWorksheetText(lo, rowIndex, HDR_ACTION)) = "EDIT" Then
+                rowError = "": editReference = ""
+                If Not modInventoryEditCommands.Prepare(interactiveContext, rowIndex, editReference, rowError) Then
+                    If errors <> "" Then errors = errors & vbCrLf
+                    errors = errors & "Row " & CStr(rowIndex) & ": " & rowError
+                End If
             End If
         End If
     Next rowIndex
@@ -298,7 +314,7 @@ Public Function PreflightInventoryWorksheetTable(ByVal lo As ListObject, _
         For Each record In pending
             SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_STATUS, "NOT UPLOADED", interactiveContext
             SetInventoryWorksheetValue lo, CLng(record("TableRow")), HDR_RESULT, _
-                "Resolve every validation error before upload.", interactiveContext
+                "Resolve every validation error before upload." & vbCrLf & CStr(record("EditReference")), interactiveContext
         Next record
         report = "Inventory table validation failed. No inventory or catalog changes were made." & vbCrLf & errors
         Exit Function
@@ -517,7 +533,7 @@ Private Function ValidateInventoryWorksheetRow(ByVal lo As ListObject, _
     Dim editReason As String
     Dim statusText As String
     Dim codeOrdinal As Long
-    Dim customFields As Object, receiptEvent As String
+    Dim customFields As Object, receiptEvent As String, editReference As String
 
     actionName = UCase$(InventoryWorksheetText(lo, rowIndex, HDR_ACTION))
     sku = InventoryWorksheetText(lo, rowIndex, HDR_ITEM_CODE)
@@ -629,8 +645,13 @@ Private Function ValidateInventoryWorksheetRow(ByVal lo As ListObject, _
     record("EditReason") = editReason
     Set record("CustomFields") = customFields
     record("CreateEventId") = receiptEvent
+    record("EditReference") = ""
     If receiptEvent <> "" Then
         If Not modAdmin.ValidateWorksheetCreateReceipt(record, interactiveContext, receiptEvent, rowError) Then Exit Function
+    End If
+    If actionName = "EDIT" And interactiveContext <> "" Then
+        If Not modInventoryEditCommands.Prepare(interactiveContext, rowIndex, editReference, rowError) Then Exit Function
+        record("EditReference") = editReference
     End If
     ValidateInventoryWorksheetRow = True
 End Function
@@ -672,6 +693,12 @@ Private Function ApplyInventoryWorksheetRecord(ByVal record As Object, _
     End If
     ApplyInventoryWorksheetRecord = modAdmin.ApplyInventoryWorksheetRecordForWarehouse( _
         warehouseId, stationId, userId, record, report, interactiveContext)
+    If Not ApplyInventoryWorksheetRecord And interactiveContext <> "" Then
+        If CStr(record("EditReference")) <> "" And _
+                modInventoryEditWire.ReferenceField(report, "Command:") = "" Then
+            report = report & vbCrLf & CStr(record("EditReference"))
+        End If
+    End If
 End Function
 
 Private Function InventoryCatalogContains(ByVal warehouseId As String, _

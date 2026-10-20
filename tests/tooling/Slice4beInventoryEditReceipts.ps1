@@ -242,7 +242,7 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other,[ValidateSet('','Phase'
             $hostBook.Save();$table.DataBodyRange.Cells.Item(1,1).Select()
             $prefix=Join-Path $runRoot ('before-queue-'+$case)
             if($AdminInventoryEditCanonicalSaveOnly){
-                [void](Run 'invSys.Admin.xlam' 'TestInventoryEditSave.Arm' @($case,$sourcePath,$hostPath,$prefix))
+                [void](Run $script:InventoryEditSaveProbePackage 'TestInventoryEditSave.Arm' @($case,$sourcePath,$hostPath,$prefix))
             }
             [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @($case,$sourcePath,$hostPath,$prefix))
             $resultMode='ReceiptEdit'

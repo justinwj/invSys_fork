@@ -1,5 +1,22 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**D8-INV-EDIT-01 implementation draft,2026-10-20 Pacific:** isolated branch
+`work/d8-inv-edit-receipts` adds Core preparation/binding and Inventory Domain
+ownership of the single catalog/receipt save. The existing operator result keeps
+the command reference; quantity completion uses the exact saved event/log proof.
+The receipt stores the immutable quantity plan, without a second mutable success
+flag. Canonical-save tests now observe the Domain owner. Existing modal catalog
+and quantity write paths are retained; catalog field planning and read-only
+entity resolution are shared. No new recording ControlId or replay
+adapter is added.
+
+This is an uncompiled implementation checkpoint, protected by the qualified RED
+cohorts below. PowerShell parsing and diff checks pass. First VBA compile, focused
+GREEN, receipt-side mutations, retained regressions, final static maintenance and
+all packaged/native/visible acceptance gates remain open. The concurrent original
+checkout's combined baseline still uses unchanged product source fc2fba93 and
+test e2eb0e0d; its result is not qualified before normal closure and native audit.
+
 **Corrected EDIT binding/privacy RED qualified,2026-10-20 Pacific:**
 product fc2fba93/teste2a7b246 finishes147 PASS/32 FAIL across179 checks,
 including six harness checks,43 supplemental privacy checks and42 Config/Auth/

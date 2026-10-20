@@ -436,6 +436,10 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
         Exit Function
     End If
     If actionName <> "EDIT" Then report = "Inventory worksheet Action must be ADD or EDIT.": Exit Function
+    If interactiveContext <> "" Then
+        ApplyInventoryWorksheetRecordForWarehouse = modInventoryEditCommands.Execute(interactiveContext, CLng(record("TableRow")), report)
+        Exit Function
+    End If
 
     editStamp = Format$(Now, "yyyy-mm-dd hh:nn:ss")
     customFields("LAST_EDIT_REASON") = editReason
@@ -1149,45 +1153,23 @@ End Function
 
 Private Function PlanInventoryCatalogFieldsAdmin(ByVal lo As ListObject, ByVal rowIndex As Long, _
         ByVal values As Variant, ByVal customFields As Object) As Object
-    Dim fields As Object, names As Variant, refs As Collection, i As Long, key As Variant
-    Dim text As String, existing As String
-    Set fields = CreateObject("Scripting.Dictionary"): fields.CompareMode = vbTextCompare
-    names = Array("ITEM_CODE", "ITEM", "UOM", "LOCATION", "DESCRIPTION", "VENDOR(s)", "VENDOR_CODE", "CATEGORY", "EXTERNAL_CODE")
-    For i = 0 To UBound(names)
-        PlanInventoryCatalogValueAdmin fields, CStr(names(i)), values(i)
-    Next i
-    Set refs = ParsePictureReferencesAdmin(CStr(values(9)))
-    If refs.Count > 0 Then fields("IMAGE_PATH") = refs(1) Else fields("IMAGE_PATH") = ""
-    For i = 2 To 12
-        text = "IMAGE_PATH_" & CStr(i)
-        If i <= refs.Count Then
-            fields(text) = refs(i)
-        ElseIf ColumnIndexAdminLocal(lo, text) > 0 Then
-            fields(text) = ""
-        End If
-    Next i
+    Dim fields As Object, names As Variant, data As Variant, headers() As String
+    Dim customNames As Variant, customValues As Variant, planned As Variant, i As Long
+    customNames = Array(): customValues = Array()
     If Not customFields Is Nothing Then
-        For Each key In customFields.Keys
-            text = Trim$(CStr(key))
-            If StrComp(text, "EDIT_HISTORY_APPEND", vbTextCompare) = 0 Then
-                text = Trim$(CStr(customFields(key)))
-                If text <> "" Then
-                    If fields.Exists("EDIT_HISTORY") Then existing = CStr(fields("EDIT_HISTORY")) Else existing = CatalogCellAdmin(lo, rowIndex, "EDIT_HISTORY")
-                    If existing <> "" Then text = existing & vbLf & text
-                    fields("EDIT_HISTORY") = text
-                End If
-            Else
-                PlanInventoryCatalogValueAdmin fields, text, customFields(key)
-            End If
-        Next key
+        customNames = customFields.Keys: customValues = customFields.Items
     End If
+    ReDim headers(0 To lo.ListColumns.Count - 1)
+    For i = 1 To lo.ListColumns.Count: headers(i - 1) = CStr(lo.ListColumns(i).Name): Next i
+    planned = modInventoryCatalogWire.PlanFields(values, customNames, customValues, _
+        CatalogCellAdmin(lo, rowIndex, "EDIT_HISTORY"), headers)
+    names = planned(0): data = planned(1)
+    Set fields = CreateObject("Scripting.Dictionary"): fields.CompareMode = vbTextCompare
+    For i = LBound(names) To UBound(names)
+        fields(CStr(names(i))) = data(i)
+    Next i
     Set PlanInventoryCatalogFieldsAdmin = fields
 End Function
-
-Private Sub PlanInventoryCatalogValueAdmin(ByVal fields As Object, ByVal name As String, ByVal value As Variant)
-    name = NormalizeCatalogColumnNameAdmin(name)
-    If name <> "" Then fields(name) = value
-End Sub
 
 Private Sub WriteInventoryCatalogFieldsAdmin(ByVal lo As ListObject, ByVal rowIndex As Long, ByVal fields As Object)
     Dim events As Boolean, field As Variant, number As Long, description As String
@@ -1713,17 +1695,7 @@ Private Function EnsureCatalogColumnAdmin(ByVal lo As ListObject, ByVal columnNa
 End Function
 
 Private Function NormalizeCatalogColumnNameAdmin(ByVal columnName As String) As String
-    columnName = Replace(columnName, vbCr, " ")
-    columnName = Replace(columnName, vbLf, " ")
-    columnName = Replace(columnName, vbTab, " ")
-    columnName = Replace(columnName, "[", "(")
-    columnName = Replace(columnName, "]", ")")
-    Do While InStr(1, columnName, "  ", vbBinaryCompare) > 0
-        columnName = Replace(columnName, "  ", " ")
-    Loop
-    columnName = Trim$(columnName)
-    If Len(columnName) > 48 Then columnName = Left$(columnName, 48)
-    NormalizeCatalogColumnNameAdmin = columnName
+    NormalizeCatalogColumnNameAdmin = modInventoryCatalogWire.NormalizeHeader(columnName)
 End Function
 
 Private Sub SetSheetProtectionAdminLocal(ByVal ws As Worksheet, ByVal protectAfter As Boolean)
@@ -1795,20 +1767,11 @@ Private Function CombinedPictureReferencesAdmin(ByVal lo As ListObject, ByVal ro
 End Function
 
 Private Function ParsePictureReferencesAdmin(ByVal imagePath As String) As Collection
-    Dim result As Collection
-    Dim rawParts As Variant
-    Dim part As Variant
-    Dim valueText As String
-
-    Set result = New Collection
-    imagePath = Replace(imagePath, "|", ";")
-    imagePath = Replace(imagePath, vbCr, ";")
-    imagePath = Replace(imagePath, vbLf, ";")
-    rawParts = Split(imagePath, ";")
-    For Each part In rawParts
-        valueText = Trim$(CStr(part))
-        If valueText <> "" Then result.Add valueText
-    Next part
+    Dim result As New Collection, values As Variant, value As Variant
+    values = modInventoryCatalogWire.PictureValues(imagePath)
+    For Each value In values
+        result.Add CStr(value)
+    Next value
     Set ParsePictureReferencesAdmin = result
 End Function
 
