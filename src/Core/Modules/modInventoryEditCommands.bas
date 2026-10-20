@@ -79,6 +79,11 @@ Public Function Prepare(ByVal context As String, ByVal row As Long, _
             If Not modInventoryEditPlan.Matches(submitted, existing, receipt) Then GoTo Refused
         End If
     End If
+    ' Preparation covers the whole selection before its first canonical write.
+    ' Completed receipts need only read-only proof, even when the source is open.
+    If Not found Or Not applied Then
+        If Not PendingWriteAvailable(context, report) Then Exit Function
+    End If
     reference = modInventoryEditWire.Reference(CStr(receipt(0)), CStr(receipt(14)), CStr(receipt(7)))
     If Not mPrepared Is Nothing Then
         If mPrepared.Exists(context & "|" & command) Then
@@ -120,6 +125,9 @@ Public Function ConfirmPreparedSelection(ByVal context As String, ByRef report A
                 Set submitted = New cInventoryEditRow
                 If Not submitted.Read(context, CLng(entry("Row")), report) Then Exit Function
                 If Not modInventoryEditPlan.Matches(submitted, submitted.ResultText, entry("Receipt")) Then Exit Function
+                If Not entry("Saved") Or Not entry("Applied") Then
+                    If Not PendingWriteAvailable(context, report) Then Exit Function
+                End If
                 entry("PreparedSaved") = True
             End If
         Next key
@@ -171,12 +179,14 @@ Public Function Execute(ByVal context As String, ByVal row As Long, ByRef report
         If Not modInventoryCommands.BeginQuantity(context, CStr(receipt(8)), CDbl(receipt(10)), report) Then GoTo Failed
         If Not queued Then
             If Not modInventoryCommands.CheckForm(context, report) Then GoTo Failed
+            If Not PendingWriteAvailable(context, report) Then GoTo Failed
             If Not modRoleEventWriter.QueueAdminInventoryAdjustEvent(CStr(receipt(1)), CStr(receipt(2)), _
                 CStr(receipt(3)), CStr(receipt(11)), "Admin set inventory quantity. Reason: " & CStr(entry("Reason")), _
                 0, eventId, report, "") Then GoTo Failed
             If eventId <> CStr(receipt(7)) Then GoTo Failed
         End If
         If Not modInventoryCommands.CheckForm(context, report) Then GoTo Failed
+        If Not PendingWriteAvailable(context, report) Then GoTo Failed
         If Not modInventoryCommands.BeginQuantitySave(context, report) Then GoTo Failed
         processed = modProcessor.RunBatch(CStr(receipt(1)), 0, batchReport, eventId, applied, True)
         If Not applied Then GoTo Failed
@@ -216,10 +226,28 @@ Public Function ClaimWritePlan(ByVal context As String, ByVal command As String)
     If Not submitted.Read(context, CLng(entry("Row")), report) Then Exit Function
     If submitted.InputHash <> entry("InputHash") Then Exit Function
     If Not modInventoryEditPlan.Matches(submitted, submitted.ResultText, entry("Receipt")) Then Exit Function
+    If Not PendingWriteAvailable(context, report) Then Exit Function
     catalog = entry("Catalog")
     ClaimWritePlan = Array(modInventoryCommands.SourceInventoryPath(context), _
         catalog(0), catalog(1), modInventoryEditWire.ReceiptHeaders(), entry("Receipt"))
 Refused:
+End Function
+
+Private Function PendingWriteAvailable(ByVal context As String, ByRef report As String) As Boolean
+    Dim path As String, book As Workbook
+    On Error GoTo Refused
+    path = modInventoryCommands.SourceInventoryPath(context)
+    If path = "" Then GoTo Refused
+    For Each book In Application.Workbooks
+        If modAggregationFiles.SameFile(book.FullName, path) Then
+            report = "Close the Inventory workbook before uploading pending EDIT changes."
+            Exit Function
+        End If
+    Next book
+    PendingWriteAvailable = True
+    Exit Function
+Refused:
+    report = "The pending EDIT source could not be confirmed. No new event was queued."
 End Function
 
 Public Sub ReleaseContext(ByVal context As String)
