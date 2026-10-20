@@ -51,6 +51,10 @@ Finished:
 End Function
 '@)
 }
+function Test-InventoryPrivateCanary([string]$Value,[string]$Canary) {
+    return (($Canary -ne '' -and $Value.IndexOf($Canary,[StringComparison]::OrdinalIgnoreCase) -ge 0) -or
+        $Value.IndexOf('PrivateReceiptCanary',[StringComparison]::OrdinalIgnoreCase) -ge 0)
+}
 function Get-InventoryProjectionPrivacyFacts([string]$Path,[string]$TableName,[string]$Key,[string]$Canary) {
     $hash=Get-AdminInventoryEntryHash $Path
     $book=$excel.Workbooks.Open($Path,0,$true)
@@ -59,7 +63,10 @@ function Get-InventoryProjectionPrivacyFacts([string]$Path,[string]$TableName,[s
         foreach($sheet in $book.Worksheets){
             $values=$sheet.UsedRange.Value2
             foreach($value in $values){
-                if([string]$value -ceq $Canary -or [string]$value -ceq 'PrivateReceiptCanary'){$result.CanaryFound=$true}
+                if(Test-InventoryPrivateCanary ([string]$value) $Canary){$result.CanaryFound=$true}
+            }
+            foreach($formula in $sheet.UsedRange.Formula){
+                if(Test-InventoryPrivateCanary ([string]$formula) $Canary){$result.CanaryFound=$true}
             }
             foreach($table in $sheet.ListObjects){
                 if($table.Name -ieq 'tblInventoryEditReceipts'){$result.PrivateTable=$true}

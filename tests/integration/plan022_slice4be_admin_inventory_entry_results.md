@@ -1,5 +1,54 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+## Config diagnosis — recent EDIT RED cohorts
+
+All four cohorts below use product source fc2fba93. Config/Auth preservation
+is **unresolved for each cohort**: the receipt tests did not collect before/after
+Config snapshots or Auth hashes. Process settings restoration and Inventory
+read-preservation checks do not prove Config/Auth preservation. The older
+13f1ea0c imported-EDIT diagnosis is a separate comparison, not a substitute.
+
+| Test commit / cohort | Controller ID | Worker ID |
+| --- | --- | --- |
+| f2d26e8f / phase | 70b4cbfa336d48a4a75741db429c88d7 | f469ebd2536a4fa3b52a4f99e852fbe0 |
+| 5e76fcd4 / result boundary | 488e8cd494a147ba83dd0e516dee2b92 | ddfff02264594ec4b8f21d803f09ba21 |
+| c7a2599c / canonical save | a26f0479ebf24c70900c9bf65e9e89ec | f1710dda499346cab7a3b580fc957c0c |
+| 212a3547 / excluded binding diagnostic | 04732c22ee2248b4b17cdf8c3789428f | 2f3a9703d4f24bc0bb8d6f8969ada1bd |
+
+Evidence lives under the matching ignored `reports/runtime/inventory-imported-controller/`
+and `reports/runtime/slice4be-admin-inventory-entry/` directories. The first three
+have qualified process/native evidence described below; the fourth also closed
+normally with zero delayed faults, but its binding setup remains excluded.
+No Config mutation or cause is established by these receipt results. Outstanding:
+did Config table values/shapes or Auth bytes change, and can any Config-only
+metadata changes be attributed to observed save windows? Next diagnostic:
+use the existing read-only Config comparison/save-window observer and Auth hashes
+around the corrected binding cohort; carry these historical gaps explicitly
+until the affected phase/result/save scenarios also receive their own comparison.
+
+**EDIT binding/privacy diagnostic, binding RED excluded:** product fc2fba93/
+test212a3547 completes83 PASS/29 FAIL, including43/43 supplemental projection
+checks and six harness checks. Do not count this as qualified binding RED:
+the second intentional same-input EDIT did not complete, but the harness reused
+that row for its later imported-row cases. The queue-only payload observer also
+could not establish the second lookup's serialized payload. Repair by retaining
+the first independently confirmed imported row and observing lookup before queueing,
+then rerun. Source review finds `modProcessor` writes inbox status `PROCESSED`,
+while `modInventoryCommandReceipts.AddExact` excludes only `APPLIED`/`SKIP_DUP`;
+the corrected probe must confirm the selected event identity at runtime.
+
+Snapshot, Receiving/Shipping/Production projection and D8/D17 aggregation checks
+retain the real owning-created entity, exclude the private table/exact canary and
+preserve inspected files/canonical Inventory. Strengthen canary detection to
+include embedded serialized values before counting broader exclusion coverage.
+These are service/projection checks, not packaged role UI acceptance.
+Controller `reports/runtime/inventory-imported-controller/04732c22ee2248b4b17cdf8c3789428f`;
+worker `reports/runtime/slice4be-admin-inventory-entry/2f3a9703d4f24bc0bb8d6f8969ada1bd`.
+Normal closure2026-10-20T06:22:33.259Z confirms restoration and all pins; audit
+06:22:53.269Z confirms Excel closed and zero faults. No process intervention or
+desktop failure occurred. Process exit followed quit/COM/GC return by24 minutes.
+Product implementation remains unchanged.
+
 **D8-INV-EDIT-01 canonical-save RED qualified,2026-10-19 Pacific:**
 unchanged product fc2fba93/testc7a2599c completes83 PASS/28 FAIL across111 checks,
 including six harness checks. Actual Upload injects failure or sign-out before

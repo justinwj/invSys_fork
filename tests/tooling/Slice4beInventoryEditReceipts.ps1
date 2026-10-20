@@ -8,12 +8,21 @@ function Install-InventoryEditReceiptProbe {
 Option Explicit
 Private mMode As String, mSource As String, mHostPath As String, mCopy As String
 Private mReached As Boolean, mCopied As Boolean, mPlanned As String, mPreserved As Boolean
-Private mQueued As String, mPayload As String
+Private mQueued As String, mPayload As String, mLookup As String
 Public Sub Arm(ByVal mode As String, ByVal source As String, ByVal hostPath As String, ByVal copyPrefix As String)
     mMode = mode: mSource = source: mHostPath = hostPath: mCopy = copyPrefix
     mReached = False: mCopied = False: mPlanned = "": mPreserved = False
-    mQueued = "": mPayload = ""
+    mQueued = "": mPayload = "": mLookup = ""
 End Sub
+Public Sub LookupObserved(ByVal payload As String)
+    If mMode <> "" Then mPayload = payload
+End Sub
+Public Sub LookupReturned(ByVal eventId As String)
+    If mMode <> "" Then mLookup = eventId
+End Sub
+Public Function LookupEventForOwnedTest() As String
+    LookupEventForOwnedTest = mLookup
+End Function
 Public Function BeforeQueue(ByVal plannedEvent As String, ByVal payload As String) As Boolean
     Dim fso As Object, sourceHash As String, hostHash As String
     If mMode = "" Then Exit Function
@@ -66,6 +75,15 @@ End Function
     $hook="    If TestInventoryEditReceipt.BeforeQueue(eventIdOut, payloadJson) Then`r`n        errorMessage = ""Owned queue failure.""`r`n        Exit Function`r`n    End If`r`n"
     $body=[regex]::Replace($body,$boundary,[Text.RegularExpressions.MatchEvaluator]{param($m) $hook+$m.Value})
     $body=[regex]::Replace($body,'(?im)^End Function[\t ]*\r?$',"    TestInventoryEditReceipt.AfterQueue eventIdOut`r`nEnd Function")
+    $owner.DeleteLines($start,$count);$owner.InsertLines($start,$body)
+    $owner=$project.VBComponents.Item('modInventoryCommandReceipts').CodeModule
+    $start=$owner.ProcStartLine('FindExact',0);$count=$owner.ProcCountLines('FindExact',0)
+    $body=$owner.Lines($start,$count)
+    $entry='    eventId = ""';$returned='    report = "": FindExact = True'
+    if([regex]::Matches($body,[regex]::Escape($entry)).Count -ne 1 -or
+       [regex]::Matches($body,[regex]::Escape($returned)).Count -ne 1){throw 'Exact event lookup observation unavailable; not RED.'}
+    $body=$body.Replace($entry,($entry+"`r`n"+'    TestInventoryEditReceipt.LookupObserved payload'))
+    $body=$body.Replace($returned,('    TestInventoryEditReceipt.LookupReturned eventId'+"`r`n"+$returned))
     $owner.DeleteLines($start,$count);$owner.InsertLines($start,$body)
 }
 function Get-InventoryEditCell($Row,$Table,[string]$Header) {

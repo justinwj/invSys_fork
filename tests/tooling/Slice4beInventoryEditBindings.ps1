@@ -10,6 +10,7 @@ End Function
 '@)
 }
 function Invoke-InventoryBindingUpload($Fixture,$HostBook,$Table,[string]$Label) {
+    $diagnosis=Start-InventoryBindingConfigDiagnosis $Fixture
     $HostBook.Activate();$Table.DataBodyRange.Cells.Item(1,1).Select()
     [void](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Arm' @('Binding',$HostBook.Name))
     [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($HostBook.Name,'Upload','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
@@ -17,6 +18,28 @@ function Invoke-InventoryBindingUpload($Fixture,$HostBook,$Table,[string]$Label)
     $reached=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[2] -ceq '1' -and $facts[3] -ceq 'True'
     Check ($Label+'.ActualCapturedUploadReached') $reached
     if(-not $reached){throw 'Owned binding Upload handler unavailable; not RED.'}
+    Complete-InventoryBindingConfigDiagnosis $Fixture $diagnosis $Label
+}
+function Start-InventoryBindingConfigDiagnosis($Fixture) {
+    $before=Get-InventoryConfigDiagnosticSnapshot $Fixture
+    $auth=Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))
+    [void](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Reset')
+    return [pscustomobject]@{Config=$before;Auth=$auth}
+}
+function Complete-InventoryBindingConfigDiagnosis($Fixture,$Before,[string]$Label) {
+    $after=Get-InventoryConfigDiagnosticSnapshot $Fixture
+    $facts=([string](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Facts')).Split('|')
+    if($facts.Count -ne 3 -or @($facts|Where-Object {$_ -cnotmatch '^\d+$'}).Count){throw 'Config save observer unavailable.'}
+    $phase=[pscustomobject]@{Calls=[int]$facts[0];ByteChangesDuringSave=[int]$facts[1];UnavailableHashComparisons=[int]$facts[2];Procedure='modConfig.SaveConfigWorkbookIfWritable'}
+    Write-InventoryConfigDiagnosticComparison $Before.Config $after $Label $phase
+    $comparison=$script:InventoryConfigLastComparison
+    $authAfter=Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))
+    $authPreserved=$Before.Auth -ne '' -and $Before.Auth -ceq $authAfter
+    $bytesPreserved=$Before.Config.FileHash -ne '' -and $Before.Config.FileHash -ceq $after.FileHash
+    Check ($Label+'.ConfigCellsAndShapesPreserved') ($comparison.ChangedTableCells -eq 0 -and $comparison.TableShapesPreserved)
+    Check ($Label+'.AuthBytesPreserved') $authPreserved
+    [pscustomobject]@{Case=$Label;ConfigBytesPreserved=$bytesPreserved;AuthBytesPreserved=$authPreserved;ConfigChangeExplained=($bytesPreserved -or $comparison.CauseEstablished)}|
+        ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'edit-binding-authority-observations.jsonl')
 }
 function Get-InventoryBindingResult($HostBook,[string]$Label) {
     $copy=Join-Path $runRoot ($Label+'.xlsx')
@@ -33,7 +56,95 @@ function Test-InventoryExactAppliedEffect($Snapshot,[string]$Event,[string]$Key,
 function Set-InventoryBindingCell($Table,[int]$Row,[string]$Header,[string]$Value) {
     $Table.ListColumns.Item($Header).DataBodyRange.Cells.Item($Row,1).Value2=$Value
 }
+function Test-InventoryCanonicalReceiptBindings($Fixture,$HostBook,$Table,$Original,$Saved,[string]$Sku,[string]$OtherEvent) {
+    $sourcePath=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
+    if(-not [IO.Path]::GetFullPath($sourcePath).StartsWith(([IO.Path]::GetFullPath($runRoot).TrimEnd('\')+'\'),[StringComparison]::OrdinalIgnoreCase)){
+        throw 'Receipt mutations require the owned generated fixture.'
+    }
+    $snapshot=Read-InventoryEditReceiptCopy $sourcePath $Sku $Saved.Command
+    Check 'InventoryEditBinding.CanonicalMutation.InspectionPreservedBytes' $snapshot.Preserved
+    if(-not $snapshot.Preserved){throw 'Receipt inspection changed the owned source.'}
+    $produced=Test-InventoryEditBinding $snapshot $Saved $Fixture $Sku
+    Check 'InventoryEditBinding.CanonicalMutation.ReceiptProducedByActualEdit' $produced
+    if(-not $produced){
+        # This is the missing product output of the actual EDIT above. Do not
+        # fabricate a receipt or claim that guarded mutation cases ran.
+        [pscustomobject]@{CasesAttempted=0;Reason='ActualEditDidNotProduceBoundReceipt'}|
+            ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'edit-receipt-mutation-coverage.jsonl')
+        return
+    }
+    if($OtherEvent -eq ''){throw 'Second actual applied event unavailable for reciprocal binding cases.'}
+    $backup=Join-Path $runRoot 'canonical-receipts-before-mutation.xlsb'
+    Copy-Item -LiteralPath $sourcePath -Destination $backup
+    $baseline=Get-AdminInventoryEntryHash $sourcePath
+    $cases=@('WrongWarehouse','WrongStation','WrongUser','WrongSku','WrongCommand','WrongPlannedEvent','OtherAppliedEvent','MissingReceipt','DuplicateReceipt')
+    $attempted=0
+    try{
+        foreach($case in $cases){
+            SelectTarget $Fixture
+            foreach($header in $Original.Keys){
+                Set-InventoryBindingCell $Table 1 $header $Original[$header]
+                Set-InventoryBindingCell $Table 2 $header ''
+                Set-InventoryBindingCell $Table 3 $header ''
+            }
+            foreach($header in @('Item Name','UOM','Qty Mode','Default Location','Category','Description','Vendor(s)','Vendor Code','External Code','Picture Path/URL')){
+                Set-InventoryBindingCell $Table 2 $header $Original[$header]
+            }
+            Set-InventoryBindingCell $Table 2 'Action' 'ADD'
+            Set-InventoryBindingCell $Table 2 'Quantity' '0'
+            Set-InventoryBindingCell $Table 2 'Item Name' ('Pending canonical binding '+$case)
+            $HostBook.Save()
+            # Alter only the private receipt of this generated, owned warehouse.
+            # Restore its exact file after each case; never modify business rows.
+            $source=$excel.Workbooks.Open($sourcePath,0,$false)
+            try{
+                $receipts=@($source.Worksheets|ForEach-Object {$_.ListObjects}|Where-Object {$_.Name -ieq 'tblInventoryEditReceipts'})
+                if($receipts.Count -ne 1){throw 'Produced receipt table unavailable for mutation.'}
+                $receipt=$receipts[0];$indexes=@()
+                for($r=1;$r -le $receipt.ListRows.Count;$r++){
+                    if([string]$receipt.ListColumns.Item('CommandId').DataBodyRange.Cells.Item($r,1).Value2 -ceq $Saved.Command){$indexes+=,$r}
+                }
+                if($indexes.Count -ne 1){throw 'Produced command receipt unavailable for mutation.'}
+                $r=$indexes[0]
+                if($case -eq 'MissingReceipt'){
+                    $receipt.ListRows.Item($r).Delete()
+                }elseif($case -eq 'DuplicateReceipt'){
+                    $values=$receipt.ListRows.Item($r).Range.Value2
+                    $added=$receipt.ListRows.Add();$added.Range.Value2=$values
+                }else{
+                    $field=switch($case){
+                        'WrongWarehouse' {'WarehouseId'} 'WrongStation' {'StationId'} 'WrongUser' {'UserId'}
+                        'WrongSku' {'SKU'} 'WrongCommand' {'CommandId'}
+                        default {'PlannedEventId'}
+                    }
+                    $value='UNCONFIRMED-CANONICAL-BINDING'
+                    if($case -eq 'OtherAppliedEvent'){$value=$OtherEvent}
+                    $receipt.ListColumns.Item($field).DataBodyRange.Cells.Item($r,1).Value2=[string]$value
+                }
+                $source.Save()
+            }finally{$source.Close($false)}
+            $before=Get-AdminInventoryEntryFacts $Fixture -Persisted
+            $label='InventoryEditBinding.CanonicalMutation.'+$case
+            $attempted++
+            Invoke-InventoryBindingUpload $Fixture $HostBook $Table $label
+            $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
+            $result=Get-InventoryBindingResult $HostBook ('canonical-binding-'+$case)
+            Check ($label+'.WholeSelectionRefusedBeforeCanonicalWrites') ($after.FileHash -ceq $before.FileHash -and $after.LogRows -eq $before.LogRows -and $after.AppliedRows -eq $before.AppliedRows)
+            Check ($label+'.HonestReceiptRefusalReported') ([bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.EditBindingRefusalForTest'))
+            Check ($label+'.OriginalOperatorCommandRetained') ($result.Command -ceq $Saved.Command)
+            Check ($label+'.CustomColumnPreserved') ([string]$Table.ListColumns.Item('USER NOTE').DataBodyRange.Cells.Item(1,1).Value2 -ceq $Original['USER NOTE'])
+            Check ($label+'.InspectionPreservedBytes') $result.Preserved
+            Copy-Item -LiteralPath $backup -Destination $sourcePath -Force
+            if((Get-AdminInventoryEntryHash $sourcePath) -cne $baseline){throw 'Owned receipt mutation baseline restoration failed.'}
+        }
+    }finally{
+        Copy-Item -LiteralPath $backup -Destination $sourcePath -Force
+        [pscustomobject]@{CasesAttempted=$attempted;Reason='ActualProducedReceiptMutations'}|
+            ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'edit-receipt-mutation-coverage.jsonl')
+    }
+}
 function Test-InventoryEditBindings($Fixture,$Other) {
+    $script:InventoryConfigReadChecks=[Collections.Generic.List[object]]::new()
     SelectTarget $Fixture
     $hostBook=$excel.Workbooks.Add()
     $hostPath=Join-Path $runRoot 'edit-bindings.xlsx';$hostBook.SaveAs($hostPath,51)
@@ -76,6 +187,13 @@ function Test-InventoryEditBindings($Fixture,$Other) {
         if(-not $ready){throw 'Existing owning EDIT control failed; binding cohort unavailable.'}
         Check 'InventoryEditBinding.FirstExactAppliedEvent' (Test-InventoryExactAppliedEffect $firstSnapshot $firstEvent $key 5)
         if($firstPayload -eq '' -or $firstEvent -eq ''){throw 'Actual queue observation unavailable; not RED.'}
+        # Retain the independently successful first row before attempting a
+        # different command. Failure of the second EDIT cannot seed these cases.
+        $headers=@($table.ListColumns|ForEach-Object {[string]$_.Name})
+        $original=@{};foreach($header in $headers){$original[$header]=[string]$table.ListColumns.Item($header).DataBodyRange.Cells.Item(1,1).Value2}
+        if($original['Upload Status'] -cne 'IMPORTED' -or $original['Upload Result'] -cne $firstResult.Text){
+            throw 'First independently imported row unavailable; not binding RED.'
+        }
 
         # An intervening authorized change makes the second genuine command's
         # quantity payload identical. Neither receipt may confirm the other.
@@ -96,8 +214,10 @@ function Test-InventoryEditBindings($Fixture,$Other) {
         $secondSnapshot=Read-InventoryEditReceiptCopy $sourcePath $sku $secondResult.Command
         $secondPayload=[string](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.PayloadForOwnedTest')
         $secondEvent=[string](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.QueuedEventForOwnedTest')
+        $secondLookup=[string](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.LookupEventForOwnedTest')
         Check 'InventoryEditBinding.IdenticalBusinessPayloadObserved' ($firstPayload -ceq $secondPayload)
-        if($secondPayload -ne '' -and $firstPayload -cne $secondPayload){throw 'Identical-payload prerequisite was not established; not event-separation RED.'}
+        if($secondPayload -eq '' -or $firstPayload -cne $secondPayload){throw 'Identical-payload prerequisite was not established; not event-separation RED.'}
+        Check 'InventoryEditBinding.CompletedEventNeverSelectedForNewCommand' ($secondLookup -cne $firstEvent)
         Check 'InventoryEditBinding.DistinctActualEvents' ($secondEvent -ne '' -and $secondEvent -cne $firstEvent)
         Check 'InventoryEditBinding.DistinctDurableCommands' ($firstResult.Command -ne '' -and $secondResult.Command -ne '' -and $firstResult.Command -cne $secondResult.Command)
         Check 'InventoryEditBinding.SecondSavedCommandAndSource' (Test-InventoryEditBinding $secondSnapshot $secondResult $Fixture $sku)
@@ -112,10 +232,8 @@ function Test-InventoryEditBindings($Fixture,$Other) {
         # Reuse the genuine completed row. Every case starts with its original
         # saved values and a new pending ADD. An invalid skip must refuse the
         # entire selection, even though that second row is independently valid.
-        $headers=@($table.ListColumns|ForEach-Object {[string]$_.Name})
-        $original=@{};foreach($header in $headers){$original[$header]=[string]$table.ListColumns.Item($header).DataBodyRange.Cells.Item(1,1).Value2}
         [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @('','','',''))
-        $cases=@('UnchangedControl','ChangedQuantity','ChangedReason','ChangedItem','ChangedCustom','MissingCommand','ChangedCommand','DuplicateCommand')
+        $cases=@('UnchangedControl','ChangedQuantity','ChangedReason','ChangedItem','ChangedCustom','ChangedSku','ChangedAction','MissingCommand','ChangedCommand','DuplicateCommand')
         foreach($case in $cases){
             SelectTarget $Fixture
             foreach($header in $headers){
@@ -139,6 +257,8 @@ function Test-InventoryEditBindings($Fixture,$Other) {
                 'ChangedReason' {Set-InventoryBindingCell $table 1 'Edit Reason' 'Altered saved command reason'}
                 'ChangedItem' {Set-InventoryBindingCell $table 1 'Item Name' 'Altered saved command item'}
                 'ChangedCustom' {Set-InventoryBindingCell $table 1 'USER NOTE' 'Altered saved custom value'}
+                'ChangedSku' {Set-InventoryBindingCell $table 1 'Item Code' 'UNCONFIRMED-EDIT-SKU'}
+                'ChangedAction' {Set-InventoryBindingCell $table 1 'Action' 'ADD'}
                 'MissingCommand' {Set-InventoryBindingCell $table 1 'Upload Result' ''}
                 'ChangedCommand' {
                     $forged=[regex]::Replace($original['Upload Result'],'(?im)^Command:[^\r\n]*','Command: UNCONFIRMED-EDIT-COMMAND')
@@ -151,18 +271,21 @@ function Test-InventoryEditBindings($Fixture,$Other) {
             $hostBook.Save()
             $before=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $id='InventoryEditBinding.'+$case
+            $imported=[string]$table.ListColumns.Item('Upload Status').DataBodyRange.Cells.Item(1,1).Value2 -ceq 'IMPORTED'
+            Check ($id+'.ImportedRowSubmitted') $imported
+            if(-not $imported){throw 'Imported-row prerequisite unavailable; not binding RED.'}
             Invoke-InventoryBindingUpload $Fixture $hostBook $table $id
             $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $saved=Get-InventoryBindingResult $hostBook ('binding-'+$case)
             if($case -eq 'UnchangedControl'){
                 $newKeys=@($after.EntityQuantities.Keys|Where-Object {-not $before.EntityQuantities.ContainsKey($_)})
-                Check ($id+'.OnlyPendingAddApplied') ($newKeys.Count -eq 1 -and $after.EntityQuantities[$newKeys[0]] -eq 0 -and $after.EntityQuantities[$key] -eq 5 -and $after.LogRows -eq $before.LogRows+1 -and $after.AppliedRows -eq $before.AppliedRows+1)
+                Check ($id+'.OnlyPendingAddApplied') ($newKeys.Count -eq 1 -and $after.EntityQuantities[$newKeys[0]] -eq 0 -and $after.EntityQuantities[$key] -eq $before.EntityQuantities[$key] -and $after.LogRows -eq $before.LogRows+1 -and $after.AppliedRows -eq $before.AppliedRows+1)
                 Check ($id+'.OriginalImportedResultPreserved') ($saved.Status -ceq 'IMPORTED' -and $saved.Text -ceq $submittedResult)
             }else{
                 Check ($id+'.WholeSelectionRefusedBeforeCanonicalWrites') ($after.FileHash -ceq $before.FileHash -and $after.LogRows -eq $before.LogRows -and $after.AppliedRows -eq $before.AppliedRows)
                 Check ($id+'.HonestReceiptRefusalReported') ([bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.EditBindingRefusalForTest'))
                 if($case -ne 'MissingCommand'){
-                    $expectedCommand=$secondResult.Command
+                    $expectedCommand=$firstResult.Command
                     if($case -eq 'ChangedCommand'){$expectedCommand='UNCONFIRMED-EDIT-COMMAND'}
                     Check ($id+'.OriginalCommandReferenceRetained') ($expectedCommand -ne '' -and $saved.Command -ceq $expectedCommand)
                 }
@@ -170,6 +293,10 @@ function Test-InventoryEditBindings($Fixture,$Other) {
             Check ($id+'.SubmittedCustomColumnPreserved') ([string]$table.ListColumns.Item('USER NOTE').DataBodyRange.Cells.Item(1,1).Value2 -ceq $submittedCustom)
             Check ($id+'.SavedOperatorInspectionPreservedBytes') $saved.Preserved
         }
+        Test-InventoryCanonicalReceiptBindings $Fixture $hostBook $table $original $firstResult $sku $secondEvent
+        $diagnosis=Start-InventoryBindingConfigDiagnosis $Fixture
         Test-InventoryEditPrivacy $Fixture $hostBook $key
+        Complete-InventoryBindingConfigDiagnosis $Fixture $diagnosis 'InventoryEditPrivacy'
+        Test-InventoryConfigDiagnosticPreservation
     }finally{$hostBook.Close($false)}
 }
