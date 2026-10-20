@@ -1,5 +1,17 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Packaged smoke pending, 2026-10-20 23:22Z:** the candidate run in main runtime
+`inventory-receipts-regression/smoke-e2338955bb4d4f83abf72a0a3873a841` has not
+qualified. Its first shutdown remains pending after more than 43 minutes.
+Closure directory `packaged-smoke-closure/c8a6099407bf4fb995bc15cbdb27151a`
+contains only `Initial-references.json`: 18 unique COM references released,
+zero release failures. Neither native exit nor restart/final closure is proved.
+The original Excel process remains; a read-only interim event audit finds zero
+Excel events. That is not a final native audit. Fresh initial cursor proof passed;
+passive desktop monitoring remains clear. No intervention or product change.
+Do not start another Excel test before this controller's closure, preservation
+and delayed native audit are resolved. Layout and later acceptance remain open.
+
 **Candidate build and harness guards, 2026-10-20:** candidate
 `deploy/validation-inventory-receipts-01` was built from draft `47d2ac5c` /
 product `a9faab9c`. All five packaged projects compile and Operations cold start

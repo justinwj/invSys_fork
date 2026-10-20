@@ -11,11 +11,19 @@ for exact source/test boundaries and retained REDs. No package promotion or
 Retained Inventory worksheet 64/64, Catalog 50/50, headless 56/56 and imported ADD
 56/56 now qualify on product `a9faab9c`, with exact prior IDs/order, normal closure
 and zero native events. The refreshed static metrics/ratchets are unchanged.
-Current continuation: current five-package build/compile/layout and
+Candidate `validation-inventory-receipts-01` now passes five packaged compiles
+and Operations cold start, with normal preserved closure and zero native events.
+Current continuation: packaged smoke closure/preservation qualification, layout and
 recording/guide/Receiving B0/live-role/full-chain/visible acceptance. Inventory
 recording coverage and the [live/full-chain fixture correction](plan022_slice4be_admin_remaining_coverage.md)
 remain required. Older cohort-bound RED Config diagnosis gaps remain explicitly
 unresolved; new-source GREEN does not substitute for their diagnosis.
+
+At 2026-10-20 23:22Z, candidate smoke is still waiting for its first native Excel
+exit after more than 43 minutes. No intervention or desktop stop condition was
+observed. Its controller is still active; final results, settings/pin restoration
+and delayed native audit are not yet available. Resolve that cleanup before any
+new Excel test; the Inventory evidence above names the exact runtime directories.
 
 **2026-10-19 source integration:** reviewed code PR3/docs PR2 are merged into main.
 See the [merge review](plan022_slice4be_pr_merge_review.md) for exact heads, fresh
