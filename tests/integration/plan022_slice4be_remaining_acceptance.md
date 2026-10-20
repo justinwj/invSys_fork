@@ -1,5 +1,20 @@
 # Slice 4be remaining acceptance checklist
 
+**Current checkpoint, 2026-10-20:** approved D8-INV-EDIT-01 draft product
+`a9faab9c` has qualified ownership 66/66, binding/mutation 263/263, receipt phases 81/81,
+result-save 100 distinct checks and canonical-save 147 distinct checks. Every
+qualified controller preserves settings/packages/source/tooling and closes
+normally with zero native events. See the [Inventory evidence](plan022_slice4be_admin_inventory_entry_results.md)
+for exact source/test boundaries and retained REDs. No package promotion or
+4be-A acceptance is implied; the dated checkpoints below are historical.
+
+Current continuation: retained Inventory worksheet/Catalog/headless and relevant
+accepted regressions, then current five-package build/compile/static/layout and
+recording/guide/Receiving B0/live-role/full-chain/visible acceptance. Inventory
+recording coverage and the [live/full-chain fixture correction](plan022_slice4be_admin_remaining_coverage.md)
+remain required. Older cohort-bound RED Config diagnosis gaps remain explicitly
+unresolved; new-source GREEN does not substitute for their diagnosis.
+
 **2026-10-19 source integration:** reviewed code PR3/docs PR2 are merged into main.
 See the [merge review](plan022_slice4be_pr_merge_review.md) for exact heads, fresh
 source checks and limitations. Imported-row RED195 remains46 PASS/10 FAIL; Upload
