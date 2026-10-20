@@ -1,5 +1,35 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Canonical-save cohort GREEN qualified,2026-10-20:** draft3fd268cf retains
+product a9faab9c. All four default scenarios pass separately through actual
+Upload:40/40,41/41,41/41,43/43; the union is147 distinct checks, excluding repeated
+compile/probe checks. Before-save failures preserve canonical bytes without a
+false receipt; authority loss prevents the save. After-save failures retain the
+joint catalog/receipt/event-plan save. No failed or unauthorized continuation
+queues quantity. Fresh authorized retries keep the command, save only previously
+unsaved catalog work, retain existing event plans and apply quantity exactly once.
+All36 Config/Auth/read checks pass at twelve boundaries: eight Config comparisons
+are byte-identical and four changes are explained by twelve inbox-bootstrap saves;
+Auth and read-only extraction are preserved throughout. All five instrumented
+XLAMs compile per run. Every run restores settings, preserves all pins and closes
+normally without intervention; every native audit records zero Excel events.
+
+| Scenario | PASS/FAIL | Controller / worker suffix | Normal closure / native audit UTC |
+| --- | --- | --- | --- |
+| BeforeCatalogSaveThrows | 40/0 | 9ef5889fbe5b457b96b81741e4f660bd / 012d1cc857524cafa4570f208c2b8ce4 | 20:13:55.676 / 20:14:15.694 |
+| AfterCatalogSaveThrows | 41/0 | 05bde7802ca54691a26e76a8dbd0505a / 53c4b770fea14df3ae570381c3671ef7 | 20:23:33.218 / 20:23:53.239 |
+| BeforeCatalogSaveAuthorityLost | 41/0 | 2e193ec471a94eb0aacb4bf91c141fde / abf7532a4e1343a28eb4564336a8e181 | 20:36:00.700 / 20:36:20.714 |
+| AfterCatalogSaveAuthorityLost | 43/0 | 6cc95c4ebbd849f0b25f4c6ad937b080 / 5510722f42034908bf088cbc549d1a25 | 20:45:51.471 / 20:46:11.489 |
+
+Paths use the same controller/worker prefixes as the result-save matrix below.
+Exact selected-case records confirm complete default coverage. All bounded cursor
+proofs pass; passive monitoring remains clear and observers stop normally.
+Product source is unchanged, retaining the recorded final static evidence.
+Receipt phases81/81, binding/mutation263/263 and result-save100 distinct checks
+are also qualified. Retained regressions, older RED Config diagnosis gaps and
+final packaged/native/layout/live-role/full-chain/visible4be-A acceptance remain
+open. No product contract change, package promotion or new approval is introduced.
+
 **Result-save cohort GREEN qualified,2026-10-20:** draft89a70936 retains
 product a9faab9c. All three default scenarios pass separately through actual
 Upload:36/36,40/40,36/36; the union is100 distinct checks, excluding repeated
