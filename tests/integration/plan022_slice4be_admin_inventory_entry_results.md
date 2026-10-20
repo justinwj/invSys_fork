@@ -1,5 +1,31 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**D8-INV-EDIT-01 canonical-save RED qualified,2026-10-19 Pacific:**
+unchanged product fc2fba93/testc7a2599c completes83 PASS/28 FAIL across111 checks,
+including six harness checks. Actual Upload injects failure or sign-out before
+and after the canonical catalog save, then reopens and retries under a fresh
+session. Before-save cases preserve Inventory bytes; after-save cases independently
+confirm the catalog change. All four prevent quantity queueing after the injected
+boundary, preserve custom columns and apply quantity exactly once
+on retry. Sign-out stops further Inventory/operator writes; save uncertainty is
+disclosed. Missing durable command references fail in every case. Both after-save
+retries save the catalog again and repeat history; the original event plan has
+no durable receipt.
+
+Controller `reports/runtime/inventory-imported-controller/a26f0479ebf24c70900c9bf65e9e89ec`;
+worker `reports/runtime/slice4be-admin-inventory-entry/f1710dda499346cab7a3b580fc957c0c`.
+All five instrumented compiles pass, with no harness exception. Normal closure
+2026-10-20T05:32:03.212Z confirms settings restoration and all frozen package,
+tooling and source pins. Audit05:32:23.228Z confirms Excel closed and zero faults.
+Process exit took about22 minutes after the explicit quit/COM/GC steps returned;
+there was no process intervention. The desktop observer recorded no error5/lock
+and was stopped after qualification. Its cursor proof is a bounded initial move
+and restoration followed by passive checks, not continuous input acceptance.
+This remains source-overlay RED; no product implementation, XLAM build/deploy,
+packaged/native-input or4be-A acceptance occurred.
+Reciprocal input/identity tampering, identical-payload event separation and private
+receipt publication/role/aggregation coverage remain open before implementation.
+
 **D8-INV-EDIT-01 result-boundary RED qualified,2026-10-19 Pacific:** unchanged
 product fc2fba93/test5e76fcd4 completes50 PASS/20 FAIL across70 checks, including
 six harness checks. Actual Upload covers failed operator-result save, the same
