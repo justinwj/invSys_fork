@@ -1,5 +1,22 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Receipt phases81/81; native qualification pending,2026-10-20:**
+draftd16b809a/product a9faab9c passes catalog-only, no-op quantity, changed
+quantity and failed-queue/fresh-session retry through actual Upload. Receipts
+and event plans are durably saved before queueing; the retry keeps the original
+event, applies quantity once and does not repeat catalog history. Catalog-only
+and no-op edits save receipts without invented quantity events.
+All five instrumented compiles and27 Config/Auth/read checks pass. Of nine
+observed boundaries, five preserve Config bytes and four metadata changes are
+explained by12 inbox-bootstrap saves; Auth and read-only extraction are preserved
+at all nine. This separate GREEN comparison does not retroactively resolve older
+RED Config gaps. No source or test change was needed for this cohort.
+Controller `reports/runtime/inventory-imported-controller/ee6020d9df0d46b281b5e25aeca8a5e9`;
+worker `reports/runtime/slice4be-admin-inventory-entry/e01036ac1ca1485eade4061f9b65cbb9`.
+Quit returned18:47:23.796Z; COM release returned18:47:24.484Z. Cleanup,
+restoration and native audit remain pending. Result-save/canonical-save GREENs,
+retained regressions and final4be-A acceptance remain open.
+
 **Binding/mutation GREEN qualified263/263,2026-10-20:**
 draft5524cf7f retains product a9faab9c and applies fixture correction8fcec788.
 The full actual-Upload cohort passes263 checks with no failures, including all
