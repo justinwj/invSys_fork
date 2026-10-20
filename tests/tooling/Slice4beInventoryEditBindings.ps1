@@ -88,8 +88,8 @@ function Test-InventoryCanonicalReceiptBindings($Fixture,$HostBook,$Table,$Origi
                 if($case -eq 'MissingReceipt'){
                     $receipt.ListRows.Item($r).Delete()
                 }elseif($case -eq 'DuplicateReceipt'){
-                    $values=$receipt.ListRows.Item($r).Range.Value2
-                    $added=$receipt.ListRows.Add();$added.Range.Value2=$values
+                    $added=$receipt.ListRows.Add()
+                    [void]$receipt.ListRows.Item($r).Range.Copy($added.Range)
                 }else{
                     $field=switch($case){
                         'WrongWarehouse' {'WarehouseId'} 'WrongStation' {'StationId'} 'WrongUser' {'UserId'}
