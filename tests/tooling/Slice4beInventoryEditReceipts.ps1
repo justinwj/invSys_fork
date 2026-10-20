@@ -35,6 +35,11 @@ End Function
 Public Function PlannedEventForOwnedTest() As String
     PlannedEventForOwnedTest = mPlanned
 End Function
+Public Function SetLaterQuantityForOwnedTest(ByVal warehouse As String, ByVal sku As String) As Boolean
+    Dim report As String
+    SetLaterQuantityForOwnedTest = modInventoryQuantityCommands.SetSingleEntityQuantity( _
+        warehouse, "S1", "config-admin", sku, 7, "Owned later quantity change", report)
+End Function
 '@)
     $owner=$project.VBComponents.Item('modRoleEventWriter').CodeModule
     $start=$owner.ProcStartLine('QueueAdminInventoryAdjustEvent',0);$count=$owner.ProcCountLines('QueueAdminInventoryAdjustEvent',0)
@@ -219,7 +224,7 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other) {
                 if($AdminInventoryEditReceiptResultsOnly){$retryDelta=0}
                 if($case -eq 'OperatorSaveThrowsLaterQuantity'){
                     [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @('','','',''))
-                    $moved=[bool](Run 'invSys.Core.xlam' 'modInventoryQuantityCommands.SetSingleEntityQuantity' @($Fixture.Warehouse,'S1','config-admin',$sku,7.0,'Owned later quantity change','',''))
+                    $moved=[bool](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.SetLaterQuantityForOwnedTest' @($Fixture.Warehouse,$sku))
                     $retryBefore=Get-AdminInventoryEntryFacts $Fixture -Persisted;$retryTarget=7
                     $moved=$moved -and $retryBefore.EntityQuantities[$key] -eq 7 -and $retryBefore.LogRows -eq $after.LogRows+1 -and $retryBefore.AppliedRows -eq $after.AppliedRows+1
                     Check ($id+'.LaterOwningQuantityChangeSaved') $moved
