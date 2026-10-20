@@ -264,7 +264,10 @@ Public Function PreflightInventoryWorksheetTable(ByVal lo As ListObject, _
     If lo Is Nothing Then report = "The selected Inventory table is unavailable.": Exit Function
     If Not ValidateInventoryWorksheetHeaders(lo, report) Then Exit Function
     If interactiveContext <> "" Then
-        If Not modInventoryEditCommands.CheckSelection(interactiveContext, report) Then Exit Function
+        If Not modInventoryEditCommands.CheckSelection(interactiveContext, report) Then
+            report = "Inventory table validation failed. No inventory or catalog changes were made." & vbCrLf & report
+            Exit Function
+        End If
     End If
     Set generatedCodes = CreateObject("Scripting.Dictionary")
     generatedCodes.CompareMode = vbTextCompare

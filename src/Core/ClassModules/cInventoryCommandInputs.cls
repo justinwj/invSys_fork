@@ -224,6 +224,9 @@ Public Function PlanEditReceipt(ByVal headers As Variant, ByVal values As Varian
     For i = 0 To UBound(headers)
         mEditReceipts.PlanValue CStr(values(0)), CStr(headers(i)), values(i)
     Next i
+    ' Release our own read-only source before another source check classifies
+    ' open workbooks. It must not be mistaken for a borrowed read-only owner.
+    Set table = Nothing: Set book = Nothing: Set owner = Nothing
     PlanEditReceipt = Unchanged()
 Invalid:
 End Function
