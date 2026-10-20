@@ -1809,3 +1809,119 @@ source regressions. Create authority/write phases, EDIT receipt/retry proof,
 Config diagnosis and final built-package/visible/Release1 gates remain open under
 4be-A. The next action is the actual Create handler's phase-fault RED, before
 changing that implementation; no new approval is pending.
+
+## Create worksheet authority phases, 2026-10-19
+
+Approved D8-INV-01 items2/3/5/6 govern this continuation. On unchanged product
+d0119c82, testea19b68a reaches the actual Ribbon/form Create handler and completes
+69 PASS /18 FAIL across87 checks. Both authorized controls pass, including a
+second table with an existing user column. Sign-out after initial form approval,
+sheet creation or headers permits later staging/save writes and false success;
+loss before/after save and a thrown save lack honest partial reporting.
+The injected phase faults use owned operator fixtures; they do not claim native
+input, built-package or exhaustive yield-site acceptance.
+
+Controller3e914acfb4e046c3a2412a9071c172e3 /
+workere15b190c93be4f6bac2f20124f80dbc9 qualifies normal closure at23:58:48.124Z
+with every pin/settings preserved. Delayed audit at23:59:08.139Z records zero
+Excel events and Excel closed; no desktop failure or forced intervention.
+Config diagnosis for this exact cohort: all8 read-only extractions and8 Auth
+comparisons preserve inputs; every case records zero Config saves and zero changed
+parts. This does not close earlier command cohorts' Config diagnosis. Same-worker
+`inventory-config-diagnosis.jsonl` and `create-authority-observations.jsonl` retain
+the redacted observations. Testec4ca9fe adds a live-authority/new-table-change
+case before product implementation; its expanded RED is tracked separately.
+
+Expanded testec4ca9fe on the same unchanged product completes76 PASS /21 FAIL
+over97 checks. The live-authority ChangedNewTable case adds failures for saving
+the changed input, false success and missing partial reporting. Original87
+assertion IDs and results are retained. Controlleraed74d36ebf04161a609c89d93c176cb /
+worker9aee568888004012bcdf25f3fd16e66b qualifies preserved normal closure at
+00:02:10.507Z and zero-fault delayed audit at00:02:30.529Z on2026-10-20 UTC
+(2026-10-19 Pacific). All9 read-only Config extractions preserve inputs, with zero
+Config saves/changed parts. No process intervention or desktop failure. GREEN
+must retain these97 assertions; Core must keep the original selected-table
+binding when additionally binding the new table, and confirm its saved copy.
+
+Implementation3fe1abcc with test33fbd82b retains all97 RED IDs/order and passes
+97/97. Controller268b738ef7e246fbb8d17a6268e4b6d7 /
+workerc0f05d6e900f430db5e15b9e9f16f274 qualifies preserved normal closure at
+00:23:56.936Z and zero-fault delayed audit at00:24:16.951Z on2026-10-20 UTC.
+Five instrumented compiles pass. The worker and Excel remained alive after the
+reported finalizer phase, then exited without intervention; do not qualify on
+assertion output or finalizer return alone. No desktop failure was observed.
+All9 Config read-only extractions and9 Auth comparisons preserve inputs; zero
+Config saves/changed parts. Same-worker diagnosis/authority artifacts retain scope.
+
+Core retains the original selected table while additionally binding the new blank
+table, owner, range, shape and content. Save confirmation compares an independent
+copy without changing inspected bytes. Admin checks before writes and after
+activation/selection or result dialogs; partials retain the known table reference
+and require fresh context. The fixture helper now captures a live context for
+its owned staging preparation; no headless authorization bypass was introduced.
+
+The earlier controller183d9acd14454f88a50fd9457ef28f2e /
+worker06397014f4ed4f0c827ef5c806b92dce stopped before compilation with one harness
+failure: the unanchored entry probe also matched the new post-dialog check. It is
+not behavioral RED/GREEN. Closure and audit through00:05:18.480Z preserve pins,
+settings and normal exit. Test33fbd82b anchors the existing entry location; the
+successful97-check cohort above follows that repair.
+
+Static `inventory-create-static-after` records378 components,6665 procedures,
+144236 lines, unchanged9/45 Application.Run and194 duplicate-body candidates.
+The form grows1529 ->1533 lines, so its size correction is still required before
+closing the increment. Non-contract relocation37fa15cf moves SafeFormText into
+the existing internal Admin text module with its body unchanged and all5 direct
+callers updated; the form becomes1526 lines. The overlay is now15 base sources /
+35 with the explicit Tester baseline. Final static/current-source checks follow.
+Review also identified a possible stale-name success after an external table
+rename;37fa15cf adds its focused diagnostic before any name-binding fix.
+
+Focused name-binding RED on37fa15cf completes24 PASS /3 FAIL over27 checks:
+the authorized control passes; RenamedNewTable retains a live signed-in session
+but fails no-further-save, no-false-success and honest-partial checks. Controller
+39c3dfffab4d4d96928e5867a473f408 / worker7a911c312f944c98b6d362a5c4883323
+qualifies preserved normal closure at00:27:55.587Z and zero-fault delayed audit
+at00:28:15.604Z on2026-10-20 UTC. The new guard must retain the original table
+name and refuse an observed rename; partial output labels the original reference
+as "Captured table" rather than implying it is the table's current name.
+
+Implementation fc2fba93 retains the exact original created-table name in Core and
+refuses a rename before later writes or saved-success reporting. Final static
+evidence `inventory-create-final-static` records378 components,6665 procedures,
+144237 lines, unchanged9/45 Application.Run and194 duplicate-body candidates.
+All27 oversized modules remain at or below the prior primitive-boundary baseline;
+the Create form is1526 lines versus1529 before this increment. Architecture4/4,
+worksheet source guards8/8 and Add visibility guards7/7 pass. These source checks
+do not qualify runtime or built-package acceptance; the combined108-check GREEN
+and retained saved-result/retry regression were pending at that static checkpoint.
+
+Combined GREEN on fc2fba93 qualifies108/108. All97 prior checks and all27 focused
+rename checks retain their IDs and relative order. Controller
+e5aee4aa5ebf4cd2bd637df11d20ee70 / workerbda67101bc0244baa23b4148d5071a8d
+qualifies preserved normal closure at00:52:47.953Z and zero-fault delayed audit
+at00:53:07.967Z on2026-10-20 UTC (2026-10-19 Pacific). The final assertions
+preceded normal process exit by about11 minutes; no forced intervention occurred.
+All10 Config read-only proofs and10 Auth comparisons pass, with zero Config saves
+or changed parts. The rename RED also preserves both Config/Auth cases with zero
+Config saves/changed parts. Fresh bounded cursor proof7707698e3030449e94be55a725b8e8ac
+reaches its exact target and restores the original position without error5 before
+the retained worksheet regression. No built-package or operator acceptance claim.
+
+Retained worksheet/save/retry regression on the same fc2fba93 source qualifies
+64/64 with all prior IDs/order retained. Controller9e296f4e650146b5b02d1b683d857e52 /
+workerfc7b1f469a53487ba745fd4babbead2c qualifies preserved normal closure at
+01:24:38.825Z and zero-fault delayed audit at01:24:58.845Z on2026-10-20 UTC.
+Garbage collection took about17 minutes; Excel and the worker exited normally.
+The timed desktop observer was renewed at01:24:18.994Z after positive cursor proof
+e4fab108aa76465cb53963470624448d. Its earlier clear status and original cursor
+proof remain archived; renewed movement/restore also passes. No Excel/worker
+intervention, desktop failure or pin change occurred.
+
+All6 Config read-only proofs and6 Auth comparisons preserve inputs. Four command
+cases each observe3 Config saves, zero changed table cells, and changes limited
+to workbook record3073 and core.xml; the two pre-application refusals observe zero
+saves or changed parts. CauseEstablished remains false; this does not waive the
+open Config diagnosis. The focused Create correction and its shared-save
+regression are complete. EDIT receipt/retry, Config diagnosis and final current-
+source/built-package/visible/Release1 acceptance remain open under4be-A.
