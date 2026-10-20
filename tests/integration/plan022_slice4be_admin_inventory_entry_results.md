@@ -1,26 +1,59 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Binding/mutation GREEN qualified263/263,2026-10-20:**
+draft5524cf7f retains product a9faab9c and applies fixture correction8fcec788.
+The full actual-Upload cohort passes263 checks with no failures, including all
+five instrumented compiles. Both identical-payload EDITs retain distinct commands
+and exact applied events. The unchanged imported-row control and every altered
+operator-row case pass. All nine actual canonical receipt mutations execute and
+pass, including DuplicateReceipt. All45 privacy checks pass across local/published
+snapshots, Receiving/Shipping/Production, D17 and captured D8 aggregation.
+All72 Config/Auth/read checks pass at24 boundaries:22 Config byte comparisons
+are unchanged; two metadata changes are explained by six inbox-bootstrap saves.
+Auth bytes and read-only extraction are preserved at all24 boundaries.
+No product implementation, runtime contract or recording control changed.
+Controller `reports/runtime/inventory-imported-controller/1c8a57f9fc89436e925f86626f18ae5d`;
+worker `reports/runtime/slice4be-admin-inventory-entry/042dd6103dcf41379a92ade838163adf`.
+Normal Quit/COM release returned17:44:50.599Z/17:44:51.274Z. Garbage collection
+returned18:16:25.919Z; closure18:16:29.314Z confirms settings restored, Excel closed
+and all package/source/tooling pins preserved. Audit18:16:49.326Z records zero
+Excel events; no intervention occurred. This is source-overlay evidence, not final
+packaged/native-input acceptance. Broader receipt phases/results/save GREENs and
+their older Config diagnosis gaps remain open.
+
+**Binding regression harness correction,2026-10-20:** draft9ab44e91
+(product a9faab9c) completes186 PASS plus one harness exception. Both intentional
+identical-payload edits retain distinct commands/events and exact applied proof;
+the unchanged imported control and all operator-row tampering cases pass.
+Eight canonical receipt mutations execute and pass. DuplicateReceipt setup fails
+while assigning a two-dimensional Value2 array; that case and privacy checks are
+not exercised. This is neither product RED nor completed GREEN.
+Test correction8fcec788 uses the existing Range.Copy fixture pattern without
+changing assertions or product code; PowerShell parsing and diff checks pass.
+Controller `reports/runtime/inventory-imported-controller/a59e62de8aa649ef8ea94c271e0312a1`;
+worker `reports/runtime/slice4be-admin-inventory-entry/60a50b53c9b84ac99ad0461f7df6db65`.
+All five instrumented compiles pass. Quit/COM release/GC return by16:50:55.647Z;
+closure17:19:17.180Z confirms settings restoration, Excel closed and all pins
+preserved. Audit17:19:37.188Z records zero Excel events; no intervention occurred.
+Read-only cleanup samples showed increasing CPU with one remaining Excel thread
+despite HasExited=True; the slow teardown's cause remains unresolved.
+The corrected full cohort must pass; partial results do not replace it.
+
 **D8-INV-EDIT-01 implementation draft,2026-10-20 Pacific:** isolated branch
 `work/d8-inv-edit-receipts` adds Core preparation/binding and Inventory Domain
 ownership of the single catalog/receipt save. The existing operator result keeps
 the command reference; quantity completion uses the exact saved event/log proof.
 The receipt stores the immutable quantity plan, without a second mutable success
-flag. Canonical-save tests now observe the Domain owner. Existing modal catalog
-and quantity write paths are retained; catalog field planning and read-only
-entity resolution are shared. No new recording ControlId or replay
-adapter is added.
+flag. Canonical-save tests observe the Domain owner. Modal catalog and quantity
+paths are retained; catalog field planning and read-only entity resolution are
+shared. No new recording ControlId or replay adapter.
 
-All five instrumented compiles and focused ownership GREEN qualify below.
-Broader receipt GREEN, receipt-side mutations, retained regressions and
-packaged/native/visible acceptance remain open. The older combined
-baseline's expanded Config observations remain unqualified.
-
-Draft source5d15970c/testb19676af static maintenance completes in ignored
-`reports/runtime/edit-receipts-b19676af-static`:385 components/6710 procedures;
-literal Run9, unresolved calls45, duplicate groups194 and oversized modules27.
-The maintenance JSON contract passes. These counts alone do not establish VBA
-compile or behavior. The focused actual-Upload diagnostic below exercises the
-approved ownership rule; no new contract or acceptance is claimed.
+Five instrumented compiles, ownership and binding/mutation GREEN qualify.
+Receipt phase/result/save GREENs, retained regressions and packaged/native/visible
+acceptance remain open. The older combined baseline's Config observations remain
+unqualified. Initial draft5d15970c/testb19676af static baseline was385 components/
+6710 procedures with Run9/unresolved45/duplicates194/oversized27 in
+`reports/runtime/edit-receipts-b19676af-static`; final ownership metrics are below.
 
 **EDIT ownership GREEN qualified66/66,2026-10-20 Pacific:**
 draft fixfe4b5fb4 adds Core pending-write ownership checks in EDIT preparation,
