@@ -5,6 +5,7 @@ param(
     [Parameter(Mandatory=$true)][string]$DesktopMonitorReport,
     [switch]$TesterBaselineOverlayForTest,
     [switch]$WorksheetResultsRegression,
+    [string]$ReceiptScenarioForTest='',
     [ValidateSet('ImportedRows','ImportedEdits','EditReceiptPhases','EditReceiptResults','EditReceiptSave','EditReceiptAll','EditBindings','WorksheetResults','PrimitivePayload','CatalogCompletion','Headless','CreatePhases','CreateName','ConfigMetadata')]
     [string]$InventoryCase='ImportedRows'
 )
@@ -16,6 +17,12 @@ if($WorksheetResultsRegression){
     $InventoryCase='WorksheetResults'
 }
 if($InventoryCase -in @('WorksheetResults','CatalogCompletion','Headless') -and $Phase -ne 'GREEN'){throw 'Retained Inventory regressions require the GREEN phase.'}
+if($ReceiptScenarioForTest -ne ''){
+    $cohorts=@{EditReceiptPhases='Phase';EditReceiptResults='Result';EditReceiptSave='Canonical'}
+    if(-not $cohorts.ContainsKey($InventoryCase)){throw 'Receipt scenario requires a focused receipt cohort.'}
+    . (Join-Path $PSScriptRoot 'Slice4beInventoryReceiptScenarios.ps1')
+    [void](Get-InventoryReceiptScenarios -Cohort $cohorts[$InventoryCase] -Scenario $ReceiptScenarioForTest)
+}
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before the isolated Inventory gate.'}
 . (Join-Path $PSScriptRoot 'Slice4beRecordingLifecycle.ps1')
 $repo=Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -40,6 +47,7 @@ try{
         '-CompileEvaluationProbesForTest','-WaitForExcelReadyForTest','-ExcelReadyReadLimitForTest','40',
         '-DesktopMonitorReport',$DesktopMonitorReport)
     if($TesterBaselineOverlayForTest){$workerArgs+='-AdminInventoryTesterBaselineOverlayForTest'}
+    if($ReceiptScenarioForTest -ne ''){$workerArgs+=@('-AdminInventoryReceiptScenarioForTest',$ReceiptScenarioForTest)}
     switch($InventoryCase){
         'ImportedRows' {$workerArgs+=@('-AdminInventoryWorksheetResultsOnly','-AdminInventoryImportedRowsOnly')}
         'ImportedEdits' {$workerArgs+=@('-AdminInventoryWorksheetResultsOnly','-AdminInventoryImportedRowsOnly','-AdminInventoryImportedEditsOnly')}
@@ -65,7 +73,7 @@ try{
     $errorFile=[IO.FileStream]::new((Join-Path $root 'worker-error.log'),[IO.FileMode]::Create,[IO.FileAccess]::Write,[IO.FileShare]::Read,1,$true)
     try{
         $worker=[Diagnostics.Process]::Start($launch)
-        [pscustomobject]@{ProcessId=$worker.Id;StartUTC=$worker.StartTime.ToUniversalTime().ToString('o');InventoryCase=$InventoryCase}|ConvertTo-Json|Set-Content (Join-Path $root 'worker-identity.json')
+        [pscustomobject]@{ProcessId=$worker.Id;StartUTC=$worker.StartTime.ToUniversalTime().ToString('o');InventoryCase=$InventoryCase;ReceiptScenario=$ReceiptScenarioForTest}|ConvertTo-Json|Set-Content (Join-Path $root 'worker-identity.json')
         $outputCopy=$worker.StandardOutput.BaseStream.CopyToAsync($outputFile,256)
         $errorCopy=$worker.StandardError.BaseStream.CopyToAsync($errorFile,256)
         $worker.WaitForExit();$outputCopy.Wait();$errorCopy.Wait()

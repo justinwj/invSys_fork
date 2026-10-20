@@ -161,6 +161,7 @@ param(
     [switch]$AdminInventoryEditCanonicalSaveOnly,
     [switch]$AdminInventoryEditBindingsOnly,
     [switch]$AdminInventoryEditReceiptAllOnly,
+    [string]$AdminInventoryReceiptScenarioForTest='',
     [switch]$AdminInventoryReadOnlyOperatorsOnly,
     [switch]$AdminInventoryHeadlessWorksheetOnly,
     [switch]$AdminInventoryPrimitivePayloadOnly,
@@ -308,6 +309,20 @@ param(
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+if($AdminInventoryReceiptScenarioForTest -ne ''){
+    if(-not $AdminInventoryEditReceiptPhasesOnly -or $AdminInventoryEditBindingsOnly -or
+        $AdminInventoryEditReceiptAllOnly -or $PSBoundParameters['AdminInventoryEditOwnershipOnly']){
+        throw 'Receipt scenario requires a focused receipt cohort.'
+    }
+    if($AdminInventoryEditReceiptResultsOnly -and $AdminInventoryEditCanonicalSaveOnly){
+        throw 'Receipt scenario requires one focused receipt cohort.'
+    }
+    $receiptCohort='Phase'
+    if($AdminInventoryEditReceiptResultsOnly){$receiptCohort='Result'}
+    if($AdminInventoryEditCanonicalSaveOnly){$receiptCohort='Canonical'}
+    . (Join-Path $PSScriptRoot 'Slice4beInventoryReceiptScenarios.ps1')
+    [void](Get-InventoryReceiptScenarios -Cohort $receiptCohort -Scenario $AdminInventoryReceiptScenarioForTest)
+}
 if($RunPrintBaselineOnly -and (-not $CheckProductionRunLocal -or $RunCompleteBaselineOnly -or $RunNextBaselineOnly)){throw 'Print baseline requires its isolated Run fixture.'}
 if($PrintSeedBoundaryForTest -ne 'None' -and -not $RunPrintBaselineOnly){throw 'Seed boundary diagnosis requires the Print fixture.'}
 if($RunPrintRecordedOnly -and (-not $RunPrintBaselineOnly -or $PrintSeedBoundaryForTest -ne 'None')){throw 'Print recording proof requires its isolated Print fixture.'}
