@@ -1,16 +1,49 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
-**EDIT ownership diagnostic,2026-10-20 Pacific:** isolated draft204d9be9
-(`work/d8-inv-edit-receipts`, draft PR4) completes66 checks:60 PASS/6 FAIL.
-All five instrumented XLAM compiles and probe installation pass. This is actual
-Upload source-overlay evidence, not deployed-package or visible acceptance.
-Closure/restoration/native qualification is pending. Normal Quit and final COM
-release returned at15:20:22Z; garbage collection returned15:20:22.982Z. At15:29Z,
-Windows reports Excel exited but still enumerates its process. No process
-intervention occurred. The controller and worker remain alive; do not start a new
-Excel test or terminate the controller holding the settings snapshot.
+**EDIT ownership GREEN qualified66/66,2026-10-20 Pacific:**
+draft fixfe4b5fb4 adds Core pending-write ownership checks in EDIT preparation,
+prepared-selection confirmation, Domain plan claim and quantity queue/application
+boundaries. Saved completed receipts retain read-only confirmation. The operator
+message is "Close the Inventory workbook before uploading pending EDIT changes."
+The same focused66-check cohort completes66 PASS/0 FAIL; no test expectation
+was changed. All five instrumented compiles pass. Normal closure16:17:42.215Z
+confirms settings restored, Excel closed and package/source/tooling pins preserved;
+native audit16:18:02.230Z records zero Excel events. No intervention occurred. Controller
+`reports/runtime/inventory-imported-controller/8a13c6ef1b5643a89f76f9722e32dd61`;
+worker `reports/runtime/slice4be-admin-inventory-entry/b6b90f1603894317a3982f7c19f2fecd`.
+Both borrowed-source cases now refuse before writes and preserve the existing
+owner. Closed-source retries succeed with the original event identity and no
+repeated catalog application. Completed imported-row inspection remains allowed.
+All eight Config/Auth/read boundaries pass; five Config comparisons retain
+identical bytes and three classified metadata changes have nine bootstrap saves.
+No new contract, ControlId or package promotion is introduced.
+Static maintenance for fixfe4b5fb4 completes in ignored
+`reports/runtime/edit-ownership-fix-static`:385 components/6711 procedures,
+literal Run9, unresolved calls45, duplicate groups194 and oversized modules27.
+The JSON contract passes. The one added private procedure and28 lines do not
+increase the call, duplicate or oversized-module ratchets.
 
-Five failures directly expose borrowed-source writes: mixed ADD/EDIT does not
+Subsequent a9faab9c changes only the fallback string to "The pending EDIT source
+could not be confirmed." The guard also runs after queueing, so it must not claim
+that no earlier event was queued. An exact source comparison against fe4b5fb4
+confirms only that literal changed; no control flow or test expectation changed.
+The qualified runtime/compile result above applies to fe4b5fb4; the clarified
+fallback itself was not separately exercised. Final static evidence is recorded
+in `reports/runtime/edit-ownership-final-static`.
+The GREEN bounded cursor proof reached its exact target and restored position;
+subsequent passive monitoring recorded zero error5/lock/mouse-lock samples and
+stopped normally. This is actual Upload source-overlay evidence, not deployed
+package, native-input or visible operator acceptance. 4be-A remains incomplete.
+
+**EDIT ownership RED qualified:** isolated draft204d9be9 completes66 checks:
+60 PASS/6 FAIL. All five instrumented XLAM compiles and probe installation pass.
+This is actual Upload source-overlay evidence, not deployed-package or visible
+acceptance. Normal Quit/COM release returned15:20:22Z and garbage collection
+15:20:22.982Z. Closure15:39:44.535Z confirms settings restored, Excel closed and all
+package/source/tooling pins preserved. Audit15:40:04.553Z records zero Excel events.
+No intervention occurred. This qualifies the focused RED;4be-A remains open.
+
+In RED, five failures directly expose borrowed-source writes: mixed ADD/EDIT does not
 refuse the whole selection before canonical changes or preserve the existing
 workbook owner; saved-catalog quantity retry reaches queueing, changes the source
 and fails owner preservation. Neither failed action reports IMPORTED.
