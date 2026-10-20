@@ -14,6 +14,7 @@ function Test-InventoryImportedRows($Fixture,$Other) {
     $script:InventoryConfigReadChecks=[Collections.Generic.List[object]]::new()
     $cases=@('ConfirmedPreviousAdd','ForgedImported','ChangedImportedQuantity','MissingImportedReceipt','ChangedImportedKey','ChangedImportedSku')
     if($AdminInventoryConfigMetadataOnly){$cases=@('ConfirmedPreviousAdd')}
+    if($AdminInventoryImportedEditsOnly){$cases=@('ConfirmedPreviousEdit','ForgedImportedEdit','AddReceiptRelabeledEdit')}
     foreach($case in $cases){
         SelectTarget $Fixture
         $id='InventoryImportedRow.'+$case
@@ -25,7 +26,7 @@ function Test-InventoryImportedRows($Fixture,$Other) {
             $table=@($hostBook.Worksheets|ForEach-Object {$_.ListObjects}|Where-Object {$_.Name -like 'invSys_Inventory_*'})[0]
             $extra=$table.ListColumns.Add();$extra.Name='USER NOTE';$extra.DataBodyRange.Cells.Item(1,1).Value2='Retained projection extension'
             $hostBook.Save()
-            $firstEvent='';$firstKey='';$firstResult=''
+            $firstEvent='';$firstKey='';$firstResult='';$firstQty=0
             if($case -cne 'ForgedImported'){
                 $initial=Get-AdminInventoryEntryFacts $Fixture -Persisted
                 [void](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Arm' @('ImportedSetup',$hostBook.Name))
@@ -40,6 +41,23 @@ function Test-InventoryImportedRows($Fixture,$Other) {
                 if(-not $valid){throw 'Prior owning ADD fixture unavailable; not RED.'}
                 $firstKey=[string]$newKeys[0];$firstEvent=$eventMatch.Groups[1].Value.Trim()
             }
+            if($case -ceq 'ConfirmedPreviousEdit'){
+                $table.ListColumns.Item('Action').DataBodyRange.Cells.Item(1,1).Value2='EDIT'
+                $table.ListColumns.Item('Quantity').DataBodyRange.Cells.Item(1,1).Value2=5.0
+                $table.ListColumns.Item('Edit Reason').DataBodyRange.Cells.Item(1,1).Value2='Owned worksheet edit proof'
+                $table.ListColumns.Item('Upload Status').DataBodyRange.Cells.Item(1,1).Value2=''
+                $table.ListColumns.Item('Upload Result').DataBodyRange.Cells.Item(1,1).Value2=''
+                $hostBook.Save();$table.DataBodyRange.Cells.Item(1,1).Select()
+                [void](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Arm' @('ImportedEditSetup',$hostBook.Name))
+                [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'Upload','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
+                $edited=Get-AdminInventoryEntryFacts $Fixture -Persisted
+                $editFacts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
+                $valid=$editFacts.Count -eq 5 -and $editFacts[0] -ceq 'True' -and $editFacts[2] -ceq '1' -and $editFacts[3] -ceq 'True' -and $edited.EntityQuantities[$firstKey] -eq 5 -and $edited.LogRows -eq $created.LogRows+1 -and $edited.AppliedRows -eq $created.AppliedRows+1 -and [string]$table.ListColumns.Item('Upload Status').DataBodyRange.Cells.Item(1,1).Value2 -ceq 'IMPORTED'
+                Check ($id+'.OwningPriorEditIndependentlySaved') $valid
+                if(-not $valid){continue} # Preserve this product failure and test the independent refusal cases.
+                $firstQty=5
+                $firstResult=[string]$table.ListColumns.Item('Upload Result').DataBodyRange.Cells.Item(1,1).Value2
+            }
             # Copy only user business input into a second pending ADD. Generated
             # Item Code and all status/result fields remain empty for that row.
             foreach($header in @('Action','Item Name','UOM','Qty Mode','Quantity','Default Location','Category','Description','Vendor(s)','Vendor Code','External Code','Picture Path/URL')){
@@ -47,6 +65,10 @@ function Test-InventoryImportedRows($Fixture,$Other) {
                 $table.ListColumns.Item($header).DataBodyRange.Cells.Item(2,1).Value2=[string]$table.ListColumns.Item($header).DataBodyRange.Cells.Item(1,1).Value2
             }
             $table.ListColumns.Item('Item Name').DataBodyRange.Cells.Item(2,1).Value2='Pending second fixture item'
+            if($AdminInventoryImportedEditsOnly){
+                $table.ListColumns.Item('Action').DataBodyRange.Cells.Item(2,1).Value2='ADD'
+                $table.ListColumns.Item('Quantity').DataBodyRange.Cells.Item(2,1).Value2=0.0
+            }
             switch -CaseSensitive ($case){
                 'ForgedImported' {
                     $table.ListColumns.Item('Upload Status').DataBodyRange.Cells.Item(1,1).Value2='IMPORTED'
@@ -56,6 +78,17 @@ function Test-InventoryImportedRows($Fixture,$Other) {
                 'MissingImportedReceipt' {$table.ListColumns.Item('Upload Result').DataBodyRange.Cells.Item(1,1).Value2=''}
                 'ChangedImportedKey' {$table.ListColumns.Item('Upload Result').DataBodyRange.Cells.Item(1,1).Value2=$firstResult.Replace($firstKey,'UNCONFIRMED-RESULT-KEY')}
                 'ChangedImportedSku' {$table.ListColumns.Item('Item Code').DataBodyRange.Cells.Item(1,1).Value2='DEMO-ALTERED-IMPORTED-CHOICE'}
+                'ForgedImportedEdit' {
+                    $table.ListColumns.Item('Action').DataBodyRange.Cells.Item(1,1).Value2='EDIT'
+                    $table.ListColumns.Item('Quantity').DataBodyRange.Cells.Item(1,1).Value2=5.0
+                    $table.ListColumns.Item('Edit Reason').DataBodyRange.Cells.Item(1,1).Value2='Unperformed edit'
+                    $table.ListColumns.Item('Upload Result').DataBodyRange.Cells.Item(1,1).Value2='Unproved edit success'
+                    $firstEvent=''
+                }
+                'AddReceiptRelabeledEdit' {
+                    $table.ListColumns.Item('Action').DataBodyRange.Cells.Item(1,1).Value2='EDIT'
+                    $table.ListColumns.Item('Edit Reason').DataBodyRange.Cells.Item(1,1).Value2='Unperformed catalog edit'
+                }
             }
             $hostBook.Save();$table.DataBodyRange.Cells.Item(1,1).Select()
             $before=Get-AdminInventoryEntryFacts $Fixture -Persisted
@@ -71,8 +104,8 @@ function Test-InventoryImportedRows($Fixture,$Other) {
             Check ($id+'.OriginalOperatorCaptured') ($facts[3] -ceq 'True')
             $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $newKeys=@($after.EntityQuantities.Keys|Where-Object {-not $before.EntityQuantities.ContainsKey($_)})
-            if($case -ceq 'ConfirmedPreviousAdd'){
-                Check ($id+'.OnlyPendingRowAppliedExactlyOnce') ($newKeys.Count -eq 1 -and $after.EntityQuantities[$newKeys[0]] -eq 0 -and $after.LogRows -eq $before.LogRows+1 -and $after.AppliedRows -eq $before.AppliedRows+1 -and $after.EntityQuantities[$firstKey] -eq 0)
+            if($case -cin @('ConfirmedPreviousAdd','ConfirmedPreviousEdit')){
+                Check ($id+'.OnlyPendingRowAppliedExactlyOnce') ($newKeys.Count -eq 1 -and $after.EntityQuantities[$newKeys[0]] -eq 0 -and $after.LogRows -eq $before.LogRows+1 -and $after.AppliedRows -eq $before.AppliedRows+1 -and $after.EntityQuantities[$firstKey] -eq $firstQty)
                 Check ($id+'.ConfirmedReceiptPreserved') ([string]$table.ListColumns.Item('Upload Result').DataBodyRange.Cells.Item(1,1).Value2 -ceq $firstResult -and [string]$table.ListColumns.Item('Upload Status').DataBodyRange.Cells.Item(1,1).Value2 -ceq 'IMPORTED')
             }else{
                 Check ($id+'.WholeSelectionRefusedBeforeCanonicalMutation') ($after.FileHash -ceq $before.FileHash -and $after.LogRows -eq $before.LogRows -and $after.AppliedRows -eq $before.AppliedRows -and $newKeys.Count -eq 0)

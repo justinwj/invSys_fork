@@ -155,6 +155,7 @@ param(
     [switch]$AdminInventoryWorksheetResultsOnly,
     [switch]$AdminInventoryImportedRowsOnly,
     [switch]$AdminInventoryConfigMetadataOnly,
+    [switch]$AdminInventoryImportedEditsOnly,
     [switch]$AdminInventoryReadOnlyOperatorsOnly,
     [switch]$AdminInventoryHeadlessWorksheetOnly,
     [switch]$AdminInventoryPrimitivePayloadOnly,
@@ -884,6 +885,7 @@ if($AdminInventoryOverlaySourceRootForTest -and (-not $AdminInventorySourceOverl
 if($AdminInventoryTesterBaselineOverlayForTest -and (-not $AdminInventorySourceOverlayForTest -or $AdminInventoryOverlaySourceRootForTest)){throw 'The older Tester baseline requires current Inventory source overlays, without an alternate export.'}
 if($AdminInventoryImportedRowsOnly -and (-not $AdminInventoryWorksheetResultsOnly -or -not $AdminInventorySourceOverlayForTest)){throw 'Imported-row proof requires the isolated source-overlay worksheet gate.'}
 if($AdminInventoryConfigMetadataOnly -and -not $AdminInventoryImportedRowsOnly){throw 'Config metadata diagnosis requires the isolated imported-row action gate.'}
+if($AdminInventoryImportedEditsOnly -and (-not $AdminInventoryImportedRowsOnly -or $AdminInventoryConfigMetadataOnly)){throw 'Imported EDIT proof requires its own imported-row action gate.'}
 if($AdminInventoryPrimitivePayloadOnly -and (-not $AdminInventoryEntryOnly -or -not $AdminInventorySourceOverlayForTest -or $AdminInventoryHeadlessWorksheetOnly -or $AdminInventoryReadOnlyOperatorsOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Primitive payload controls require their separate source-overlay Inventory gate.'}
 if($AdminInventoryCreatePhasesOnly -and -not $AdminInventoryEntryOnly){throw 'Create phases require the separate Inventory entry gate.'}
 if($AdminInventoryCreateNameOnly -and -not $AdminInventoryCreatePhasesOnly){throw 'Create name checks require the Create phase gate.'}
