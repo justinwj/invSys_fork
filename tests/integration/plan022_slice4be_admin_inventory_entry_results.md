@@ -1,5 +1,24 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Binding/mutation regression263/263; native qualification pending,2026-10-20:**
+draft5524cf7f retains product a9faab9c and applies fixture correction8fcec788.
+The full actual-Upload cohort passes263 checks with no failures, including all
+five instrumented compiles. Both identical-payload EDITs retain distinct commands
+and exact applied events. The unchanged imported-row control and every altered
+operator-row case pass. All nine actual canonical receipt mutations execute and
+pass, including DuplicateReceipt. All45 privacy checks pass across local/published
+snapshots, Receiving/Shipping/Production, D17 and captured D8 aggregation.
+All72 Config/Auth/read checks pass at24 boundaries:22 Config byte comparisons
+are unchanged; two metadata changes are explained by six inbox-bootstrap saves.
+Auth bytes and read-only extraction are preserved at all24 boundaries.
+No product implementation, runtime contract or recording control changed.
+Controller `reports/runtime/inventory-imported-controller/1c8a57f9fc89436e925f86626f18ae5d`;
+worker `reports/runtime/slice4be-admin-inventory-entry/042dd6103dcf41379a92ade838163adf`.
+Normal Quit/COM release returned17:44:50.599Z/17:44:51.274Z; cleanup, restoration
+and native audit remain pending. This is source-overlay evidence, not final
+packaged/native-input acceptance. Broader receipt phases/results/save GREENs and
+their older Config diagnosis gaps remain open.
+
 **Binding regression harness correction,2026-10-20:** draft9ab44e91
 (product a9faab9c) completes186 PASS plus one harness exception. Both intentional
 identical-payload edits retain distinct commands/events and exact applied proof;
