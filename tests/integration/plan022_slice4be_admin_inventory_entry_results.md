@@ -1,5 +1,32 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Result-save cohort GREEN qualified,2026-10-20:** draft89a70936 retains
+product a9faab9c. All three default scenarios pass separately through actual
+Upload:36/36,40/40,36/36; the union is100 distinct checks, excluding repeated
+compile/probe checks. Failed operator-result saves and post-application authority
+loss report partial completion, preserve operator bytes and recover through a
+fresh authorized session without repeating catalog or quantity effects. A later
+legitimate quantity change remains intact on retry.
+All30 Config/Auth/read checks pass at ten boundaries: seven Config comparisons
+are byte-identical and three changes are explained by nine inbox-bootstrap saves;
+Auth and read-only extraction are preserved throughout. Each run compiles all five
+instrumented XLAMs, restores settings, preserves all pins and closes normally
+without intervention. Each native audit records zero Excel events.
+
+| Scenario | PASS/FAIL | Controller / worker suffix | Normal closure / native audit UTC |
+| --- | --- | --- | --- |
+| OperatorSaveThrows | 36/0 | e0362627af064e6fbcac26edd0ec3f8b / 810ff7ea8ca442ba915e3c28c428874c | 19:39:58.497 / 19:40:18.510 |
+| OperatorSaveThrowsLaterQuantity | 40/0 | 24e8e8094cc541beab14794b4c72e823 / 427c6cca270e4d89baa3bbee312aa682 | 19:50:52.751 / 19:51:12.765 |
+| AfterApplyAuthorityLost | 36/0 | 7d93a3881780415da638394f577eed48 / 5559346cc33141889f34877c59386e41 | 20:01:25.356 / 20:01:45.363 |
+
+Paths use `reports/runtime/inventory-imported-controller/<controller>` and
+`reports/runtime/slice4be-admin-inventory-entry/<worker>` in the isolated draft.
+Each `inventory-receipt-scope.jsonl` confirms its exact selected case. The merged
+selector passes90 offline checks plus two draft ownership guards; assertions and
+product code remain unchanged. Bounded cursor proofs pass and passive monitoring
+remains clear. This is source-overlay evidence; canonical-save, retained/final
+acceptance and older RED Config diagnosis gaps remain open.
+
 **Receipt test partitioning,2026-10-20:** harnessadf6a968 adds an optional
 single-scenario selector for phase, result-save and canonical-save cohorts.
 Default case sets and assertion bodies are unchanged; each run records its exact
