@@ -2286,8 +2286,13 @@ End Function
             if($AdminInventoryEditReceiptPhasesOnly){
                 . (Join-Path $PSScriptRoot 'Slice4beInventoryEditReceipts.ps1')
                 Install-InventoryEditReceiptProbe
-                if($AdminInventoryEditBindingsOnly){
+                if($AdminInventoryEditBindingsOnly -or $AdminInventoryEditReceiptAllOnly){
                     . (Join-Path $PSScriptRoot 'Slice4beInventoryEditBindings.ps1')
+                }
+                if($AdminInventoryEditReceiptAllOnly){
+                    . (Join-Path $PSScriptRoot 'Slice4beInventoryEditOwnership.ps1')
+                }
+                if($AdminInventoryEditBindingsOnly){
                     Install-InventoryEditBindingsProbe
                     . (Join-Path $PSScriptRoot 'Slice4beInventoryEditPrivacy.ps1')
                     Install-InventoryEditPrivacyProbe
@@ -2556,6 +2561,7 @@ End Function
                 if($AdminInventoryEditBindingsOnly){
                     Test-InventoryEditBindings $a $b
                 }elseif($AdminInventoryEditReceiptAllOnly){
+                    Test-InventoryEditOwnership $a $b
                     foreach($cohort in @('Phase','Result','Canonical')){Test-InventoryEditReceiptPhases $a $b $cohort}
                 }else{Test-InventoryEditReceiptPhases $a $b}
             }elseif($AdminInventoryImportedRowsOnly){

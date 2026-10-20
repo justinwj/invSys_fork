@@ -183,14 +183,14 @@ function Read-InventoryEditReceiptCopy([string]$Path,[string]$Sku,[string]$Comma
     $result.Preserved=((Get-AdminInventoryEntryHash $Path) -ceq $hash)
     return $result
 }
-function Get-InventoryEditSavedResult([string]$Path) {
+function Get-InventoryEditSavedResult([string]$Path,[int]$Row=1) {
     $hash=Get-AdminInventoryEntryHash $Path;$book=$excel.Workbooks.Open($Path,0,$true)
     try{
         $table=@($book.Worksheets|ForEach-Object {$_.ListObjects}|Where-Object {$_.Name -like 'invSys_Inventory_*'})[0]
-        $text=[string]$table.ListColumns.Item('Upload Result').DataBodyRange.Cells.Item(1,1).Value2
+        $text=[string]$table.ListColumns.Item('Upload Result').DataBodyRange.Cells.Item($Row,1).Value2
         $match=[regex]::Match($text,'(?im)^Command:\s*([^\r\n]+)')
         $command='';if($match.Success){$command=$match.Groups[1].Value.Trim()}
-        $status=[string]$table.ListColumns.Item('Upload Status').DataBodyRange.Cells.Item(1,1).Value2
+        $status=[string]$table.ListColumns.Item('Upload Status').DataBodyRange.Cells.Item($Row,1).Value2
     }finally{$book.Close($false)}
     return [pscustomobject]@{Command=$command;Status=$status;Text=$text;Preserved=((Get-AdminInventoryEntryHash $Path) -ceq $hash)}
 }
