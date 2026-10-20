@@ -201,13 +201,14 @@ function Test-InventoryEditBinding($Snapshot,$Saved,$Fixture,[string]$Sku) {
     $receipt=$boundReceipts[0]
     return ($receipt.Command -ceq $Saved.Command -and $receipt.Sku -ceq $Sku -and $receipt.Warehouse -ceq $Fixture.Warehouse -and $receipt.Station -ceq 'S1' -and $receipt.User -ceq 'config-admin')
 }
-function Test-InventoryEditReceiptPhases($Fixture,$Other,[ValidateSet('','Phase','Result','Canonical')][string]$Cohort='') {
+function Test-InventoryEditReceiptPhases($Fixture,$Other,[ValidateSet('','Phase','Result','Canonical','Ownership')][string]$Cohort='') {
     if($Cohort -ne ''){
         $AdminInventoryEditReceiptResultsOnly=($Cohort -eq 'Result')
         $AdminInventoryEditCanonicalSaveOnly=($Cohort -eq 'Canonical')
     }
     $script:InventoryConfigReadChecks=[Collections.Generic.List[object]]::new()
     $cases=@('CatalogOnly','NoopQuantity','QuantityChange','QueueFailure')
+    if($Cohort -eq 'Ownership'){$cases=@('QueueFailure')}
     if($AdminInventoryEditReceiptResultsOnly){$cases=@('OperatorSaveThrows','OperatorSaveThrowsLaterQuantity','AfterApplyAuthorityLost')}
     if($AdminInventoryEditCanonicalSaveOnly){$cases=@('BeforeCatalogSaveThrows','AfterCatalogSaveThrows','BeforeCatalogSaveAuthorityLost','AfterCatalogSaveAuthorityLost')}
     foreach($case in $cases){
@@ -304,7 +305,7 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other,[ValidateSet('','Phase'
                 $table=@($hostBook.Worksheets|ForEach-Object {$_.ListObjects}|Where-Object {$_.Name -like 'invSys_Inventory_*'})[0]
                 SelectTarget $Fixture;$hostBook.Activate();$table.DataBodyRange.Cells.Item(1,1).Select()
                 $retryBefore=$after;$retryTarget=5;$retryDelta=1
-                if($case -eq 'QueueFailure' -and $AdminInventoryEditReceiptAllOnly){
+                if($case -eq 'QueueFailure' -and ($AdminInventoryEditReceiptAllOnly -or $AdminInventoryEditOwnershipOnly)){
                     Test-InventoryEditPendingOwnership $Fixture $hostBook $sourcePath $after
                 }
                 if($AdminInventoryEditReceiptResultsOnly){$retryDelta=0}
