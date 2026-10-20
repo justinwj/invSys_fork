@@ -85,9 +85,9 @@ Public Function InventoryCreateResultForTest() As Variant
 End Function
 '@)
     $start=$form.ProcStartLine('mBtnCreateInventoryTable_Click',0);$count=$form.ProcCountLines('mBtnCreateInventoryTable_Click',0)
-    $body=$form.Lines($start,$count);$line='    If Not CurrentContextAllowed() Then Exit Sub'
-    if([regex]::Matches($body,[regex]::Escape($line)).Count -ne 1){throw 'Create form entry seam unavailable; not product RED.'}
-    $body=$body.Replace($line,$line+"`r`n"+'    TestInventoryCreatePhase.AtPhase "BeforeHelper"')
+    $body=$form.Lines($start,$count);$line='(?im)^    If Not CurrentContextAllowed\(\) Then Exit Sub\r?$'
+    if([regex]::Matches($body,$line).Count -ne 1){throw 'Create form entry seam unavailable; not product RED.'}
+    $body=[regex]::Replace($body,$line,[Text.RegularExpressions.MatchEvaluator]{param($m) $m.Value.TrimEnd("`r")+"`r`n"+'    TestInventoryCreatePhase.AtPhase "BeforeHelper"'})
     $form.DeleteLines($start,$count);$form.InsertLines($start,$body)
     $driver=$project.VBComponents.Item('TestInventoryCommands').CodeModule
     $start=$driver.ProcStartLine('Drive',0);$count=$driver.ProcCountLines('Drive',0)
