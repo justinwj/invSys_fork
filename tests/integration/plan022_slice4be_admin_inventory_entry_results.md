@@ -6,7 +6,7 @@ teste2eb0e0d, controller `7990302e43dd4710bb3ada422e38182b`, worker
 Excel Event1001 `RADAR_PRE_LEAK_64` at2026-10-20T07:48:10.7524730Z inside the
 controller interval. Exact process attribution and cause are not established.
 The existing native audit counts this event; do not exclude it retrospectively
-or promote this run's partial assertions. The worker is still active, without
+or promote this run's partial assertions. The controller remains active, without
 closure/restoration/final-audit proof. The previously qualified separate RED
 cohorts below remain the implementation baseline; the expanded Config comparisons
 remain unqualified. Ignored evidence: controller `native-warning-observed.json`.
@@ -18,6 +18,12 @@ was then removed. Windows still lists the terminated process and the controller
 has not restored/audited closure yet. `forced-test-excel-stop.json` and
 `normal-quit-request.json` explicitly exclude this run. Do not classify it as
 normal closure or reuse its partial assertions as a completed gate.
+The blocked worker was terminated at09:32:37.268Z; its parent controller remains
+alive with the original settings snapshot in memory (`worker-intervention.json`).
+At09:37Z, Windows still lists the terminated Excel process; restoration and
+final audit have not completed. Do not start another Excel test or terminate the
+restoration controller. The receipt draft is reviewable in draft PR4; the next
+fresh test is `EditOwnership` with `-TraceResourcesForTest`, after cleanup.
 
 **Corrected EDIT binding/privacy RED qualified,2026-10-20 Pacific:**
 product fc2fba93/teste2a7b246 finishes147 PASS/32 FAIL across179 checks,
