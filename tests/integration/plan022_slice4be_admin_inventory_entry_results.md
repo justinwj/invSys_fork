@@ -1,5 +1,21 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Candidate build and harness guards, 2026-10-20:** candidate
+`deploy/validation-inventory-receipts-01` was built from draft `47d2ac5c` /
+product `a9faab9c`. All five packaged projects compile and Operations cold start
+passes. Draft evidence `reports/runtime/inventory-receipts-build-01` records
+normal closure at 22:32:12.874Z, restored settings, preserved frozen packages and
+source, and zero native Excel events at 22:32:32.898Z. This is candidate evidence,
+not promotion or final acceptance.
+
+`Test-PackagedValidationGuards.ps1` loads only validator function definitions and
+uses mock callbacks/processes: unchanged harness RED 2 PASS / 12 FAIL at main
+runtime `packaged-validator-guards/1de5bd07baa84f3f8413e110186809f6`; corrected
+harness GREEN 14/14 at `c27617c2897f47e6b5950611c96cbc56`. Desktop failure/staleness
+must stop dispatch; slow owned-process closure must finish without forced
+termination. This is orchestration RED/GREEN, not product behavioral RED. Existing
+packaged assertion rows are unchanged. Actual packaged smoke remains pending.
+
 **Retained Inventory regressions qualified, 2026-10-20:** draft `8af28d99` /
 product `a9faab9c` now retains worksheet 64/64, Catalog 50/50, headless 56/56 and
 imported ADD 56/56. Every cohort retains its earlier GREEN assertion IDs/order.
