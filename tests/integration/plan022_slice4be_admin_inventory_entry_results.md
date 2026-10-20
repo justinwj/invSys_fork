@@ -1,5 +1,52 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Corrected EDIT binding/privacy RED qualified,2026-10-20 Pacific:**
+product fc2fba93/teste2a7b246 finishes147 PASS/32 FAIL across179 checks,
+including six harness checks,43 supplemental privacy checks and42 Config/Auth/
+read-preservation checks. All five instrumented compiles pass; no harness exception
+or stderr is recorded. The first independently imported EDIT seeds every row case.
+The unchanged-row control passes, including preservation of the original quantity
+after an intervening authorized reset. The probe confirms identical serialized
+payloads and that `FindExact` selects the first already-applied event for the second
+intentional EDIT. That second EDIT repeats catalog work but does not apply its
+intended quantity change.
+
+Changed quantity/reason/item/custom/SKU, missing command, altered command and
+duplicate imported rows fail whole-selection refusal and honest receipt reporting.
+Wrong-action refusal already passes. Missing command-reference checks reflect
+absent durable receipts, not independently observed deletion of an existing ID.
+All43 snapshot/role/D8/D17 projection checks pass with case-insensitive embedded
+canary and formula inspection. These are supplemental services, not packaged role
+UI acceptance. The actual EDIT produces no bound receipt, so nine receipt-side
+mutation cases are explicitly unexercised (`CasesAttempted=0`); none is counted
+as an executed refusal test.
+
+Controller `reports/runtime/inventory-imported-controller/6a28c41eead54a3c87dcb3ce825d04b2`;
+worker `reports/runtime/slice4be-admin-inventory-entry/f6ad659f1b3140059b7ab5348ab3c4b6`.
+Quit and final COM release returned around2026-10-20T06:42:57Z; garbage collection
+returned07:05:56.635Z. Normal closure07:05:59.508Z confirms settings restoration
+and preservation of all package/source/tooling pins. Native audit07:06:19.516Z
+confirms Excel closed and zero faults. No process intervention or desktop failure
+occurred. The observer stopped normally after qualification. Product implementation
+and final4be-A acceptance remain open.
+
+### Config diagnosis — corrected binding cohort
+
+Source fc2fba93/teste2a7b246; controller/worker IDs above. All14 observed boundaries
+(13 actual Upload calls and the projection group) preserve Config table cells/
+shapes, Auth bytes and read-only extraction. Config bytes remain identical in four
+comparisons; the other ten are independently classified as inbox-bootstrap save
+metadata, with30 observed calls total. No unclassified change occurs in these
+comparisons. Evidence: the worker's ignored `inventory-config-diagnosis.jsonl`
+and `edit-binding-authority-observations.jsonl`. These observations do not include
+the separate headless quantity reset or retroactively fill the older cohorts'
+gaps below. The shared observer now adds that reset and the phase/result/
+canonical-save actions to their next execution. `EditReceiptAll` groups the latter
+eleven scenarios under one controller; the phase, result and canonical test bodies
+and standalone selectors remain available. Five changed scripts parse, the selector
+metadata check passes and the diff is clean; the new combined runtime gate has not
+yet run. No new runtime or architectural contract is introduced by this harness work.
+
 ## Config diagnosis — recent EDIT RED cohorts
 
 All four cohorts below use product source fc2fba93. Config/Auth preservation

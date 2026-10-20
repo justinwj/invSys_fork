@@ -122,7 +122,7 @@ function Test-InventoryEditCanonicalSaveOutcome($Fixture,[ref]$HostRef,[string]$
         [void](Run 'invSys.Admin.xlam' 'TestInventoryEditSave.Arm' @('ObserveRetry',$sourcePath,$HostPath,($Prefix+'-retry')))
         [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @('Retry',$sourcePath,$HostPath,($Prefix+'-retry')))
         [void](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Arm' @('CanonicalRetry',$retryBook.Name))
-        [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($retryBook.Name,'Upload','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
+        Invoke-InventoryEditObservedUpload $Fixture $retryBook ($id+'.Retry')
         $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
         $reached=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[2] -ceq '1' -and $facts[3] -ceq 'True'
         Check ($id+'.FreshRetryActualCapturedHandlerReached') $reached

@@ -160,6 +160,7 @@ param(
     [switch]$AdminInventoryEditReceiptResultsOnly,
     [switch]$AdminInventoryEditCanonicalSaveOnly,
     [switch]$AdminInventoryEditBindingsOnly,
+    [switch]$AdminInventoryEditReceiptAllOnly,
     [switch]$AdminInventoryReadOnlyOperatorsOnly,
     [switch]$AdminInventoryHeadlessWorksheetOnly,
     [switch]$AdminInventoryPrimitivePayloadOnly,
@@ -894,6 +895,7 @@ if($AdminInventoryEditReceiptPhasesOnly -and (-not $AdminInventoryWorksheetResul
 if($AdminInventoryEditReceiptResultsOnly -and -not $AdminInventoryEditReceiptPhasesOnly){throw 'EDIT result boundaries require the receipt phase gate.'}
 if($AdminInventoryEditCanonicalSaveOnly -and (-not $AdminInventoryEditReceiptPhasesOnly -or $AdminInventoryEditReceiptResultsOnly)){throw 'Canonical EDIT saves require their separate receipt phase gate.'}
 if($AdminInventoryEditBindingsOnly -and (-not $AdminInventoryEditReceiptPhasesOnly -or $AdminInventoryEditReceiptResultsOnly -or $AdminInventoryEditCanonicalSaveOnly)){throw 'EDIT bindings require their separate receipt phase gate.'}
+if($AdminInventoryEditReceiptAllOnly -and (-not $AdminInventoryEditReceiptPhasesOnly -or $AdminInventoryEditReceiptResultsOnly -or $AdminInventoryEditCanonicalSaveOnly -or $AdminInventoryEditBindingsOnly)){throw 'Combined EDIT receipts require their separate receipt phase gate.'}
 if($AdminInventoryPrimitivePayloadOnly -and (-not $AdminInventoryEntryOnly -or -not $AdminInventorySourceOverlayForTest -or $AdminInventoryHeadlessWorksheetOnly -or $AdminInventoryReadOnlyOperatorsOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Primitive payload controls require their separate source-overlay Inventory gate.'}
 if($AdminInventoryCreatePhasesOnly -and -not $AdminInventoryEntryOnly){throw 'Create phases require the separate Inventory entry gate.'}
 if($AdminInventoryCreateNameOnly -and -not $AdminInventoryCreatePhasesOnly){throw 'Create name checks require the Create phase gate.'}
@@ -2290,7 +2292,7 @@ End Function
                     . (Join-Path $PSScriptRoot 'Slice4beInventoryEditPrivacy.ps1')
                     Install-InventoryEditPrivacyProbe
                 }
-                if($AdminInventoryEditCanonicalSaveOnly){
+                if($AdminInventoryEditCanonicalSaveOnly -or $AdminInventoryEditReceiptAllOnly){
                     . (Join-Path $PSScriptRoot 'Slice4beInventoryEditCanonicalSave.ps1')
                     Install-InventoryEditCanonicalSaveProbe
                 }
@@ -2551,7 +2553,11 @@ End Function
             $step='actual worksheet Upload source and result save retry boundaries'
             if($AdminInventoryEditReceiptPhasesOnly){
                 $step='actual Upload durable EDIT phases and quantity-only retry'
-                if($AdminInventoryEditBindingsOnly){Test-InventoryEditBindings $a $b}else{Test-InventoryEditReceiptPhases $a $b}
+                if($AdminInventoryEditBindingsOnly){
+                    Test-InventoryEditBindings $a $b
+                }elseif($AdminInventoryEditReceiptAllOnly){
+                    foreach($cohort in @('Phase','Result','Canonical')){Test-InventoryEditReceiptPhases $a $b $cohort}
+                }else{Test-InventoryEditReceiptPhases $a $b}
             }elseif($AdminInventoryImportedRowsOnly){
                 $step='actual Upload independent imported ADD receipt proof and whole-selection refusal'
                 Test-InventoryImportedRows $a $b

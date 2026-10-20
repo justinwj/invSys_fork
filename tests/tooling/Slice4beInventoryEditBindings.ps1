@@ -10,7 +10,7 @@ End Function
 '@)
 }
 function Invoke-InventoryBindingUpload($Fixture,$HostBook,$Table,[string]$Label) {
-    $diagnosis=Start-InventoryBindingConfigDiagnosis $Fixture
+    $diagnosis=Start-InventoryEditConfigDiagnosis $Fixture
     $HostBook.Activate();$Table.DataBodyRange.Cells.Item(1,1).Select()
     [void](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Arm' @('Binding',$HostBook.Name))
     [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($HostBook.Name,'Upload','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
@@ -18,28 +18,7 @@ function Invoke-InventoryBindingUpload($Fixture,$HostBook,$Table,[string]$Label)
     $reached=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[2] -ceq '1' -and $facts[3] -ceq 'True'
     Check ($Label+'.ActualCapturedUploadReached') $reached
     if(-not $reached){throw 'Owned binding Upload handler unavailable; not RED.'}
-    Complete-InventoryBindingConfigDiagnosis $Fixture $diagnosis $Label
-}
-function Start-InventoryBindingConfigDiagnosis($Fixture) {
-    $before=Get-InventoryConfigDiagnosticSnapshot $Fixture
-    $auth=Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))
-    [void](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Reset')
-    return [pscustomobject]@{Config=$before;Auth=$auth}
-}
-function Complete-InventoryBindingConfigDiagnosis($Fixture,$Before,[string]$Label) {
-    $after=Get-InventoryConfigDiagnosticSnapshot $Fixture
-    $facts=([string](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Facts')).Split('|')
-    if($facts.Count -ne 3 -or @($facts|Where-Object {$_ -cnotmatch '^\d+$'}).Count){throw 'Config save observer unavailable.'}
-    $phase=[pscustomobject]@{Calls=[int]$facts[0];ByteChangesDuringSave=[int]$facts[1];UnavailableHashComparisons=[int]$facts[2];Procedure='modConfig.SaveConfigWorkbookIfWritable'}
-    Write-InventoryConfigDiagnosticComparison $Before.Config $after $Label $phase
-    $comparison=$script:InventoryConfigLastComparison
-    $authAfter=Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))
-    $authPreserved=$Before.Auth -ne '' -and $Before.Auth -ceq $authAfter
-    $bytesPreserved=$Before.Config.FileHash -ne '' -and $Before.Config.FileHash -ceq $after.FileHash
-    Check ($Label+'.ConfigCellsAndShapesPreserved') ($comparison.ChangedTableCells -eq 0 -and $comparison.TableShapesPreserved)
-    Check ($Label+'.AuthBytesPreserved') $authPreserved
-    [pscustomobject]@{Case=$Label;ConfigBytesPreserved=$bytesPreserved;AuthBytesPreserved=$authPreserved;ConfigChangeExplained=($bytesPreserved -or $comparison.CauseEstablished)}|
-        ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'edit-binding-authority-observations.jsonl')
+    Complete-InventoryEditConfigDiagnosis $Fixture $diagnosis $Label
 }
 function Get-InventoryBindingResult($HostBook,[string]$Label) {
     $copy=Join-Path $runRoot ($Label+'.xlsx')
@@ -198,7 +177,9 @@ function Test-InventoryEditBindings($Fixture,$Other) {
         # An intervening authorized change makes the second genuine command's
         # quantity payload identical. Neither receipt may confirm the other.
         [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @('','','',''))
+        $resetDiagnosis=Start-InventoryEditConfigDiagnosis $Fixture
         $reset=[bool](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.ResetQuantityForOwnedTest' @($Fixture.Warehouse,$sku))
+        Complete-InventoryEditConfigDiagnosis $Fixture $resetDiagnosis 'InventoryEditBinding.InterveningReset'
         $resetFacts=Get-AdminInventoryEntryFacts $Fixture -Persisted
         $ready=$reset -and $resetFacts.EntityQuantities[$key] -eq 0 -and $resetFacts.LogRows -eq $first.LogRows+1 -and $resetFacts.AppliedRows -eq $first.AppliedRows+1
         Check 'InventoryEditBinding.InterveningResetIndependentlySaved' $ready
@@ -294,9 +275,9 @@ function Test-InventoryEditBindings($Fixture,$Other) {
             Check ($id+'.SavedOperatorInspectionPreservedBytes') $saved.Preserved
         }
         Test-InventoryCanonicalReceiptBindings $Fixture $hostBook $table $original $firstResult $sku $secondEvent
-        $diagnosis=Start-InventoryBindingConfigDiagnosis $Fixture
+        $diagnosis=Start-InventoryEditConfigDiagnosis $Fixture
         Test-InventoryEditPrivacy $Fixture $hostBook $key
-        Complete-InventoryBindingConfigDiagnosis $Fixture $diagnosis 'InventoryEditPrivacy'
+        Complete-InventoryEditConfigDiagnosis $Fixture $diagnosis 'InventoryEditPrivacy'
         Test-InventoryConfigDiagnosticPreservation
     }finally{$hostBook.Close($false)}
 }

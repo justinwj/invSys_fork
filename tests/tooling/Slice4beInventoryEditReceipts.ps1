@@ -1,3 +1,31 @@
+# Shared read-only observation for actual EDIT setup, failure and retry actions.
+# Values and hashes remain memory-only; output contains fixed labels and facts.
+function Start-InventoryEditConfigDiagnosis($Fixture) {
+    $before=Get-InventoryConfigDiagnosticSnapshot $Fixture
+    $auth=Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))
+    [void](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Reset')
+    return [pscustomobject]@{Config=$before;Auth=$auth}
+}
+function Invoke-InventoryEditObservedUpload($Fixture,$HostBook,[string]$Label) {
+    $diagnosis=Start-InventoryEditConfigDiagnosis $Fixture
+    [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($HostBook.Name,'Upload','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
+    Complete-InventoryEditConfigDiagnosis $Fixture $diagnosis $Label
+}
+function Complete-InventoryEditConfigDiagnosis($Fixture,$Before,[string]$Label) {
+    $after=Get-InventoryConfigDiagnosticSnapshot $Fixture
+    $facts=([string](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Facts')).Split('|')
+    if($facts.Count -ne 3 -or @($facts|Where-Object {$_ -cnotmatch '^\d+$'}).Count){throw 'Config save observer unavailable.'}
+    $phase=[pscustomobject]@{Calls=[int]$facts[0];ByteChangesDuringSave=[int]$facts[1];UnavailableHashComparisons=[int]$facts[2];Procedure='modConfig.SaveConfigWorkbookIfWritable'}
+    Write-InventoryConfigDiagnosticComparison $Before.Config $after $Label $phase
+    $comparison=$script:InventoryConfigLastComparison
+    $authAfter=Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))
+    $authPreserved=$Before.Auth -ne '' -and $Before.Auth -ceq $authAfter
+    $bytesPreserved=$Before.Config.FileHash -ne '' -and $Before.Config.FileHash -ceq $after.FileHash
+    Check ($Label+'.ConfigCellsAndShapesPreserved') ($comparison.ChangedTableCells -eq 0 -and $comparison.TableShapesPreserved)
+    Check ($Label+'.AuthBytesPreserved') $authPreserved
+    [pscustomobject]@{Case=$Label;ConfigBytesPreserved=$bytesPreserved;AuthBytesPreserved=$authPreserved;ConfigChangeExplained=($bytesPreserved -or $comparison.CauseEstablished)}|
+        ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'inventory-edit-authority-observations.jsonl')
+}
 # Owned, service-created test warehouses only. Business values and exact command /
 # event identities remain in memory or ignored disposable workbook copies. Reports
 # contain fixed check labels and booleans; no row values or raw errors are emitted.
@@ -173,7 +201,12 @@ function Test-InventoryEditBinding($Snapshot,$Saved,$Fixture,[string]$Sku) {
     $receipt=$boundReceipts[0]
     return ($receipt.Command -ceq $Saved.Command -and $receipt.Sku -ceq $Sku -and $receipt.Warehouse -ceq $Fixture.Warehouse -and $receipt.Station -ceq 'S1' -and $receipt.User -ceq 'config-admin')
 }
-function Test-InventoryEditReceiptPhases($Fixture,$Other) {
+function Test-InventoryEditReceiptPhases($Fixture,$Other,[ValidateSet('','Phase','Result','Canonical')][string]$Cohort='') {
+    if($Cohort -ne ''){
+        $AdminInventoryEditReceiptResultsOnly=($Cohort -eq 'Result')
+        $AdminInventoryEditCanonicalSaveOnly=($Cohort -eq 'Canonical')
+    }
+    $script:InventoryConfigReadChecks=[Collections.Generic.List[object]]::new()
     $cases=@('CatalogOnly','NoopQuantity','QuantityChange','QueueFailure')
     if($AdminInventoryEditReceiptResultsOnly){$cases=@('OperatorSaveThrows','OperatorSaveThrowsLaterQuantity','AfterApplyAuthorityLost')}
     if($AdminInventoryEditCanonicalSaveOnly){$cases=@('BeforeCatalogSaveThrows','AfterCatalogSaveThrows','BeforeCatalogSaveAuthorityLost','AfterCatalogSaveAuthorityLost')}
@@ -191,7 +224,7 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other) {
             [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @('','','',''))
             [void](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Arm' @('ReceiptSetup',$hostBook.Name))
             [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetSelection' @($Other.Root,''))
-            [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'Upload','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
+            Invoke-InventoryEditObservedUpload $Fixture $hostBook ($id+'.SetupAdd')
             $created=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $newKeys=@($created.EntityQuantities.Keys|Where-Object {-not $initial.EntityQuantities.ContainsKey($_)})
             $ready=$newKeys.Count -eq 1 -and $created.EntityQuantities[$newKeys[0]] -eq 0 -and $created.LogRows -eq $initial.LogRows+1 -and $created.AppliedRows -eq $initial.AppliedRows+1
@@ -215,7 +248,7 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other) {
             $resultMode='ReceiptEdit'
             if($case -like 'OperatorSaveThrows*'){$resultMode='SaveThrows'}elseif($case -eq 'AfterApplyAuthorityLost'){$resultMode=$case}
             [void](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Arm' @($resultMode,$hostBook.Name))
-            [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'Upload','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
+            Invoke-InventoryEditObservedUpload $Fixture $hostBook ($id+'.Edit')
             $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
             $reached=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[2] -ceq '1' -and $facts[3] -ceq 'True'
             Check ($id+'.ActualCapturedUploadReached') $reached
@@ -274,7 +307,9 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other) {
                 if($AdminInventoryEditReceiptResultsOnly){$retryDelta=0}
                 if($case -eq 'OperatorSaveThrowsLaterQuantity'){
                     [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @('','','',''))
+                    $laterDiagnosis=Start-InventoryEditConfigDiagnosis $Fixture
                     $moved=[bool](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.SetLaterQuantityForOwnedTest' @($Fixture.Warehouse,$sku))
+                    Complete-InventoryEditConfigDiagnosis $Fixture $laterDiagnosis ($id+'.LaterQuantity')
                     $retryBefore=Get-AdminInventoryEntryFacts $Fixture -Persisted;$retryTarget=7
                     $moved=$moved -and $retryBefore.EntityQuantities[$key] -eq 7 -and $retryBefore.LogRows -eq $after.LogRows+1 -and $retryBefore.AppliedRows -eq $after.AppliedRows+1
                     Check ($id+'.LaterOwningQuantityChangeSaved') $moved
@@ -283,7 +318,7 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other) {
                 }
                 [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @('Retry',$sourcePath,$hostPath,($prefix+'-retry')))
                 [void](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Arm' @('ReceiptRetry',$hostBook.Name))
-                [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($hostBook.Name,'Upload','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
+                Invoke-InventoryEditObservedUpload $Fixture $hostBook ($id+'.Retry')
                 $retry=Get-AdminInventoryEntryFacts $Fixture -Persisted
                 $retrySnapshot=Read-InventoryEditReceiptCopy $sourcePath $sku
                 $retryEvent=[string](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.PlannedEventForOwnedTest')
@@ -303,4 +338,5 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other) {
             }
         }finally{$hostBook.Close($false)}
     }
+    Test-InventoryConfigDiagnosticPreservation
 }
