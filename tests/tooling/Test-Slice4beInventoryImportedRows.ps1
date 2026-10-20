@@ -4,6 +4,7 @@ param(
     [ValidateSet('RED','GREEN')][string]$Phase='RED',
     [Parameter(Mandatory=$true)][string]$DesktopMonitorReport,
     [switch]$TesterBaselineOverlayForTest,
+    [switch]$TraceResourcesForTest,
     [switch]$WorksheetResultsRegression,
     [ValidateSet('ImportedRows','ImportedEdits','EditReceiptPhases','EditReceiptResults','EditReceiptSave','EditReceiptAll','EditBindings','EditOwnership','WorksheetResults','PrimitivePayload','CatalogCompletion','Headless','CreatePhases','CreateName','ConfigMetadata')]
     [string]$InventoryCase='ImportedRows'
@@ -40,6 +41,7 @@ try{
         '-CompileEvaluationProbesForTest','-WaitForExcelReadyForTest','-ExcelReadyReadLimitForTest','40',
         '-DesktopMonitorReport',$DesktopMonitorReport)
     if($TesterBaselineOverlayForTest){$workerArgs+='-AdminInventoryTesterBaselineOverlayForTest'}
+    if($TraceResourcesForTest){$workerArgs+='-TraceGuideResourcesForTest'}
     switch($InventoryCase){
         'ImportedRows' {$workerArgs+=@('-AdminInventoryWorksheetResultsOnly','-AdminInventoryImportedRowsOnly')}
         'ImportedEdits' {$workerArgs+=@('-AdminInventoryWorksheetResultsOnly','-AdminInventoryImportedRowsOnly','-AdminInventoryImportedEditsOnly')}

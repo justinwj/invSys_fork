@@ -330,7 +330,9 @@ if($RunNextClosedOnly -and -not $RunNextYieldOnly){throw 'Next Batch native clos
 if($RunNextClosedEscapeForTest -and -not $RunNextClosedOnly){throw 'Next Batch diagnostic escape requires native closure testing.'}
 if($RunNextPathsOnly -and (-not $RunNextBaselineOnly -or $RunNextActivityOnly)){throw 'Next Batch paths require the isolated Next baseline fixture.'}
 if($TraceGuideResourcesForTest){
-    if(-not $GuidePresentationRestartOnly){throw 'Resource tracing requires the isolated restart diagnostic.'}
+    if(-not $GuidePresentationRestartOnly -and -not ($AdminInventoryEntryOnly -and $AdminInventorySourceOverlayForTest)){
+        throw 'Resource tracing requires the isolated restart or Inventory source-overlay diagnostic.'
+    }
     . (Join-Path $PSScriptRoot 'Slice4beGuideResourceTrace.ps1')
 }
 if($GuideResourceSavedWorkbookForTest -and -not $TraceGuideResourcesForTest){throw 'Saved-workbook resource control requires tracing.'}
