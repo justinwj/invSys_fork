@@ -29,15 +29,18 @@ Private mLastAutomationReport As String
 
 Public Function CreateInventoryWorksheetTable(ByVal wb As Workbook, _
                                               ByRef tableName As String, _
-                                              ByRef report As String) As Boolean
+                                              ByRef report As String, _
+                                              Optional ByVal interactiveContext As String = "") As Boolean
     Dim ws As Worksheet
     Dim lo As ListObject
     Dim headers As Variant
     Dim headerRow As Long
     Dim tableRange As Range
     Dim idx As Long
+    Dim started As Boolean, saved As Boolean, requestedName As String
 
     On Error GoTo Failed
+    tableName = "": report = ""
     If Not IsUsableInventoryWorkbook(wb) Then
         report = "The captured Admin operator workbook is unavailable."
         Exit Function
@@ -51,9 +54,13 @@ Public Function CreateInventoryWorksheetTable(ByVal wb As Workbook, _
         Exit Function
     End If
 
-    Set ws = EnsureInventoryEditorSheet(wb)
+    RequireInventoryCreationCurrent wb, interactiveContext, report
+    started = True
+    Set ws = EnsureInventoryEditorSheet(wb, interactiveContext, report)
     headerRow = NextInventoryTableHeaderRow(ws)
+    RequireInventoryCreationCurrent wb, interactiveContext, report
     ws.Cells(headerRow - 2, 1).Value2 = "invSys Inventory worksheet"
+    RequireInventoryCreationCurrent wb, interactiveContext, report
     ws.Cells(headerRow - 1, 1).Value2 = _
         "Use ADD for new items and EDIT for an exact existing Item Code. Select a cell in this table before upload."
 
@@ -62,29 +69,59 @@ Public Function CreateInventoryWorksheetTable(ByVal wb As Workbook, _
                     "Vendor Code", "External Code", "Picture Path/URL", "Edit Reason", _
                     "Upload Status", "Upload Result")
     For idx = LBound(headers) To UBound(headers)
+        RequireInventoryCreationCurrent wb, interactiveContext, report
         ws.Cells(headerRow, idx + 1).Value2 = CStr(headers(idx))
     Next idx
     Set tableRange = ws.Range(ws.Cells(headerRow, 1), _
                               ws.Cells(headerRow + TEMPLATE_ROWS, UBound(headers) + 1))
+    RequireInventoryCreationCurrent wb, interactiveContext, report
     Set lo = ws.ListObjects.Add(xlSrcRange, tableRange, , xlYes)
-    tableName = BuildUniqueInventoryTableName(wb)
-    lo.Name = tableName
+    requestedName = BuildUniqueInventoryTableName(wb)
+    RequireInventoryCreationCurrent wb, interactiveContext, report
+    lo.Name = requestedName
+    tableName = lo.Name
+    If Not modInventoryCommands.BindCreatedStage(interactiveContext, tableName, report) Then GoTo Failed
+    RequireInventoryCreationCurrent wb, interactiveContext, report
     lo.TableStyle = "TableStyleMedium2"
+    RequireInventoryCreationCurrent wb, interactiveContext, report
     lo.ListColumns(HDR_ITEM_CODE).DataBodyRange.NumberFormat = "@"
-    ApplyInventoryWorksheetValidation lo
-    FormatInventoryWorksheet ws, lo
+    ApplyInventoryWorksheetValidation lo, interactiveContext, report
+    FormatInventoryWorksheet ws, lo, interactiveContext, report
+    RequireInventoryCreationCurrent wb, interactiveContext, report
     wb.Save
+    saved = wb.Saved
+    RequireInventoryCreationCurrent wb, interactiveContext, report
+    If Not modInventoryCommands.ConfirmCreatedStageSaved(interactiveContext, report) Then GoTo Failed
     wb.Activate
+    RequireInventoryCreationCurrent wb, interactiveContext, report
     ws.Visible = xlSheetVisible
+    RequireInventoryCreationCurrent wb, interactiveContext, report
     ws.Activate
+    RequireInventoryCreationCurrent wb, interactiveContext, report
     lo.DataBodyRange.Cells(1, 1).Select
+    RequireInventoryCreationCurrent wb, interactiveContext, report
     report = "Created Inventory table " & tableName & ". Fill or paste rows, select a cell in the table, then choose Upload Selected Inventory Table."
     CreateInventoryWorksheetTable = True
     Exit Function
 
 Failed:
-    report = "Inventory worksheet creation failed: " & Err.Description
+    If report = "" Then report = "Inventory worksheet creation could not finish."
+    If started Then
+        If saved Then
+            report = "Partial result: worksheet changes were saved, but command completion is unconfirmed. " & report
+        Else
+            report = "Partial result: local worksheet changes may remain; saving is unconfirmed. " & report
+        End If
+        If tableName <> "" Then report = report & vbCrLf & "Table: " & tableName
+        report = report & vbCrLf & "Reopen Add/Edit Inventory before retrying."
+        modInventoryCommands.Release interactiveContext
+    End If
 End Function
+
+Private Sub RequireInventoryCreationCurrent(ByVal wb As Workbook, ByVal context As String, ByRef report As String)
+    If Not modInventoryCommands.CheckOperatorWorkbook(context, wb.Name, report) Then _
+        Err.Raise vbObjectError + 2197, , report
+End Sub
 
 Public Function UploadSelectedInventoryWorksheetTable(ByVal wb As Workbook, _
                                                        ByVal warehouseId As String, _
@@ -691,47 +728,58 @@ Private Function IsConfiguredInventoryWorksheetUom(ByVal uom As String) As Boole
     Next part
 End Function
 
-Private Sub ApplyInventoryWorksheetValidation(ByVal lo As ListObject)
+Private Sub ApplyInventoryWorksheetValidation(ByVal lo As ListObject, ByVal context As String, ByRef report As String)
     Dim uomList As String
 
     uomList = Replace$(modUomSettings.GetConfiguredUomsPackedText(), "|", ",")
     ApplyListValidation lo.ListColumns(HDR_ACTION).DataBodyRange, "ADD,EDIT", _
-        "Choose ADD or EDIT", "Select whether this row creates or edits a catalog item."
+        "Choose ADD or EDIT", "Select whether this row creates or edits a catalog item.", context, report
     ApplyListValidation lo.ListColumns(HDR_QTY_MODE).DataBodyRange, _
         "COUNTED,UTILITY,SERVICE,NOT COUNTED", "Choose Qty Mode", _
-        "Select COUNTED, UTILITY, SERVICE, or NOT COUNTED."
+        "Select COUNTED, UTILITY, SERVICE, or NOT COUNTED.", context, report
     If uomList <> "" And Len(uomList) <= 255 Then
         ApplyListValidation lo.ListColumns(HDR_UOM).DataBodyRange, uomList, _
-            "Choose a warehouse UOM", "Select a UOM maintained in Settings."
+            "Choose a warehouse UOM", "Select a UOM maintained in Settings.", context, report
     End If
 End Sub
 
 Private Sub ApplyListValidation(ByVal target As Range, _
                                 ByVal listText As String, _
                                 ByVal errorTitle As String, _
-                                ByVal errorMessage As String)
+                                ByVal errorMessage As String, _
+                                ByVal context As String, ByRef report As String)
+    RequireInventoryCreationCurrent target.Parent.Parent, context, report
     On Error Resume Next
     target.Validation.Delete
     On Error GoTo 0
     With target.Validation
+        RequireInventoryCreationCurrent target.Parent.Parent, context, report
         .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, _
              Operator:=xlBetween, Formula1:=listText
+        RequireInventoryCreationCurrent target.Parent.Parent, context, report
         .IgnoreBlank = True
+        RequireInventoryCreationCurrent target.Parent.Parent, context, report
         .InCellDropdown = True
+        RequireInventoryCreationCurrent target.Parent.Parent, context, report
         .ShowError = True
+        RequireInventoryCreationCurrent target.Parent.Parent, context, report
         .ErrorTitle = errorTitle
+        RequireInventoryCreationCurrent target.Parent.Parent, context, report
         .ErrorMessage = errorMessage
     End With
 End Sub
 
-Private Function EnsureInventoryEditorSheet(ByVal wb As Workbook) As Worksheet
+Private Function EnsureInventoryEditorSheet(ByVal wb As Workbook, ByVal context As String, ByRef report As String) As Worksheet
     On Error Resume Next
     Set EnsureInventoryEditorSheet = wb.Worksheets(EDITOR_SHEET)
     On Error GoTo 0
     If EnsureInventoryEditorSheet Is Nothing Then
+        RequireInventoryCreationCurrent wb, context, report
         Set EnsureInventoryEditorSheet = wb.Worksheets.Add(After:=wb.Worksheets(wb.Worksheets.Count))
+        RequireInventoryCreationCurrent wb, context, report
         EnsureInventoryEditorSheet.Name = EDITOR_SHEET
     End If
+    RequireInventoryCreationCurrent wb, context, report
     EnsureInventoryEditorSheet.Visible = xlSheetVisible
 End Function
 
@@ -845,11 +893,16 @@ Private Function InventoryWorksheetRowHasBusinessData(ByVal lo As ListObject, _
         InventoryWorksheetText(lo, rowIndex, HDR_QUANTITY) <> ""
 End Function
 
-Private Sub FormatInventoryWorksheet(ByVal ws As Worksheet, ByVal lo As ListObject)
+Private Sub FormatInventoryWorksheet(ByVal ws As Worksheet, ByVal lo As ListObject, ByVal context As String, ByRef report As String)
+    RequireInventoryCreationCurrent ws.Parent, context, report
     lo.Range.Columns.AutoFit
+    RequireInventoryCreationCurrent ws.Parent, context, report
     lo.ListColumns(HDR_DESCRIPTION).Range.ColumnWidth = 28
+    RequireInventoryCreationCurrent ws.Parent, context, report
     lo.ListColumns(HDR_PICTURE).Range.ColumnWidth = 28
+    RequireInventoryCreationCurrent ws.Parent, context, report
     lo.ListColumns(HDR_RESULT).Range.ColumnWidth = 42
+    RequireInventoryCreationCurrent ws.Parent, context, report
     lo.Range.VerticalAlignment = xlTop
 End Sub
 

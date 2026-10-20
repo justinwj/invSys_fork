@@ -256,8 +256,14 @@ Public Function IsDriving() As Boolean
 End Function
 Public Function PrepareBoundaryTable(ByVal host As String) As Boolean
     Dim name As String, report As String, wb As Workbook, lo As ListObject, ws As Worksheet
+    Dim context As String, created As Boolean
     Set wb = Application.Workbooks(host)
-    If Not modAdminInventoryWorksheet.CreateInventoryWorksheetTable(wb, name, report) Then Exit Function
+    wb.Activate
+    context = modInventoryCommands.Capture(wb.Name)
+    If context = "" Then Exit Function
+    created = modAdminInventoryWorksheet.CreateInventoryWorksheetTable(wb, name, report, context)
+    modInventoryCommands.Release context
+    If Not created Then Exit Function
     For Each ws In wb.Worksheets
         For Each lo In ws.ListObjects
             If lo.Name = name Then

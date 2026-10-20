@@ -99,12 +99,12 @@ End Function
     $start=$owner.ProcStartLine('CreateInventoryWorksheetTable',0);$count=$owner.ProcCountLines('CreateInventoryWorksheetTable',0)
     $body=$owner.Lines($start,$count)
     foreach($seam in @(
-        @('    Set ws = EnsureInventoryEditorSheet(wb)','AfterSheet'),
-        @('    Next idx','AfterHeaders'),
-        @('    FormatInventoryWorksheet ws, lo','BeforeSave')
+        @('(?im)^    Set ws = EnsureInventoryEditorSheet\(wb(?:, interactiveContext, report)?\)\r?$','AfterSheet'),
+        @('(?im)^    Next idx\r?$','AfterHeaders'),
+        @('(?im)^    FormatInventoryWorksheet ws, lo(?:, interactiveContext, report)?\r?$','BeforeSave')
     )){
-        if([regex]::Matches($body,[regex]::Escape($seam[0])).Count -ne 1){throw 'Create mutation phase unavailable; not product RED.'}
-        $body=$body.Replace($seam[0],$seam[0]+"`r`n"+'    TestInventoryCreatePhase.AtPhase "'+$seam[1]+'"')
+        if([regex]::Matches($body,$seam[0]).Count -ne 1){throw 'Create mutation phase unavailable; not product RED.'}
+        $body=[regex]::Replace($body,$seam[0],[Text.RegularExpressions.MatchEvaluator]{param($m) $m.Value.TrimEnd("`r")+"`r`n"+'    TestInventoryCreatePhase.AtPhase "'+$seam[1]+'"'})
     }
     if([regex]::Matches($body,'(?im)^    wb\.Save\r?$').Count -ne 1){throw 'Create save-return seam unavailable.'}
     $body=[regex]::Replace($body,'(?im)^    wb\.Save\r?$','    TestInventoryCreatePhase.SaveReturn wb')

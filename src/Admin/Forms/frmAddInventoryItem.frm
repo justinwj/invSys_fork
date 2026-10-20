@@ -971,6 +971,7 @@ End Sub
 Private Sub mBtnCreateInventoryTable_Click()
     Dim report As String
     Dim tableName As String
+    Dim succeeded As Boolean
 
     On Error GoTo Failed
     If Not CurrentContextAllowed() Then Exit Sub
@@ -978,16 +979,19 @@ Private Sub mBtnCreateInventoryTable_Click()
         mLblStatus.Caption = "The captured Admin operator workbook is unavailable."
         Exit Sub
     End If
-    If modAdminInventoryWorksheet.CreateInventoryWorksheetTable( _
-            mOperatorWorkbook, tableName, report) Then
+    succeeded = modAdminInventoryWorksheet.CreateInventoryWorksheetTable( _
+            mOperatorWorkbook, tableName, report, mInteractiveContext)
+    If succeeded Then
         mLastInventoryTableName = tableName
         mAccepted = False
     End If
     mLastInventoryWorksheetReport = report
     mLblStatus.Caption = report
-    If Not modAdminInventoryWorksheet.InventoryWorksheetAutomationEnabled() Then _
-        MsgBox report, IIf(tableName <> "", vbInformation, vbExclamation), "invSys Admin"
-    If tableName <> "" Then Me.Hide
+    If Not modAdminInventoryWorksheet.InventoryWorksheetAutomationEnabled() Then
+        MsgBox report, IIf(succeeded, vbInformation, vbExclamation), "invSys Admin"
+        If Not CurrentContextAllowed() Then Exit Sub
+    End If
+    If succeeded Then Me.Hide
     Exit Sub
 
 Failed:

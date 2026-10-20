@@ -9,6 +9,7 @@ Private Const RESULT_QUANTITY As Long = 3
 Private Const RESULT_CREATE As Long = 4
 Private Const RESULT_RETIREMENT As Long = 5
 Private Const RESULT_STAGE_SAVED As Long = 6
+Private Const RESULT_CREATED_STAGE_SAVED As Long = 7
 Private Const PHASE_CATALOG As String = "Catalog"
 Private Const PHASE_QUANTITY As String = "Quantity"
 Private Const PHASE_CREATE As String = "Create"
@@ -150,6 +151,24 @@ End Function
 
 Public Function ConfirmStageSaved(ByVal key As String, ByRef report As String) As Boolean
     ConfirmStageSaved = ConfirmResult(key, RESULT_STAGE_SAVED, "", report)
+End Function
+
+Public Function BindCreatedStage(ByVal key As String, ByVal tableName As String, ByRef report As String) As Boolean
+    Dim entry As Object, inputs As cInventoryCommandInputs
+    Dim book As Workbook
+    On Error GoTo Refused
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key): Set inputs = entry("Inputs")
+    Set book = entry("Workbook")
+    If Not inputs.BindCreatedStage(book, tableName) Then GoTo Refused
+    BindCreatedStage = CheckForm(key, report)
+    Exit Function
+Refused:
+    Expire key, report
+End Function
+
+Public Function ConfirmCreatedStageSaved(ByVal key As String, ByRef report As String) As Boolean
+    ConfirmCreatedStageSaved = ConfirmResult(key, RESULT_CREATED_STAGE_SAVED, "", report)
 End Function
 
 Public Function CheckOperatorWorkbook(ByVal key As String, ByVal workbookName As String, ByRef report As String) As Boolean
@@ -322,6 +341,7 @@ Private Function ConfirmResult(ByVal key As String, ByVal kind As Long, _
         Case RESULT_CATALOG: confirmed = inputs.ConfirmCatalog()
         Case RESULT_STAGE: confirmed = inputs.ConfirmStageCell()
         Case RESULT_STAGE_SAVED: confirmed = inputs.ConfirmStageSaved()
+        Case RESULT_CREATED_STAGE_SAVED: confirmed = inputs.ConfirmStageSaved(True)
         Case RESULT_QUANTITY: confirmed = inputs.ConfirmEventResult(eventId, PHASE_QUANTITY)
         Case RESULT_CREATE: confirmed = inputs.ConfirmEventResult(eventId, PHASE_CREATE)
         Case RESULT_RETIREMENT: confirmed = inputs.ConfirmEventResult(eventId, PHASE_RETIREMENT)

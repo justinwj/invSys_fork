@@ -13,6 +13,8 @@ Option Explicit
 Private mWarehouse As String, mPath As String, mIdentity As String, mHash As String
 Private mCatalog As cInventoryTableInput, mEntities As cInventoryTableInput
 Private mStaging As cInventoryTableInput, mStage As ListObject
+Private mCreatedStaging As cInventoryTableInput, mCreatedStage As ListObject
+Private mCreatedBook As Workbook, mCreatedRange As String
 Private mSelectedSku As String, mPhase As String, mSaving As Boolean
 Private mInitiallyBorrowed As Boolean
 Private mCreate As cInventoryCreatePlan
@@ -83,6 +85,12 @@ Public Function Unchanged() As Boolean
     If Not mStaging Is Nothing Then
         If Not mStaging.Matches(mStage) Then Exit Function
     End If
+    If Not mCreatedStaging Is Nothing Then
+        If Not (mCreatedStage.Parent.Parent Is mCreatedBook) Then Exit Function
+        If mCreatedStage.Parent.Name <> "invSys Inventory Editor" Then Exit Function
+        If mCreatedStage.Range.Address <> mCreatedRange Or mCreatedStage.ListRows.Count <> 20 Then Exit Function
+        If Not mCreatedStaging.Matches(mCreatedStage) Then Exit Function
+    End If
     Unchanged = True
 Invalid:
 End Function
@@ -121,13 +129,42 @@ Public Function ConfirmStageCell() As Boolean
     ConfirmStageCell = mStaging.Confirm(mStage)
 End Function
 
-Public Function ConfirmStageSaved() As Boolean
+Public Function BindCreatedStage(ByVal operatorBook As Workbook, ByVal tableName As String) As Boolean
+    Dim sheet As Worksheet, table As ListObject, headers As Variant, i As Long, cell As Range
+    On Error GoTo Invalid
+    If Not mCreatedStage Is Nothing Or Not Unchanged() Then Exit Function
+    If Left$(tableName, 17) <> "invSys_Inventory_" Then Exit Function
+    Set sheet = operatorBook.Worksheets("invSys Inventory Editor")
+    Set table = sheet.ListObjects(tableName)
+    If table Is mStage Then Exit Function
+    headers = Split("Action|Item Code|Item Name|UOM|Qty Mode|Quantity|Default Location|Category|Description|Vendor(s)|Vendor Code|External Code|Picture Path/URL|Edit Reason|Upload Status|Upload Result", "|")
+    If table.ListColumns.Count <> UBound(headers) + 1 Or table.ListRows.Count <> 20 Then Exit Function
+    For i = 0 To UBound(headers)
+        If StrComp(table.ListColumns(i + 1).Name, CStr(headers(i)), vbBinaryCompare) <> 0 Then Exit Function
+    Next i
+    For Each cell In table.DataBodyRange.Cells
+        If cell.HasFormula Or Not IsEmpty(cell.Value2) Then Exit Function
+    Next cell
+    Set mCreatedStage = table: Set mCreatedStaging = New cInventoryTableInput
+    Set mCreatedBook = operatorBook: mCreatedRange = table.Range.Address
+    If Not mCreatedStaging.Capture(table, "", True) Then Exit Function
+    BindCreatedStage = Unchanged()
+Invalid:
+End Function
+
+Public Function ConfirmStageSaved(Optional ByVal created As Boolean = False) As Boolean
     Dim source As Workbook, copy As Workbook, copyPath As String, hash As String
     Dim sheet As Worksheet, table As ListObject, persisted As ListObject
+    Dim selected As ListObject, state As cInventoryTableInput
     On Error GoTo Failed
-    If mStaging Is Nothing Or mStage Is Nothing Then Exit Function
+    If created Then
+        Set selected = mCreatedStage: Set state = mCreatedStaging
+    Else
+        Set selected = mStage: Set state = mStaging
+    End If
+    If state Is Nothing Or selected Is Nothing Then Exit Function
     If Not Unchanged() Then Exit Function
-    Set source = mStage.Parent.Parent
+    Set source = selected.Parent.Parent
     If Not source.Saved Then Exit Function
     hash = modTrainingWire.FileSha256(source.FullName)
     If hash = "" Then Exit Function
@@ -136,11 +173,14 @@ Public Function ConfirmStageSaved() As Boolean
     If modTrainingWire.FileSha256(copyPath) <> hash Then GoTo CleanExit
     For Each sheet In copy.Worksheets
         For Each table In sheet.ListObjects
-            If table.Name = mStage.Name And sheet.Name = mStage.Parent.Name Then Set persisted = table
+            If table.Name = selected.Name And sheet.Name = selected.Parent.Name Then Set persisted = table
         Next table
     Next sheet
     If persisted Is Nothing Then GoTo CleanExit
-    If Not mStaging.MatchesPersistedCopy(persisted) Then GoTo CleanExit
+    If created Then
+        If persisted.ListRows.Count <> 20 Or persisted.Range.Address <> mCreatedRange Then GoTo CleanExit
+    End If
+    If Not state.MatchesPersistedCopy(persisted) Then GoTo CleanExit
     If hash <> modTrainingWire.FileSha256(source.FullName) Then GoTo CleanExit
     ConfirmStageSaved = Unchanged()
 CleanExit:
