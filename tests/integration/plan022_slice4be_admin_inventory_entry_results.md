@@ -15,7 +15,7 @@ cohorts below. PowerShell parsing and diff checks pass. First VBA compile, focus
 GREEN, receipt-side mutations, retained regressions, final static maintenance and
 all packaged/native/visible acceptance gates remain open. The concurrent original
 checkout's combined baseline still uses unchanged product source fc2fba93 and
-test e2eb0e0d; its result is not qualified before normal closure and native audit.
+test e2eb0e0d; its expanded Config observations are unqualified as detailed below.
 
 Draft source5d15970c/testb19676af static maintenance completes in ignored
 `reports/runtime/edit-receipts-b19676af-static`:385 components/6710 procedures;
@@ -26,6 +26,17 @@ mixed ADD/EDIT whole-selection refusal with an open source, quantity-only retry
 refusal before queueing, closed-source retry, and read-only confirmation of
 completed imported commands. It extends the approved ownership rule; no new
 contract or acceptance is claimed.
+
+**Combined baseline is unqualified,2026-10-20:** unchanged product fc2fba93/
+teste2eb0e0d, controller `7990302e43dd4710bb3ada422e38182b`, worker
+`49f06987bd2d4f7586b372790131484f`. A read-only Application-log query found an
+Excel Event1001 `RADAR_PRE_LEAK_64` at2026-10-20T07:48:10.7524730Z inside the
+controller interval. Exact process attribution and cause are not established.
+The existing native audit counts this event; do not exclude it retrospectively
+or promote this run's partial assertions. The worker is still active, without
+closure/restoration/final-audit proof. The previously qualified separate RED
+cohorts below remain the implementation baseline; the expanded Config comparisons
+remain unqualified. Ignored evidence: controller `native-warning-observed.json`.
 
 **Corrected EDIT binding/privacy RED qualified,2026-10-20 Pacific:**
 product fc2fba93/teste2a7b246 finishes147 PASS/32 FAIL across179 checks,
