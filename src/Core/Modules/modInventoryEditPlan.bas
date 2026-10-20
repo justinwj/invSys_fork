@@ -76,6 +76,7 @@ Public Function Build(ByVal context As String, ByVal submitted As cInventoryEdit
     For i = 0 To UBound(receipt)
         If Len(CStr(receipt(i))) > 32767 Then GoTo Invalid
     Next i
+    If Not ValidReceipt(receipt) Then GoTo Invalid
     Set book = Nothing: Set owner = Nothing
     Build = modInventoryCommands.CheckForm(context, report)
     Exit Function
