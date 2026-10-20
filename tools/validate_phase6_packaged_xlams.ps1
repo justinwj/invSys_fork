@@ -4,11 +4,14 @@ param(
     [string]$RepoRoot = ".",
 
     [Parameter(Mandatory = $false)]
-    [string]$DeployRoot = "deploy/current"
+    [string]$DeployRoot = "deploy/current",
+
+    [string]$DesktopMonitorReport = ""
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+$script:PackagedDesktopStopped = $false
 if (Get-Process EXCEL -ErrorAction SilentlyContinue) { throw "Close Excel before packaged validation." }
 Add-Type @'
 using System;
@@ -40,6 +43,25 @@ function Add-ResultRow {
     }) | Out-Null
 }
 
+function Assert-PackagedDesktop {
+    if ($script:PackagedDesktopStopped) { throw 'Desktop stop condition remains active.' }
+    if ([string]::IsNullOrWhiteSpace($DesktopMonitorReport)) { return }
+    try {
+        $stream = [IO.File]::Open($DesktopMonitorReport, [IO.FileMode]::Open, [IO.FileAccess]::Read, ([IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete))
+        try {
+            $reader = [IO.StreamReader]::new($stream)
+            try { $state = $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
+        } finally { $stream.Dispose() }
+        $age = ([DateTimeOffset]::UtcNow - [DateTimeOffset]::Parse($state.UTC)).TotalSeconds
+        if ($age -gt 15 -or $age -lt -5 -or $state.Error5Samples -ne 0 -or $state.LockSamples -ne 0 -or $state.MouseLockSamples -ne 0) {
+            throw 'Desktop monitor is stale or reports a stop condition.'
+        }
+    } catch {
+        $script:PackagedDesktopStopped = $true
+        throw 'Desktop validation stopped; inspect the monitor before further automation.'
+    }
+}
+
 function Run-WorkbookMacro {
     param(
         [object]$Excel,
@@ -48,6 +70,7 @@ function Run-WorkbookMacro {
     )
 
     $fullMacro = "'$WorkbookName'!$MacroName"
+    Assert-PackagedDesktop
     [void]$Excel.Run($fullMacro)
 }
 
@@ -60,6 +83,7 @@ function Run-WorkbookMacro1 {
     )
 
     $fullMacro = "'$WorkbookName'!$MacroName"
+    Assert-PackagedDesktop
     return $Excel.Run($fullMacro, $Argument1)
 }
 
@@ -67,6 +91,7 @@ function Begin-QuietUi {
     param([object]$Excel)
 
     try {
+        Assert-PackagedDesktop
         [void]$Excel.Run("'invSys.Core.xlam'!modUiQuiet.BeginQuietUi")
     }
     catch {}
@@ -221,17 +246,21 @@ function ConvertTo-SafePackagedEvidenceText {
 
 function Set-PackagedValidationRoot {
     param([object]$Excel, [string]$Phase)
+    Assert-PackagedDesktop
     [void]$Excel.Run("'invSys.Core.xlam'!modRuntimeWorkbooks.SetCoreDataRootOverride", $targetRoot)
+    Assert-PackagedDesktop
     $actual = [string]$Excel.Run("'invSys.Core.xlam'!modRuntimeWorkbooks.GetCoreDataRootOverride")
     $bound = [string]::Equals($actual, $targetRoot, [StringComparison]::OrdinalIgnoreCase)
     if (-not $bound) { throw "Packaged fixture runtime root was not bound." }
     if ($Phase -eq "Initial") {
+        Assert-PackagedDesktop
         $setup = [string]$Excel.Run("'invSys.Core.xlam'!modConfig.EnsureStationConfigEntryForAutomation",
             "WH1", "S1", "Packaged validation", (Join-Path $targetRoot "inbox"), "ADMIN",
             (Join-Path $targetRoot "WH1.invSys.Config.xlsb"), $targetRoot)
         Add-ResultRow -Rows $resultRows -Check "Fixture.ConfigProvisioned" -Passed ($setup -eq "OK") -Detail "Explicit Core setup provisioned Config inside the disposable fixture."
         if ($setup -ne "OK") { throw "Packaged Config fixture provisioning failed." }
     }
+    Assert-PackagedDesktop
     $loaded = [bool]$Excel.Run("'invSys.Core.xlam'!modConfig.LoadConfig", "WH1", "S1")
     $bound = $bound -and $loaded
     Add-ResultRow -Rows $resultRows -Check "$Phase.IsolatedRuntimeRoot" -Passed $bound -Detail "Core runtime root is the generated fixture directory."
@@ -281,20 +310,22 @@ function Close-PackagedValidationSession {
     [GC]::Collect(); [GC]::WaitForPendingFinalizers()
     # Only this HWND-identified process, after a real zero-workbook check.
     $waitStarted = [DateTimeOffset]::UtcNow
-    $exitedNaturally = $null -eq $owned -or $owned.WaitForExit(30000)
+    $exitedNaturally = $false
     $terminationRequested = $false
     try {
-        if (-not $exitedNaturally) {
-            $terminationRequested = $true
-            Stop-Process -Id $ownedProcessId
+        while ($null -ne $owned) {
+            [void]$owned.WaitForExit(500)
+            $owned = Get-Process -Id $ownedProcessId -ErrorAction SilentlyContinue
+            if ($null -ne $owned) { Start-Sleep -Milliseconds 100 }
         }
+        $exitedNaturally = $true
     } finally {
         # Fixed cleanup facts only; no process identity, paths or fixture values.
         [pscustomobject]@{
             Stage = $Phase
             WaitStartedUTC = $waitStarted.ToString('o')
             ObservedUTC = [DateTimeOffset]::UtcNow.ToString('o')
-            WaitMilliseconds = 30000
+            WaitMilliseconds = [int]([DateTimeOffset]::UtcNow - $waitStarted).TotalMilliseconds
             UnassistedExit = $exitedNaturally
             TerminationRequested = $terminationRequested
             ExitObserved = $null -eq $owned -or $owned.HasExited
@@ -384,11 +415,14 @@ $targetRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("invsys-packaged-surf
 try {
     New-Item -ItemType Directory -Path $targetRoot -Force | Out-Null
 
+    Assert-PackagedDesktop
     $excel = New-Object -ComObject Excel.Application
     $excel.Visible = $false
     $excel.DisplayAlerts = $false
     $excel.EnableEvents = $true
     $excel.AutomationSecurity = 1
+
+    Assert-PackagedDesktop
 
     $sentinelWb = $excel.Workbooks.Add()
     $targetWorkbooks.Add($sentinelWb) | Out-Null
@@ -412,6 +446,7 @@ try {
         }
 
         try {
+            Assert-PackagedDesktop
             $wb = $excel.Workbooks.Open($path)
             $openedWorkbooks.Add($wb) | Out-Null
             $workbookMap[$fileName] = $wb
@@ -420,6 +455,7 @@ try {
             Add-ResultRow -Rows $resultRows -Check "$fileName.IsAddin" -Passed ([bool]$wb.IsAddin) -Detail ("IsAddin=" + [string]$wb.IsAddin)
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "$fileName.Open" -Passed $false -Detail $_.Exception.Message
         }
 
@@ -452,6 +488,7 @@ try {
             Run-WorkbookMacro -Excel $excel -WorkbookName $workbookMap[$autoOpenSpec.File].Name -MacroName $autoOpenSpec.Macro
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             $autoOpenError = "$($autoOpenSpec.Macro): $($_.Exception.Message)"
             break
         }
@@ -474,12 +511,14 @@ try {
 
     try {
         $eventSentinelPath = Join-Path $targetRoot "Unrelated.Operator.xlsx"
+        Assert-PackagedDesktop
         $eventSentinelWb = $excel.Workbooks.Add()
         $eventSentinelWs = $eventSentinelWb.Worksheets.Item(1)
         $eventSentinelWs.Range("A1").Value2 = "EVENT-UNCHANGED"
         $eventSentinelWb.SaveAs($eventSentinelPath, 51)
         $eventSentinelWb.Close($false)
         Release-ComObject $eventSentinelWb
+        Assert-PackagedDesktop
         $eventSentinelWb = $excel.Workbooks.Open($eventSentinelPath)
         $targetWorkbooks.Add($eventSentinelWb) | Out-Null
         $eventSentinelWs = $eventSentinelWb.Worksheets.Item(1)
@@ -491,10 +530,12 @@ try {
         Add-ResultRow -Rows $resultRows -Check "RoleEvents.WorkbookOpenOperatorIsolation" -Passed $eventIsolationPassed -Detail "WorkbookOpen/NewWorkbook handlers left an unrelated operator workbook unchanged."
     }
     catch {
+        if ($script:PackagedDesktopStopped) { throw }
         Add-ResultRow -Rows $resultRows -Check "RoleEvents.WorkbookOpenOperatorIsolation" -Passed $false -Detail $_.Exception.Message
     }
 
     try {
+        Assert-PackagedDesktop
         $roleNameSentinelWb = $excel.Workbooks.Add()
         $targetWorkbooks.Add($roleNameSentinelWb) | Out-Null
         $roleSheetNames = @("Production", "ShipmentsTally", "ReceivedTally")
@@ -517,6 +558,7 @@ try {
         Add-ResultRow -Rows $resultRows -Check "RoleEvents.NamedSheetOperatorIsolation" -Passed $roleNameIsolationPassed -Detail "Selection/change handlers ignored unrelated workbooks whose sheet names resembled role sheets but lacked role-owned tables."
     }
     catch {
+        if ($script:PackagedDesktopStopped) { throw }
         Add-ResultRow -Rows $resultRows -Check "RoleEvents.NamedSheetOperatorIsolation" -Passed $false -Detail $_.Exception.Message
     }
 
@@ -593,12 +635,14 @@ try {
 
         try {
             $targetPath = Join-Path $targetRoot $spec.TargetFile
+            Assert-PackagedDesktop
             $targetWb = $excel.Workbooks.Add()
             $targetWorkbooks.Add($targetWb) | Out-Null
             $targetWb.SaveAs($targetPath, 51)
             $targetWb.Activate()
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "$($spec.Name).TargetWorkbook" -Passed $false -Detail $_.Exception.Message
         }
 
@@ -608,6 +652,7 @@ try {
             Add-ResultRow -Rows $resultRows -Check "$($spec.Name).Init" -Passed $true -Detail $spec.InitMacro
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "$($spec.Name).Init" -Passed $false -Detail $_.Exception.Message
         }
 
@@ -619,6 +664,7 @@ try {
                 Add-ResultRow -Rows $resultRows -Check "$($spec.Name).SafeMacro" -Passed $true -Detail $spec.SafeMacro
             }
             catch {
+                if ($script:PackagedDesktopStopped) { throw }
                 Add-ResultRow -Rows $resultRows -Check "$($spec.Name).SafeMacro" -Passed $false -Detail $_.Exception.Message
             }
             finally {
@@ -637,6 +683,7 @@ try {
                 Add-ResultRow -Rows $resultRows -Check "$($spec.Name).FormInitialize" -Passed $formSmoke.StartsWith("OK|", [System.StringComparison]::Ordinal) -Detail $formSmoke
             }
             catch {
+                if ($script:PackagedDesktopStopped) { throw }
                 Add-ResultRow -Rows $resultRows -Check "$($spec.Name).FormInitialize" -Passed $false -Detail $_.Exception.Message
             }
             finally {
@@ -652,21 +699,26 @@ try {
     if ($workbookMap.ContainsKey("invSys.Admin.xlam")) {
         try {
             $adminMacro = "'$($workbookMap["invSys.Admin.xlam"].Name)'!modAdminConsole.ReissuePoisonReceiveEventReportForAutomation"
+            Assert-PackagedDesktop
             $adminSmoke = [string]$excel.Run($adminMacro, "__PACKAGED_SMOKE_MISSING__.xlsb", "EVT-MISSING", "SKU-SMOKE", 1, "A1")
             $adminSmokePassed = $adminSmoke.StartsWith("FAIL|Report=Source workbook not open:", [System.StringComparison]::Ordinal)
             Add-ResultRow -Rows $resultRows -Check "Admin.PoisonReissue.PackagedSurface" -Passed $adminSmokePassed -Detail $adminSmoke
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "Admin.PoisonReissue.PackagedSurface" -Passed $false -Detail $_.Exception.Message
         }
         try {
+            Assert-PackagedDesktop
             $designLifecycleLayout = [int]$excel.Run("'$($workbookMap["invSys.Admin.xlam"].Name)'!modAdminDesignLifecycle.DesignLifecycleFormLayoutSmokeForAutomation")
             Add-ResultRow -Rows $resultRows -Check "Admin.DesignLifecycle.LegacyMigrationControl" -Passed ($designLifecycleLayout -eq 1) -Detail "LayoutReady=$designLifecycleLayout"
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "Admin.DesignLifecycle.LegacyMigrationControl" -Passed $false -Detail $_.Exception.Message
         }
         try {
+            Assert-PackagedDesktop
             $editSelection = [string]$excel.Run("'$($workbookMap["invSys.Admin.xlam"].Name)'!modAdmin.InventoryEditSelectionContractForAutomation")
             $editSelectionPassed = $editSelection -match '^OK\|' -and
                 $editSelection -match '(?:^|\|)ComboSelected=True(?:\||$)' -and
@@ -675,9 +727,11 @@ try {
             Add-ResultRow -Rows $resultRows -Check "Admin.EditItemComboSelection" -Passed $editSelectionPassed -Detail $editSelection
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "Admin.EditItemComboSelection" -Passed $false -Detail $_.Exception.Message
         }
         try {
+            Assert-PackagedDesktop
             $adminAdd = [string]$excel.Run("'$($workbookMap["invSys.Admin.xlam"].Name)'!modAdmin.InventoryAddVisibilityDropdownContractForAutomation")
             $adminAddPassed = $adminAdd -match '^OK\|' -and
                 $adminAdd -match '(?:^|\|)SubmitHandler=True(?:\||$)' -and
@@ -690,9 +744,11 @@ try {
             Add-ResultRow -Rows $resultRows -Check "Admin.InventoryZeroStartingQuantity" -Passed $adminAddPassed -Detail $adminAdd
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "Admin.InventoryAddVisibilityDropdowns" -Passed $false -Detail $_.Exception.Message
         }
         try {
+            Assert-PackagedDesktop
             $inventoryDelete = [string]$excel.Run("'$($workbookMap["invSys.Admin.xlam"].Name)'!modAdmin.InventoryDeleteContractForAutomation")
             $inventoryDeletePassed = $inventoryDelete -match '^OK\|' -and
                 $inventoryDelete -match '(?:^|\|)DeleteHandler=True(?:\||$)' -and
@@ -701,14 +757,17 @@ try {
             Add-ResultRow -Rows $resultRows -Check "Admin.InventoryDeleteItem" -Passed $inventoryDeletePassed -Detail $inventoryDelete
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "Admin.InventoryDeleteItem" -Passed $false -Detail $_.Exception.Message
         }
         try {
+            Assert-PackagedDesktop
             $inventoryWorksheetWb = $excel.Workbooks.Add()
             $targetWorkbooks.Add($inventoryWorksheetWb) | Out-Null
             $inventoryWorksheetPath = Join-Path $targetRoot "Admin.Inventory.Worksheet.Contract.xlsx"
             $inventoryWorksheetWb.SaveAs($inventoryWorksheetPath, 51)
             $inventoryWorksheetWb.Activate()
+            Assert-PackagedDesktop
             $inventoryWorksheet = [string]$excel.Run(
                 "'$($workbookMap["invSys.Admin.xlam"].Name)'!modAdmin.InventoryWorksheetContractForAutomation",
                 $inventoryWorksheetWb)
@@ -720,12 +779,14 @@ try {
             Add-ResultRow -Rows $resultRows -Check "Admin.InventoryWorksheetActions" -Passed $inventoryWorksheetPassed -Detail $inventoryWorksheet
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "Admin.InventoryWorksheetActions" -Passed $false -Detail $_.Exception.Message
         }
     }
 
     if ($workbookMap.ContainsKey("invSys.Core.xlam") -and $workbookMap.ContainsKey("invSys.Inventory.Domain.xlam")) {
         try {
+            Assert-PackagedDesktop
             $inventoryZeroCreate = [string]$excel.Run("'$($workbookMap["invSys.Inventory.Domain.xlam"].Name)'!modInventoryApply.InventoryZeroCreateContractForAutomation")
             $inventoryZeroCreatePassed = $inventoryZeroCreate -match '^OK\|' -and
                 $inventoryZeroCreate -match '(?:^|\|)ZeroEntityActive=True(?:\||$)' -and
@@ -734,9 +795,11 @@ try {
             Add-ResultRow -Rows $resultRows -Check "InventoryDomain.InventoryZeroCreate" -Passed $inventoryZeroCreatePassed -Detail $inventoryZeroCreate
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "InventoryDomain.InventoryZeroCreate" -Passed $false -Detail $_.Exception.Message
         }
         try {
+            Assert-PackagedDesktop
             $inventoryRetirement = [string]$excel.Run("'$($workbookMap["invSys.Inventory.Domain.xlam"].Name)'!modInventoryApply.InventoryRetirementContractForAutomation")
             $inventoryRetirementPassed = $inventoryRetirement -match '^OK\|' -and
                 $inventoryRetirement -match '(?:^|\|)CountedRetired=True(?:\||$)' -and
@@ -745,17 +808,20 @@ try {
             Add-ResultRow -Rows $resultRows -Check "InventoryDomain.InventoryRetirement" -Passed $inventoryRetirementPassed -Detail $inventoryRetirement
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "InventoryDomain.InventoryRetirement" -Passed $false -Detail $_.Exception.Message
         }
         try {
             $workbookMap["invSys.Inventory.Domain.xlam"].Close($false)
             $diagnosticMacro = "'$($workbookMap["invSys.Core.xlam"].Name)'!modInventoryDomainBridge.DiagnoseInventoryDomainBridge"
+            Assert-PackagedDesktop
             $diagnostic = [string]$excel.Run($diagnosticMacro)
             $passed = -not [string]::IsNullOrWhiteSpace($diagnostic) -and `
                       -not $diagnostic.StartsWith("Inventory Domain unavailable", [System.StringComparison]::OrdinalIgnoreCase)
             Add-ResultRow -Rows $resultRows -Check "InventoryDomain.PeerAutoLoad" -Passed $passed -Detail $diagnostic
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "InventoryDomain.PeerAutoLoad" -Passed $false -Detail $_.Exception.Message
         }
     }
@@ -764,6 +830,7 @@ try {
         try {
             $workbookMap["invSys.Designs.Domain.xlam"].Close($false)
             $diagnosticMacro = "'$($workbookMap["invSys.Core.xlam"].Name)'!modDesignsDomainBridge.DiagnoseDesignsDomainBridge"
+            Assert-PackagedDesktop
             $diagnostic = [string]$excel.Run($diagnosticMacro)
             $domainReopened = $false
             foreach ($candidate in $excel.Workbooks) {
@@ -777,6 +844,7 @@ try {
             Add-ResultRow -Rows $resultRows -Check "DesignsDomain.PeerAutoLoad" -Passed $passed -Detail "$diagnostic; WorkbookOpen=$domainReopened"
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "DesignsDomain.PeerAutoLoad" -Passed $false -Detail $_.Exception.Message
         }
     }
@@ -789,7 +857,9 @@ try {
         try {
             if (-not [string]::IsNullOrWhiteSpace([string]$targetWb.Path)) { $targetWb.Save() }
         }
-        catch {}
+        catch {
+            if ($script:PackagedDesktopStopped) { throw }
+        }
     }
     Close-PackagedValidationSession -Excel $excel -Phase "Initial"
     foreach ($targetWb in $targetWorkbooks) {
@@ -803,6 +873,7 @@ try {
     $openedWorkbooks = New-Object 'System.Collections.Generic.List[object]'
     $targetWorkbooks = New-Object 'System.Collections.Generic.List[object]'
     $workbookMap = @{}
+    Assert-PackagedDesktop
     $excel = New-Object -ComObject Excel.Application
     $excel.Visible = $false
     $excel.DisplayAlerts = $false
@@ -812,6 +883,7 @@ try {
     foreach ($fileName in $openOrder) {
         try {
             $reopenPath = Join-Path $deployPath $fileName
+            Assert-PackagedDesktop
             $reopenedAddin = $excel.Workbooks.Open($reopenPath)
             $openedWorkbooks.Add($reopenedAddin) | Out-Null
             $workbookMap[$fileName] = $reopenedAddin
@@ -820,6 +892,7 @@ try {
             Add-ResultRow -Rows $resultRows -Check "Restart.$fileName" -Passed ([bool]$reopenedAddin.IsAddin -and $sameIdentity) -Detail "IsAddin=$($reopenedAddin.IsAddin); FullName=$($reopenedAddin.FullName)"
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "Restart.$fileName" -Passed $false -Detail $_.Exception.Message
         }
     }
@@ -827,6 +900,7 @@ try {
     foreach ($spec in $validationSpecs) {
         try {
             $operatorPath = Join-Path $targetRoot $spec.TargetFile
+            Assert-PackagedDesktop
             $reopenedOperator = $excel.Workbooks.Open($operatorPath)
             $targetWorkbooks.Add($reopenedOperator) | Out-Null
             $surfaceResult = Test-WorkbookSurface -Workbook $reopenedOperator -TableSpecs $spec.Tables
@@ -834,13 +908,16 @@ try {
             Add-ResultRow -Rows $resultRows -Check "Restart.$($spec.Name).SavedWorkbook" -Passed ($identityOk -and $surfaceResult -eq "OK") -Detail "FullName=$($reopenedOperator.FullName); Surface=$surfaceResult"
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "Restart.$($spec.Name).SavedWorkbook" -Passed $false -Detail $_.Exception.Message
         }
     }
 
     if ($workbookMap.ContainsKey("invSys.Core.xlam")) {
         try {
+            Assert-PackagedDesktop
             $inventoryDiagnostic = [string]$excel.Run("'$($workbookMap["invSys.Core.xlam"].Name)'!modInventoryDomainBridge.DiagnoseInventoryDomainBridge")
+            Assert-PackagedDesktop
             $designsDiagnostic = [string]$excel.Run("'$($workbookMap["invSys.Core.xlam"].Name)'!modDesignsDomainBridge.DiagnoseDesignsDomainBridge")
             $domainRestartOk = -not [string]::IsNullOrWhiteSpace($inventoryDiagnostic) `
                 -and -not [string]::IsNullOrWhiteSpace($designsDiagnostic) `
@@ -849,6 +926,7 @@ try {
             Add-ResultRow -Rows $resultRows -Check "Restart.DomainBridges" -Passed $domainRestartOk -Detail "Inventory=$inventoryDiagnostic; Designs=$designsDiagnostic"
         }
         catch {
+            if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "Restart.DomainBridges" -Passed $false -Detail $_.Exception.Message
         }
     }
@@ -886,7 +964,15 @@ finally {
     foreach ($wb in $targetWorkbooks) {
         Release-ComObject $wb
     }
-    Remove-Item -LiteralPath $targetRoot -Recurse -Force -ErrorAction SilentlyContinue
+    $resolvedFixture = (Resolve-Path -LiteralPath $targetRoot).Path
+    $resolvedTemp = (Resolve-Path -LiteralPath $env:TEMP).Path.TrimEnd('\') + '\'
+    $fixtureItem = Get-Item -LiteralPath $resolvedFixture
+    if (-not $resolvedFixture.StartsWith($resolvedTemp, [StringComparison]::OrdinalIgnoreCase) -or
+        $fixtureItem.Name -notmatch '^invsys-packaged-surfaces-[a-f0-9]{32}$' -or
+        ($fixtureItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        throw 'Packaged fixture cleanup refused: unexpected directory.'
+    }
+    Remove-Item -LiteralPath $resolvedFixture -Recurse -Force
 }
 
 $failed = @($resultRows | Where-Object { -not $_.Passed }).Count
