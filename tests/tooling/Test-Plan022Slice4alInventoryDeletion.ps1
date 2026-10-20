@@ -12,10 +12,20 @@ $plan = Get-Content -LiteralPath (Join-Path $docs "expert guidance docs\022 Depl
 $controls = Get-Content -LiteralPath (Join-Path $docs "0 plan docs\xlam_invSys\invSys-Controls-v1.md") -Raw
 $form = Get-Content -LiteralPath (Join-Path $repo "src\Admin\Forms\frmAddInventoryItem.frm") -Raw
 $admin = Get-Content -LiteralPath (Join-Path $repo "src\Admin\Modules\modAdmin.bas") -Raw
+$retirement = Get-Content -LiteralPath (Join-Path $repo "src\Core\Modules\modInventoryRetirementCommands.bas") -Raw
+$inputs = Get-Content -LiteralPath (Join-Path $repo "src\Core\ClassModules\cInventoryCommandInputs.cls") -Raw
+$retirementPlan = Get-Content -LiteralPath (Join-Path $repo "src\Core\ClassModules\cInventoryRetirementPlan.cls") -Raw
+$writer = Get-Content -LiteralPath (Join-Path $repo "src\Core\Modules\modRoleEventWriter.bas") -Raw
 $apply = Get-Content -LiteralPath (Join-Path $repo "src\InventoryDomain\Modules\modInventoryApply.bas") -Raw
 $schema = Get-Content -LiteralPath (Join-Path $repo "src\InventoryDomain\Modules\modInventorySchema.bas") -Raw
 $queries = Get-Content -LiteralPath (Join-Path $repo "src\InventoryDomain\Modules\modInventoryQueries.bas") -Raw
 $validator = Get-Content -LiteralPath (Join-Path $repo "tools\validate_phase6_packaged_xlams.ps1") -Raw
+
+$retireFunction = [regex]::Match($admin, 'Public Function RetireInventoryItemForWarehouse(?s:.*?)End Function').Value
+$retireCommand = [regex]::Match($retirement, 'Public Function RetireActiveEntities(?s:.*?)End Function').Value
+$retireInputs = [regex]::Match($inputs, 'Public Function BeginRetirement(?s:.*?)End Function').Value
+$retirePlan = [regex]::Match($retirementPlan, 'Public Function Plan\((?s:.*?)End Function').Value
+$entityPayload = [regex]::Match($writer, 'Public Function CreateInventoryEntityPayloadItem(?s:.*?)End Function').Value
 
 $checks = [ordered]@{}
 $checks["Docs.Slice4alContract"] =
@@ -28,10 +38,16 @@ $checks["Form.RealDeleteHandler"] =
     $form.Contains("Private Sub mBtnDeleteItem_Click()") -and
     $form -match 'TestInventoryDeleteActionContract(?s).*?mBtnDeleteItem_Click'
 $checks["Admin.ExactSkuRetirementService"] =
-    $admin.Contains("Public Function RetireInventoryItemForWarehouse") -and
-    $admin.Contains('item("System_Key") = systemKey') -and
-    $admin.Contains('item("InventoryState") = "RETIRED"') -and
-    $admin.Contains("QueueAdminInventoryAdjustEvent")
+    $retireFunction.Contains('modInventoryRetirementCommands.RetireActiveEntities(warehouseId, stationId, userId,') -and
+    $retireFunction.Contains('sku, reason, retiredCount, eventId, retirementReport, interactiveContext)') -and
+    $retireCommand.Contains('inputs.BeginRetirement(sku, reason, payload, retiredCount)') -and
+    $retireInputs.Contains('Set mRetirement = New cInventoryRetirementPlan') -and
+    $retireInputs.Contains('mRetirement.Plan(mEntities, sku, reason, payload, count)') -and
+    $retirePlan.Contains('For Each key In entities.KeysForSku(sku)') -and
+    $retirePlan.Contains('modRoleEventWriter.CreateInventoryEntityPayloadItem(CStr(key), sku,') -and
+    $entityPayload.Contains('item("System_Key") = systemKey') -and
+    $retirePlan.Contains('item("InventoryState") = "RETIRED"') -and
+    $retireCommand.Contains('modRoleEventWriter.QueueAdminInventoryAdjustEvent(warehouse, station, user, payload,')
 $addInventoryItemMatch = [regex]::Match(
     $admin,
     '(?ms)^Sub Add_InventoryItem\(\).*?^End Sub'

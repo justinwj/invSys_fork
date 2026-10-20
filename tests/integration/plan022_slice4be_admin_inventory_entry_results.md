@@ -11,6 +11,14 @@ remain intact; corrected main passes 8/8. This is stale-test repair, not product
 behavioral RED or a new runtime acceptance claim. The active draft's pinned test
 files remain unchanged until its imported-row controller closes normally.
 
+The corrected 4am guard also passes 8/8 against draft source when invoked from
+the main checkout. Modal Edit selection 4ah passes 5/5. Delete guard 4al similarly
+reports 7/1 on unchanged main/draft because it expects retirement payload and
+queue ownership in Admin. Its test-only correction follows the approved Core
+coordinator, input capture and exact-entity retirement plan to the event writer;
+all eight original IDs remain, and main/draft both pass 8/8. No runtime Delete
+result or new product RED is inferred from these source checks.
+
 **Retained Catalog/headless regressions qualified, 2026-10-20:** both use draft
 `8af28d99` / product `a9faab9c`, with no product or test changes. Catalog completion
 passes 50/50, preserving all retained modal Edit checks, owning generated identity,
