@@ -1,6 +1,6 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
-**Binding/mutation regression263/263; native qualification pending,2026-10-20:**
+**Binding/mutation GREEN qualified263/263,2026-10-20:**
 draft5524cf7f retains product a9faab9c and applies fixture correction8fcec788.
 The full actual-Upload cohort passes263 checks with no failures, including all
 five instrumented compiles. Both identical-payload EDITs retain distinct commands
@@ -14,8 +14,10 @@ Auth bytes and read-only extraction are preserved at all24 boundaries.
 No product implementation, runtime contract or recording control changed.
 Controller `reports/runtime/inventory-imported-controller/1c8a57f9fc89436e925f86626f18ae5d`;
 worker `reports/runtime/slice4be-admin-inventory-entry/042dd6103dcf41379a92ade838163adf`.
-Normal Quit/COM release returned17:44:50.599Z/17:44:51.274Z; cleanup, restoration
-and native audit remain pending. This is source-overlay evidence, not final
+Normal Quit/COM release returned17:44:50.599Z/17:44:51.274Z. Garbage collection
+returned18:16:25.919Z; closure18:16:29.314Z confirms settings restored, Excel closed
+and all package/source/tooling pins preserved. Audit18:16:49.326Z records zero
+Excel events; no intervention occurred. This is source-overlay evidence, not final
 packaged/native-input acceptance. Broader receipt phases/results/save GREENs and
 their older Config diagnosis gaps remain open.
 
