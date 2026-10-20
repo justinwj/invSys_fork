@@ -14,7 +14,7 @@ Private mWarehouse As String, mPath As String, mIdentity As String, mHash As Str
 Private mCatalog As cInventoryTableInput, mEntities As cInventoryTableInput
 Private mStaging As cInventoryTableInput, mStage As ListObject
 Private mCreatedStaging As cInventoryTableInput, mCreatedStage As ListObject
-Private mCreatedBook As Workbook, mCreatedRange As String
+Private mCreatedBook As Workbook, mCreatedRange As String, mCreatedName As String
 Private mSelectedSku As String, mPhase As String, mSaving As Boolean
 Private mInitiallyBorrowed As Boolean
 Private mCreate As cInventoryCreatePlan
@@ -87,6 +87,7 @@ Public Function Unchanged() As Boolean
     End If
     If Not mCreatedStaging Is Nothing Then
         If Not (mCreatedStage.Parent.Parent Is mCreatedBook) Then Exit Function
+        If StrComp(mCreatedStage.Name, mCreatedName, vbBinaryCompare) <> 0 Then Exit Function
         If mCreatedStage.Parent.Name <> "invSys Inventory Editor" Then Exit Function
         If mCreatedStage.Range.Address <> mCreatedRange Or mCreatedStage.ListRows.Count <> 20 Then Exit Function
         If Not mCreatedStaging.Matches(mCreatedStage) Then Exit Function
@@ -146,7 +147,7 @@ Public Function BindCreatedStage(ByVal operatorBook As Workbook, ByVal tableName
         If cell.HasFormula Or Not IsEmpty(cell.Value2) Then Exit Function
     Next cell
     Set mCreatedStage = table: Set mCreatedStaging = New cInventoryTableInput
-    Set mCreatedBook = operatorBook: mCreatedRange = table.Range.Address
+    Set mCreatedBook = operatorBook: mCreatedRange = table.Range.Address: mCreatedName = tableName
     If Not mCreatedStaging.Capture(table, "", True) Then Exit Function
     BindCreatedStage = Unchanged()
 Invalid:

@@ -112,7 +112,7 @@ Failed:
         Else
             report = "Partial result: local worksheet changes may remain; saving is unconfirmed. " & report
         End If
-        If tableName <> "" Then report = report & vbCrLf & "Table: " & tableName
+        If tableName <> "" Then report = report & vbCrLf & "Captured table: " & tableName
         report = report & vbCrLf & "Reopen Add/Edit Inventory before retrying."
         modInventoryCommands.Release interactiveContext
     End If
