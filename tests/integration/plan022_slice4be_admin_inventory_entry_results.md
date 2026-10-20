@@ -1,5 +1,29 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Retained Catalog/headless regressions qualified, 2026-10-20:** both use draft
+`8af28d99` / product `a9faab9c`, with no product or test changes. Catalog completion
+passes 50/50, preserving all retained modal Edit checks, owning generated identity,
+exact new quantity, unrelated entities/pending events and honest partial reporting
+after authority loss. Headless authorization passes 56/56: explicit provisioned
+authority remains separate from interactive sign-in; Reader/missing-actor catalog
+edits and quantity no-ops refuse without writes, while authorized paths succeed.
+
+| Cohort | Controller / worker suffix | Normal closure / native audit UTC |
+| --- | --- | --- |
+| Catalog 50/50 | `2d732d42fa4443b689377b6c75ce916f` / `16aaf4a6fbb845478903d6c29b37e0f8` | 21:32:11.517 / 21:32:31.535 |
+| Headless 56/56 | `b5a4cfc6b10a46aba2e39652cf87fff1` / `dd0d0057e8304f2e900a4ae9a6e1e355` | 21:35:05.664 / 21:35:25.673 |
+
+Both runs compile five instrumented packages, restore settings, preserve all pins,
+close normally without intervention and record zero native Excel events. Fresh
+cursor proofs pass; passive observers stay clear and stop normally. Catalog's two
+Config/Auth observations preserve table contents, shapes, Auth and read-only
+extraction; metadata changes are traced to six inbox-bootstrap saves. Headless's
+eight observations likewise preserve contents/shapes/Auth/read-only extraction;
+seven Config comparisons are byte-identical and one metadata change is traced to
+three bootstrap saves. Same-worker diagnosis/authority JSONL files retain scope.
+Worksheet 64/64 is also qualified. Imported-ADD preflight, final build/package and
+4be-A acceptance gates remain open; this is source-overlay evidence.
+
 **Retained worksheet regression qualified, 2026-10-20:** draft `8af28d99`,
 product `a9faab9c`, passes all 64 retained checks through actual Upload. Authorized
 zero-quantity creation persists its exact entity/event and custom columns;
