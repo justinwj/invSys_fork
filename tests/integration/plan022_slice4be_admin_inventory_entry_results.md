@@ -17,6 +17,16 @@ all packaged/native/visible acceptance gates remain open. The concurrent origina
 checkout's combined baseline still uses unchanged product source fc2fba93 and
 test e2eb0e0d; its result is not qualified before normal closure and native audit.
 
+Draft source5d15970c/testb19676af static maintenance completes in ignored
+`reports/runtime/edit-receipts-b19676af-static`:385 components/6710 procedures;
+literal Run9, unresolved calls45, duplicate groups194 and oversized modules27.
+The maintenance JSON contract passes. These counts do not establish VBA compile
+or behavior. New actual-Upload ownership coverage is prepared, not executed:
+mixed ADD/EDIT whole-selection refusal with an open source, quantity-only retry
+refusal before queueing, closed-source retry, and read-only confirmation of
+completed imported commands. It extends the approved ownership rule; no new
+contract or acceptance is claimed.
+
 **Corrected EDIT binding/privacy RED qualified,2026-10-20 Pacific:**
 product fc2fba93/teste2a7b246 finishes147 PASS/32 FAIL across179 checks,
 including six harness checks,43 supplemental privacy checks and42 Config/Auth/
