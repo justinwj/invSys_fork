@@ -1,5 +1,6 @@
 # Shared read-only observation for actual EDIT setup, failure and retry actions.
 # Values and hashes remain memory-only; output contains fixed labels and facts.
+. (Join-Path $PSScriptRoot 'Slice4beInventoryReceiptScenarios.ps1')
 function Start-InventoryEditConfigDiagnosis($Fixture) {
     $before=Get-InventoryConfigDiagnosticSnapshot $Fixture
     $auth=Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))
@@ -207,10 +208,13 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other,[ValidateSet('','Phase'
         $AdminInventoryEditCanonicalSaveOnly=($Cohort -eq 'Canonical')
     }
     $script:InventoryConfigReadChecks=[Collections.Generic.List[object]]::new()
-    $cases=@('CatalogOnly','NoopQuantity','QuantityChange','QueueFailure')
-    if($Cohort -eq 'Ownership'){$cases=@('QueueFailure')}
-    if($AdminInventoryEditReceiptResultsOnly){$cases=@('OperatorSaveThrows','OperatorSaveThrowsLaterQuantity','AfterApplyAuthorityLost')}
-    if($AdminInventoryEditCanonicalSaveOnly){$cases=@('BeforeCatalogSaveThrows','AfterCatalogSaveThrows','BeforeCatalogSaveAuthorityLost','AfterCatalogSaveAuthorityLost')}
+    $caseCohort='Phase'
+    if($Cohort -eq 'Ownership'){$caseCohort='Ownership'}
+    if($AdminInventoryEditReceiptResultsOnly){$caseCohort='Result'}
+    if($AdminInventoryEditCanonicalSaveOnly){$caseCohort='Canonical'}
+    $cases=@(Get-InventoryReceiptScenarios -Cohort $caseCohort -Scenario $AdminInventoryReceiptScenarioForTest)
+    [pscustomobject]@{Cohort=$caseCohort;SelectedCases=$cases;FullCohort=($AdminInventoryReceiptScenarioForTest -eq '')}|
+        ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'inventory-receipt-scope.jsonl')
     foreach($case in $cases){
         SelectTarget $Fixture
         $id='InventoryEditReceipt.'+$case

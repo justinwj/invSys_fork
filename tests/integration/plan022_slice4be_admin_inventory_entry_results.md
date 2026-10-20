@@ -1,5 +1,35 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Receipt test partitioning,2026-10-20:** harnessadf6a968 adds an optional
+single-scenario selector for phase, result-save and canonical-save cohorts.
+Default case sets and assertion bodies are unchanged; each run records its exact
+selection. Offline validation passes90 checks, including default/partition
+equivalence, invalid combinations rejected before Excel access and no new Excel
+process or fixture. This is harness validation, not product RED/GREEN.
+Result-save and canonical-save qualification still requires all seven scenarios
+and each run's preservation, normal closure and native audit gates.
+
+**Receipt phases GREEN qualified81/81,2026-10-20:**
+draftd16b809a/product a9faab9c passes catalog-only, no-op quantity, changed
+quantity and failed-queue/fresh-session retry through actual Upload. Receipts
+and event plans are durably saved before queueing; the retry keeps the original
+event, applies quantity once and does not repeat catalog history. Catalog-only
+and no-op edits save receipts without invented quantity events.
+All five instrumented compiles and27 Config/Auth/read checks pass. Of nine
+observed boundaries, five preserve Config bytes and four metadata changes are
+explained by12 inbox-bootstrap saves; Auth and read-only extraction are preserved
+at all nine. This separate GREEN comparison does not retroactively resolve older
+RED Config gaps. No source or test change was needed for this cohort.
+Controller `reports/runtime/inventory-imported-controller/ee6020d9df0d46b281b5e25aeca8a5e9`;
+worker `reports/runtime/slice4be-admin-inventory-entry/e01036ac1ca1485eade4061f9b65cbb9`.
+Quit returned18:47:23.796Z; COM release returned18:47:24.484Z. Garbage collection
+returned19:28:25.574Z; normal closure19:28:29.015Z confirms settings restored,
+Excel closed and all package/source/tooling pins preserved. Audit19:28:49.022Z
+records zero Excel events; no intervention occurred. Desktop monitoring remained
+clear and stopped normally. This source-overlay result is not final packaged or
+native-input acceptance. Result-save/canonical-save GREENs,
+retained regressions and final4be-A acceptance remain open.
+
 **Binding/mutation GREEN qualified263/263,2026-10-20:**
 draft5524cf7f retains product a9faab9c and applies fixture correction8fcec788.
 The full actual-Upload cohort passes263 checks with no failures, including all
