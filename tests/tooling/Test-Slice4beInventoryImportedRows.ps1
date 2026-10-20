@@ -5,7 +5,7 @@ param(
     [Parameter(Mandatory=$true)][string]$DesktopMonitorReport,
     [switch]$TesterBaselineOverlayForTest,
     [switch]$WorksheetResultsRegression,
-    [ValidateSet('ImportedRows','ImportedEdits','EditReceiptPhases','EditReceiptResults','EditReceiptSave','WorksheetResults','PrimitivePayload','CatalogCompletion','Headless','CreatePhases','CreateName','ConfigMetadata')]
+    [ValidateSet('ImportedRows','ImportedEdits','EditReceiptPhases','EditReceiptResults','EditReceiptSave','EditBindings','WorksheetResults','PrimitivePayload','CatalogCompletion','Headless','CreatePhases','CreateName','ConfigMetadata')]
     [string]$InventoryCase='ImportedRows'
 )
 # Source-overlay diagnostic only. Preserve frozen packages, tooling, product
@@ -46,6 +46,7 @@ try{
         'EditReceiptPhases' {$workerArgs+=@('-AdminInventoryWorksheetResultsOnly','-AdminInventoryEditReceiptPhasesOnly')}
         'EditReceiptResults' {$workerArgs+=@('-AdminInventoryWorksheetResultsOnly','-AdminInventoryEditReceiptPhasesOnly','-AdminInventoryEditReceiptResultsOnly')}
         'EditReceiptSave' {$workerArgs+=@('-AdminInventoryWorksheetResultsOnly','-AdminInventoryEditReceiptPhasesOnly','-AdminInventoryEditCanonicalSaveOnly')}
+        'EditBindings' {$workerArgs+=@('-AdminInventoryWorksheetResultsOnly','-AdminInventoryEditReceiptPhasesOnly','-AdminInventoryEditBindingsOnly')}
         'ConfigMetadata' {$workerArgs+=@('-AdminInventoryWorksheetResultsOnly','-AdminInventoryImportedRowsOnly','-AdminInventoryConfigMetadataOnly')}
         'WorksheetResults' {$workerArgs+='-AdminInventoryWorksheetResultsOnly'}
         'PrimitivePayload' {$workerArgs+='-AdminInventoryPrimitivePayloadOnly'}

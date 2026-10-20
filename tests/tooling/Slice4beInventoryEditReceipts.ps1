@@ -8,14 +8,17 @@ function Install-InventoryEditReceiptProbe {
 Option Explicit
 Private mMode As String, mSource As String, mHostPath As String, mCopy As String
 Private mReached As Boolean, mCopied As Boolean, mPlanned As String, mPreserved As Boolean
+Private mQueued As String, mPayload As String
 Public Sub Arm(ByVal mode As String, ByVal source As String, ByVal hostPath As String, ByVal copyPrefix As String)
     mMode = mode: mSource = source: mHostPath = hostPath: mCopy = copyPrefix
     mReached = False: mCopied = False: mPlanned = "": mPreserved = False
+    mQueued = "": mPayload = ""
 End Sub
-Public Function BeforeQueue(ByVal plannedEvent As String) As Boolean
+Public Function BeforeQueue(ByVal plannedEvent As String, ByVal payload As String) As Boolean
     Dim fso As Object, sourceHash As String, hostHash As String
     If mMode = "" Then Exit Function
     mReached = True: mPlanned = plannedEvent
+    mPayload = payload
     BeforeQueue = (mMode = "QueueFailure")
     On Error GoTo CopyFailed
     sourceHash = modTrainingWire.FileSha256(mSource)
@@ -35,6 +38,20 @@ End Function
 Public Function PlannedEventForOwnedTest() As String
     PlannedEventForOwnedTest = mPlanned
 End Function
+Public Sub AfterQueue(ByVal eventId As String)
+    If mMode <> "" Then mQueued = eventId
+End Sub
+Public Function QueuedEventForOwnedTest() As String
+    QueuedEventForOwnedTest = mQueued
+End Function
+Public Function PayloadForOwnedTest() As String
+    PayloadForOwnedTest = mPayload
+End Function
+Public Function ResetQuantityForOwnedTest(ByVal warehouse As String, ByVal sku As String) As Boolean
+    Dim report As String
+    ResetQuantityForOwnedTest = modInventoryQuantityCommands.SetSingleEntityQuantity( _
+        warehouse, "S1", "config-admin", sku, 0, "Owned intervening reset", report)
+End Function
 Public Function SetLaterQuantityForOwnedTest(ByVal warehouse As String, ByVal sku As String) As Boolean
     Dim report As String
     SetLaterQuantityForOwnedTest = modInventoryQuantityCommands.SetSingleEntityQuantity( _
@@ -46,8 +63,9 @@ End Function
     $body=$owner.Lines($start,$count)
     $boundary='(?im)^[\t ]*QueueAdminInventoryAdjustEvent = QueueEventCore\('
     if([regex]::Matches($body,$boundary).Count -ne 1){throw 'Owned queue observation boundary unavailable; not RED.'}
-    $hook="    If TestInventoryEditReceipt.BeforeQueue(eventIdOut) Then`r`n        errorMessage = ""Owned queue failure.""`r`n        Exit Function`r`n    End If`r`n"
+    $hook="    If TestInventoryEditReceipt.BeforeQueue(eventIdOut, payloadJson) Then`r`n        errorMessage = ""Owned queue failure.""`r`n        Exit Function`r`n    End If`r`n"
     $body=[regex]::Replace($body,$boundary,[Text.RegularExpressions.MatchEvaluator]{param($m) $hook+$m.Value})
+    $body=[regex]::Replace($body,'(?im)^End Function[\t ]*\r?$',"    TestInventoryEditReceipt.AfterQueue eventIdOut`r`nEnd Function")
     $owner.DeleteLines($start,$count);$owner.InsertLines($start,$body)
 }
 function Get-InventoryEditCell($Row,$Table,[string]$Header) {
@@ -74,7 +92,7 @@ function Get-InventoryEditRows($Table) {
 function Read-InventoryEditReceiptCopy([string]$Path,[string]$Sku,[string]$Command='') {
     $hash=Get-AdminInventoryEntryHash $Path
     $book=$excel.Workbooks.Open($Path,0,$true)
-    $result=[pscustomobject]@{CatalogMatches=0;Item='';Reason='';History='';Custom='';Receipts=@();Applied=@();Log=@();Preserved=$false}
+    $result=[pscustomobject]@{CatalogMatches=0;Item='';Reason='';History='';Custom='';Receipts=@();Applied=@();AppliedRecords=@();Log=@();Preserved=$false}
     try{
         foreach($sheet in $book.Worksheets){foreach($table in $sheet.ListObjects){
             if($table.Name -notin @('tblSkuCatalog','tblAppliedEvents','tblInventoryLog','tblInventoryEditReceipts')){continue}
@@ -88,7 +106,11 @@ function Read-InventoryEditReceiptCopy([string]$Path,[string]$Sku,[string]$Comma
                     $result.Custom=Get-InventoryEditCell $row $table 'USER NOTE'
                 }}
             }elseif($table.Name -ieq 'tblAppliedEvents'){
-                foreach($row in $rows){$result.Applied+=,(Get-InventoryEditCell $row $table 'EventID')}
+                foreach($row in $rows){
+                    $event=Get-InventoryEditCell $row $table 'EventID'
+                    $result.Applied+=,$event
+                    $result.AppliedRecords+=,[pscustomobject]@{Event=$event;Status=(Get-InventoryEditCell $row $table 'Status')}
+                }
             }elseif($table.Name -ieq 'tblInventoryLog'){
                 foreach($row in $rows){
                     if((Get-InventoryEditCell $row $table 'SKU') -ceq $Sku){
@@ -127,8 +149,10 @@ function Get-InventoryEditSavedResult([string]$Path) {
     return [pscustomobject]@{Command=$command;Status=$status;Text=$text;Preserved=((Get-AdminInventoryEntryHash $Path) -ceq $hash)}
 }
 function Test-InventoryEditBinding($Snapshot,$Saved,$Fixture,[string]$Sku) {
-    if($Saved.Command -eq '' -or $Snapshot.Receipts.Count -ne 1){return $false}
-    $receipt=$Snapshot.Receipts[0]
+    if($Saved.Command -eq ''){return $false}
+    $boundReceipts=@($Snapshot.Receipts|Where-Object {$_.Command -ceq $Saved.Command})
+    if($boundReceipts.Count -ne 1){return $false}
+    $receipt=$boundReceipts[0]
     return ($receipt.Command -ceq $Saved.Command -and $receipt.Sku -ceq $Sku -and $receipt.Warehouse -ceq $Fixture.Warehouse -and $receipt.Station -ceq 'S1' -and $receipt.User -ceq 'config-admin')
 }
 function Test-InventoryEditReceiptPhases($Fixture,$Other) {
