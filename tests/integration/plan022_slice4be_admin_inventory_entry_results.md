@@ -2405,3 +2405,25 @@ log tables; Inventory-only privacy from snapshots/roles/aggregation; reciprocal
 staging-row/receipt binding, with modal Edit unchanged. This extends the contract,
 not the coverage of this32-check cohort. Expanded D13 precedes implementation.
 No new Excel tests ran before closure/native qualification was verified.
+
+## Older receipt RED Config/Auth measurement limits
+
+Read-only artifact review, 2026-10-20, under D8-INV-01 item 1. The following
+qualified behavioral RED cohorts all used product `fc2fba93`; their worker
+directories contain results, source-overlay scope, readiness and shutdown records,
+but no Config comparison or Auth preservation artifact:
+
+| Cohort / test commit | PASS / FAIL | Worker suffix |
+| --- | --- | --- |
+| Receipt phases / `f2d26e8f` | 41 / 12 | `f469ebd2536a4fa3b52a4f99e852fbe0` |
+| Result boundary / `5e76fcd4` | 50 / 20 | `ddfff02264594ec4b8f21d803f09ba21` |
+| Canonical save / `c7a2599c` | 83 / 28 | `f1710dda499346cab7a3b580fc957c0c` |
+
+Paths are `reports/runtime/slice4be-admin-inventory-entry/<worker>` in the main
+code checkout. Config/Auth preservation and Config-change causality are
+**unmeasured/unresolved for these cohorts**. Absence of the artifact proves neither
+preservation nor a mutation. Their behavioral RED results and normal closure
+remain as recorded above. Later product `a9faab9c` comparisons have their own
+provenance and do not fill this gap. Any further diagnosis of an older cohort must
+retain its exact product source, action sequence and independently identified
+diagnostic test; do not relabel newer GREEN observations as older evidence.
