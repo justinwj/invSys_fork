@@ -88,7 +88,20 @@ function Test-InventoryImportedRows($Fixture,$Other) {
             if($saveFacts.Count -ne 3){throw 'Config save observer unavailable.'}
             $phase=[pscustomobject]@{Calls=[int]$saveFacts[0];ByteChangesDuringSave=[int]$saveFacts[1];UnavailableHashComparisons=[int]$saveFacts[2];Procedure='modConfig.SaveConfigWorkbookIfWritable'}
             Write-InventoryConfigDiagnosticComparison $configBefore $configAfter $case $phase
-            if($AdminInventoryConfigMetadataOnly){Check 'InventoryConfigMetadata.KnownSaveWindowsExplainByteChanges' $script:InventoryConfigLastComparison.CauseEstablished}
+            if($AdminInventoryConfigMetadataOnly){
+                Check 'InventoryConfigMetadata.KnownSaveWindowsExplainByteChanges' $script:InventoryConfigLastComparison.CauseEstablished
+                # Exercise the installed VBA observer, including the PowerShell/Core
+                # hexadecimal casing boundary. Never write hashes into evidence.
+                $lower=[string](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.WindowFacts' @($configBefore.FileHash.ToLowerInvariant(),$configAfter.FileHash.ToLowerInvariant()))
+                $upper=[string](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.WindowFacts' @($configBefore.FileHash.ToUpperInvariant(),$configAfter.FileHash.ToUpperInvariant()))
+                Check 'InventoryConfigMetadata.HashCasingPreservesWindowProof' ($lower -ceq 'True|True|True' -and $upper -ceq $lower)
+                $wrong=[string]::new('0',64)
+                if($wrong -eq $configBefore.FileHash -or $wrong -eq $configAfter.FileHash){$wrong=[string]::new('1',64)}
+                $mismatch=[string](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.WindowFacts' @($wrong,$wrong))
+                Check 'InventoryConfigMetadata.MismatchedHashesRefused' ($mismatch -ceq 'False|False|True')
+                $empty=[string](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.WindowFacts' @('',''))
+                Check 'InventoryConfigMetadata.EmptyHashesRefused' ($empty -ceq 'False|False|True')
+            }
             [pscustomobject]@{Case=$case;AuthBytesPreserved=($authBefore -ceq (Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))))}|ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'imported-row-authority-observations.jsonl')
         }finally{$hostBook.Close($false)}
     }

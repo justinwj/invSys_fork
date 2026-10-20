@@ -309,6 +309,7 @@ Public Function PhaseFacts() As String
     PhaseFacts = CStr(mReceiving) & "|" & CStr(mShipping) & "|" & CStr(mProduction) & "|" & CStr(mUnknown) & "|" & CStr(mCompleted)
 End Function
 Public Function WindowFacts(ByVal beforeHash As String, ByVal afterHash As String) As String
+    beforeHash = LCase$(beforeHash): afterHash = LCase$(afterHash)
     WindowFacts = CStr(mCalls > 0 And beforeHash <> "" And beforeHash = mFirstBefore) & "|" & _
         CStr(mCalls > 0 And afterHash <> "" And afterHash = mLastAfter) & "|" & CStr(mBetween = 0)
 End Function
