@@ -33,12 +33,16 @@ End Function
 Public Sub AtPhase(ByVal phase As String)
     Dim sheet As Worksheet, table As ListObject
     If mReached Then Exit Sub
-    If mMode = "ChangedNewTable" Then
+    If mMode = "ChangedNewTable" Or mMode = "RenamedNewTable" Then
         If phase <> "BeforeSave" Then Exit Sub
         For Each sheet In Application.Workbooks(mHost).Worksheets
             For Each table In sheet.ListObjects
                 If Left$(table.Name, 17) = "invSys_Inventory_" Then
-                    table.ListColumns("Quantity").DataBodyRange.Cells(1, 1).Value2 = 1
+                    If mMode = "ChangedNewTable" Then
+                        table.ListColumns("Quantity").DataBodyRange.Cells(1, 1).Value2 = 1
+                    Else
+                        table.Name = table.Name & "_changed"
+                    End If
                 End If
             Next table
         Next sheet
@@ -49,7 +53,7 @@ Public Sub AtPhase(ByVal phase As String)
     mBefore = Signature()
     mHash = modTrainingWire.FileSha256(Application.Workbooks(mHost).FullName)
     If mBefore = "" Or mHash = "" Then Err.Raise vbObjectError + 2195, , "Create observation unavailable."
-    If mMode <> "ChangedNewTable" Then modAuth.SignOut
+    If mMode <> "ChangedNewTable" And mMode <> "RenamedNewTable" Then modAuth.SignOut
 End Sub
 Public Sub SaveReturn(ByVal book As Workbook)
     If mMode = "SaveThrows" Then
@@ -113,7 +117,8 @@ End Function
 
 function Test-InventoryCreatePhases($Fixture,$Other) {
     $script:InventoryConfigReadChecks=[Collections.Generic.List[object]]::new()
-    foreach($case in @('Authorized','AuthorizedExisting','BeforeHelper','AfterSheet','AfterHeaders','BeforeSave','ChangedNewTable','AfterSave','SaveThrows')){
+    $cases=if($AdminInventoryCreateNameOnly){@('Authorized','RenamedNewTable')}else{@('Authorized','AuthorizedExisting','BeforeHelper','AfterSheet','AfterHeaders','BeforeSave','ChangedNewTable','RenamedNewTable','AfterSave','SaveThrows')}
+    foreach($case in $cases){
         SelectTarget $Fixture
         $hostBook=$excel.Workbooks.Add();$path=Join-Path $runRoot ('create-phase-'+$case+'.xlsx')
         $hostBook.Worksheets.Item(1).Range('A1').Value2='Unrelated operator content'
@@ -146,6 +151,7 @@ function Test-InventoryCreatePhases($Fixture,$Other) {
             if($case -cnotin @('Authorized','AuthorizedExisting')){
                 Check ($id+'.RequiredPhaseReached') ($phaseFacts[0] -ceq 'True')
                 if($phaseFacts[0] -cne 'True'){throw 'Create fault phase unavailable; not product RED.'}
+                if($case -ceq 'RenamedNewTable'){Check ($id+'.LiveSessionRetained') ([bool](Run 'invSys.Core.xlam' 'modAuth.IsSignedIn'))}
                 Check ($id+'.NoFurtherStagingMutation') ($phaseFacts[1] -ceq 'True')
                 Check ($id+'.NoFurtherOperatorSave') ($phaseFacts[2] -ceq 'True')
                 Check ($id+'.NoFalseSuccess') ($phaseFacts[3] -ceq 'False')

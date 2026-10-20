@@ -2,6 +2,13 @@ Attribute VB_Name = "modInventoryUiText"
 Option Explicit
 Option Private Module
 
+Public Function SafeFormText(ByVal valueIn As Variant) As String
+    If IsError(valueIn) Then Exit Function
+    If IsNull(valueIn) Then Exit Function
+    If IsEmpty(valueIn) Then Exit Function
+    SafeFormText = Trim$(CStr(valueIn))
+End Function
+
 Public Function MaxLongAdminForm(ByVal leftValue As Long, ByVal rightValue As Long) As Long
     If leftValue >= rightValue Then
         MaxLongAdminForm = leftValue

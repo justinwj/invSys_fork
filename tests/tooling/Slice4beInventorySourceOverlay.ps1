@@ -15,6 +15,7 @@ function Install-InventorySourceOverlay {
         @('invSys.Admin.xlam','Admin/Modules/modAdmin.bas',1),
         @('invSys.Admin.xlam','Admin/Modules/modAdminInventoryCreate.bas',1),
         @('invSys.Admin.xlam','Admin/Modules/modAdminInventoryWorksheet.bas',1),
+        @('invSys.Admin.xlam','Admin/Modules/modInventoryUiText.bas',1),
         @('invSys.Admin.xlam','Admin/Forms/frmAddInventoryItem.frm',3)
     )
     if($AdminInventoryTesterBaselineOverlayForTest){
@@ -24,7 +25,6 @@ function Install-InventorySourceOverlay {
         $sources+=@(
             @('invSys.Admin.xlam','Admin/Forms/frmAggregationSources.frm',3),
             @('invSys.Admin.xlam','Admin/Modules/modAdminConsole.bas',1),
-            @('invSys.Admin.xlam','Admin/Modules/modInventoryUiText.bas',1),
             @('invSys.Core.xlam','Core/ClassModules/cCapturedFormStore.cls',2),
             @('invSys.Core.xlam','Core/Modules/modActivityCatalog.bas',1),
             @('invSys.Core.xlam','Core/Modules/modAggregationActivityCodes.bas',1),

@@ -445,13 +445,13 @@ Public Sub Configure(ByVal warehouseId As Variant, _
     mInitStep = "EnsureControls"
     EnsureControls
     mInitStep = "Set scalar context"
-    mWarehouseId = SafeFormText(warehouseId)
-    mStationId = SafeFormText(stationId)
-    mUserId = SafeFormText(userId)
-    mGeneratedSku = SafeFormText(generatedSku)
+    mWarehouseId = modInventoryUiText.SafeFormText(warehouseId)
+    mStationId = modInventoryUiText.SafeFormText(stationId)
+    mUserId = modInventoryUiText.SafeFormText(userId)
+    mGeneratedSku = modInventoryUiText.SafeFormText(generatedSku)
     mDeleteRequested = False
     mDeleteReason = ""
-    mConfiguredDefaultLocation = SafeFormText(defaultLocation)
+    mConfiguredDefaultLocation = modInventoryUiText.SafeFormText(defaultLocation)
     Set mCatalogItems = New Collection
     mAccepted = False
     mEditMode = False
@@ -493,13 +493,6 @@ FailConfigure:
     Err.Raise Err.Number, "frmAddInventoryItem.Configure", _
               "Add Inventory Item form failed during " & mInitStep & ": " & Err.Description
 End Sub
-
-Private Function SafeFormText(ByVal valueIn As Variant) As String
-    If IsError(valueIn) Then Exit Function
-    If IsNull(valueIn) Then Exit Function
-    If IsEmpty(valueIn) Then Exit Function
-    SafeFormText = Trim$(CStr(valueIn))
-End Function
 
 Public Sub AddCatalogItem(ByVal sku As String, _
                           ByVal itemName As String, _
