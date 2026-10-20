@@ -5,7 +5,7 @@ param(
     [Parameter(Mandatory=$true)][string]$DesktopMonitorReport,
     [switch]$TesterBaselineOverlayForTest,
     [switch]$WorksheetResultsRegression,
-    [ValidateSet('ImportedRows','WorksheetResults','PrimitivePayload','CatalogCompletion','Headless','CreatePhases','CreateName')]
+    [ValidateSet('ImportedRows','WorksheetResults','PrimitivePayload','CatalogCompletion','Headless','CreatePhases','CreateName','ConfigMetadata')]
     [string]$InventoryCase='ImportedRows'
 )
 # Source-overlay diagnostic only. Preserve frozen packages, tooling, product
@@ -42,6 +42,7 @@ try{
     if($TesterBaselineOverlayForTest){$workerArgs+='-AdminInventoryTesterBaselineOverlayForTest'}
     switch($InventoryCase){
         'ImportedRows' {$workerArgs+=@('-AdminInventoryWorksheetResultsOnly','-AdminInventoryImportedRowsOnly')}
+        'ConfigMetadata' {$workerArgs+=@('-AdminInventoryWorksheetResultsOnly','-AdminInventoryImportedRowsOnly','-AdminInventoryConfigMetadataOnly')}
         'WorksheetResults' {$workerArgs+='-AdminInventoryWorksheetResultsOnly'}
         'PrimitivePayload' {$workerArgs+='-AdminInventoryPrimitivePayloadOnly'}
         'CatalogCompletion' {$workerArgs+='-AdminInventoryOwnResultsOnly'}

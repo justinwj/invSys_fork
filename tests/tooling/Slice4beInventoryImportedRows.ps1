@@ -12,7 +12,9 @@ End Function
 }
 function Test-InventoryImportedRows($Fixture,$Other) {
     $script:InventoryConfigReadChecks=[Collections.Generic.List[object]]::new()
-    foreach($case in @('ConfirmedPreviousAdd','ForgedImported','ChangedImportedQuantity','MissingImportedReceipt','ChangedImportedKey','ChangedImportedSku')){
+    $cases=@('ConfirmedPreviousAdd','ForgedImported','ChangedImportedQuantity','MissingImportedReceipt','ChangedImportedKey','ChangedImportedSku')
+    if($AdminInventoryConfigMetadataOnly){$cases=@('ConfirmedPreviousAdd')}
+    foreach($case in $cases){
         SelectTarget $Fixture
         $id='InventoryImportedRow.'+$case
         $hostBook=$excel.Workbooks.Add();$hostPath=Join-Path $runRoot ('imported-row-'+$case+'.xlsx');$hostBook.SaveAs($hostPath,51)
@@ -86,6 +88,7 @@ function Test-InventoryImportedRows($Fixture,$Other) {
             if($saveFacts.Count -ne 3){throw 'Config save observer unavailable.'}
             $phase=[pscustomobject]@{Calls=[int]$saveFacts[0];ByteChangesDuringSave=[int]$saveFacts[1];UnavailableHashComparisons=[int]$saveFacts[2];Procedure='modConfig.SaveConfigWorkbookIfWritable'}
             Write-InventoryConfigDiagnosticComparison $configBefore $configAfter $case $phase
+            if($AdminInventoryConfigMetadataOnly){Check 'InventoryConfigMetadata.KnownSaveWindowsExplainByteChanges' $script:InventoryConfigLastComparison.CauseEstablished}
             [pscustomobject]@{Case=$case;AuthBytesPreserved=($authBefore -ceq (Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))))}|ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'imported-row-authority-observations.jsonl')
         }finally{$hostBook.Close($false)}
     }

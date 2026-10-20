@@ -1925,3 +1925,20 @@ saves or changed parts. CauseEstablished remains false; this does not waive the
 open Config diagnosis. The focused Create correction and its shared-save
 regression are complete. EDIT receipt/retry, Config diagnosis and final current-
 source/built-package/visible/Release1 acceptance remain open under4be-A.
+
+## Scoped Config byte-change diagnosis, 2026-10-19
+
+This is read-only diagnostic work under D8-INV-01 item1, not a changed business
+contract or a new application RED. Synthetic comparison vectors e17228c2 record
+5 PASS /13 expected diagnostic failures before adding revision-pointer field
+classification. The same18 checks then pass. Core-property comparison/redaction
+passes13/13; conservative cause assessment passes12/12. Unknown XML, other binary
+records, changed Config cells, missing provenance or changes outside observed save
+windows cannot establish the cause. No metadata values or hashes are exported.
+
+The isolated ConfigMetadata mode retains the actual confirmed-previous-ADD Upload
+case and adds a cause check. Unsaved Core probes identify the existing Receiving,
+Shipping and Production inbox-setup saves and compare the outer snapshots with
+the first/last save hashes and continuity between saves, returning only counts
+and flags. Existing save facts retain their three-field envelope. Runtime proof
+is pending; no Config normalization, XLAM build or acceptance waiver is introduced.
