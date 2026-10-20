@@ -1,5 +1,34 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**D8-INV-EDIT-01 result-boundary RED qualified,2026-10-19 Pacific:** unchanged
+product fc2fba93/test5e76fcd4 completes50 PASS/20 FAIL across70 checks, including
+six harness checks. Actual Upload covers failed operator-result save, the same
+failure followed by a later authorized quantity change, and post-apply sign-out;
+each then reopens the operator and retries in a fresh session. All original
+catalog/quantity effects, custom values, result boundaries, honest saved-partial
+notices and post-boundary operator-file preservation pass. All three retries
+repeat catalog history and lack durable command/event proof. The later-quantity
+case independently saves its intervening change, then retry reaches the adjustment
+queue again and fails the no-extra-effect check. That combined check does not
+separately identify which quantity/count comparison failed.
+
+Controller `reports/runtime/inventory-imported-controller/488e8cd494a147ba83dd0e516dee2b92`;
+worker `reports/runtime/slice4be-admin-inventory-entry/ddfff02264594ec4b8f21d803f09ba21`.
+Normal closure2026-10-20T04:15:09.014Z confirms settings restoration and all frozen
+package/tooling/source pins; audit04:15:29.021Z confirms Excel closed and zero faults.
+All five instrumented compiles pass, with no harness exception or desktop error.
+Garbage collection took13m55s without intervention. Bulk snapshot reads preserve
+the same read-only checks; this changed cohort is not a cleanup performance benchmark.
+
+Preceding controller5c24f6625ea54a7184776f6585a3ac1f/worker2ec6daf8b88d4469abef3144e77ef9e9
+on testeb8fe7e2 is a harness failure, not qualified RED: `Run` supports at most seven
+arguments and the later-quantity setup supplied eight. Its normal closure/audit
+03:47:14.340Z/03:47:34.360Z preserved all pins/settings with zero faults. The corrected
+test-only Core adapter takes two primitives and calls the existing quantity command
+directly with typed arguments; no product behavior changed. Canonical-save failures,
+reciprocal input/identity tampering, identical-payload event separation and private
+receipt publication/aggregation coverage remain open before implementation/GREEN.
+
 **D8-INV-EDIT-01 phase RED qualified,2026-10-19 Pacific:** unchanged product
 fc2fba93/testf2d26e8f completes41 PASS/12 FAIL across53 checks (including six
 harness checks). Actual Upload covers catalog-only, unchanged quantity, changed
