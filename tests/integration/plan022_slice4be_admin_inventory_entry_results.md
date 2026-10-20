@@ -1,5 +1,29 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Retained worksheet regression qualified, 2026-10-20:** draft `8af28d99`,
+product `a9faab9c`, passes all 64 retained checks through actual Upload. Authorized
+zero-quantity creation persists its exact entity/event and custom columns;
+authority loss and changed input refuse subsequent writes. Failed result-save
+retry preserves the original event/entity, saves IMPORTED and does not duplicate
+the create. Partial-completion notices remain truthful. All five instrumented
+XLAMs compile; no product or test change was required.
+
+Controller `59726af7bbab44b7ab07d9aec942c11f`, worker
+`41dd3000607148c59615e9526d529fd1`, use the standard controller/worker prefixes
+below in the isolated draft. Normal closure at 21:26:31.975Z restores settings,
+preserves all package/source/tooling pins and confirms Excel closed; native audit
+at 21:26:51.989Z records zero Excel events. No intervention occurred. Explicit
+quit/COM/GC returned by 21:09:03.840Z; subsequent native teardown took about
+17.5 minutes, with cause still unresolved. The cursor proof passed and the
+passive observer reported no error 5 or mouse lock, then stopped normally.
+
+Six same-worker Config observations preserve table contents/shapes and read-only
+extraction; all six Auth comparisons preserve bytes. Two Config comparisons are
+byte-identical; four changes are traced to twelve inbox-bootstrap saves and
+classified metadata only. This does not resolve older cohort measurement gaps.
+Catalog/headless and other relevant retained regressions, final built-package
+and 4be-A acceptance gates remain open. No package promotion is implied.
+
 **Canonical-save cohort GREEN qualified,2026-10-20:** draft3fd268cf retains
 product a9faab9c. All four default scenarios pass separately through actual
 Upload:40/40,41/41,41/41,43/43; the union is147 distinct checks, excluding repeated
