@@ -1,5 +1,16 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Source-guard maintenance, 2026-10-20:** worksheet 4ai passes 8/8 and modal
+visibility 4ak passes 7/7 on draft `8af28d99`. The 4am zero-quantity source guard
+reports 7/1 on both unchanged main and draft because it expects payload assembly
+inside the Add procedure, predating the approved primitive Core bridge. The
+test-only correction follows Add -> `BuildInventoryCreatePayloadAdmin` ->
+`modInventoryCreateWire.BuildPayload` -> the owning payload builder, including
+quantity forwarding. Existing zero/negative guards and all eight assertion IDs
+remain intact; corrected main passes 8/8. This is stale-test repair, not product
+behavioral RED or a new runtime acceptance claim. The active draft's pinned test
+files remain unchanged until its imported-row controller closes normally.
+
 **Retained Catalog/headless regressions qualified, 2026-10-20:** both use draft
 `8af28d99` / product `a9faab9c`, with no product or test changes. Catalog completion
 passes 50/50, preserving all retained modal Edit checks, owning generated identity,
