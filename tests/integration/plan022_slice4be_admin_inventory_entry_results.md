@@ -10,22 +10,58 @@ and quantity write paths are retained; catalog field planning and read-only
 entity resolution are shared. No new recording ControlId or replay
 adapter is added.
 
-This is an uncompiled implementation checkpoint, protected by the qualified RED
-cohorts below. PowerShell parsing and diff checks pass. First VBA compile, focused
-GREEN, receipt-side mutations, retained regressions, final static maintenance and
-all packaged/native/visible acceptance gates remain open. The concurrent original
-checkout's combined baseline still uses unchanged product source fc2fba93 and
-test e2eb0e0d; its expanded Config observations are unqualified as detailed below.
+All five instrumented compiles now pass in the focused ownership diagnostic
+below. Behavioral GREEN, receipt-side mutations, retained regressions, final static
+maintenance and packaged/native/visible acceptance remain open. The older combined
+baseline's expanded Config observations remain unqualified.
 
 Draft source5d15970c/testb19676af static maintenance completes in ignored
 `reports/runtime/edit-receipts-b19676af-static`:385 components/6710 procedures;
 literal Run9, unresolved calls45, duplicate groups194 and oversized modules27.
-The maintenance JSON contract passes. These counts do not establish VBA compile
-or behavior. New actual-Upload ownership coverage is prepared, not executed:
-mixed ADD/EDIT whole-selection refusal with an open source, quantity-only retry
-refusal before queueing, closed-source retry, and read-only confirmation of
-completed imported commands. It extends the approved ownership rule; no new
-contract or acceptance is claimed.
+The maintenance JSON contract passes. These counts alone do not establish VBA
+compile or behavior. The focused actual-Upload diagnostic below exercises the
+approved ownership rule; no new contract or acceptance is claimed.
+
+**EDIT ownership diagnostic,2026-10-20 Pacific:** isolated draft204d9be9
+(`work/d8-inv-edit-receipts`, draft PR4) completes66 checks:60 PASS/6 FAIL.
+All five instrumented XLAM compiles and probe installation pass. This is actual
+Upload source-overlay evidence, not deployed-package or visible acceptance.
+Closure/restoration/native qualification is pending. Normal Quit and final COM
+release returned at15:20:22Z; garbage collection returned15:20:22.982Z. At15:29Z,
+Windows reports Excel exited but still enumerates its process. No process
+intervention occurred. The controller and worker remain alive; do not start a new
+Excel test or terminate the controller holding the settings snapshot.
+
+Five failures directly expose borrowed-source writes: mixed ADD/EDIT does not
+refuse the whole selection before canonical changes or preserve the existing
+workbook owner; saved-catalog quantity retry reaches queueing, changes the source
+and fails owner preservation. Neither failed action reports IMPORTED.
+Closing the owned fixture source permits the mixed retry: one new entity, one
+adjustment and reciprocal saved EDIT receipt are independently confirmed.
+Completed imported-row inspection preserves the open owner and file bytes.
+
+The injected queue-failure case confirms one catalog application, saved command/
+source binding and planned event before queueing, preserved custom values, and
+honest incomplete quantity status. Final retry proves no repeated catalog work
+and exactly the original applied event/log effect. Its sixth failure,
+`FreshRetryKeepsPlannedEvent`, expects a fresh queue observation even though the
+preceding defective borrowed retry already applied the event; it is a dependent
+test observation, not evidence of a different or lost event identity.
+Eight Config boundaries preserve table cells/shapes, Auth bytes and read-only
+extraction. Five preserve Config bytes; three changes are classified as
+inbox-bootstrap metadata across nine observed saves. This does not close the
+older phase/result/save or headless Config coverage gaps.
+
+Controller `reports/runtime/inventory-imported-controller/a2f98d5ae51a4d918b31954cb6d4e110`;
+worker `reports/runtime/slice4be-admin-inventory-entry/b5f074dc846640b5814231788fc8d4cd`.
+The first launch (`8898531c7481433fa15de7a6c56af245`) failed before Excel because
+the worker joins DeployRoot to its repository root; use
+`../invSys_fork/deploy/validation-tester-recording-02` from the isolated worktree,
+not an absolute argument. That launch restored settings/pins with zero native
+faults and is not behavioral RED.
+The fresh bounded cursor proof reached its exact target and restored the original
+position. The subsequent passive observer recorded zero error5/lock/mouse-lock
+samples and stopped normally at15:29Z. It is no longer a live desktop monitor.
 
 **Combined baseline is unqualified,2026-10-20:** unchanged product fc2fba93/
 teste2eb0e0d, controller `7990302e43dd4710bb3ada422e38182b`, worker
@@ -33,24 +69,23 @@ teste2eb0e0d, controller `7990302e43dd4710bb3ada422e38182b`, worker
 Excel Event1001 `RADAR_PRE_LEAK_64` at2026-10-20T07:48:10.7524730Z inside the
 controller interval. Exact process attribution and cause are not established.
 The existing native audit counts this event; do not exclude it retrospectively
-or promote this run's partial assertions. The controller remains active, without
-closure/restoration/final-audit proof. The previously qualified separate RED
+or promote this run's partial assertions. Cleanup subsequently completed as
+recorded below. The previously qualified separate RED
 cohorts below remain the implementation baseline; the expanded Config comparisons
 remain unqualified. Ignored evidence: controller `native-warning-observed.json`.
 After over45 minutes without a new assertion, a normal-Quit attempt blocked on
 its COM ownership read before issuing Quit. Under the user's standing authorization
 to close Excel when needed, the test-owned process was terminated at09:07:42.137Z;
 frozen package hashes were preserved before termination. The blocked Quit helper
-was then removed. Windows still lists the terminated process and the controller
-has not restored/audited closure yet. `forced-test-excel-stop.json` and
+was then removed. Windows retained the terminated process during cleanup.
+`forced-test-excel-stop.json` and
 `normal-quit-request.json` explicitly exclude this run. Do not classify it as
 normal closure or reuse its partial assertions as a completed gate.
-The blocked worker was terminated at09:32:37.268Z; its parent controller remains
-alive with the original settings snapshot in memory (`worker-intervention.json`).
-At09:37Z, Windows still lists the terminated Excel process; restoration and
-final audit have not completed. Do not start another Excel test or terminate the
-restoration controller. The receipt draft is reviewable in draft PR4; the next
-fresh test is `EditOwnership` with `-TraceResourcesForTest`, after cleanup.
+The blocked worker was terminated at09:32:37.268Z; its parent retained the original
+settings snapshot in memory (`worker-intervention.json`). Closure at10:21:01.698Z
+confirms settings restored, Excel closed and all package/source/tooling pins
+preserved. Native audit at10:21:21.713Z records one Excel event and remains failed.
+This cleanup releases the environment; it does not qualify the excluded run.
 
 **Corrected EDIT binding/privacy RED qualified,2026-10-20 Pacific:**
 product fc2fba93/teste2a7b246 finishes147 PASS/32 FAIL across179 checks,
