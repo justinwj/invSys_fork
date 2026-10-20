@@ -124,7 +124,7 @@ function Get-InventoryEditSavedResult([string]$Path) {
         $command='';if($match.Success){$command=$match.Groups[1].Value.Trim()}
         $status=[string]$table.ListColumns.Item('Upload Status').DataBodyRange.Cells.Item(1,1).Value2
     }finally{$book.Close($false)}
-    return [pscustomobject]@{Command=$command;Status=$status;Preserved=((Get-AdminInventoryEntryHash $Path) -ceq $hash)}
+    return [pscustomobject]@{Command=$command;Status=$status;Text=$text;Preserved=((Get-AdminInventoryEntryHash $Path) -ceq $hash)}
 }
 function Test-InventoryEditBinding($Snapshot,$Saved,$Fixture,[string]$Sku) {
     if($Saved.Command -eq '' -or $Snapshot.Receipts.Count -ne 1){return $false}
@@ -134,6 +134,7 @@ function Test-InventoryEditBinding($Snapshot,$Saved,$Fixture,[string]$Sku) {
 function Test-InventoryEditReceiptPhases($Fixture,$Other) {
     $cases=@('CatalogOnly','NoopQuantity','QuantityChange','QueueFailure')
     if($AdminInventoryEditReceiptResultsOnly){$cases=@('OperatorSaveThrows','OperatorSaveThrowsLaterQuantity','AfterApplyAuthorityLost')}
+    if($AdminInventoryEditCanonicalSaveOnly){$cases=@('BeforeCatalogSaveThrows','AfterCatalogSaveThrows','BeforeCatalogSaveAuthorityLost','AfterCatalogSaveAuthorityLost')}
     foreach($case in $cases){
         SelectTarget $Fixture
         $id='InventoryEditReceipt.'+$case
@@ -165,6 +166,9 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other) {
             $table.ListColumns.Item('Upload Result').DataBodyRange.Cells.Item(1,1).Value2=''
             $hostBook.Save();$table.DataBodyRange.Cells.Item(1,1).Select()
             $prefix=Join-Path $runRoot ('before-queue-'+$case)
+            if($AdminInventoryEditCanonicalSaveOnly){
+                [void](Run 'invSys.Admin.xlam' 'TestInventoryEditSave.Arm' @($case,$sourcePath,$hostPath,$prefix))
+            }
             [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @($case,$sourcePath,$hostPath,$prefix))
             $resultMode='ReceiptEdit'
             if($case -like 'OperatorSaveThrows*'){$resultMode='SaveThrows'}elseif($case -eq 'AfterApplyAuthorityLost'){$resultMode=$case}
@@ -178,6 +182,10 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other) {
             $savedCopy=Join-Path $runRoot ('saved-edit-'+$case+'.xlsx');Copy-Item -LiteralPath $hostPath -Destination $savedCopy
             $saved=Get-InventoryEditSavedResult $savedCopy
             $snapshot=Read-InventoryEditReceiptCopy $sourcePath $sku $saved.Command
+            if($AdminInventoryEditCanonicalSaveOnly){
+                Test-InventoryEditCanonicalSaveOutcome $Fixture ([ref]$hostBook) $hostPath $table $created $after $snapshot $saved $sku $key $item $reason $case $prefix
+                continue
+            }
             Check ($id+'.SavedCatalogAndReason') ($snapshot.CatalogMatches -eq 1 -and $snapshot.Item -ceq $item -and $snapshot.Reason -ceq $reason)
             Check ($id+'.SingleCatalogApplication') ([regex]::Matches($snapshot.History,[regex]::Escape($reason)).Count -eq 1)
             Check ($id+'.ReciprocalSavedCommandAndSource') (Test-InventoryEditBinding $snapshot $saved $Fixture $sku)
