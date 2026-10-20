@@ -1,5 +1,98 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Retained Inventory regressions qualified, 2026-10-20:** draft `8af28d99` /
+product `a9faab9c` now retains worksheet 64/64, Catalog 50/50, headless 56/56 and
+imported ADD 56/56. Every cohort retains its earlier GREEN assertion IDs/order.
+Imported ADD confirms a genuine prior receipt while applying only the pending
+row; all five invalid IMPORTED cases refuse the whole selection before canonical
+mutation and report unconfirmed receipts honestly. Custom columns and original
+event references remain intact. No product change was required.
+
+Imported controller `d6c0fce37f4c4b1ab0bce06e52a1030a`, worker
+`8d4945fec48c4f99abbee5546d7a62cd`, use the standard prefixes below in the draft.
+Five instrumented compiles pass. Normal closure at 22:29:30.772Z restores settings,
+preserves all pins and confirms Excel closed; audit at 22:29:50.778Z records zero
+native events. No intervention occurred. Garbage collection took about 30 minutes;
+its cause remains unresolved. Fresh cursor proof passed and passive monitoring
+stayed clear, then stopped normally. Six Config/Auth comparisons preserve table
+contents/shapes, Auth bytes and read-only extraction; five Config comparisons
+are byte-identical and one metadata change is traced to three inbox-setup saves.
+
+Refreshed static evidence at `reports/runtime/inventory-receipts-final-static`
+retains 385 components, 6711 procedures, 145339 lines, literal Run 9, unresolved
+dynamic calls 45, duplicate groups 194 and 27 oversized-module ratchets. Baseline
+metrics and ratchets match `edit-ownership-final-static`; all three JSON contracts
+pass. The five retained source guards total 36 passing checks after the two
+test-only ownership corrections below. Final built-package, fixture-conformant
+live/full-chain, recording/guide/B0 and visible 4be-A acceptance remain open.
+
+**Source-guard maintenance, 2026-10-20:** worksheet 4ai passes 8/8 and modal
+visibility 4ak passes 7/7 on draft `8af28d99`. The 4am zero-quantity source guard
+reports 7/1 on both unchanged main and draft because it expects payload assembly
+inside the Add procedure, predating the approved primitive Core bridge. The
+test-only correction follows Add -> `BuildInventoryCreatePayloadAdmin` ->
+`modInventoryCreateWire.BuildPayload` -> the owning payload builder, including
+quantity forwarding. Existing zero/negative guards and all eight assertion IDs
+remain intact; corrected main passes 8/8. This is stale-test repair, not product
+behavioral RED or a new runtime acceptance claim. The active draft's pinned test
+files remain unchanged until its imported-row controller closes normally.
+
+The corrected 4am guard also passes 8/8 against draft source when invoked from
+the main checkout. Modal Edit selection 4ah passes 5/5. Delete guard 4al similarly
+reports 7/1 on unchanged main/draft because it expects retirement payload and
+queue ownership in Admin. Its test-only correction follows the approved Core
+coordinator, input capture and exact-entity retirement plan to the event writer;
+all eight original IDs remain, and main/draft both pass 8/8. No runtime Delete
+result or new product RED is inferred from these source checks.
+
+**Retained Catalog/headless regressions qualified, 2026-10-20:** both use draft
+`8af28d99` / product `a9faab9c`, with no product or test changes. Catalog completion
+passes 50/50, preserving all retained modal Edit checks, owning generated identity,
+exact new quantity, unrelated entities/pending events and honest partial reporting
+after authority loss. Headless authorization passes 56/56: explicit provisioned
+authority remains separate from interactive sign-in; Reader/missing-actor catalog
+edits and quantity no-ops refuse without writes, while authorized paths succeed.
+
+| Cohort | Controller / worker suffix | Normal closure / native audit UTC |
+| --- | --- | --- |
+| Catalog 50/50 | `2d732d42fa4443b689377b6c75ce916f` / `16aaf4a6fbb845478903d6c29b37e0f8` | 21:32:11.517 / 21:32:31.535 |
+| Headless 56/56 | `b5a4cfc6b10a46aba2e39652cf87fff1` / `dd0d0057e8304f2e900a4ae9a6e1e355` | 21:35:05.664 / 21:35:25.673 |
+
+Both runs compile five instrumented packages, restore settings, preserve all pins,
+close normally without intervention and record zero native Excel events. Fresh
+cursor proofs pass; passive observers stay clear and stop normally. Catalog's two
+Config/Auth observations preserve table contents, shapes, Auth and read-only
+extraction; metadata changes are traced to six inbox-bootstrap saves. Headless's
+eight observations likewise preserve contents/shapes/Auth/read-only extraction;
+seven Config comparisons are byte-identical and one metadata change is traced to
+three bootstrap saves. Same-worker diagnosis/authority JSONL files retain scope.
+Worksheet 64/64 is also qualified. Imported-ADD preflight, final build/package and
+4be-A acceptance gates remain open; this is source-overlay evidence.
+
+**Retained worksheet regression qualified, 2026-10-20:** draft `8af28d99`,
+product `a9faab9c`, passes all 64 retained checks through actual Upload. Authorized
+zero-quantity creation persists its exact entity/event and custom columns;
+authority loss and changed input refuse subsequent writes. Failed result-save
+retry preserves the original event/entity, saves IMPORTED and does not duplicate
+the create. Partial-completion notices remain truthful. All five instrumented
+XLAMs compile; no product or test change was required.
+
+Controller `59726af7bbab44b7ab07d9aec942c11f`, worker
+`41dd3000607148c59615e9526d529fd1`, use the standard controller/worker prefixes
+below in the isolated draft. Normal closure at 21:26:31.975Z restores settings,
+preserves all package/source/tooling pins and confirms Excel closed; native audit
+at 21:26:51.989Z records zero Excel events. No intervention occurred. Explicit
+quit/COM/GC returned by 21:09:03.840Z; subsequent native teardown took about
+17.5 minutes, with cause still unresolved. The cursor proof passed and the
+passive observer reported no error 5 or mouse lock, then stopped normally.
+
+Six same-worker Config observations preserve table contents/shapes and read-only
+extraction; all six Auth comparisons preserve bytes. Two Config comparisons are
+byte-identical; four changes are traced to twelve inbox-bootstrap saves and
+classified metadata only. This does not resolve older cohort measurement gaps.
+Catalog/headless and other relevant retained regressions, final built-package
+and 4be-A acceptance gates remain open. No package promotion is implied.
+
 **Canonical-save cohort GREEN qualified,2026-10-20:** draft3fd268cf retains
 product a9faab9c. All four default scenarios pass separately through actual
 Upload:40/40,41/41,41/41,43/43; the union is147 distinct checks, excluding repeated
@@ -2421,3 +2514,25 @@ log tables; Inventory-only privacy from snapshots/roles/aggregation; reciprocal
 staging-row/receipt binding, with modal Edit unchanged. This extends the contract,
 not the coverage of this32-check cohort. Expanded D13 precedes implementation.
 No new Excel tests ran before closure/native qualification was verified.
+
+## Older receipt RED Config/Auth measurement limits
+
+Read-only artifact review, 2026-10-20, under D8-INV-01 item 1. The following
+qualified behavioral RED cohorts all used product `fc2fba93`; their worker
+directories contain results, source-overlay scope, readiness and shutdown records,
+but no Config comparison or Auth preservation artifact:
+
+| Cohort / test commit | PASS / FAIL | Worker suffix |
+| --- | --- | --- |
+| Receipt phases / `f2d26e8f` | 41 / 12 | `f469ebd2536a4fa3b52a4f99e852fbe0` |
+| Result boundary / `5e76fcd4` | 50 / 20 | `ddfff02264594ec4b8f21d803f09ba21` |
+| Canonical save / `c7a2599c` | 83 / 28 | `f1710dda499346cab7a3b580fc957c0c` |
+
+Paths are `reports/runtime/slice4be-admin-inventory-entry/<worker>` in the main
+code checkout. Config/Auth preservation and Config-change causality are
+**unmeasured/unresolved for these cohorts**. Absence of the artifact proves neither
+preservation nor a mutation. Their behavioral RED results and normal closure
+remain as recorded above. Later product `a9faab9c` comparisons have their own
+provenance and do not fill this gap. Any further diagnosis of an older cohort must
+retain its exact product source, action sequence and independently identified
+diagnostic test; do not relabel newer GREEN observations as older evidence.

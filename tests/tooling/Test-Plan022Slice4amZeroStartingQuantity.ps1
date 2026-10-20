@@ -16,6 +16,7 @@ $plan = Get-Content -LiteralPath (Join-Path $docs "expert guidance docs\022 Depl
 $controls = Get-Content -LiteralPath (Join-Path $docs "0 plan docs\xlam_invSys\invSys-Controls-v1.md") -Raw
 $form = Read-Source "src\Admin\Forms\frmAddInventoryItem.frm"
 $admin = Read-Source "src\Admin\Modules\modAdmin.bas"
+$createWire = Read-Source "src\Core\Modules\modInventoryCreateWire.bas"
 $worksheet = Read-Source "src\Admin\Modules\modAdminInventoryWorksheet.bas"
 $apply = Read-Source "src\InventoryDomain\Modules\modInventoryApply.bas"
 $queries = Read-Source "src\InventoryDomain\Modules\modInventoryQueries.bas"
@@ -26,6 +27,14 @@ $validator = Read-Source "tools\validate_phase6_packaged_xlams.ps1"
 $addFunction = [regex]::Match(
     $admin,
     'Public Function AddInventoryItemForWarehouse(?s:.*?)End Function'
+).Value
+$createPayload = [regex]::Match(
+    $admin,
+    'Private Function BuildInventoryCreatePayloadAdmin(?s:.*?)End Function'
+).Value
+$wirePayload = [regex]::Match(
+    $createWire,
+    'Public Function BuildPayload(?s:.*?)End Function'
 ).Value
 $formContract = [regex]::Match(
     $form,
@@ -59,7 +68,12 @@ $checks["Form.RealAddAcceptsZeroRejectsNegative"] =
 $checks["Admin.ServiceAllowsZeroRejectsNegative"] =
     $addFunction.Contains('ElseIf qty < 0 Then') -and
     $addFunction.Contains('Starting quantity cannot be negative.') -and
-    $addFunction.Contains('CreateInventoryEntityPayloadItem')
+    $addFunction.Contains('payloadJson = BuildInventoryCreatePayloadAdmin(systemKey, sku, itemName, uom, locationVal, qty,') -and
+    $createPayload.Contains('modInventoryCreateWire.BuildPayload(') -and
+    $createPayload.Contains('systemKey, sku, qty, locationVal, "GOOD",') -and
+    $wirePayload.Contains('modRoleEventWriter.CreateInventoryEntityPayloadItem(') -and
+    $wirePayload.Contains('systemKey, sku, qty, location, condition, attributesJson, note)') -and
+    $wirePayload.Contains('modRoleEventWriter.BuildPayloadJsonFromCollection(items)')
 $checks["Worksheet.CountedAddAcceptsExplicitZero"] =
     $worksheet.Contains('"COUNTED", 0, "CLEARVIEW"') -and
     $worksheetValidation.Contains('actionName = "ADD" And (Not hasQty Or qty < 0)') -and
