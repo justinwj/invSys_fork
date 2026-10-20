@@ -1,5 +1,23 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Binding regression harness correction,2026-10-20:** draft9ab44e91
+(product a9faab9c) completes186 PASS plus one harness exception. Both intentional
+identical-payload edits retain distinct commands/events and exact applied proof;
+the unchanged imported control and all operator-row tampering cases pass.
+Eight canonical receipt mutations execute and pass. DuplicateReceipt setup fails
+while assigning a two-dimensional Value2 array; that case and privacy checks are
+not exercised. This is neither product RED nor completed GREEN.
+Test correction8fcec788 uses the existing Range.Copy fixture pattern without
+changing assertions or product code; PowerShell parsing and diff checks pass.
+Controller `reports/runtime/inventory-imported-controller/a59e62de8aa649ef8ea94c271e0312a1`;
+worker `reports/runtime/slice4be-admin-inventory-entry/60a50b53c9b84ac99ad0461f7df6db65`.
+All five instrumented compiles pass. Quit/COM release/GC return by16:50:55.647Z;
+closure17:19:17.180Z confirms settings restoration, Excel closed and all pins
+preserved. Audit17:19:37.188Z records zero Excel events; no intervention occurred.
+Read-only cleanup samples showed increasing CPU with one remaining Excel thread
+despite HasExited=True; the slow teardown's cause remains unresolved.
+The corrected full cohort must pass; partial results do not replace it.
+
 **EDIT ownership GREEN qualified66/66,2026-10-20 Pacific:**
 draft fixfe4b5fb4 adds Core pending-write ownership checks in EDIT preparation,
 prepared-selection confirmation, Domain plan claim and quantity queue/application
