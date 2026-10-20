@@ -1,5 +1,14 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Receipt test partitioning,2026-10-20:** harnessadf6a968 adds an optional
+single-scenario selector for phase, result-save and canonical-save cohorts.
+Default case sets and assertion bodies are unchanged; each run records its exact
+selection. Offline validation passes90 checks, including default/partition
+equivalence, invalid combinations rejected before Excel access and no new Excel
+process or fixture. This is harness validation, not product RED/GREEN.
+Result-save and canonical-save qualification still requires all seven scenarios
+and each run's preservation, normal closure and native audit gates.
+
 **Receipt phases81/81; native qualification pending,2026-10-20:**
 draftd16b809a/product a9faab9c passes catalog-only, no-op quantity, changed
 quantity and failed-queue/fresh-session retry through actual Upload. Receipts
