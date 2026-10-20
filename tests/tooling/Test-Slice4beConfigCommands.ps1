@@ -2291,6 +2291,7 @@ End Function
                 }
                 if($AdminInventoryEditReceiptAllOnly){
                     . (Join-Path $PSScriptRoot 'Slice4beInventoryEditOwnership.ps1')
+                    Install-InventoryEditOwnershipProbe
                 }
                 if($AdminInventoryEditBindingsOnly){
                     Install-InventoryEditBindingsProbe

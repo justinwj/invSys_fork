@@ -1,5 +1,36 @@
 # Actual Upload against a generated, disposable warehouse only. Keep business
 # values in memory; report fixed assertions, never paths, payloads or identities.
+function Install-InventoryEditOwnershipProbe {
+    $packages['invSys.Admin.xlam'].VBProject.VBComponents.Item('TestInventoryCommands').CodeModule.AddFromString(@'
+Public Function CompletedOwnershipInspectionForTest() As Boolean
+    CompletedOwnershipInspectionForTest = (InStr(1, mLastNotice, "no pending business rows", vbTextCompare) > 0 _
+        Or InStr(1, mLastNotice, "no pending rows to upload", vbTextCompare) > 0)
+End Function
+'@)
+}
+
+function Test-InventoryEditPendingOwnership($Fixture,$HostBook,[string]$SourcePath,$Before) {
+    $borrowed=$excel.Workbooks.Open($SourcePath,0,$false)
+    try{
+        if($borrowed.ReadOnly -or -not $borrowed.Saved){throw 'Clean pending ownership fixture unavailable; not RED.'}
+        $table=@($HostBook.Worksheets|ForEach-Object {$_.ListObjects}|Where-Object {$_.Name -like 'invSys_Inventory_*'})[0]
+        $prefix=Join-Path $runRoot 'borrowed-quantity-retry'
+        [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @('OwnershipRetry',$SourcePath,$HostBook.FullName,$prefix))
+        Invoke-InventoryBindingUpload $Fixture $HostBook $table 'InventoryEditOwnership.PendingQuantity'
+        $stillOpen=@($excel.Workbooks|Where-Object {$_.FullName -ieq $SourcePath}).Count -eq 1
+        $after=Get-AdminInventoryEntryFacts $Fixture
+        $queue=([string](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Facts')).Split('|')
+        Check 'InventoryEditOwnership.PendingQuantityRefusedBeforeQueue' ($queue.Count -eq 3 -and $queue[0] -ceq 'False')
+        Check 'InventoryEditOwnership.PendingQuantitySourcePreserved' ($after.FileHash -ceq $Before.FileHash -and $after.LogRows -eq $Before.LogRows -and $after.AppliedRows -eq $Before.AppliedRows)
+        Check 'InventoryEditOwnership.PendingQuantityOwnerPreserved' ($stillOpen -and $borrowed.Saved)
+        Check 'InventoryEditOwnership.PendingQuantityNotReportedImported' ([string]$table.ListColumns.Item('Upload Status').DataBodyRange.Cells.Item(1,1).Value2 -cne 'IMPORTED')
+    }finally{
+        if(@($excel.Workbooks|Where-Object {$_.FullName -ieq $SourcePath}).Count -eq 1){$borrowed.Close($false)}
+    }
+    SelectTarget $Fixture
+    $HostBook.Activate();$table.DataBodyRange.Cells.Item(1,1).Select()
+}
+
 function Test-InventoryEditOwnership($Fixture,$Other) {
     $script:InventoryConfigReadChecks=[Collections.Generic.List[object]]::new()
     SelectTarget $Fixture
@@ -74,6 +105,15 @@ function Test-InventoryEditOwnership($Fixture,$Other) {
         Check 'InventoryEditOwnership.RetryCreatesOneEntityAndAppliesOneAdjustment' ($retried.EntityQuantities.Count -eq $created.EntityQuantities.Count+1 -and $retried.EntityQuantities[$key] -eq 5 -and $retried.LogRows -eq $created.LogRows+2 -and $retried.AppliedRows -eq $created.AppliedRows+2)
         Check 'InventoryEditOwnership.RetrySavedReciprocalReceipt' (Test-InventoryEditBinding $receipt $editResult $Fixture $sku)
         Check 'InventoryEditOwnership.ResultInspectionPreservedBytes' ($editResult.Preserved -and $receipt.Preserved)
+        # Completed commands require only read-only proof. A blanket ownership
+        # rejection must not prevent confirmation of genuine imported rows.
+        $borrowed=$excel.Workbooks.Open($sourcePath,0,$false)
+        Invoke-InventoryBindingUpload $Fixture $hostBook $table 'InventoryEditOwnership.CompletedInspection'
+        $stillOpen=@($excel.Workbooks|Where-Object {$_.FullName -ieq $sourcePath}).Count -eq 1
+        Check 'InventoryEditOwnership.CompletedInspectionAllowed' ([bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.CompletedOwnershipInspectionForTest'))
+        Check 'InventoryEditOwnership.CompletedInspectionPreservesOwnerAndBytes' ($stillOpen -and $borrowed.Saved -and (Get-AdminInventoryEntryHash $sourcePath) -ceq $retried.FileHash)
+        if($stillOpen){$borrowed.Close($false)}
+        $borrowed=$null
         Test-InventoryConfigDiagnosticPreservation
     }finally{
         if($null -ne $borrowed -and @($excel.Workbooks|Where-Object {$_.FullName -ieq $sourcePath}).Count -eq 1){$borrowed.Close($false)}

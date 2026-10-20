@@ -304,6 +304,9 @@ function Test-InventoryEditReceiptPhases($Fixture,$Other,[ValidateSet('','Phase'
                 $table=@($hostBook.Worksheets|ForEach-Object {$_.ListObjects}|Where-Object {$_.Name -like 'invSys_Inventory_*'})[0]
                 SelectTarget $Fixture;$hostBook.Activate();$table.DataBodyRange.Cells.Item(1,1).Select()
                 $retryBefore=$after;$retryTarget=5;$retryDelta=1
+                if($case -eq 'QueueFailure' -and $AdminInventoryEditReceiptAllOnly){
+                    Test-InventoryEditPendingOwnership $Fixture $hostBook $sourcePath $after
+                }
                 if($AdminInventoryEditReceiptResultsOnly){$retryDelta=0}
                 if($case -eq 'OperatorSaveThrowsLaterQuantity'){
                     [void](Run 'invSys.Core.xlam' 'TestInventoryEditReceipt.Arm' @('','','',''))
