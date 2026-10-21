@@ -1,5 +1,27 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Shutdown correction qualified, 2026-10-21 01:06Z:** moving the unchanged initial
+action sequence into a completed PowerShell child scope resolves the reproduced
+native-exit stall. The exact diagnostic initial sequence reports70/4 and closes
+normally (`packaged-inventory-diagnostic/50e07a56150249699349f9603af29c18`). The
+maintained validator then completes all86 prior assertion IDs in their original
+order: **82 PASS /4 known fixture FAIL**, including restart. Controller
+`inventory-receipts-regression/smoke-7eea3231a05f4c05a62f483716cdb519` restores
+settings/reports and preserves five packages. Native directory
+`packaged-smoke-closure/8bb97b15e1ca4f09bd33ca83c3dc5f36` records unassisted exits
+after32ms and25ms, no termination request. Delayed audit at01:07:12.580Z finds
+zero Excel events/read errors. Guard19/19 remains GREEN. This qualifies the
+harness lifetime correction, not the four failed Inventory checks or4be-A.
+The evidence localizes lifetime to the live action scope; individual hidden COM
+references were not identified. Product source and candidate packages are unchanged.
+
+Combined exploratory diagnostic `c72f319b80014e328b14c73adbd08ca2` closes normally
+but reports54/5 because component inspection used Domain references after their
+close/reload; it is not acceptance. The diagnostic now refuses mixed group switches
+and offers the exact `FullInitial` order. The unqualified Domain restoration-race
+attempt below remains unmeasured; later preservation does not erase that limit.
+Next: fixture-conformant live Admin context for the four old Inventory checks.
+
 **Smoke diagnosis, 2026-10-21 (October 20 Pacific):** unchanged candidate/product
 `a9faab9c` confirms that the three legacy Inventory helpers pass empty captured
 authority handles to Core. The actual Add, Delete and Worksheet handlers refuse

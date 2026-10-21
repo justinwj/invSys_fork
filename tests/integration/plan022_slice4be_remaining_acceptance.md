@@ -1,5 +1,11 @@
 # Slice 4be remaining acceptance checklist
 
+**2026-10-21 shutdown gate:** the scoped action correction completes the full
+86-check smoke sequence and both native exits without intervention. Result82/4;
+the four stale Inventory fixtures still fail. Settings/reports/packages are
+preserved and the delayed native audit is clear. All earlier assertion IDs/order
+are retained. Next: correct live Admin fixture/context setup, then remaining gates.
+
 **2026-10-21 diagnostic checkpoint:** the four Inventory smoke failures are
 confirmed stale helpers with empty captured authority handles. Correct their
 fixture setup without weakening Core authorization. Native smoke shutdown still
