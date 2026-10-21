@@ -139,6 +139,7 @@ param(
     [switch]$AdminTesterSetupOwnerOnly,
     [switch]$AdminAggregationOnly,
     [switch]$AdminInventoryEntryOnly,
+    [switch]$AdminInventoryConfigPreservationOnly,
     [switch]$AdminInventoryRecordingOnly,
     [switch]$AdminInventoryGuideOnly,
     [switch]$AdminInventoryWorkbookBindingOnly,
@@ -933,6 +934,7 @@ if($AdminInventoryUomRecordingOnly -and (-not $AdminInventoryRecordingOnly -or $
 if($AdminInventoryWorksheetRecordingOnly -and (-not $AdminInventoryRecordingOnly -or $AdminInventorySelectionsOnly -or $AdminInventoryWorkbookBindingOnly -or $AdminInventoryUomRecordingOnly -or $AdminInventoryGuideOnly)){throw 'Inventory worksheet recording requires its isolated gate.'}
 if($AdminInventoryWorksheetRecordingGroup -ne 'All' -and -not $AdminInventoryWorksheetRecordingOnly){throw 'Worksheet recording group requires its isolated gate.'}
 if($AdminInventoryWorksheetRecordingGroup -eq 'UploadNoFormat' -and $Phase -ne 'RED'){throw 'Formatting suppression is a RED-only causal diagnostic, not product GREEN.'}
+if($AdminInventoryConfigPreservationOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryRecordingOnly -or $AdminInventorySourceOverlayForTest)){throw 'Config preservation requires its isolated packaged Inventory gate.'}
 if($AdminInventoryEntryOnly){
     if($AdminInventoryCreatePhasesOnly -and (-not $AdminInventorySourceOverlayForTest -or $AdminInventoryPrimitivePayloadOnly -or $AdminInventoryHeadlessWorksheetOnly -or $AdminInventoryReadOnlyOperatorsOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Create phases require their separate source-overlay Inventory gate.'}
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
@@ -2298,6 +2300,10 @@ End Function
             Install-InventorySourceOverlay
         }
         Install-AdminInventoryEntryProbe
+        if($AdminInventoryConfigPreservationOnly){
+            . (Join-Path $PSScriptRoot 'Slice4beInventoryConfigPreservation.ps1')
+            Install-InventoryConfigPreservationProbe
+        }
         if($AdminInventoryRecordingOnly){
             . (Join-Path $PSScriptRoot 'Slice4beInventoryRecording.ps1')
             Install-InventoryRecordingProbe
@@ -2598,7 +2604,10 @@ End Function
     }
     if($AdminAggregationOnly){$step='packaged Aggregation authority and workbook diagnostic'; Test-AdminAggregation $a $b}
     if($AdminInventoryEntryOnly){
-        if($AdminInventoryRecordingOnly){
+        if($AdminInventoryConfigPreservationOnly){
+            $step='packaged Inventory Add and catalog-only Edit Config preservation'
+            Test-InventoryConfigPreservation $a $b
+        }elseif($AdminInventoryRecordingOnly){
             $step='packaged Inventory navigation recording and policy boundaries'
             if($AdminInventoryWorksheetRecordingOnly){Test-InventoryWorksheetRecording $a $b $AdminInventoryWorksheetRecordingGroup}elseif($AdminInventoryUomRecordingOnly -and $AdminInventoryGuideOnly){Test-InventoryGuide $a -Uom}elseif($AdminInventoryUomRecordingOnly){Test-InventoryUomRecording $a}elseif($AdminInventorySelectionsOnly -and $AdminInventoryGuideOnly){Initialize-InventorySelectionFixture $a;Test-InventoryGuide $a -Selections}elseif($AdminInventorySelectionsOnly){Test-InventorySelections $a}elseif($AdminInventoryGuideOnly){Test-InventoryGuide $a}else{Test-InventoryRecording $a $b}
         }elseif($AdminInventoryCreatePhasesOnly){
