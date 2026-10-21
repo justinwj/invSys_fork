@@ -1,5 +1,29 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Assisted cleanup complete, 2026-10-21 00:40Z (October 20 Pacific):** the user
+confirmed this is a dedicated AI computer and authorized closing Excel whenever
+needed. After over two hours without native exit, the observer was stopped and
+its report allowed to become stale, preventing automatic restart. The exact
+original test Excel process was terminated at 00:40:32.664Z. The controller exited
+1 at 00:40:33.153Z, restoring settings and tracked reports and preserving all five
+packages. Observer and test helpers are gone. The 00:40:54.192Z recovery audit
+confirms no Excel process, unchanged packages and zero native events/read errors.
+
+This attempt is **interrupted and unqualified**, not GREEN. Its `intervention.json`
+and `recovery.json` supersede `Initial.json`'s process-local `UnassistedExit=True`:
+the validator did not know an external recovery terminated Excel. The wait began
+at 22:38:52.010Z, proving the long delay was after COM release/GC, in native exit
+waiting. The underlying Excel lifetime cause remains unresolved.
+
+The partial result has 70 PASS / 4 FAIL over 74 rows; restart checks did not run.
+Failures are `Admin.InventoryAddVisibilityDropdowns`,
+`Admin.InventoryZeroStartingQuantity`, `Admin.InventoryDeleteItem`, and
+`Admin.InventoryWorksheetActions`. Source review finds their three form test
+helpers configure fixed `WH-TEST`/`admin` values without establishing a matching
+live session. A fixture/authority mismatch is suspected; a focused diagnostic is
+still required before assigning product failure or changing implementation.
+All paths use the same smoke controller/native directories recorded below.
+
 **Packaged smoke pending, 2026-10-20 23:22Z:** the candidate run in main runtime
 `inventory-receipts-regression/smoke-e2338955bb4d4f83abf72a0a3873a841` has not
 qualified. Its first shutdown remains pending after more than 43 minutes.
