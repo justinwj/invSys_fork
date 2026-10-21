@@ -59,3 +59,32 @@ Public Function AdminAnyTextMatchesSearch(ByVal searchTerm As String, ParamArray
     Next i
 End Function
 
+
+Public Function NormalizeCustomFieldName(ByVal fieldName As String) As String
+    fieldName = Replace(fieldName, vbCr, " ")
+    fieldName = Replace(fieldName, vbLf, " ")
+    fieldName = Replace(fieldName, vbTab, " ")
+    fieldName = Replace(fieldName, "[", "(")
+    fieldName = Replace(fieldName, "]", ")")
+    Do While InStr(1, fieldName, "  ", vbBinaryCompare) > 0
+        fieldName = Replace(fieldName, "  ", " ")
+    Loop
+    fieldName = Trim$(fieldName)
+    If Len(fieldName) > 48 Then fieldName = Left$(fieldName, 48)
+    NormalizeCustomFieldName = fieldName
+End Function
+
+Public Function IsReservedCustomField(ByVal fieldName As String) As Boolean
+    Select Case UCase$(Trim$(fieldName))
+        Case "SYSTEM_KEY", "SYSTEMKEY", "SYSTEM KEY", "SYSTEM-KEY", "CONDITION", "SKU", "ROW", "ITEM_CODE", "ITEM", "UOM", "LOCATION", "QTY", "TOTAL INV", _
+             "QTYAVAILABLE", "DESCRIPTION", "VENDOR(S)", "VENDOR_CODE", "CATEGORY", _
+             "EXTERNAL_CODE", "IMAGE_PATH", "TRACK_QTY", "ITEM_KIND", "NOTE", "IOTYPE"
+            IsReservedCustomField = True
+    End Select
+End Function
+
+Public Function CatalogItemTextAdmin(ByVal item As Variant, ByVal fieldName As String) As String
+    On Error Resume Next
+    CatalogItemTextAdmin = Trim$(CStr(item(fieldName)))
+    On Error GoTo 0
+End Function

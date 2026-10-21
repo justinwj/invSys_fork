@@ -139,6 +139,7 @@ param(
     [switch]$AdminTesterSetupOwnerOnly,
     [switch]$AdminAggregationOnly,
     [switch]$AdminInventoryEntryOnly,
+    [switch]$AdminInventoryRecordingOnly,
     [switch]$AdminInventoryExactQuantityOnly,
     [switch]$AdminInventoryManagedFieldsOnly,
     [switch]$AdminInventoryQuantityRetryOnly,
@@ -918,6 +919,7 @@ if($AdminInventoryEditOwnershipOnly -and (-not $AdminInventoryEditReceiptPhasesO
 if($AdminInventoryPrimitivePayloadOnly -and (-not $AdminInventoryEntryOnly -or -not $AdminInventorySourceOverlayForTest -or $AdminInventoryHeadlessWorksheetOnly -or $AdminInventoryReadOnlyOperatorsOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Primitive payload controls require their separate source-overlay Inventory gate.'}
 if($AdminInventoryCreatePhasesOnly -and -not $AdminInventoryEntryOnly){throw 'Create phases require the separate Inventory entry gate.'}
 if($AdminInventoryCreateNameOnly -and -not $AdminInventoryCreatePhasesOnly){throw 'Create name checks require the Create phase gate.'}
+if($AdminInventoryRecordingOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventorySourceOverlayForTest -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryCatalogOnly)){throw 'Inventory recording requires its isolated packaged entry gate.'}
 if($AdminInventoryEntryOnly){
     if($AdminInventoryCreatePhasesOnly -and (-not $AdminInventorySourceOverlayForTest -or $AdminInventoryPrimitivePayloadOnly -or $AdminInventoryHeadlessWorksheetOnly -or $AdminInventoryReadOnlyOperatorsOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Create phases require their separate source-overlay Inventory gate.'}
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}
@@ -2283,6 +2285,10 @@ End Function
             Install-InventorySourceOverlay
         }
         Install-AdminInventoryEntryProbe
+        if($AdminInventoryRecordingOnly){
+            . (Join-Path $PSScriptRoot 'Slice4beInventoryRecording.ps1')
+            Install-InventoryRecordingProbe
+        }
         if($AdminInventoryCreatePhasesOnly){
             . (Join-Path $PSScriptRoot 'Slice4beInventoryCreatePhases.ps1')
             Install-InventoryCreatePhaseProbe
@@ -2562,7 +2568,10 @@ End Function
     }
     if($AdminAggregationOnly){$step='packaged Aggregation authority and workbook diagnostic'; Test-AdminAggregation $a $b}
     if($AdminInventoryEntryOnly){
-        if($AdminInventoryCreatePhasesOnly){
+        if($AdminInventoryRecordingOnly){
+            $step='packaged Inventory navigation recording and policy boundaries'
+            Test-InventoryRecording $a $b
+        }elseif($AdminInventoryCreatePhasesOnly){
             $step='actual Create handler authority write and save phases'
             Test-InventoryCreatePhases $a $b
         }elseif($AdminInventoryPrimitivePayloadOnly){

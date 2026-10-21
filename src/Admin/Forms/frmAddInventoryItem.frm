@@ -15,6 +15,8 @@ Attribute VB_Exposed = False
 '@RuntimeStubUserFormCode
 Option Explicit
 
+Private mActivity As cProvisioningActivity
+
 Private WithEvents mBtnAddField As MSForms.CommandButton
 Attribute mBtnAddField.VB_VarHelpID = -1
 Private WithEvents mBtnRemoveField As MSForms.CommandButton
@@ -108,6 +110,10 @@ Private Const IMAGE_PATH_PLACEHOLDER As String = "Paste picture file path(s) or 
 Private Const QTY_OPTION_UTILITY As String = "Utility"
 Private Const QTY_OPTION_SERVICE As String = "Service"
 Private Const QTY_OPTION_NOT_COUNTED As String = "Not counted"
+
+Public Sub ObserveWith(ByVal activity As cProvisioningActivity)
+    If mActivity Is Nothing Then Set mActivity = activity
+End Sub
 
 Public Property Get Accepted() As Boolean
     Accepted = mAccepted
@@ -550,6 +556,7 @@ Private Sub UserForm_Initialize()
 End Sub
 
 Private Sub UserForm_Activate()
+    If Not mActivity Is Nothing Then mActivity.Presented Me.Visible
     mAllowUomPrompt = True
     If mAnchors Is Nothing Then InitializeAddInventoryAnchors
     If Not mResizeInitialized Then
@@ -566,13 +573,13 @@ End Sub
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     If CloseMode = 0 Then
-        mAccepted = False
         Cancel = True
-        Me.Hide
+        mBtnCancel_Click
     End If
 End Sub
 
 Private Sub UserForm_Terminate()
+    Set mActivity = Nothing
     Set mAnchors = Nothing
     Set mOperatorWorkbook = Nothing
 End Sub
@@ -931,13 +938,13 @@ Private Sub mBtnAddField_Click()
     Dim fieldValue As String
     Dim rowIndex As Long
 
-    fieldName = NormalizeCustomFieldName(Trim$(CStr(mTxtCustomName.Value)))
+    fieldName = modInventoryUiText.NormalizeCustomFieldName(Trim$(CStr(mTxtCustomName.Value)))
     fieldValue = Trim$(CStr(mTxtCustomValue.Value))
     If fieldName = "" Then
         mLblStatus.Caption = "Additional field name is required."
         Exit Sub
     End If
-    If IsReservedCustomField(fieldName) Then
+    If modInventoryUiText.IsReservedCustomField(fieldName) Then
         mLblStatus.Caption = "That field is already handled by the form."
         Exit Sub
     End If
@@ -1049,15 +1056,21 @@ Private Function PromptForEditReason() As Boolean
 End Function
 
 Private Sub mBtnAddMode_Click()
+    Dim action As String
     If mLoading Then Exit Sub
+    If Not mActivity Is Nothing Then action = mActivity.BeginAction("ADD_MODE")
     mEditMode = False
     ApplyModeLayout
+    If Not mActivity Is Nothing Then mActivity.Finish action, "SELECTED"
 End Sub
 
 Private Sub mBtnEditMode_Click()
+    Dim action As String
     If mLoading Then Exit Sub
+    If Not mActivity Is Nothing Then action = mActivity.BeginAction("EDIT_MODE")
     mEditMode = True
     ApplyModeLayout
+    If Not mActivity Is Nothing Then mActivity.Finish action, "SELECTED"
 End Sub
 
 Private Sub mBtnDeleteItem_Click()
@@ -1413,10 +1426,13 @@ Private Sub LoadSelectedEditItemBySku(ByVal sku As String)
 End Sub
 
 Private Sub mBtnCancel_Click()
+    Dim action As String
+    If Not mActivity Is Nothing Then action = mActivity.BeginAction("CLOSE")
     mAccepted = False
     mDeleteRequested = False
     mDeleteReason = ""
     Me.Hide
+    If Not mActivity Is Nothing Then mActivity.Finish action, "CLOSED"
 End Sub
 
 Private Function ValidateForm() As Boolean
@@ -1500,27 +1516,4 @@ Private Function FindCustomFieldRow(ByVal fieldName As String) As Long
             Exit Function
         End If
     Next i
-End Function
-
-Private Function NormalizeCustomFieldName(ByVal fieldName As String) As String
-    fieldName = Replace(fieldName, vbCr, " ")
-    fieldName = Replace(fieldName, vbLf, " ")
-    fieldName = Replace(fieldName, vbTab, " ")
-    fieldName = Replace(fieldName, "[", "(")
-    fieldName = Replace(fieldName, "]", ")")
-    Do While InStr(1, fieldName, "  ", vbBinaryCompare) > 0
-        fieldName = Replace(fieldName, "  ", " ")
-    Loop
-    fieldName = Trim$(fieldName)
-    If Len(fieldName) > 48 Then fieldName = Left$(fieldName, 48)
-    NormalizeCustomFieldName = fieldName
-End Function
-
-Private Function IsReservedCustomField(ByVal fieldName As String) As Boolean
-    Select Case UCase$(Trim$(fieldName))
-        Case "SYSTEM_KEY", "SYSTEMKEY", "SYSTEM KEY", "SYSTEM-KEY", "CONDITION", "SKU", "ROW", "ITEM_CODE", "ITEM", "UOM", "LOCATION", "QTY", "TOTAL INV", _
-             "QTYAVAILABLE", "DESCRIPTION", "VENDOR(S)", "VENDOR_CODE", "CATEGORY", _
-             "EXTERNAL_CODE", "IMAGE_PATH", "TRACK_QTY", "ITEM_KIND", "NOTE", "IOTYPE"
-            IsReservedCustomField = True
-    End Select
 End Function

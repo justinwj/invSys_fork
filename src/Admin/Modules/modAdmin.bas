@@ -381,7 +381,7 @@ Public Function InventoryItemCatalogContainsForWorksheet(ByVal warehouseId As St
     If sku = "" Then Exit Function
     Set catalogItems = LoadInventoryCatalogItemsAdmin(warehouseId)
     For Each item In catalogItems
-        If StrComp(CatalogItemTextAdmin(item, "SKU"), sku, vbTextCompare) = 0 Then
+        If StrComp(modInventoryUiText.CatalogItemTextAdmin(item, "SKU"), sku, vbTextCompare) = 0 Then
             InventoryItemCatalogContainsForWorksheet = True
             Exit Function
         End If
@@ -500,6 +500,7 @@ Sub Add_InventoryItem()
     Dim editStamp As String
     Dim actionSucceeded As Boolean
     Dim interactiveContext As String, sourceValues As Variant
+    Dim activity As cProvisioningActivity
 
     Set targetWb = ResolveInteractiveAdminWorkbook(False)
     If targetWb Is Nothing Then
@@ -508,11 +509,14 @@ Sub Add_InventoryItem()
         Exit Sub
     End If
 
+    Set activity = New cProvisioningActivity
+    activity.Initialize targetWb, "ADMIN_INVENTORY_", "Inventory"
     interactiveContext = modInventoryCommands.Capture(targetWb.Name)
     sourceValues = modInventoryCommands.SourceValues(interactiveContext)
     If Not IsArray(sourceValues) Then
         MsgBox "Sign in to the current source warehouse as an authorized Admin and reopen Add/Edit Inventory.", vbExclamation, "invSys Admin"
         modInventoryCommands.Release interactiveContext
+        activity.OpeningFailed
         Exit Sub
     End If
     warehouseId = CStr(sourceValues(0)): stationId = CStr(sourceValues(1)): userId = CStr(sourceValues(2))
@@ -524,6 +528,7 @@ Sub Add_InventoryItem()
 
     If Not modInventoryCommands.CheckForm(interactiveContext, report) Then GoTo CleanExit
     Set addForm = New frmAddInventoryItem
+    addForm.ObserveWith activity
     addForm.Configure warehouseId, stationId, userId, sku, defaultLocation
     addForm.SetOperatorWorkbook targetWb
     addForm.SetInteractiveContext interactiveContext
@@ -613,6 +618,7 @@ Sub Add_InventoryItem()
 
 CleanExit:
     On Error Resume Next
+    If Not activity Is Nothing Then activity.OpeningFailed
     Unload addForm
     modInventoryCommands.Release interactiveContext
     On Error GoTo 0
@@ -1291,19 +1297,19 @@ Private Sub LoadCatalogItemsIntoAddInventoryForm(ByVal targetForm As frmAddInven
     If targetForm Is Nothing Then Exit Sub
     If catalogItems Is Nothing Then Exit Sub
     For Each item In catalogItems
-        targetForm.AddCatalogItem CatalogItemTextAdmin(item, "SKU"), _
-                                  CatalogItemTextAdmin(item, "ITEM"), _
-                                  CatalogItemTextAdmin(item, "UOM"), _
-                                  CatalogItemTextAdmin(item, "LOCATION"), _
-                                  CatalogItemTextAdmin(item, "DESCRIPTION"), _
-                                  CatalogItemTextAdmin(item, "VENDOR(s)"), _
-                                  CatalogItemTextAdmin(item, "VENDOR_CODE"), _
-                                  CatalogItemTextAdmin(item, "CATEGORY"), _
-                                  CatalogItemTextAdmin(item, "EXTERNAL_CODE"), _
-                                  CatalogItemTextAdmin(item, "IMAGE_PATH"), _
-                                  CatalogItemTextAdmin(item, "TRACK_QTY"), _
-                                  CatalogItemTextAdmin(item, "ITEM_KIND"), _
-                                  CatalogItemTextAdmin(item, "QTY_ON_HAND")
+        targetForm.AddCatalogItem modInventoryUiText.CatalogItemTextAdmin(item, "SKU"), _
+                                  modInventoryUiText.CatalogItemTextAdmin(item, "ITEM"), _
+                                  modInventoryUiText.CatalogItemTextAdmin(item, "UOM"), _
+                                  modInventoryUiText.CatalogItemTextAdmin(item, "LOCATION"), _
+                                  modInventoryUiText.CatalogItemTextAdmin(item, "DESCRIPTION"), _
+                                  modInventoryUiText.CatalogItemTextAdmin(item, "VENDOR(s)"), _
+                                  modInventoryUiText.CatalogItemTextAdmin(item, "VENDOR_CODE"), _
+                                  modInventoryUiText.CatalogItemTextAdmin(item, "CATEGORY"), _
+                                  modInventoryUiText.CatalogItemTextAdmin(item, "EXTERNAL_CODE"), _
+                                  modInventoryUiText.CatalogItemTextAdmin(item, "IMAGE_PATH"), _
+                                  modInventoryUiText.CatalogItemTextAdmin(item, "TRACK_QTY"), _
+                                  modInventoryUiText.CatalogItemTextAdmin(item, "ITEM_KIND"), _
+                                  modInventoryUiText.CatalogItemTextAdmin(item, "QTY_ON_HAND")
     Next item
 End Sub
 
@@ -1335,12 +1341,6 @@ Private Function NonCountedItemKindAdmin(ByVal customFields As Object) As String
         Case Else
             NonCountedItemKindAdmin = "NON_COUNTED"
     End Select
-End Function
-
-Private Function CatalogItemTextAdmin(ByVal item As Variant, ByVal fieldName As String) As String
-    On Error Resume Next
-    CatalogItemTextAdmin = Trim$(CStr(item(fieldName)))
-    On Error GoTo 0
 End Function
 
 Private Function ResolveInventoryQtyOnHandAdmin(ByVal warehouseId As String, ByVal sku As String) As Double

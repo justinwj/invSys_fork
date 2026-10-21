@@ -1,5 +1,18 @@
 # Slice4be remaining Admin coverage
 
+**Inventory navigation checkpoint,2026-10-21 04:09Z:** draft candidate
+`validation-inventory-recording-02`, catalog44/190, qualifies actual Ribbon/form
+RED32/31 -> GREEN63/63. Open, Add/Edit mode and explicit Close now record through
+captured context; all prior186 definitions and canonical Inventory bytes remain
+unchanged. Five compiles/cold start,36 source guards, static caps and normal
+preserved closure/audit qualify. Current candidate also retains smoke86 and
+Settings202 with exact prior IDs/order and ten reviewed Settings captures.
+Storage-failure and
+additional binding coverage, remaining Inventory actions, saved guide conclusions
+and visible acceptance remain open. See
+[exact evidence](plan022_slice4be_inventory_recording_results.md). The earlier
+no-activity audit below describes product a9faab9c, not this new draft candidate.
+
 **Current regression checkpoint,2026-10-21 01:53Z:** unchanged Inventory candidate
 now qualifies Settings202, recording80 and Receiving replay121, with27 reviewed
 captures across those gates, normal preserved closure and clear delayed audits.
