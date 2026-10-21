@@ -9,7 +9,7 @@ Public Function SelectionIds() As Variant
         "ADMIN_INVENTORY_CUSTOM_FIELD_ADD", "ADMIN_INVENTORY_CUSTOM_FIELD_REMOVE")
 End Function
 
-Public Function Control(ByVal id As String, Optional ByVal version As Long = 46) As Object
+Public Function Control(ByVal id As String, Optional ByVal version As Long = 47) As Object
     Dim caption As String, record As Object, kind As String
     kind = "Navigation"
     Select Case id
@@ -31,6 +31,10 @@ Public Function Control(ByVal id As String, Optional ByVal version As Long = 46)
                 Case "ADMIN_INVENTORY_UOM_ADD"
                     If version < 46 Then Exit Function
                     caption = "Add UOM": kind = "Command"
+                Case "ADMIN_INVENTORY_CREATE_TABLE", "ADMIN_INVENTORY_UPLOAD_TABLE"
+                    If version < 47 Then Exit Function
+                    kind = "Command"
+                    If id = "ADMIN_INVENTORY_CREATE_TABLE" Then caption = "Create Inventory Table" Else caption = "Upload Selected Inventory Table"
                 Case Else: Exit Function
             End Select
     End Select
@@ -44,6 +48,8 @@ End Function
 
 Public Function PositiveOutcome(ByVal id As String, ByVal code As String) As Boolean
     Select Case id
+        Case "ADMIN_INVENTORY_CREATE_TABLE": PositiveOutcome = (code = "SAVED")
+        Case "ADMIN_INVENTORY_UPLOAD_TABLE": PositiveOutcome = (code = "CONFIRMED")
         Case "ADMIN_INVENTORY_OPEN": PositiveOutcome = (code = "OPENED")
         Case "ADMIN_INVENTORY_ADD_MODE", "ADMIN_INVENTORY_EDIT_MODE": PositiveOutcome = (code = "SELECTED")
         Case "ADMIN_INVENTORY_CLOSE": PositiveOutcome = (code = "CLOSED")
@@ -59,6 +65,9 @@ End Function
 
 Public Function Outcome(ByVal id As String, ByVal code As String) As Object
     Dim definition As Object, record As Object, message As String, severity As String, effect As String
+    If id = "ADMIN_INVENTORY_CREATE_TABLE" Or id = "ADMIN_INVENTORY_UPLOAD_TABLE" Then
+        Set Outcome = modInventoryWorksheetActivity.Outcome(id, code): Exit Function
+    End If
     Set definition = Control(id)
     If definition Is Nothing Then Exit Function
     severity = "Info": effect = "Unknown"

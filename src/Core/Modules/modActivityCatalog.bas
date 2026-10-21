@@ -2,10 +2,17 @@ Attribute VB_Name = "modActivityCatalog"
 Option Explicit
 Option Private Module
 
-Public Const CATALOG_VERSION As Long = 46
+Public Const CATALOG_VERSION As Long = 47
 
 Public Function ControlIds(Optional ByVal version As Long = CATALOG_VERSION) As Variant
     Dim ids As Variant, added As Variant, index As Long, offset As Long
+    If version = 47 Then
+        ids = ControlIds(46)
+        ReDim Preserve ids(LBound(ids) To UBound(ids) + 2)
+        ids(UBound(ids) - 1) = "ADMIN_INVENTORY_CREATE_TABLE"
+        ids(UBound(ids)) = "ADMIN_INVENTORY_UPLOAD_TABLE"
+        ControlIds = ids: Exit Function
+    End If
     If version = 46 Then
         ids = ControlIds(45)
         ReDim Preserve ids(LBound(ids) To UBound(ids) + 1)

@@ -34,7 +34,7 @@ $owningCreateWire =
     $wirePayload.Contains('modRoleEventWriter.CreateInventoryEntityPayloadItem(') -and
     $wirePayload.Contains('modRoleEventWriter.BuildPayloadJsonFromCollection(items)') -and
     $wireQueue.Contains('modRoleEventWriter.QueueInventoryCreateEvent(warehouse, station,') -and
-    $wireQueue.Contains('user, payload, note, 0, Nothing, eventId, report, "")')
+    $wireQueue.Contains('user, payload, note, 0, Nothing, eventId, report, "", attempted)')
 
 $checks = [ordered]@{}
 $checks["Docs.Slice4akContract"] =
@@ -62,8 +62,8 @@ $checks["Form.LocationAndCategoryDropdowns"] =
     $form.Contains("Private WithEvents mCmbCategory As MSForms.ComboBox") -and
     $form.Contains("Private Sub mCmbLocation_Click()") -and
     $form.Contains("Private Sub mCmbCategory_Click()") -and
-    $form.Contains('AddCombo("cmbLocation"') -and
-    $form.Contains('AddCombo("cmbCategory"') -and
+    $form.Contains('modInventoryUiText.AddCombo(Me.Controls, "cmbLocation"') -and
+    $form.Contains('modInventoryUiText.AddCombo(Me.Controls, "cmbCategory"') -and
     $form.Contains("LoadInventoryDimensionOptions")
 $checks["Form.RealSubmitHandlerEvidence"] =
     $form.Contains("Public Function TestAddItemVisibilityDropdownContract") -and

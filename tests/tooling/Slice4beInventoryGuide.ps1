@@ -61,7 +61,7 @@ function Test-InventoryGuide($Fixture,[switch]$Selections,[switch]$Uom) {
             Check ('InventoryGuide.Recorded.'+$kind+'.ActualHandlersOnce') ([long](Run 'invSys.Admin.xlam' 'TestInventoryRecording.Gestures') -eq 1 -and [bool](Run 'invSys.Admin.xlam' 'TestInventoryRecording.Finished'))
             $records=@(Get-Slice4beActivityFiles $Fixture|Where-Object {$_ -cnotin $before}|ForEach-Object {Get-Content $_ -Raw|ConvertFrom-Json}|Where-Object ControlId -Like 'ADMIN_INVENTORY_*')
             $actions=if($success){$steps.Count}elseif($Uom){3}elseif($Selections){13}else{4};$count=$actions*2;$valid=$records.Count -eq $count
-            foreach($record in $records){$valid=$valid -and $record.SequenceId -ceq $sequence -and $record.CatalogVersion -eq 46 -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.OwnerId -ceq 'ADMIN_INVENTORY' -and @($record.SourceEventRefs).Count -eq 0}
+            foreach($record in $records){$valid=$valid -and $record.SequenceId -ceq $sequence -and $record.CatalogVersion -eq 47 -and $record.WarehouseId -ceq $Fixture.Warehouse -and $record.UserId -ceq 'config-admin' -and $record.OwnerId -ceq 'ADMIN_INVENTORY' -and @($record.SourceEventRefs).Count -eq 0}
             foreach($ordinal in 1..$actions){
                 $part=@($records|Where-Object Ordinal -EQ $ordinal);$attempt=@($part|Where-Object OutcomeCode -CEQ 'REQUESTED');$outcome=@($part|Where-Object OutcomeCode -CEQ $steps[$ordinal-1][2])
                 $valid=$valid -and $part.Count -eq 2 -and $attempt.Count -eq 1 -and $outcome.Count -eq 1

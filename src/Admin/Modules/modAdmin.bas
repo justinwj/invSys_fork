@@ -393,7 +393,8 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
                                                           ByVal userId As String, _
                                                           ByVal record As Object, _
                                                           ByRef report As String, _
-                                                          Optional ByVal interactiveContext As String = "") As Boolean
+                                                          Optional ByVal interactiveContext As String = "", _
+                                                          Optional ByRef observedEvent As String = "") As Boolean
     Dim customFields As Object
     Dim actionName As String
     Dim sku As String
@@ -409,6 +410,7 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
     Dim editStamp As String, receiptRow As Long
 
     On Error GoTo Failed
+    observedEvent = ""
     If record Is Nothing Then report = "Inventory worksheet record is unavailable.": Exit Function
     actionName = UCase$(Trim$(CStr(record("Action"))))
     sku = Trim$(CStr(record("ItemCode")))
@@ -420,9 +422,9 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
     qty = CDbl(record("Quantity"))
     editReason = Trim$(CStr(record("EditReason")))
     Set customFields = record("CustomFields")
-    If IsNonCountedCustomFieldsAdmin(customFields) Then
-        If categoryValue = "" Then categoryValue = NonCountedItemKindAdmin(customFields)
-        If vendorValue = "" And NonCountedItemKindAdmin(customFields) = "UTILITY" Then vendorValue = "Utility"
+    If modInventoryItemFields.IsNonCountedCustomFieldsAdmin(customFields) Then
+        If categoryValue = "" Then categoryValue = modInventoryItemFields.NonCountedItemKindAdmin(customFields)
+        If vendorValue = "" And modInventoryItemFields.NonCountedItemKindAdmin(customFields) = "UTILITY" Then vendorValue = "Utility"
     End If
 
     If actionName = "ADD" Then
@@ -432,12 +434,12 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
             uom, locationValue, qty, CStr(record("Description")), vendorValue, _
             CStr(record("VendorCode")), categoryValue, CStr(record("ExternalCode")), _
             CStr(record("Picture")), customFields, report, interactiveContext, _
-            CStr(record("CreateEventId")), receiptRow)
+            CStr(record("CreateEventId")), receiptRow, observedEvent)
         Exit Function
     End If
     If actionName <> "EDIT" Then report = "Inventory worksheet Action must be ADD or EDIT.": Exit Function
     If interactiveContext <> "" Then
-        ApplyInventoryWorksheetRecordForWarehouse = modInventoryEditCommands.Execute(interactiveContext, CLng(record("TableRow")), report)
+        ApplyInventoryWorksheetRecordForWarehouse = modInventoryEditCommands.Execute(interactiveContext, CLng(record("TableRow")), report, observedEvent)
         Exit Function
     End If
 
@@ -451,7 +453,7 @@ Public Function ApplyInventoryWorksheetRecordForWarehouse(ByVal warehouseId As S
         uom, locationValue, CStr(record("Description")), vendorValue, _
         CStr(record("VendorCode")), categoryValue, CStr(record("ExternalCode")), _
         CStr(record("Picture")), customFields, report, interactiveContext, userId, stationId)
-    If actionSucceeded And Not IsNonCountedCustomFieldsAdmin(customFields) And _
+    If actionSucceeded And Not modInventoryItemFields.IsNonCountedCustomFieldsAdmin(customFields) And _
             CBool(record("HasQuantity")) Then
         If SetInventoryQuantityForWarehouse(warehouseId, stationId, userId, _
                 sku, itemName, uom, locationValue, qty, _
@@ -579,7 +581,7 @@ Sub Add_InventoryItem()
                                                                      formVendorCode, formCategory, _
                                                                      formExternalCode, formImagePath, _
                                                                      formCustomFields, report, interactiveContext)
-            If actionSucceeded And Not IsNonCountedCustomFieldsAdmin(formCustomFields) Then
+            If actionSucceeded And Not modInventoryItemFields.IsNonCountedCustomFieldsAdmin(formCustomFields) Then
                 Dim qtyReport As String
                 If SetInventoryQuantityForWarehouse(warehouseId, stationId, userId, formSku, _
                                                     formItemName, formUom, formLocation, formQty, formEditReason, qtyReport, interactiveContext) Then
@@ -654,7 +656,8 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
                                              Optional ByRef report As String = "", _
                                              Optional ByVal interactiveContext As String = "", _
                                              Optional ByVal creationEventId As String = "", _
-                                             Optional ByVal stagingRow As Long = 0) As Boolean
+                                             Optional ByVal stagingRow As Long = 0, _
+                                             Optional ByRef observedEvent As String = "") As Boolean
     Dim payloadJson As String
     Dim eventIdOut As String
     Dim queueError As String
@@ -667,6 +670,7 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
     Dim receiptFound As Boolean, receiptApplied As Boolean, receiptPayload As String, receiptKey As String
 
     On Error GoTo FailAdd
+    observedEvent = ""
 
     warehouseId = Trim$(warehouseId)
     stationId = Trim$(stationId)
@@ -682,7 +686,7 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
     If sku = "" Then report = "SKU is required.": Exit Function
     If itemName = "" Then itemName = sku
     If uom = "" Then report = "UOM is required.": Exit Function
-    nonCounted = IsNonCountedCustomFieldsAdmin(customFields)
+    nonCounted = modInventoryItemFields.IsNonCountedCustomFieldsAdmin(customFields)
     If nonCounted Then
         qty = 0#
     ElseIf qty < 0 Then
@@ -735,6 +739,7 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
         If Not modInventoryCreateReceipts.PayloadMatches(payloadJson, receiptPayload) Then
             report = "The pending row differs from its exact queued create. Reconcile it before retrying.": Exit Function
         End If
+        observedEvent = eventIdOut & vbTab & "Submitted"
         If receiptApplied Then
             batchReport = "Exact previously saved event independently reconciled."
             GoTo CreateSaved
@@ -745,7 +750,7 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
     End If
     If Not receiptFound Then
     If Not modInventoryCreateWire.QueueCreate(warehouseId, stationId, userId, payloadJson, _
-                                             "Admin add inventory item " & sku, eventIdOut, queueError) Then
+                                             "Admin add inventory item " & sku, eventIdOut, queueError, observedEvent) Then
         If interactiveContext <> "" Then modInventoryCommands.Release interactiveContext
         report = "Inventory item event could not be queued: " & queueError & vbCrLf & _
                  "Use Users & Roles to grant ADMIN_MAINT to '" & userId & "' for " & warehouseId & " / " & stationId & "."
@@ -800,7 +805,7 @@ Private Function BuildInventoryCreatePayloadAdmin(ByVal systemKey As String, ByV
         ByVal description As String, ByVal vendorName As String, ByVal vendorCode As String, _
         ByVal category As String, ByVal externalCode As String, ByVal imagePath As String, ByVal customFields As Object) As String
     Dim item As Object, customKey As Variant, nonCounted As Boolean
-    nonCounted = IsNonCountedCustomFieldsAdmin(customFields)
+    nonCounted = modInventoryItemFields.IsNonCountedCustomFieldsAdmin(customFields)
     Set item = CreateObject("Scripting.Dictionary"): item.CompareMode = vbTextCompare
     item("ITEM_CODE") = sku
     item("ITEM") = itemName
@@ -817,7 +822,7 @@ Private Function BuildInventoryCreatePayloadAdmin(ByVal systemKey As String, ByV
     AddPictureReferencesToPayloadAdmin item, imagePath
     If nonCounted Then
         item("TRACK_QTY") = "FALSE"
-        item("ITEM_KIND") = NonCountedItemKindAdmin(customFields)
+        item("ITEM_KIND") = modInventoryItemFields.NonCountedItemKindAdmin(customFields)
     End If
     If Not customFields Is Nothing Then
         For Each customKey In customFields.Keys
@@ -845,9 +850,9 @@ Public Function ValidateWorksheetCreateReceipt(ByVal record As Object, ByVal con
     End If
     category = CStr(record("Category")): vendor = CStr(record("Vendors"))
     Set customFields = record("CustomFields")
-    If IsNonCountedCustomFieldsAdmin(customFields) Then
-        If category = "" Then category = NonCountedItemKindAdmin(customFields)
-        If vendor = "" And NonCountedItemKindAdmin(customFields) = "UTILITY" Then vendor = "Utility"
+    If modInventoryItemFields.IsNonCountedCustomFieldsAdmin(customFields) Then
+        If category = "" Then category = modInventoryItemFields.NonCountedItemKindAdmin(customFields)
+        If vendor = "" And modInventoryItemFields.NonCountedItemKindAdmin(customFields) = "UTILITY" Then vendor = "Utility"
     End If
     expected = BuildInventoryCreatePayloadAdmin(systemKey, CStr(record("ItemCode")), CStr(record("ItemName")), _
         CStr(record("UOM")), CStr(record("Location")), CDbl(record("Quantity")), CStr(record("Description")), _
@@ -1312,36 +1317,6 @@ Private Sub LoadCatalogItemsIntoAddInventoryForm(ByVal targetForm As frmAddInven
                                   modInventoryUiText.CatalogItemTextAdmin(item, "QTY_ON_HAND")
     Next item
 End Sub
-
-Private Function IsNonCountedCustomFieldsAdmin(ByVal customFields As Object) As Boolean
-    Dim trackQty As String
-    Dim itemKind As String
-
-    On Error Resume Next
-    If Not customFields Is Nothing Then
-        trackQty = UCase$(Trim$(CStr(customFields("TRACK_QTY"))))
-        itemKind = UCase$(Trim$(CStr(customFields("ITEM_KIND"))))
-    End If
-    On Error GoTo 0
-
-    IsNonCountedCustomFieldsAdmin = (trackQty = "FALSE" Or trackQty = "NO" Or trackQty = "0" _
-                                     Or itemKind = "UTILITY" Or itemKind = "SERVICE" Or itemKind = "NON_COUNTED")
-End Function
-
-Private Function NonCountedItemKindAdmin(ByVal customFields As Object) As String
-    Dim itemKind As String
-
-    On Error Resume Next
-    If Not customFields Is Nothing Then itemKind = UCase$(Trim$(CStr(customFields("ITEM_KIND"))))
-    On Error GoTo 0
-
-    Select Case itemKind
-        Case "UTILITY", "SERVICE", "NON_COUNTED"
-            NonCountedItemKindAdmin = itemKind
-        Case Else
-            NonCountedItemKindAdmin = "NON_COUNTED"
-    End Select
-End Function
 
 Private Function ResolveInventoryQtyOnHandAdmin(ByVal warehouseId As String, ByVal sku As String) As Double
     Dim path As String

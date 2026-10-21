@@ -135,12 +135,15 @@ Public Function ConfirmPreparedSelection(ByVal context As String, ByRef report A
     ConfirmPreparedSelection = modInventoryCommands.CheckForm(context, report)
 End Function
 
-Public Function Execute(ByVal context As String, ByVal row As Long, ByRef report As String) As Boolean
+Public Function Execute(ByVal context As String, ByVal row As Long, ByRef report As String, _
+                        Optional ByRef observedEvent As String = "") As Boolean
     Dim reference As String, command As String, entry As Object, receipt As Variant, catalog As Variant
     Dim names As Variant, values As Variant, headers As Variant, i As Long, result As Variant
     Dim found As Boolean, savedReceipt As Variant, applied As Boolean, queued As Boolean, payload As String
     Dim eventId As String, batchReport As String, processed As Long
+    Dim attempted As Boolean, submitted As Boolean
     On Error GoTo Failed
+    observedEvent = ""
     If Not Prepare(context, row, reference, report) Then Exit Function
     command = modInventoryEditWire.ReferenceField(reference, "Command:")
     Set entry = mPrepared(context & "|" & command): receipt = entry("Receipt")
@@ -167,6 +170,7 @@ Public Function Execute(ByVal context As String, ByVal row As Long, ByRef report
         entry("Saved") = True
     End If
     If Not modInventoryEditProof.QuantityApplied(context, receipt, applied, report) Then GoTo Failed
+    If applied And CStr(receipt(12)) = "ADJUST" Then observedEvent = CStr(receipt(7)) & vbTab & "Submitted"
     If Not applied Then
         If Not modInventoryEditPlan.PendingEntityUnchanged(context, receipt) Then
             report = "The original pending quantity plan changed. No adjustment was resubmitted."
@@ -175,14 +179,21 @@ Public Function Execute(ByVal context As String, ByVal row As Long, ByRef report
         eventId = CStr(receipt(7))
         If Not modInventoryCreateReceipts.ReadPendingAdjustment(context, eventId, queued, payload, report) Then GoTo Failed
         If queued And payload <> CStr(receipt(11)) Then GoTo Failed
+        If queued Then observedEvent = eventId & vbTab & "Submitted"
         If Not modInventoryCommands.SelectSku(context, CStr(receipt(4)), report) Then GoTo Failed
         If Not modInventoryCommands.BeginQuantity(context, CStr(receipt(8)), CDbl(receipt(10)), report) Then GoTo Failed
         If Not queued Then
             If Not modInventoryCommands.CheckForm(context, report) Then GoTo Failed
             If Not PendingWriteAvailable(context, report) Then GoTo Failed
-            If Not modRoleEventWriter.QueueAdminInventoryAdjustEvent(CStr(receipt(1)), CStr(receipt(2)), _
+            submitted = modRoleEventWriter.QueueAdminInventoryAdjustEvent(CStr(receipt(1)), CStr(receipt(2)), _
                 CStr(receipt(3)), CStr(receipt(11)), "Admin set inventory quantity. Reason: " & CStr(entry("Reason")), _
-                0, eventId, report, "") Then GoTo Failed
+                0, eventId, report, "", attempted)
+            If submitted Then
+                observedEvent = eventId & vbTab & "Submitted"
+            ElseIf attempted Then
+                observedEvent = eventId & vbTab & "Unknown"
+            End If
+            If Not submitted Then GoTo Failed
             If eventId <> CStr(receipt(7)) Then GoTo Failed
         End If
         If Not modInventoryCommands.CheckForm(context, report) Then GoTo Failed

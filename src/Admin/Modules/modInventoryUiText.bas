@@ -169,3 +169,67 @@ Public Function FindCustomFieldRow(ByVal fields As MSForms.ListBox, ByVal fieldN
         End If
     Next i
 End Function
+
+Public Function AddLabel(ByVal controls As MSForms.Controls, ByVal controlName As String, _
+                          ByVal leftPos As Single, _
+                          ByVal topPos As Single, _
+                          ByVal widthVal As Single, _
+                          ByVal heightVal As Single, _
+                          ByVal captionText As String) As MSForms.Label
+    Set AddLabel = controls.Add("Forms.Label.1", controlName, True)
+    AddLabel.Left = leftPos
+    AddLabel.Top = topPos
+    AddLabel.Width = widthVal
+    AddLabel.Height = heightVal
+    AddLabel.Caption = captionText
+End Function
+
+Public Function AddTextBox(ByVal controls As MSForms.Controls, ByVal controlName As String, _
+                            ByVal leftPos As Single, _
+                            ByVal topPos As Single, _
+                            ByVal widthVal As Single, _
+                            ByVal heightVal As Single) As MSForms.TextBox
+    Set AddTextBox = controls.Add("Forms.TextBox.1", controlName, True)
+    AddTextBox.Left = leftPos
+    AddTextBox.Top = topPos
+    AddTextBox.Width = widthVal
+    AddTextBox.Height = heightVal
+End Function
+
+Public Function AddCombo(ByVal controls As MSForms.Controls, ByVal controlName As String, _
+                          ByVal leftPos As Single, _
+                          ByVal topPos As Single, _
+                          ByVal widthVal As Single, _
+                          ByVal heightVal As Single) As MSForms.ComboBox
+    Set AddCombo = controls.Add("Forms.ComboBox.1", controlName, True)
+    AddCombo.Left = leftPos
+    AddCombo.Top = topPos
+    AddCombo.Width = widthVal
+    AddCombo.Height = heightVal
+End Function
+
+Public Function AddListBox(ByVal controls As MSForms.Controls, ByVal controlName As String, _
+                            ByVal leftPos As Single, _
+                            ByVal topPos As Single, _
+                            ByVal widthVal As Single, _
+                            ByVal heightVal As Single) As MSForms.ListBox
+    Set AddListBox = controls.Add("Forms.ListBox.1", controlName, True)
+    AddListBox.Left = leftPos
+    AddListBox.Top = topPos
+    AddListBox.Width = widthVal
+    AddListBox.Height = heightVal
+End Function
+
+Public Function AddButton(ByVal controls As MSForms.Controls, ByVal controlName As String, _
+                           ByVal leftPos As Single, _
+                           ByVal topPos As Single, _
+                           ByVal widthVal As Single, _
+                           ByVal heightVal As Single, _
+                           ByVal captionText As String) As MSForms.CommandButton
+    Set AddButton = controls.Add("Forms.CommandButton.1", controlName, True)
+    AddButton.Left = leftPos
+    AddButton.Top = topPos
+    AddButton.Width = widthVal
+    AddButton.Height = heightVal
+    AddButton.Caption = captionText
+End Function
