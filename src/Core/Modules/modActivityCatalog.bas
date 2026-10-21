@@ -2,10 +2,17 @@ Attribute VB_Name = "modActivityCatalog"
 Option Explicit
 Option Private Module
 
-Public Const CATALOG_VERSION As Long = 44
+Public Const CATALOG_VERSION As Long = 45
 
 Public Function ControlIds(Optional ByVal version As Long = CATALOG_VERSION) As Variant
     Dim ids As Variant, added As Variant, index As Long, offset As Long
+    If version = 45 Then
+        ids = ControlIds(44): added = modInventoryActivityCodes.SelectionIds()
+        offset = UBound(ids) + 1
+        ReDim Preserve ids(LBound(ids) To UBound(ids) + UBound(added) + 1)
+        For index = LBound(added) To UBound(added): ids(offset + index) = added(index): Next index
+        ControlIds = ids: Exit Function
+    End If
     If version = 44 Then
         ids = ControlIds(43): added = Array("ADMIN_INVENTORY_OPEN", "ADMIN_INVENTORY_ADD_MODE", _
             "ADMIN_INVENTORY_EDIT_MODE", "ADMIN_INVENTORY_CLOSE")
@@ -293,7 +300,7 @@ Public Function Control(ByVal controlId As String, Optional ByVal version As Lon
     Dim record As Object
     If version < 1 Or version > CATALOG_VERSION Then Exit Function
     If version >= 44 Then
-        Set record = modInventoryActivityCodes.Control(controlId)
+        Set record = modInventoryActivityCodes.Control(controlId, version)
         If Not record Is Nothing Then Set Control = record: Exit Function
     End If
     If version >= 43 Then

@@ -88,3 +88,84 @@ Public Function CatalogItemTextAdmin(ByVal item As Variant, ByVal fieldName As S
     CatalogItemTextAdmin = Trim$(CStr(item(fieldName)))
     On Error GoTo 0
 End Function
+
+Public Function CatalogItemIsNonCounted(ByVal item As Variant) As Boolean
+    Dim trackQty As String
+    Dim itemKind As String
+
+    trackQty = UCase$(CatalogField(item, "TRACK_QTY"))
+    itemKind = UCase$(CatalogField(item, "ITEM_KIND"))
+    CatalogItemIsNonCounted = (trackQty = "FALSE" Or trackQty = "NO" Or trackQty = "0" _
+                               Or itemKind = "UTILITY" Or itemKind = "SERVICE" Or itemKind = "NON_COUNTED")
+End Function
+
+Public Function FindCatalogItemBySku(ByVal catalogItems As Object, ByVal sku As String) As Object
+    Dim item As Variant
+
+    If catalogItems Is Nothing Then Exit Function
+    For Each item In catalogItems
+        If StrComp(CatalogField(item, "SKU"), sku, vbTextCompare) = 0 Then
+            Set FindCatalogItemBySku = item
+            Exit Function
+        End If
+    Next item
+End Function
+
+Public Function CatalogField(ByVal item As Variant, ByVal fieldName As String) As String
+    On Error Resume Next
+    CatalogField = Trim$(CStr(item(fieldName)))
+    On Error GoTo 0
+End Function
+
+Public Function QuantityModeIsNonCounted(ByVal valueText As String) As Boolean
+    Select Case UCase$(Trim$(valueText))
+        Case "UTILITY", "SERVICE", "NOT COUNTED", "NON-COUNTED", "NONCOUNTED", "UNTRACKED"
+            QuantityModeIsNonCounted = True
+    End Select
+End Function
+
+Public Function NonCountedItemKind(ByVal valueText As String) As String
+    Select Case UCase$(valueText)
+        Case "UTILITY"
+            NonCountedItemKind = "UTILITY"
+        Case "SERVICE"
+            NonCountedItemKind = "SERVICE"
+        Case Else
+            NonCountedItemKind = "NON_COUNTED"
+    End Select
+End Function
+
+Public Sub AddDimensionOption(ByVal targetCombo As MSForms.ComboBox, _
+                               ByVal seen As Object, _
+                               ByVal valueText As String)
+    valueText = Trim$(valueText)
+    If valueText = "" Then Exit Sub
+    If seen.Exists(valueText) Then Exit Sub
+    seen.Add valueText, True
+    targetCombo.AddItem valueText
+End Sub
+
+Public Function ComboContainsValue(ByVal targetCombo As MSForms.ComboBox, _
+                                    ByVal valueText As String) As Boolean
+    Dim i As Long
+
+    If targetCombo Is Nothing Then Exit Function
+    For i = 0 To targetCombo.ListCount - 1
+        If StrComp(Trim$(CStr(targetCombo.List(i))), Trim$(valueText), vbTextCompare) = 0 Then
+            ComboContainsValue = True
+            Exit Function
+        End If
+    Next i
+End Function
+
+Public Function FindCustomFieldRow(ByVal fields As MSForms.ListBox, ByVal fieldName As String) As Long
+    Dim i As Long
+
+    FindCustomFieldRow = -1
+    For i = 0 To fields.ListCount - 1
+        If StrComp(CStr(fields.List(i, 0)), fieldName, vbTextCompare) = 0 Then
+            FindCustomFieldRow = i
+            Exit Function
+        End If
+    Next i
+End Function

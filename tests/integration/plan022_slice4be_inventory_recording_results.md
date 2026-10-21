@@ -129,8 +129,10 @@ settings/packages preserved and native audits clear04:56:34.817Z/05:03:03.517Z.
 
 ## Remaining
 
-Inventory selection/custom-field/worksheet/Add/Edit/Delete observations remain
-pending. Existing technical Receiving B0/shared gates
+Inventory selections and local custom fields now have a separate
+[qualification record](plan022_slice4be_inventory_selection_results.md).
+UOM creation, worksheet and owning Add/Edit/Delete observations remain pending.
+Existing technical Receiving B0/shared gates
 retain their documented candidate scope. Conformant live/full-chain fixtures,
 wider D18 coverage and full visible acceptance still prevent4be-A completion.
 The qualified guide covers navigation only; it proves no Inventory mutation or

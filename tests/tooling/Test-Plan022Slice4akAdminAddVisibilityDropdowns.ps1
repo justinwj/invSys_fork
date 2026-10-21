@@ -58,8 +58,10 @@ $checks["Admin.CatalogOnlyExplicitCompletion"] =
     $owningCreateWire -and
     $catalogCompletion.Contains('modInventoryCommands.ConfirmCreate(context, eventId, report)')
 $checks["Form.LocationAndCategoryDropdowns"] =
-    $form.Contains("Private mCmbLocation As MSForms.ComboBox") -and
-    $form.Contains("Private mCmbCategory As MSForms.ComboBox") -and
+    $form.Contains("Private WithEvents mCmbLocation As MSForms.ComboBox") -and
+    $form.Contains("Private WithEvents mCmbCategory As MSForms.ComboBox") -and
+    $form.Contains("Private Sub mCmbLocation_Click()") -and
+    $form.Contains("Private Sub mCmbCategory_Click()") -and
     $form.Contains('AddCombo("cmbLocation"') -and
     $form.Contains('AddCombo("cmbCategory"') -and
     $form.Contains("LoadInventoryDimensionOptions")

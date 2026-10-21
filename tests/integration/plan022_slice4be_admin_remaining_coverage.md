@@ -1,5 +1,16 @@
 # Slice4be remaining Admin coverage
 
+**Inventory selection/local-field checkpoint,2026-10-21 06:17Z:** candidate
+`validation-inventory-selection-01`, catalog45/198, qualifies actual-handler
+RED40 PASS/25 FAIL -> GREEN65/65. All190 historical definitions remain unchanged.
+Retained boundaries151, Catalog/Edit50, smoke86 and Settings202 preserve exact
+prior ordered checks. Independent guide75 and16 reviewed guide/Settings captures
+qualify complete15-step and interrupted13-step observations without a canonical
+mutation claim. Five compiles/cold start,36 source guards, all27 static caps,
+normal preservation/closure and delayed audits pass. UOM creation, worksheet and
+owning mutation observations, wider D18 and release acceptance remain open.
+See [exact scope and exclusions](plan022_slice4be_inventory_selection_results.md).
+
 **Inventory navigation boundaries/guide checkpoint,2026-10-21 05:26Z:** candidate
 `validation-inventory-guide-01` qualifies closed/replaced workbook RED33/4 ->
 GREEN37/37, expanded navigation/boundaries151/151 retaining the original63 checks,
