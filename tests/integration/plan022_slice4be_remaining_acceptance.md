@@ -1,5 +1,13 @@
 # Slice 4be remaining acceptance checklist
 
+**2026-10-21 diagnostic checkpoint:** the four Inventory smoke failures are
+confirmed stale helpers with empty captured authority handles. Correct their
+fixture setup without weakening Core authorization. Native smoke shutdown still
+needs diagnosis; the harness now bounds exit waiting, records assisted recovery
+and prevents restart. Focused guard19/19 and isolated diagnostic results are in
+the Inventory record, including one unqualified restoration-race attempt.
+4be-A remains incomplete; no product source or candidate package changed.
+
 **Recovery checkpoint, 2026-10-21 00:40Z:** the pending smoke controller below is
 now closed after user-authorized termination of its stalled Excel process.
 Settings/reports are restored, five packages preserved, all helpers stopped and

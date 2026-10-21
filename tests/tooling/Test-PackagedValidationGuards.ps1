@@ -64,6 +64,48 @@ Close-PackagedValidationSession -Excel $cleanupExcel -Phase 'Mock'
 $facts=Get-Content -Raw (Join-Path $root 'Mock.json')|ConvertFrom-Json
 Check 'SlowExit.NoForcedTermination' ($script:stopCalls -eq 0 -and -not $facts.TerminationRequested)
 Check 'SlowExit.WaitedForNaturalClosure' ($script:waitCalls -ge 2 -and $facts.UnassistedExit -and $facts.ExitObserved)
+
+# WorkbookBeforeClose is responsible for releasing role forms and cancelling
+# scheduled snapshot callbacks. Model delivery through the actual cleanup call.
+$script:fakeExited=$false; $script:waitCalls=0; $script:closeHandlerDelivered=$false
+$script:fakeProcess.HasExited=$false
+$closeBook=[pscustomobject]@{Path=$root;FullName=(Join-Path $root 'operator.xlsx');IsAddin=$false}
+$closeBook | Add-Member ScriptMethod Close {
+    param($SaveChanges)
+    if($cleanupExcel.EnableEvents){$script:closeHandlerDelivered=$true}
+    $cleanupExcel.Workbooks=@()
+}
+$cleanupExcel.Workbooks=@($closeBook)
+Close-PackagedValidationSession -Excel $cleanupExcel -Phase 'CloseEvents'
+Check 'CloseEvents.OperatorHandlerDelivered' $script:closeHandlerDelivered
+
+# Bounded fake stall: the third wait throws so the pre-fix harness cannot hang.
+# The real implementation must terminate the captured process object, record
+# assisted recovery and throw before a replacement Excel can be created.
+$script:fakeExited=$false; $script:stopCalls=0; $script:waitCalls=0
+$script:fakeProcess=[pscustomobject]@{HasExited=$false}
+$script:fakeProcess | Add-Member ScriptMethod WaitForExit {
+    param($Milliseconds)
+    $script:waitCalls++
+    if($script:waitCalls -ge 3){throw 'TEST_STALL_BOUND'}
+    return $false
+}
+$script:capturedRecovery=$false
+$script:recoveryRecordedBeforeStop=$false
+function Stop-Process {
+    param($InputObject,$ErrorAction)
+    $script:capturedRecovery=[object]::ReferenceEquals($InputObject,$script:fakeProcess)
+    $script:recoveryRecordedBeforeStop=Test-Path (Join-Path $root 'Stalled-recovery-requested.json')
+    $script:stopCalls++; $script:fakeExited=$true; $script:fakeProcess.HasExited=$true
+}
+$refused=$false
+try {Close-PackagedValidationSession -Excel $cleanupExcel -Phase 'Stalled' -ExitWaitSeconds 0}
+catch {$refused=$_.Exception.Message -like '*normal exit*'}
+$facts=Get-Content -Raw (Join-Path $root 'Stalled.json')|ConvertFrom-Json
+Check 'Stalled.RecoveryUsesCapturedProcess' ($script:stopCalls -eq 1 -and $script:capturedRecovery)
+Check 'Stalled.AssistedExitNeverQualifies' ($facts.TerminationRequested -and -not $facts.UnassistedExit -and $facts.ExitObserved)
+Check 'Stalled.RefusesRestart' $refused
+Check 'Stalled.RecoveryRecordedBeforeTermination' $script:recoveryRecordedBeforeStop
 $checks.ToArray()|ConvertTo-Json|Set-Content (Join-Path $root 'results.json')
 $failed=($checks|Where-Object {-not $_.Passed}|Measure-Object).Count
 Write-Output ('GUARDS: '+($checks.Count-$failed)+' passed, '+$failed+' failed; '+$root)
