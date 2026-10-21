@@ -60,14 +60,78 @@ Inventory activity/guide content. All three static JSON contracts pass.
 - Static01 precedes helper relocation; static02 precedes its final whitespace
   correction. Static03 is the current source record.
 
+## Workbook lifetime and guide conclusion increment
+
+Last verified2026-10-21 05:26Z; this increment is qualified. Core context capture now
+precedes optional Inventory observation. Closing or replacing the captured
+workbook during observation refuses presentation through the existing context
+check, instead of reading the closed workbook's Name and reaching the Ribbon
+error handler. No canonical mutation, new authority or replay adapter is added.
+Core also recognizes the four catalog44 positive Inventory navigation outcomes
+for an independently observed CommandCompleted conclusion, with its existing
+catalog-version/owner/outcome validation intact.
+
+| Gate | Evidence / result |
+|---|---|
+| Workbook focused RED |33 PASS/4 FAIL; main `inventory-workbook-binding/red-98d1bf096f69494daca7151dd93ea2fa`; worker `slice4be-admin-inventory-entry/8a3c3a737e2b4341b841dc90c2b1cbbb/red.json`.|
+| Workbook focused GREEN |37/37; main `inventory-workbook-binding/green-1e66824e0f884d07b8e9ced80ea49170`; worker `slice4be-admin-inventory-entry/6228f4e5612141baa9744a129053459a/green.json`. Exact ordered RED checks and identical five test-input hashes; normal preserved closure, audits04:46:29.681Z/04:49:37.068Z clear.|
+| Expanded navigation/boundaries |151/151, retaining all63 original checks in order; main `inventory-recording-boundaries/green-26167b25221b4e45a3ad55ccd4323b51`; worker `slice4be-admin-inventory-entry/9772b33d755748aabd33d9f1df1a10bf/green.json`. Normal preserved closure05:15:31.013Z and native audit05:15:51.605Z clear.|
+| Guide semantic RED |Main `inventory-guide/red-1b746345168a45d9ae02f9aa1e2dc23c`; worker `slice4be-admin-inventory-entry/a0083fd4dc9a47f09cb945c717abe490/red.json`. All five independent steps match, but ExactDiagnosticState and DisplayedSavedConclusion fail.49 PASS/3 FAIL includes those two product failures and one later viewport adapter exception; that exception is not product RED. Normal preserved closure/audit04:38:33.243Z clear.|
+| Guide GREEN |73/73; main `inventory-guide/green-0ac730eb690440d181df77e1ebee7624`; worker `slice4be-admin-inventory-entry/6c446a4bac93430d9cdec5ae27b716bc/green.json`. All51 pre-exception RED checks retained in order, plus22 checks reached after correcting the viewport adapter. Normal preserved closure05:09:17.969Z and native audit05:09:38.594Z clear.|
+| Retained Catalog/Edit |50/50, same ordered checks as draft worker16aaf4a6fbb845478903d6c29b37e0f8; main `inventory-guide-catalog/green-6665d460ea614060bea226798ce07aa9`; worker `slice4be-admin-inventory-entry/df5cb134fd914b72a407af12da402624/green.json`. Normal preserved closure05:20:19.422Z and native audit05:20:40.024Z clear.|
+| Retained packaged smoke |86/86, same distinct ordered checks as prior navigation smoke; main `inventory-guide-regression/smoke-1936f8faf2a2417b8ecbf8988cb53ebd`; native shutdown `packaged-smoke-closure/1b9a6c51f43d41669f8489034201c6de`. Both unassisted exits, source Config/Auth/Inventory and declared settings/packages/reports preservation; closure05:25:33.480Z, audit05:25:54.083Z clear.|
+| Candidate build |Draft `inventory-guide-build-01`, main candidate `validation-inventory-guide-01`: five compiles/cold start, source/settings/frozen-package preservation; normal closure04:47:30.641Z, native audit04:47:50.666Z clear.|
+| Static/source guards |Draft `inventory-guide-static-01`:386 components/6715 procedures/145431 lines;9 literal/45 unresolved calls and194 duplicate groups unchanged; all27 prior oversized caps hold; three JSON contracts valid. Retained source guards36/36.|
+
+Runtime references above omit `reports/runtime/`. The guide viewport adapter now
+scrolls to the actual saved-result identifier while independently asserting the
+expected conclusion wording. It does not manufacture a successful conclusion.
+All six final guide captures were reviewed: How-To, Diagnostic, Compare both,
+successful conclusion, interrupted comparison and incomplete conclusion. The
+independent successful run concludes; the interrupted run matches four steps,
+lists Close as missing and cannot borrow source-guide success. Provenance,
+multiline instructions, all three layouts and immutable evidence pass. Taskbar
+previews occupy otherwise empty lower areas, without covering tested controls.
+The expanded boundary gate covers active-workbook changes, sign-out, a replacement
+session for the same actor, target-warehouse changes, attempt/outcome storage
+failures, same-name workbook replacement and closure. It asserts original-context
+records, no fabricated completion, fixed tracking notices, no unexpected Ribbon
+failure, and preserved Config/Auth/Inventory plus the other workbook.
+Smoke finalization took about56 seconds before its initial process exit; both
+native waits then completed normally (49ms/2307ms), without termination or
+recovery. The desktop monitor ended normally with zero sticky error5, lock or
+mouse-lock samples; its movement proof is the initial bounded move/restore,
+not its later passive samples. No desktop stop occurred during this increment.
+
+Excluded boundary diagnostics: `green-de9cb2aa9f3a46d48327998c8ad27073` stopped
+after the original63 checks because its PowerShell helper was scoped incorrectly;
+not product RED. `green-04cf0aac8dca45ff89645f5535508a19` attempted further calls
+on a modal form after its workbook closed; it required owned Excel termination
+and is unqualified. `red-38609a659e4f48d3aaffd6ffb404c505` reached133 PASS/2 FAIL
+with two assisted Ribbon-notice dismissals; it is diagnostic only. Their settings
+and packages were restored and delayed native audits were clear. The focused
+reference above instead injects closure after capture and before presentation,
+observes the actual generated Ribbon failure boundary without displaying its
+raw error, and makes no calls on a disposed form.
+
+Guide controller `green-60669118b47a4e9e867016f1836e43d6` reached72 PASS/1 FAIL:
+all guide/view assertions passed, but the canonical-byte baseline preceded the
+fixture's intentional tracking-policy save. Diagnostic controller
+`green-c7469fa16a104151bd9dcb88d0dbc4d4`, worker
+`slice4be-admin-inventory-entry/9291edb410bb43cab222b12963a03f5d`, retained that
+failing assertion and recorded seven phase snapshots. Only Config changed during
+policy setup; Config/Auth/Inventory remained byte-identical across all six
+post-policy checkpoints, including both publications and guide evaluation.
+The corrected test pins after policy setup and retains the full recording,
+publication and guide byte-preservation requirement. No product change or
+weakened preservation rule was needed. Both diagnostic runs closed normally with
+settings/packages preserved and native audits clear04:56:34.817Z/05:03:03.517Z.
+
 ## Remaining
 
-Inventory
-selection/custom-field/worksheet/Add/Edit/Delete observations, storage failure
-and additional binding boundaries, independent saved guide conclusions and
-visible evidence remain pending. Existing technical Receiving B0/shared gates
+Inventory selection/custom-field/worksheet/Add/Edit/Delete observations remain
+pending. Existing technical Receiving B0/shared gates
 retain their documented candidate scope. Conformant live/full-chain fixtures,
 wider D18 coverage and full visible acceptance still prevent4be-A completion.
-The new navigation owner is not yet classified by
-`modEvaluationMatches.CommandCompleted`; require actual independent guide RED
-before adding that classification. No successful Inventory guide is claimed.
+The qualified guide covers navigation only; it proves no Inventory mutation or
+replay capability and is not comprehensive Inventory or4be-A acceptance.

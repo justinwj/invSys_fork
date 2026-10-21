@@ -509,9 +509,9 @@ Sub Add_InventoryItem()
         Exit Sub
     End If
 
+    interactiveContext = modInventoryCommands.Capture(targetWb.Name)
     Set activity = New cProvisioningActivity
     activity.Initialize targetWb, "ADMIN_INVENTORY_", "Inventory"
-    interactiveContext = modInventoryCommands.Capture(targetWb.Name)
     sourceValues = modInventoryCommands.SourceValues(interactiveContext)
     If Not IsArray(sourceValues) Then
         MsgBox "Sign in to the current source warehouse as an authorized Admin and reopen Add/Edit Inventory.", vbExclamation, "invSys Admin"

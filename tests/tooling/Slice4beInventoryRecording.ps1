@@ -1,6 +1,7 @@
 # Real Ribbon entry and form handlers in disposable compiled packages. The
 # adapter supplies gestures and suppresses only fixed tracking notices.
 . (Join-Path $PSScriptRoot 'Slice4beActivityAssertions.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beInventoryRecordingBoundaries.ps1')
 function Install-InventoryRecordingProbe {
     $core=$packages['invSys.Core.xlam'].VBProject
     $probe=$core.VBComponents.Add(1);$probe.Name='TestInventoryRecordingPolicy'
@@ -12,8 +13,10 @@ Public Function SetPolicy(ByVal mode As String) As Boolean
     context = modActivity.CaptureContext()
     If Not modTrackingPolicySettings.ReadEditor(context, version, wire, notice) Then Exit Function
     Set model = modTrackingPolicyModel.Defaults(mode <> "Disabled")
+    model("ViewerActionPathCaptureEnabled") = (mode = "Capture")
     For Each row In model("Controls")
         If Left$(row("ControlId"), 16) = "ADMIN_INVENTORY_" Then row("Collect") = (mode <> "Disabled" And mode <> "ControlOff")
+        If mode = "Capture" Then row("SequenceEligible") = (Left$(row("ControlId"), 16) = "ADMIN_INVENTORY_")
     Next row
     If mode = "UserOff" Then
         Set user = CreateObject("Scripting.Dictionary")
@@ -78,6 +81,7 @@ Public Sub RecordingNavigationForTest(ByVal mode As String)
     mBtnEditMode_Click
     mBtnAddMode_Click
     mBtnEditMode_Click
+    If mode = "InterruptBeforeClose" Then modAuth.SignOut
     If mode = "WindowClose" Then
         UserForm_QueryClose cancel, 0
     Else
@@ -91,6 +95,7 @@ End Sub
     if([regex]::Matches($text,$noticePattern).Count -ne 1){throw 'Fixed tracking notice boundary unavailable; not product RED.'}
     $text=[regex]::Replace($text,$noticePattern,'TestInventoryRecording.TrackingNotice notice, vbExclamation, "invSys Admin"')
     $activity.DeleteLines(1,$activity.CountOfLines);$activity.AddFromString($text)
+    Install-InventoryRecordingBoundaries $probe $packages['invSys.Core.xlam'].VBProject.VBComponents.Item('TestInventoryRecordingPolicy')
 }
 
 function Test-InventoryRecording($Fixture,$Other) {
@@ -108,6 +113,10 @@ function Test-InventoryRecording($Fixture,$Other) {
         Check ('InventoryRecording.Version43Excludes.'+$id) ([string](Run 'invSys.Core.xlam' 'TestInventoryRecordingPolicy.Definition' @(('ADMIN_INVENTORY_'+$id),43)) -ceq '')
     }
     try {
+        if($AdminInventoryWorkbookBindingOnly){
+            Test-InventoryRecordingBoundaries $Fixture $Other $hostBook @('ReplacedWorkbook','ClosedWorkbook')
+            return
+        }
         foreach($mode in @('Enabled','WindowClose','Disabled','ControlOff','UserOff','SignedOut')){
             SelectTarget $Fixture
             $policy=if($mode -cin @('Disabled','ControlOff','UserOff')){$mode}else{'Enabled'}
@@ -150,5 +159,10 @@ function Test-InventoryRecording($Fixture,$Other) {
             }
             Check ('InventoryRecording.'+$mode+'.InventoryBytesPreserved') ((Get-AdminInventoryEntryHash $source) -ceq $hash)
         }
-    }finally{$hostBook.Close($false)}
+        Test-InventoryRecordingBoundaries $Fixture $Other $hostBook
+    }finally{
+        foreach($book in @($excel.Workbooks)){
+            if($book.FullName -ceq (Join-Path $runRoot 'inventory-recording-host.xlsx')){$book.Close($false)}
+        }
+    }
 }
