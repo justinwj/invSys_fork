@@ -1,5 +1,22 @@
 # Slice 4be.2 Event Tracking Settings
 
+## Current Inventory candidate regression
+
+Last verified2026-10-21 01:38Z. Unchanged product `a9faab9c` candidate
+`validation-inventory-receipts-01` passes202/202 distinct checks through the existing
+compiled Settings suite. Ten captures reviewed, including Operations native
+maximize/restore. Policy/profile persistence, refusals, Config preservation,
+personal preference isolation/restart, Operations-only Settings and Admin close pass.
+
+Controller `inventory-receipts-regression/settings-49a8542f20774ed3b6e278439f23010e`,
+worker `slice4be-tracking-settings/81bd2618379641dd93a5f6661d98ce0b`; normal exit0
+at01:37:58.898Z, settings/reports restored and all five packages preserved. Delayed
+audit at01:38:19.864Z reports zero Excel events/read errors. Fresh cursor movement
+and restoration passed; desktop monitor stayed clear. Product and maintained test
+assertions were unchanged. The earlier trial110 raw receipt is absent on this PC,
+so exact cross-run ordered-ID comparison is not claimed; its recorded202 scope
+remains historical. No promotion or4be-A acceptance is implied.
+
 ## Current recording02 shared regression qualified
 
 Last verified2026-10-15 Pacific. Unchanged source1c9bff87/recording02 passes202/202

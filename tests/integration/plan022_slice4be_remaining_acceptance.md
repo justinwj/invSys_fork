@@ -1,5 +1,11 @@
 # Slice 4be remaining acceptance checklist
 
+**2026-10-21 Settings202/202 qualified:** the unchanged current candidate passes
+all distinct Settings checks, with ten reviewed captures, normal preserved closure
+and a clear delayed native audit. See the Settings record for exact evidence and
+the unavailable historical raw-receipt limit. Smoke86/layout stand. Recording,
+Receiving B0, Inventory coverage and conformant live/full-chain gates remain open.
+
 **2026-10-21 layout qualified:** current candidate passes 18 geometry checks and
 five native-window checks; all six Run List/Settings captures reviewed. Normal
 closure, settings/report/package preservation and delayed native audit qualify.
