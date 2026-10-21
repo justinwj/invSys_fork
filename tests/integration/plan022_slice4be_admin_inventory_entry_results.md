@@ -1,5 +1,43 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Smoke diagnosis, 2026-10-21 (October 20 Pacific):** unchanged candidate/product
+`a9faab9c` confirms that the three legacy Inventory helpers pass empty captured
+authority handles to Core. The actual Add, Delete and Worksheet handlers refuse
+them, explaining the four smoke failures; this is stale fixture setup, not evidence
+that current authorization should be weakened. Unsaved count-only observation:
+`reports/runtime/packaged-inventory-diagnostic/75e04de0cf2e4728a8b59bde51283854`,
+9/9 diagnostic checks, normal closure, settings/packages preserved and delayed
+native audit clear. The probe does not change the authorization result.
+
+The harness now bounds native-exit waiting at 60 seconds, records recovery before
+terminating its captured process object, and throws before restart. Mock RED
+14/4 (`packaged-validator-guards/6cd4b9100d5a4ff98756697fee6d0900`) becomes18/18.
+A separate close-event delivery check is RED18/1
+(`e6323d6d0026466f9ca575d7cea5489a`) then GREEN19/19
+(`7069153bafc24cc9b42d75d56e65e1ce`): owned workbooks must receive the existing
+BeforeClose handlers. All57 existing smoke assertion statements/order remain.
+These are harness corrections, not product RED/GREEN or release acceptance.
+
+Full smoke still stalls after COM release/finalization. The bounded attempts
+`inventory-receipts-regression/smoke-271599b0fb214a89b99c092d45c504b2` and
+`smoke-5e1b3c5252f84747b41f7d1e554c1e5f` both recover after60seconds, restore
+settings/reports, preserve five packages and have clear delayed audits. Neither
+qualifies normal closure; enabling close events did not resolve this lifetime.
+Native directories are `packaged-smoke-closure/1bcdf5815f744cc48cdb3f184fe833b2`
+and `0890eec104174db58552d7848b8139c0` respectively.
+
+Isolated diagnostic cohorts close normally, preserve settings/packages and have
+zero delayed Excel events/read errors: load3/3 `8443c872bc91467ca6d4b26415b4cab4`,
+role surfaces10/10 `f6c3b807a6754bd09e8c0429be53321c`, components34/34
+`ec0f40c85ced4549a1f7ec8f4352cd0f`, startup17/17
+`9a8b800e6eaa4fd68d7b297d21a15063`, under `packaged-inventory-diagnostic`.
+Domain attempt `f3d4ddfc9ed04534948629988caf6a26` reached native exit but is
+unqualified: the restoration guard still saw Excel in Windows enumeration; its
+in-memory snapshot was lost when the diagnostic exited. Settings preservation
+for that attempt is unmeasured. A conservative-window delayed audit is clear.
+The diagnostic now retains its snapshot while waiting for enumeration to clear.
+Combined diagnosis is pending. No product source/package change or promotion.
+
 **Assisted cleanup complete, 2026-10-21 00:40Z (October 20 Pacific):** the user
 confirmed this is a dedicated AI computer and authorized closing Excel whenever
 needed. After over two hours without native exit, the observer was stopped and

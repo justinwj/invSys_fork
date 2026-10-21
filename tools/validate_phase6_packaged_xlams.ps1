@@ -268,7 +268,7 @@ function Set-PackagedValidationRoot {
 }
 
 function Close-PackagedValidationSession {
-    param([object]$Excel, [string]$Phase)
+    param([object]$Excel, [string]$Phase, [ValidateRange(0,300)][int]$ExitWaitSeconds = 60)
     [uint32]$ownedProcessId = 0
     [void][PackagedValidationProcess]::GetWindowThreadProcessId([IntPtr]$Excel.Hwnd, [ref]$ownedProcessId)
     if ($ownedProcessId -eq 0 -or $null -eq $Excel.Workbooks) { throw "Owned Excel session is unavailable for cleanup." }
@@ -280,7 +280,9 @@ function Close-PackagedValidationSession {
         $package = [bool]$book.IsAddin -and $path.StartsWith($deployPath.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)
         if (-not ($fixture -or $package)) { throw "A workbook outside the packaged fixture/package roots remains open; cleanup refused." }
     }
-    $Excel.EnableEvents = $false
+    # Exercise normal role shutdown: BeforeClose releases modeless forms and
+    # unregisters scheduled snapshot callbacks while Core is still available.
+    $Excel.EnableEvents = $true
     $Excel.DisplayAlerts = $false
     foreach ($book in @($books | Sort-Object { [bool]$_.IsAddin })) { $book.Close($false) }
     $empty = $null -ne $Excel.Workbooks -and [int]$Excel.Workbooks.Count -eq 0
@@ -307,15 +309,35 @@ function Close-PackagedValidationSession {
         throw
     }
     $completedHostVariables = $null
+    [pscustomobject]@{Stage=$Phase;Phase='Finalizers';UTC=[DateTimeOffset]::UtcNow.ToString('o')} |
+        ConvertTo-Json | Set-Content -LiteralPath (Join-Path $closureRoot ($Phase + '-progress.json'))
     [GC]::Collect(); [GC]::WaitForPendingFinalizers()
     # Only this HWND-identified process, after a real zero-workbook check.
     $waitStarted = [DateTimeOffset]::UtcNow
+    [pscustomobject]@{Stage=$Phase;Phase='NativeExit';UTC=$waitStarted.ToString('o')} |
+        ConvertTo-Json | Set-Content -LiteralPath (Join-Path $closureRoot ($Phase + '-progress.json'))
     $exitedNaturally = $false
     $terminationRequested = $false
     try {
         while ($null -ne $owned) {
+            if (([DateTimeOffset]::UtcNow - $waitStarted).TotalSeconds -ge $ExitWaitSeconds) {
+                # Dedicated-PC recovery is authorized. Preserve failure evidence
+                # before termination; assisted closure must never qualify or
+                # continue into the restart checks. Use the captured process
+                # object rather than resolving a possibly reused PID for killing.
+                $terminationRequested = $true
+                [pscustomobject]@{
+                    Stage = $Phase
+                    RequestedUTC = [DateTimeOffset]::UtcNow.ToString('o')
+                    Reason = 'NormalExitTimeout'
+                    UnassistedExit = $false
+                } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $closureRoot ($Phase + '-recovery-requested.json'))
+                Stop-Process -InputObject $owned -ErrorAction Stop
+                [void]$owned.WaitForExit(5000)
+                throw 'Excel normal exit timed out; assisted recovery cannot qualify or restart validation.'
+            }
             [void]$owned.WaitForExit(500)
-            $owned = Get-Process -Id $ownedProcessId -ErrorAction SilentlyContinue
+            if ($owned.HasExited) { $owned = $null }
             if ($null -ne $owned) { Start-Sleep -Milliseconds 100 }
         }
         $exitedNaturally = $true
