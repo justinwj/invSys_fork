@@ -1,5 +1,18 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Packaged Production layout qualified, 2026-10-21 01:30Z:** unchanged candidate
+`validation-inventory-receipts-01` passes all 18 size/page geometry checks and five
+native-window checks. All six Run List/Settings screenshots were reviewed: labels,
+instructions and controls are readable; minimum requests retain the established
+1110x800-point floor. Controller `inventory-receipts-regression/layout-af782109116045a79caebbbc06ed7ada`
+exits0 at01:29:00.095Z with Excel closed, settings/reports restored and five packages
+preserved. The existing layout harness contains no forced termination; delayed
+audit at01:30:47.548Z reports zero Excel events/read errors. Fresh cursor movement
+and restoration passed before launch. This is layout evidence, not populated
+workflow or whole-release acceptance. Product code is unchanged; D13 adds no RED
+for this evidence-only update. Recording/guide/B0 and conformant live/full-chain
+and visible workflow acceptance remain open.
+
 **Packaged smoke qualified86/86, 2026-10-21 01:26Z:** current candidate/product
 `a9faab9c` retains every prior check ID/order. Controller
 `inventory-receipts-regression/smoke-2e2e88f7b564458fb59ad25eef8094af` exits0 at
