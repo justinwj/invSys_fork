@@ -8,12 +8,16 @@ param(
     [switch]$Domains,
     [switch]$Components,
     [switch]$Startup,
-    [switch]$FullInitial
+    [switch]$FullInitial,
+    [switch]$AuthorizedFixture,
+    [switch]$BindFixtureContext
 )
 # Diagnostic only: no acceptance or product RED claim. All probes are unsaved.
 # Record counts/flags, never context handles, identities or source field values.
 $ErrorActionPreference='Stop'; Set-StrictMode -Version Latest
 if(@(@($LoadOnly,$Surfaces,$Domains,$Components,$Startup,$FullInitial)|Where-Object {[bool]$_}).Count -gt 1){throw 'Choose one diagnostic group; use FullInitial for the exact combined order.'}
+if($AuthorizedFixture -and ($LoadOnly -or $Surfaces -or $Domains -or $Components -or $Startup -or $FullInitial)){throw 'Authorized fixture requires the focused form diagnostic.'}
+if($BindFixtureContext -and -not $AuthorizedFixture){throw 'Binding requires the generated live fixture.'}
 $repo=(Resolve-Path -LiteralPath $RepoRoot).Path
 $deployPath=(Resolve-Path -LiteralPath (Join-Path $repo $DeployRoot)).Path
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before this isolated diagnostic.'}
@@ -125,6 +129,8 @@ try {
         $probe.CodeModule.AddFromString(@'
 Option Explicit
 Private mCalls As Long, mEmpty As Long
+Private mCaptureExit As Long, mCaptureError As Long
+Private mSourceExit As Long
 Public Sub Reset()
     mCalls = 0: mEmpty = 0
 End Sub
@@ -135,6 +141,15 @@ End Sub
 Public Function Facts() As String
     Facts = CStr(mCalls) & "|" & CStr(mEmpty)
 End Function
+Public Sub CaptureExit(ByVal line As Long, Optional ByVal errorCode As Long = 0)
+    mCaptureExit = line: mCaptureError = errorCode
+End Sub
+Public Function CaptureFacts() As String
+    CaptureFacts = CStr(mCaptureExit) & "|" & CStr(mCaptureError) & "|" & CStr(modAuth.IsSignedIn()) & "|" & CStr(mSourceExit)
+End Function
+Public Sub SourceExit(ByVal line As Long)
+    mSourceExit = line
+End Sub
 '@)
         $module=$project.VBComponents.Item('modInventoryCommands').CodeModule
         $line=$module.ProcStartLine('CheckForm',0); $count=$module.ProcCountLines('CheckForm',0)
@@ -143,6 +158,29 @@ End Function
         if([regex]::Matches($body,[regex]::Escape($boundary)).Count -ne 1){throw 'Observation boundary changed; not product RED.'}
         $module.DeleteLines($line,$count)
         $module.InsertLines($line,$body.Replace($boundary,($boundary+"`r`n"+'    TestSmokeAuthority.Observe key')))
+        if($AuthorizedFixture){
+            $line=$module.ProcStartLine('Capture',0); $count=$module.ProcCountLines('Capture',0)
+            $captureLines=$module.Lines($line,$count) -split '\r?\n'
+            for($i=0;$i -lt $captureLines.Count;$i++){
+                $captureLines[$i]=$captureLines[$i].Replace('Exit Function',('TestSmokeAuthority.CaptureExit '+($i+1)+': Exit Function'))
+                if($captureLines[$i] -ceq 'Failed:'){$captureLines[$i]+="`r`n"+'    TestSmokeAuthority.CaptureExit 999, Err.Number'}
+            }
+            $module.DeleteLines($line,$count); $module.InsertLines($line,($captureLines -join "`r`n"))
+            $sourceModule=$project.VBComponents.Item('cInventoryCommandInputs').CodeModule
+            $line=$sourceModule.ProcStartLine('CaptureSource',0); $count=$sourceModule.ProcCountLines('CaptureSource',0)
+            $sourceLines=$sourceModule.Lines($line,$count) -split '\r?\n'
+            for($i=0;$i -lt $sourceLines.Count;$i++){$sourceLines[$i]=$sourceLines[$i].Replace('Exit Function',('TestSmokeAuthority.SourceExit '+($i+1)+': Exit Function'))}
+            $sourceModule.DeleteLines($line,$count); $sourceModule.InsertLines($line,($sourceLines -join "`r`n"))
+            . (Join-Path $repo 'tests/tooling/PackagedInventorySmokeFixture.ps1')
+            try {$fixture=Initialize-PackagedInventorySmokeFixture -Excel $excel -AdminPackage $packages['invSys.Admin.xlam'] -Root $targetRoot -BindContext ([bool]$BindFixtureContext)}
+            catch {
+                Assert-PackagedDesktop
+                $facts=([string]$excel.Run("'invSys.Core.xlam'!TestSmokeAuthority.CaptureFacts")).Split('|')
+                [pscustomobject]@{CaptureExitLine=[int]$facts[0];ErrorCode=[int]$facts[1];SignedIn=$facts[2] -ceq 'True';SourceExitLine=[int]$facts[3]}|ConvertTo-Json|Set-Content (Join-Path $closureRoot 'context-failure.json')
+                throw
+            }
+            Add-ResultRow -Rows $resultRows -Check 'Fixture.LiveCapturedAdmin' -Passed $fixture.ContextReady
+        }
         Assert-PackagedDesktop
         $book=$excel.Workbooks.Add()
         $book.SaveAs((Join-Path $targetRoot 'Admin.Diagnostic.xlsx'),51)
@@ -150,13 +188,26 @@ End Function
         foreach($case in @('AddVisibilityDropdown','Delete','Worksheet')){
             Assert-PackagedDesktop
             [void]$excel.Run("'invSys.Core.xlam'!TestSmokeAuthority.Reset")
-            $macro="'invSys.Admin.xlam'!modAdmin.Inventory"+$case+'ContractForAutomation'
-            if($case -ceq 'Worksheet'){$result=[string]$excel.Run($macro,$book)}else{$result=[string]$excel.Run($macro)}
+            if($AuthorizedFixture){
+                $action=if($case -ceq 'AddVisibilityDropdown'){'Add'}else{$case}
+                $result=[string]$excel.Run("'invSys.Admin.xlam'!TestPackagedInventoryFixture."+$action,[string]$book.Name)
+            }else{
+                $macro="'invSys.Admin.xlam'!modAdmin.Inventory"+$case+'ContractForAutomation'
+                if($case -ceq 'Worksheet'){$result=[string]$excel.Run($macro,$book)}else{$result=[string]$excel.Run($macro)}
+            }
             Assert-PackagedDesktop
             $counts=([string]$excel.Run("'invSys.Core.xlam'!TestSmokeAuthority.Facts")).Split('|')
             $calls=[int]$counts[0]; $empty=[int]$counts[1]
-            Add-ResultRow -Rows $resultRows -Check ($case+'.EmptyHandleObserved') -Passed ($calls -gt 0 -and $calls -eq $empty) -Detail ('Calls='+$calls+';Empty='+$empty)
-            Add-ResultRow -Rows $resultRows -Check ($case+'.ExistingHelperRefused') -Passed ($result.StartsWith('FAIL|')) -Detail 'Only the fixed success/failure prefix is retained.'
+            if($AuthorizedFixture){
+                Add-ResultRow -Rows $resultRows -Check ($case+'.CapturedHandleObserved') -Passed ($calls -gt 0 -and $empty -eq 0)
+                Add-ResultRow -Rows $resultRows -Check ($case+'.ExistingHelperSucceeded') -Passed ($result.StartsWith('OK|'))
+                # Report only fixed boolean/count fields from the legacy envelope.
+                $facts=@([regex]::Matches($result,'(?:^|\|)([A-Za-z]+)=(True|False)(?=\||$)')|ForEach-Object {$_.Groups[1].Value+'='+$_.Groups[2].Value})
+                [pscustomobject]@{Case=$case;Calls=$calls;EmptyHandles=$empty;Facts=$facts}|ConvertTo-Json -Compress|Add-Content (Join-Path $closureRoot 'form-observations.jsonl')
+            }else{
+                Add-ResultRow -Rows $resultRows -Check ($case+'.EmptyHandleObserved') -Passed ($calls -gt 0 -and $calls -eq $empty) -Detail ('Calls='+$calls+';Empty='+$empty)
+                Add-ResultRow -Rows $resultRows -Check ($case+'.ExistingHelperRefused') -Passed ($result.StartsWith('FAIL|')) -Detail 'Only the fixed success/failure prefix is retained.'
+            }
         }
     }
     $completed=$true

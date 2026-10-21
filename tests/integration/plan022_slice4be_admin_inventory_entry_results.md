@@ -1,5 +1,36 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+**Packaged smoke qualified86/86, 2026-10-21 01:26Z:** current candidate/product
+`a9faab9c` retains every prior check ID/order. Controller
+`inventory-receipts-regression/smoke-2e2e88f7b564458fb59ad25eef8094af` exits0 at
+01:26:40.317Z, restores settings/tracked reports and preserves all five packages.
+Native directory `packaged-smoke-closure/bd731a44102343bfa10a0f636b0205b4` proves
+both unassisted exits, no termination request, and unchanged Config/Auth/Inventory
+bytes after the Inventory checks. The delayed audit at01:27:38.319Z has zero Excel
+events/read errors. COM finalization completed normally before native exit.
+
+`PackagedInventorySmokeFixture.ps1` generates a disposable warehouse through Admin,
+seeds through Admin with an owner-generated exact key/event, verifies persisted
+entity/catalog/log/applied evidence without changing bytes, then establishes the
+live Admin context. It closes only its own seed workbook without saving its dirty
+in-memory state; Core correctly refused that borrowed dirty source during setup.
+Unsaved adapters change only legacy test helpers and call the existing packaged
+handlers. Worksheet Upload receives a fresh capture after staging edits, matching
+the operator's reopen workflow. No product guard, source module or package changes.
+The existing worksheet dry-run assertion remains a form/preflight smoke check;
+qualified real-write receipt/Inventory cohorts above and below remain separate.
+
+Focused fixture RED4/6 `packaged-inventory-diagnostic/3e4349d11c604db682df63c04c85197e`
+proves the live context exists but is not bound to the old helpers. Binding it gives
+GREEN10/10 `5e79a6e963ca40658a137b1407490d72`: Add4, Delete4 and Worksheet128 observed
+guard calls, zero empty handles. Both close normally, restore settings/preserve
+packages and pass delayed native audits. Earlier fixture setup failures (COM
+argument dispatch, sign-in ordering, dirty borrowed seed source and shared-file
+hash access) are harness failures, not product RED. Guard19/19 stays GREEN.
+Source unchanged means no candidate rebuild or repeat of retained real-write
+regressions is required for this test-only correction. Layout and later4be-A gates
+remain open; this is not package promotion or release acceptance.
+
 **Shutdown correction qualified, 2026-10-21 01:06Z:** moving the unchanged initial
 action sequence into a completed PowerShell child scope resolves the reproduced
 native-exit stall. The exact diagnostic initial sequence reports70/4 and closes
