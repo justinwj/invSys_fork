@@ -4,6 +4,16 @@
 function Install-InventoryWorksheetRecordingProbe {
     Install-InventoryCreatePhaseProbe
     Install-InventoryWorksheetResultProbe
+    if($AdminInventoryWorksheetRecordingGroup -ceq 'UploadNoFormat'){
+        $config=$packages['invSys.Core.xlam'].VBProject.VBComponents.Item('modConfig').CodeModule
+        $start=$config.ProcStartLine('EnsureStationInbox',0);$count=$config.ProcCountLines('EnsureStationInbox',0)
+        $body=$config.Lines($start,$count)
+        $call='EnsureConfigSchema(wbCfg, resolvedWh, resolvedSt, report)'
+        if([regex]::Matches($body,[regex]::Escape($call)).Count -ne 1){throw 'Config formatting diagnostic boundary unavailable.'}
+        $body=$body.Replace($call,'EnsureConfigSchema(wbCfg, resolvedWh, resolvedSt, report, False)')
+        $config.DeleteLines($start,$count);$config.InsertLines($start,$body)
+        Write-Output 'DIAGNOSTIC ONLY: inbox Config formatting suppressed in memory; no product GREEN claim.'
+    }
     $core=$packages['invSys.Core.xlam'].VBProject.VBComponents.Item('TestInventoryRecordingPolicy').CodeModule
     $core.AddFromString(@'
 Public Function Prior199Preserved() As Boolean
@@ -44,12 +54,15 @@ Public Function EventIdentity() As String
 End Function
 '@)
     $writer=$packages['invSys.Core.xlam'].VBProject.VBComponents.Item('modRoleEventWriter').CodeModule
-    $start=$writer.ProcStartLine('QueueEventCore',0);$count=$writer.ProcCountLines('QueueEventCore',0)
-    $body=$writer.Lines($start,$count)
     $pattern='(?im)^[\t ]*writeAttemptedOut = True[\t ]*\r?$'
-    if([regex]::Matches($body,$pattern).Count -ne 1){throw 'Exact queue write boundary unavailable; not product RED.'}
-    $body=[regex]::Replace($body,$pattern,[Text.RegularExpressions.MatchEvaluator]{param($m) $m.Value.TrimEnd("`r")+"`r`n"+'    TestWorksheetQueue.BeforeWrite eventIdOut'})
-    $writer.DeleteLines($start,$count);$writer.InsertLines($start,$body)
+    foreach($procedure in @('QueueEventCore','AppendInboxRowToLocalStagingRole')){
+        $start=$writer.ProcStartLine($procedure,0);$count=$writer.ProcCountLines($procedure,0)
+        $body=$writer.Lines($start,$count)
+        if([regex]::Matches($body,$pattern).Count -ne 1){throw 'Exact queue write boundary unavailable; not product RED.'}
+        $injection=if($procedure -ceq 'QueueEventCore'){'    TestWorksheetQueue.BeforeWrite eventIdOut'}else{'    TestWorksheetQueue.BeforeWrite CStr(rowValues("EventID"))'}
+        $body=[regex]::Replace($body,$pattern,[Text.RegularExpressions.MatchEvaluator]{param($m) $m.Value.TrimEnd("`r")+"`r`n"+$injection})
+        $writer.DeleteLines($start,$count);$writer.InsertLines($start,$body)
+    }
     $admin=$packages['invSys.Admin.xlam'].VBProject
     $form=$admin.VBComponents.Item('frmAddInventoryItem').CodeModule
     $form.AddFromString(@'
@@ -96,7 +109,8 @@ function Test-InventoryWorksheetRecording($Fixture,$Other,[string]$Group='All') 
     }
     $cases=@('CreateEnabled','CreateDisabled','CreateControlOff','CreateUserOff','CreateExpired','CreateSignedOut','CreateSaveThrows',
         'UploadEnabled','UploadEmpty','UploadInvalid','UploadControlOff','UploadExpired','UploadSignedOut','UploadSaveThrows','UploadQueueThrows')
-    if($Group -ceq 'Evidence'){$cases=@('UploadEnabled','UploadSaveThrows','UploadQueueThrows')}
+    if($Group -ceq 'UploadNoFormat'){$cases=@('UploadEnabled')}
+    elseif($Group -ceq 'Evidence'){$cases=@('UploadEnabled','UploadSaveThrows','UploadQueueThrows')}
     elseif($Group -ne 'All'){$cases=@($cases|Where-Object {$_.StartsWith($Group)})}
     foreach($case in $cases){
         SelectTarget $Fixture
@@ -137,6 +151,12 @@ function Test-InventoryWorksheetRecording($Fixture,$Other,[string]$Group='All') 
             $ready=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[1] -ceq 'True' -and $facts[2] -ceq '1' -and $facts[3] -ceq 'True'
             Check ($id+'.ActualBoundHandler') $ready
             if(-not $ready){throw 'Actual worksheet handler not reached; not product RED.'}
+            $eventId=''
+            if($case -ceq 'UploadQueueThrows'){
+                $eventId=[string](Run 'invSys.Core.xlam' 'TestWorksheetQueue.EventIdentity')
+                Check ($id+'.ActualWriteBoundaryReached') ($eventId -cne '')
+                if($eventId -ceq ''){throw 'Queue write boundary not reached; not product RED.'}
+            }
             $refused=$case.EndsWith('Expired') -or $case.EndsWith('SignedOut')
             $applied=(-not $create -and -not $refused -and $case -cnotin @('UploadEmpty','UploadInvalid','UploadQueueThrows'))
             $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
@@ -145,12 +165,6 @@ function Test-InventoryWorksheetRecording($Fixture,$Other,[string]$Group='All') 
             foreach($key in $before.EntityQuantities.Keys){$owner=$owner -and $after.EntityQuantities.ContainsKey($key) -and $after.EntityQuantities[$key] -eq $before.EntityQuantities[$key]}
             Check ($id+'.IndependentCanonicalOutcome') $owner
             if(-not $owner){throw 'Unexpected owning business result; recording RED cannot mask it.'}
-            $eventId=''
-            if($case -ceq 'UploadQueueThrows'){
-                $eventId=[string](Run 'invSys.Core.xlam' 'TestWorksheetQueue.EventIdentity')
-                Check ($id+'.ActualWriteBoundaryReached') ($eventId -cne '')
-                if($eventId -ceq ''){throw 'Queue write boundary not reached; not product RED.'}
-            }
             if($applied){
                 $sourcePath=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb');$hash=Get-AdminInventoryEntryHash $sourcePath
                 $source=$excel.Workbooks.Open($sourcePath,0,$true)

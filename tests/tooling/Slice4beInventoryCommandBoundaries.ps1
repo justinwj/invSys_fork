@@ -166,7 +166,7 @@ function Get-InventoryConfigDiagnosticSnapshot($Fixture) {
     }
     $beforeHash=Get-AdminInventoryEntryHash $path
     Add-Type -AssemblyName System.IO.Compression
-    $parts=@{};$binaryRecords=$null;$coreProperties=$null
+    $parts=@{};$binaryRecords=$null;$coreProperties=$null;$partRecords=@{}
     $stream=[IO.FileStream]::new($path,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::ReadWrite)
     try {
         $zip=[IO.Compression.ZipArchive]::new($stream,[IO.Compression.ZipArchiveMode]::Read,$true)
@@ -181,6 +181,10 @@ function Get-InventoryConfigDiagnosticSnapshot($Fixture) {
                 if($entry.FullName -ceq 'docProps/core.xml'){
                     $part=$entry.Open();$memory=[IO.MemoryStream]::new()
                     try{$part.CopyTo($memory);$coreProperties=Get-InventoryCorePropertySnapshot $memory.ToArray()}finally{$memory.Dispose();$part.Dispose()}
+                }
+                if($entry.FullName -cmatch '^xl/(worksheets/sheet[0-9]+|tables/table[0-9]+|styles)\.bin$'){
+                    $part=$entry.Open();$memory=[IO.MemoryStream]::new()
+                    try{$part.CopyTo($memory);$partRecords[$entry.FullName]=Get-InventoryConfigBinaryRecords $memory.ToArray()}finally{$memory.Dispose();$part.Dispose()}
                 }
             }
         }finally{$zip.Dispose()}
@@ -207,7 +211,20 @@ function Get-InventoryConfigDiagnosticSnapshot($Fixture) {
         if($null -ne $prior){$prior.Activate()}
     }
     # Values and part hashes are deliberately memory-only; export comparisons below.
-    [pscustomobject]@{Cells=$cells;Shapes=($shapes -join "`n");Parts=$parts;Semantics=$semantics;BinaryRecords=$binaryRecords;CoreProperties=$coreProperties;FileHash=$beforeHash;ReadOnlyProof=($memoryPreserved -and $beforeHash -ceq (Get-AdminInventoryEntryHash $path))}
+    [pscustomobject]@{Cells=$cells;Shapes=($shapes -join "`n");Parts=$parts;Semantics=$semantics;BinaryRecords=$binaryRecords;PartRecords=$partRecords;CoreProperties=$coreProperties;FileHash=$beforeHash;ReadOnlyProof=($memoryPreserved -and $beforeHash -ceq (Get-AdminInventoryEntryHash $path))}
+}
+
+function Compare-InventoryConfigPartRecords($Before,$After) {
+    foreach($key in @($Before.Keys)+@($After.Keys)|Sort-Object -Unique){
+        # Export only fixed categories and the existing redacted record comparison.
+        # No part name, byte payload or digest leaves this boundary; no acceptance
+        # predicate consumes this diagnostic evidence.
+        if($key -cnotmatch '^xl/(worksheets/sheet[0-9]+|tables/table[0-9]+|styles)\.bin$'){continue}
+        $comparison=Compare-InventoryConfigBinaryRecords $Before[$key] $After[$key]
+        if($comparison.Parsed -and $comparison.ChangedRecordTypes.Count -eq 0 -and $comparison.RecordOrderPreserved){continue}
+        $category=if($key -clike 'xl/worksheets/*'){'Worksheet'}elseif($key -clike 'xl/tables/*'){'Table'}else{'Styles'}
+        [pscustomobject]@{Category=$category;Comparison=$comparison}
+    }
 }
 
 function Write-InventoryConfigDiagnosticComparison($Before,$After,[string]$Case,$SavePhase=$null) {
@@ -246,6 +263,9 @@ function Write-InventoryConfigDiagnosticComparison($Before,$After,[string]$Case,
     $cause=Get-InventoryConfigSaveCause $safe $changed ($Before.Shapes -ceq $After.Shapes) $known $unidentified $binary $core $SavePhase
     [void]$script:InventoryConfigReadChecks.Add([pscustomobject]@{Case=$Case;Passed=$safe})
     $script:InventoryConfigLastComparison=[pscustomobject]@{Case=$Case;ReadOnlyExtractionPreserved=$safe;ChangedTableCells=$changed;TableShapesPreserved=($Before.Shapes -ceq $After.Shapes);ChangedPartCategories=$categories;ChangedStandardParts=$known;UnidentifiedChangedPartCount=$unidentified;ObservedConfigSavePhase=$SavePhase;ObservedSemanticComparison=$semantics;ObservedBinaryComparison=$binary;ObservedCorePropertiesComparison=$core;CauseEstablished=$cause;CauseCode=$(if($cause){'InboxBootstrapSaveMetadata'}else{'Unresolved'})}
+    if($Before.PSObject.Properties['PartRecords'] -and $After.PSObject.Properties['PartRecords']){
+        $script:InventoryConfigLastComparison|Add-Member -NotePropertyName AdditionalBinaryParts -NotePropertyValue @(Compare-InventoryConfigPartRecords $Before.PartRecords $After.PartRecords)
+    }
     $script:InventoryConfigLastComparison|ConvertTo-Json -Depth 6 -Compress|Add-Content (Join-Path $reportRoot 'inventory-config-diagnosis.jsonl')
 }
 

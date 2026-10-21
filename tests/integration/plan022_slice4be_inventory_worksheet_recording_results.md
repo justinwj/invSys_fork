@@ -53,6 +53,42 @@ refusal, unknown columns, unrelated contents and exact owner outcomes are checke
   Parent/worker remain alive with restoration state in memory. Exact ignored
   intervention files remain beside worker.log; no new Excel run/build followed.
 
+- Resume verification2026-10-21: that controller eventually closed at08:02:23.752Z,
+  exit1, with ExcelClosed/SettingsRestored/PackagesPreserved all true. At15:15:29Z,
+  the delayed Application1000/1001/1002 audit found zero Excel events/read errors;
+  Excel and the old controllers were absent. This resolves the cleanup blocker,
+  but does not relabel the intervened shutdown as normal closure or the RED as
+  acceptance. Its native cause remains unresolved. A fresh bounded cursor move
+  reached its exact target and restored its original position before new work.
+  The user's revised rule stops on lockscreen or verified input failure;
+  error5 alone requires diagnosis of the failing API, not automatic exit.
+
+- Expanded Evidence attempt `inventory-worksheet-evidence-recording/red-9627fe790ca544509b986217023d9aa4`,
+  worker `slice4be-admin-inventory-entry/17184532fae7486aa3acfd6f44d9d8ba`, is excluded
+  from completed RED qualification. The completed normal/save-failure/reopened-retry
+  business checks pass, including unchanged canonical bytes on retry, saved IMPORTED
+  status, custom columns and authority bytes. Recording remains absent. The Config
+  differences extend beyond the known metadata classifier (worksheet/style/other
+  parts); that strict check remains failed. The queue-failure case then fails its
+  canonical check: its probe covered only the server write, while Inventory can
+  use local staging. Both writer boundaries are now instrumented, with reachability
+  checked before outcome assertions. The corrected probe has not yet run.
+- This attempt's Quit and final COM release returned at15:24:57Z; cleanup stalled
+  before garbage collection completed. A read-only native query at15:27:23Z returned
+  exit code0 but wait258, without any termination intervention. The wait-chain query
+  at15:28:24Z returned one running-thread node and no cycle; it does not identify
+  the cause. Garbage collection completed15:31:18Z and the controller confirmed
+  Excel closure/settings restoration/package preservation, without termination
+  intervention. The delayed audit15:31:39Z has zero Excel events/read errors.
+  This confirms cleanup only, not the failed cohort's product acceptance.
+- Additional Config binary-part diagnostics retain values/hashes in memory and emit
+  only fixed categories and redacted record comparisons. They do not relax the
+  acceptance classifier. Synthetic redaction24/24 and cause-assessment12/12 pass;
+  actual read-preservation and changed-part evidence require the next isolated run.
+  The Create fault adapter now accepts the exact existing Exit Sub or new GoTo
+  Refused guard; neither branch is replaced. These are test/diagnostic corrections,
+  not product changes or new architectural behavior.
+
 Paths above omit `reports/runtime/` except the package candidate. Runtime reports
 and owned fixture values remain ignored; this record contains only gate facts.
 

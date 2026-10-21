@@ -145,7 +145,7 @@ param(
     [switch]$AdminInventorySelectionsOnly,
     [switch]$AdminInventoryUomRecordingOnly,
     [switch]$AdminInventoryWorksheetRecordingOnly,
-    [ValidateSet('All','Create','Upload','Evidence')][string]$AdminInventoryWorksheetRecordingGroup='All',
+    [ValidateSet('All','Create','Upload','Evidence','UploadEnabled','UploadNoFormat')][string]$AdminInventoryWorksheetRecordingGroup='All',
     [switch]$AdminInventoryExactQuantityOnly,
     [switch]$AdminInventoryManagedFieldsOnly,
     [switch]$AdminInventoryQuantityRetryOnly,
@@ -932,6 +932,7 @@ if($AdminInventorySelectionsOnly -and (-not $AdminInventoryRecordingOnly -or $Ad
 if($AdminInventoryUomRecordingOnly -and (-not $AdminInventoryRecordingOnly -or $AdminInventorySelectionsOnly -or $AdminInventoryWorkbookBindingOnly)){throw 'Inventory UOM requires its isolated recording gate.'}
 if($AdminInventoryWorksheetRecordingOnly -and (-not $AdminInventoryRecordingOnly -or $AdminInventorySelectionsOnly -or $AdminInventoryWorkbookBindingOnly -or $AdminInventoryUomRecordingOnly -or $AdminInventoryGuideOnly)){throw 'Inventory worksheet recording requires its isolated gate.'}
 if($AdminInventoryWorksheetRecordingGroup -ne 'All' -and -not $AdminInventoryWorksheetRecordingOnly){throw 'Worksheet recording group requires its isolated gate.'}
+if($AdminInventoryWorksheetRecordingGroup -eq 'UploadNoFormat' -and $Phase -ne 'RED'){throw 'Formatting suppression is a RED-only causal diagnostic, not product GREEN.'}
 if($AdminInventoryEntryOnly){
     if($AdminInventoryCreatePhasesOnly -and (-not $AdminInventorySourceOverlayForTest -or $AdminInventoryPrimitivePayloadOnly -or $AdminInventoryHeadlessWorksheetOnly -or $AdminInventoryReadOnlyOperatorsOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventoryDeleteResultsOnly -or $AdminInventoryAddResultsOnly -or $AdminInventoryOwnResultsOnly -or $AdminInventoryCatalogOnly -or $AdminInventoryInputsOnly -or $AdminInventoryBaselineOnly -or $AdminInventoryExactQuantityOnly -or $AdminInventoryManagedFieldsOnly -or $AdminInventoryQuantityRetryOnly)){throw 'Create phases require their separate source-overlay Inventory gate.'}
     if(-not $CompileEvaluationProbesForTest -or $AdminAggregationOnly -or $AdminTesterSetupOwnerOnly -or $AdminCreateWarehouseOwnerOnly -or $CheckViewerPublishedRead -or $CheckActionRecording -or $CheckTrackingSettings -or $CheckAuthReadOnly -or $CheckReceivingReplay){throw 'Inventory entry audit requires its separate compiled Ribbon/modal gate.'}

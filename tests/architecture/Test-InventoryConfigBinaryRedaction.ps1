@@ -107,5 +107,19 @@ foreach ($observation in $observations) {
 }
 Check-ConfigVector 'Redaction.OnlyApprovedSummaryProperties' $safeShape
 Check-ConfigVector 'Scope.NoBlanketSemanticProof' (@($observations | Where-Object { $_.AllWorkbookSemanticsProven -ne $false }).Count -eq 0)
+$partBefore=@{};$partAfter=@{}
+foreach($path in @('xl/worksheets/sheet1.bin','xl/tables/table2.bin','xl/styles.bin','xl/CANARY.bin')){
+    $partBefore[$path]=Record-Vector ([Text.Encoding]::UTF8.GetBytes('BEFORE-CANARY')) 778
+    $partAfter[$path]=Record-Vector ([Text.Encoding]::UTF8.GetBytes('AFTER--CANARY')) 778
+}
+$parts=@(Compare-InventoryConfigPartRecords $partBefore $partAfter)
+Check-ConfigVector 'Parts.FixedCategoriesOnly' (($parts.Category|Sort-Object) -join '|' -ceq 'Styles|Table|Worksheet')
+Check-ConfigVector 'Parts.ChangedRecordTypes' (@($parts|Where-Object {($_.Comparison.ChangedRecordTypes -join '|') -ceq '778'}).Count -eq 3)
+Check-ConfigVector 'Parts.UnchangedOmitted' (@(Compare-InventoryConfigPartRecords $partBefore $partBefore).Count -eq 0)
+$missingPart=@(Compare-InventoryConfigPartRecords @{} @{'xl/styles.bin'=$partAfter['xl/styles.bin']})
+Check-ConfigVector 'Parts.MissingSideUnclassified' ($missingPart.Count -eq 1 -and -not $missingPart[0].Comparison.Parsed)
+$partsJson=(@($parts)+@($missingPart))|ConvertTo-Json -Depth 6 -Compress
+Check-ConfigVector 'Parts.Redacted' ($partsJson -notmatch 'CANARY|xl/|"(?:Data|Hash|HeaderHash|Payload|Path)"\s*:')
+Check-ConfigVector 'Parts.NoAcceptanceClaim' ($partsJson -notmatch '"(?:CauseEstablished|Accepted)"\s*:')
 Write-Output ('CONFIG_BINARY_DIAGNOSTIC passed={0} failed={1} total={2}' -f ($script:checked-$script:failed),$script:failed,$script:checked)
 if ($script:failed) { exit 1 }
