@@ -1,5 +1,12 @@
 # Slice 4be remaining acceptance checklist
 
+**2026-10-21 packaged smoke GREEN:**86/86 exact prior IDs/order pass with the
+Admin-generated, signed-in Inventory fixture. Both native exits are normal;
+settings/reports/five packages and Config/Auth/Inventory bytes are preserved;
+delayed audit is clear. See the Inventory record for RED4/6 -> GREEN10/10 fixture
+proof and exact runtime references. Next: packaged layout, followed by recording/
+guide/B0, conformant live/full-chain and visible acceptance.4be-A remains incomplete.
+
 **2026-10-21 shutdown gate:** the scoped action correction completes the full
 86-check smoke sequence and both native exits without intervention. Result82/4;
 the four stale Inventory fixtures still fail. Settings/reports/packages are

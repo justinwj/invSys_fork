@@ -756,9 +756,13 @@ try {
             if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "Admin.EditItemComboSelection" -Passed $false -Detail $_.Exception.Message
         }
+        # The packaged handlers require the same live captured Admin context as
+        # operator use. Install only unsaved test adapters; seed through Admin.
+        . (Join-Path $repo 'tests/tooling/PackagedInventorySmokeFixture.ps1')
+        $inventoryFixture=Initialize-PackagedInventorySmokeFixture -Excel $excel -AdminPackage $workbookMap['invSys.Admin.xlam'] -Root $targetRoot -BindContext $true
         try {
             Assert-PackagedDesktop
-            $adminAdd = [string]$excel.Run("'$($workbookMap["invSys.Admin.xlam"].Name)'!modAdmin.InventoryAddVisibilityDropdownContractForAutomation")
+            $adminAdd = [string]$excel.Run("'invSys.Admin.xlam'!TestPackagedInventoryFixture.Add",$inventoryFixture.HostName)
             $adminAddPassed = $adminAdd -match '^OK\|' -and
                 $adminAdd -match '(?:^|\|)SubmitHandler=True(?:\||$)' -and
                 $adminAdd -match '(?:^|\|)ExactEntityCreate=True(?:\||$)' -and
@@ -775,7 +779,7 @@ try {
         }
         try {
             Assert-PackagedDesktop
-            $inventoryDelete = [string]$excel.Run("'$($workbookMap["invSys.Admin.xlam"].Name)'!modAdmin.InventoryDeleteContractForAutomation")
+            $inventoryDelete = [string]$excel.Run("'invSys.Admin.xlam'!TestPackagedInventoryFixture.Delete",$inventoryFixture.HostName)
             $inventoryDeletePassed = $inventoryDelete -match '^OK\|' -and
                 $inventoryDelete -match '(?:^|\|)DeleteHandler=True(?:\||$)' -and
                 $inventoryDelete -match '(?:^|\|)ExactKey=True(?:\||$)' -and
@@ -795,8 +799,8 @@ try {
             $inventoryWorksheetWb.Activate()
             Assert-PackagedDesktop
             $inventoryWorksheet = [string]$excel.Run(
-                "'$($workbookMap["invSys.Admin.xlam"].Name)'!modAdmin.InventoryWorksheetContractForAutomation",
-                $inventoryWorksheetWb)
+                "'invSys.Admin.xlam'!TestPackagedInventoryFixture.Worksheet",
+                [string]$inventoryWorksheetWb.Name)
             $inventoryWorksheetPassed = $inventoryWorksheet -match '^OK\|' -and
                 $inventoryWorksheet -match '(?:^|\|)TableCreated=True(?:\||$)' -and
                 $inventoryWorksheet -match '(?:^|\|)Preflight=True(?:\||$)' -and
@@ -808,6 +812,12 @@ try {
             if ($script:PackagedDesktopStopped) { throw }
             Add-ResultRow -Rows $resultRows -Check "Admin.InventoryWorksheetActions" -Passed $false -Detail $_.Exception.Message
         }
+        Assert-PackagedInventorySmokeFixture $inventoryFixture (Join-Path $closureRoot 'inventory-source-preservation.json')
+        [void](Invoke-PackagedFixtureMacro $excel "'invSys.Core.xlam'!modAuth.SignOut")
+        [void](Invoke-PackagedFixtureMacro $excel "'invSys.Core.xlam'!modNasConnection.ClearWarehouseTarget")
+        [void](Invoke-PackagedFixtureMacro $excel "'invSys.Core.xlam'!modRuntimeWorkbooks.SetCoreDataRootOverride" @($targetRoot))
+        $restored=[bool](Invoke-PackagedFixtureMacro $excel "'invSys.Core.xlam'!modConfig.LoadConfig" @('WH1','S1'))
+        if(-not $restored){throw 'Original smoke fixture binding was not restored.'}
     }
 
     if ($workbookMap.ContainsKey("invSys.Core.xlam") -and $workbookMap.ContainsKey("invSys.Inventory.Domain.xlam")) {
