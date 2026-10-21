@@ -1,5 +1,13 @@
 # Slice4be remaining Admin coverage
 
+**Current regression checkpoint,2026-10-21 01:53Z:** unchanged Inventory candidate
+now qualifies Settings202, recording80 and Receiving replay121, with27 reviewed
+captures across those gates, normal preserved closure and clear delayed audits.
+Smoke86/layout stand. See the corresponding integration records for exact evidence
+and unavailable historical raw-receipt limits. The Inventory observation map below
+is the next coverage task; the wider coverage map and live/full-chain fixture
+correction remain open. No new ControlId or replay adapter;4be-A is incomplete.
+
 **Current packaged checkpoint, 2026-10-21 01:30Z:** product `a9faab9c` candidate
 passes five compiles/cold start, retained Inventory cohorts, smoke86/86 and
 Production layout18 geometry/five window checks with six reviewed captures.

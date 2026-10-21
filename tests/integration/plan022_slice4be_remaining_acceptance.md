@@ -1,5 +1,12 @@
 # Slice 4be remaining acceptance checklist
 
+**2026-10-21 Receiving replay121/121 qualified:** unchanged current candidate,
+15 reviewed captures, normal preserved closure/fixture removal and clear delayed
+audit. Current Settings202/recording80/smoke86/layout also qualify. Exact references
+and historical raw-receipt limits are in their integration records. Next: pending
+Inventory recording/guide coverage under D18, then remaining coverage and conformant
+live/full-chain/visible acceptance. No package promotion;4be-A remains incomplete.
+
 **2026-10-21 recording80/80 qualified:** unchanged current packages pass the
 shared lifecycle/published-read gate with two reviewed captures, normal preserved
 closure and clear delayed native audit. See the recording record for exact scope.

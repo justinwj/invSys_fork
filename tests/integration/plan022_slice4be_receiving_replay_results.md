@@ -1,5 +1,24 @@
 # Slice 4be-A / early B0: Receiving replay
 
+**Current Inventory candidate qualified,2026-10-21 01:53Z:** unchanged product
+`a9faab9c` / `validation-inventory-receipts-01` passes121/121 distinct checks through
+the existing saved-copy packaged replay suite. All15 published profile/runner
+captures reviewed, including saved successful and stopped conclusions. Fresh exact
+source-event/application proof, Training-only dispatch, captured identity, ordinary
+permissions, tracking boundaries and busy-close checks pass.
+
+Controller `inventory-shared-gates/receiving-0056da1462ac4319b561c1b3779892c6`,
+worker `slice4be-receiving-replay/5269d7c7b343482d977060511f49013f`; exit0 at
+01:53:23.084Z, settings restored, five packages/509 tooling files preserved and the
+exact parent-owned fixture removed. Excel cleanup took roughly two minutes after
+the last check, then exited naturally; no forced close or desktop rebinding occurred.
+Delayed audit at01:53:56.575Z reports zero Excel events/read errors. Fresh cursor
+movement/restoration and passive desktop monitoring pass. Earlier trial108 raw
+evidence is absent here, so exact cross-run ordered-ID comparison is not claimed.
+This qualifies the retained technical replay gate; comprehensive4be-A/B0 and human
+acceptance remain separate. Inventory observation/guide coverage and conformant
+live/full-chain fixtures remain required. No product change or package promotion.
+
 **Current packaged gate qualified,2026-10-15 Pacific:** source1c9bff87/
 recording02 trial108 passes121/121, retaining every trial107 behavior-check name
 and order. All15 published images are directly reviewed at original size: profile
