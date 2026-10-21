@@ -1,5 +1,16 @@
 # Slice4be remaining Admin coverage
 
+**Inventory UOM prompt checkpoint,2026-10-21 07:07Z:** catalog46/199 qualifies
+actual-handler RED56 PASS/12 FAIL -> GREEN68/68 and guide-editor RED73/1 ->74/74.
+New/existing choices are local STAGED; cancel/empty is CANCELLED; an expired owner
+handle with valid recording context reports REFUSED. Lost recording context leaves
+an incomplete attempt. All198 prior definitions and canonical bytes are preserved.
+Candidate02 retains selections65, smoke86 and Settings202 with exact prior ordered
+checks;16 guide/Settings captures reviewed. Five compiles/cold start,36 source
+guards, all27 static caps, normal preserved closure and delayed audits pass.
+Create Table/Upload and owning mutations remain next; wider D18 and release
+acceptance are open. See [exact scope](plan022_slice4be_inventory_uom_recording_results.md).
+
 **Inventory selection/local-field checkpoint,2026-10-21 06:17Z:** candidate
 `validation-inventory-selection-01`, catalog45/198, qualifies actual-handler
 RED40 PASS/25 FAIL -> GREEN65/65. All190 historical definitions remain unchanged.

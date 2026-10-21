@@ -1214,7 +1214,7 @@ Private Sub mLstCustomFields_Click()
 End Sub
 
 Private Sub mCmbUom_Change()
-    Dim newUom As String
+    Dim newUom As String, action As String, outcome As String
 
     If mLoading Then Exit Sub
     If Trim$(CStr(mCmbUom.Value)) <> ADD_UOM_OPTION Then
@@ -1224,32 +1224,27 @@ Private Sub mCmbUom_Change()
     mSkipUomClick = True
     If Not mAllowUomPrompt Then
         mLoading = True
-        If mPreviousUom <> "" Then
-            mCmbUom.Value = mPreviousUom
-        Else
-            mCmbUom.Value = "EA"
-        End If
+        mCmbUom.Value = IIf(mPreviousUom <> "", mPreviousUom, "EA")
         mLoading = False
         Exit Sub
     End If
 
+    If Not mActivity Is Nothing Then action = mActivity.BeginAction("UOM_ADD")
     newUom = UCase$(Trim$(InputBox("New UOM:", "invSys Admin - Add UOM")))
-    If Not CurrentContextAllowed() Then Exit Sub
+    If Not CurrentContextAllowed() Then outcome = "REFUSED": GoTo Finished
     If newUom = "" Then
         mLoading = True
-        If mPreviousUom <> "" Then
-            mCmbUom.Value = mPreviousUom
-        Else
-            mCmbUom.Value = "EA"
-        End If
+        mCmbUom.Value = IIf(mPreviousUom <> "", mPreviousUom, "EA")
         mLoading = False
-        Exit Sub
+        outcome = "CANCELLED": GoTo Finished
     End If
     mLoading = True
     InsertUomBeforeAddOption newUom
     mCmbUom.Value = newUom
     mPreviousUom = newUom
-    mLoading = False
+    mLoading = False: outcome = "STAGED"
+Finished:
+    If Not mActivity Is Nothing Then mActivity.Finish action, outcome
 End Sub
 
 Private Sub mTxtQty_Change()

@@ -9,7 +9,7 @@ Public Function SelectionIds() As Variant
         "ADMIN_INVENTORY_CUSTOM_FIELD_ADD", "ADMIN_INVENTORY_CUSTOM_FIELD_REMOVE")
 End Function
 
-Public Function Control(ByVal id As String, Optional ByVal version As Long = 45) As Object
+Public Function Control(ByVal id As String, Optional ByVal version As Long = 46) As Object
     Dim caption As String, record As Object, kind As String
     kind = "Navigation"
     Select Case id
@@ -28,6 +28,9 @@ Public Function Control(ByVal id As String, Optional ByVal version As Long = 45)
                 Case "ADMIN_INVENTORY_SELECT_CUSTOM_FIELD": caption = "Select Additional Field"
                 Case "ADMIN_INVENTORY_CUSTOM_FIELD_ADD": caption = "Add Additional Field": kind = "Command"
                 Case "ADMIN_INVENTORY_CUSTOM_FIELD_REMOVE": caption = "Remove Additional Field": kind = "Command"
+                Case "ADMIN_INVENTORY_UOM_ADD"
+                    If version < 46 Then Exit Function
+                    caption = "Add UOM": kind = "Command"
                 Case Else: Exit Function
             End Select
     End Select
@@ -49,6 +52,7 @@ Public Function PositiveOutcome(ByVal id As String, ByVal code As String) As Boo
              "ADMIN_INVENTORY_SELECT_CATEGORY", "ADMIN_INVENTORY_SELECT_CUSTOM_FIELD"
             PositiveOutcome = (code = "SELECTED")
         Case "ADMIN_INVENTORY_CUSTOM_FIELD_ADD": PositiveOutcome = (code = "STAGED")
+        Case "ADMIN_INVENTORY_UOM_ADD": PositiveOutcome = (code = "STAGED")
         Case "ADMIN_INVENTORY_CUSTOM_FIELD_REMOVE": PositiveOutcome = (code = "STAGED" Or code = "UNCHANGED")
     End Select
 End Function
@@ -61,6 +65,15 @@ Public Function Outcome(ByVal id As String, ByVal code As String) As Object
     Select Case code
         Case "REQUESTED": message = definition("Caption") & " requested."
         Case "FAILED": severity = "Error": message = "Inventory navigation did not finish. Inspect the owning form; no rollback is asserted."
+        Case "CANCELLED", "REFUSED"
+            If id <> "ADMIN_INVENTORY_UOM_ADD" Then Exit Function
+            effect = "Unchanged"
+            If code = "CANCELLED" Then
+                message = "UOM entry was cancelled. No catalog or inventory save is asserted."
+            Else
+                severity = "Blocked"
+                message = "UOM entry could not continue under the captured context. No catalog or inventory save is asserted."
+            End If
         Case "REJECTED"
             If id <> "ADMIN_INVENTORY_CUSTOM_FIELD_ADD" Then Exit Function
             severity = "Warning": effect = "Unchanged"
@@ -75,6 +88,7 @@ Public Function Outcome(ByVal id As String, ByVal code As String) As Object
                 Case "STAGED": message = "The additional-field draft was updated. No inventory change is asserted."
                 Case "UNCHANGED": message = "No additional field was selected to remove. The draft is unchanged."
             End Select
+            If id = "ADMIN_INVENTORY_UOM_ADD" Then message = "The UOM was selected in the local draft. No catalog or inventory save is asserted."
     End Select
     Set record = CreateObject("Scripting.Dictionary")
     record.Add "EventCode", id & "_" & code: record.Add "OutcomeCode", code

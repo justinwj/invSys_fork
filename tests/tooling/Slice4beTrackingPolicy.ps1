@@ -195,7 +195,7 @@ function Test-Slice4beTrackingPolicy($Fixture,$Other) {
     $request=Get-TrackingPolicyRequest
     $model=$request|ConvertFrom-Json
     # Retain prior cohorts and the declared D18 Inventory catalog increments.
-    $catalogCounts=@{41=172;42=179;43=186;44=190;45=198}
+    $catalogCounts=@{41=172;42=179;43=186;44=190;45=198;46=199}
     $loaded=($model.SchemaVersion -eq 2 -and $catalogCounts.ContainsKey([int]$model.CatalogVersion) -and $model.Controls.Count -eq $catalogCounts[[int]$model.CatalogVersion] -and @($model.Users).Count -eq 0)
     Check 'TrackingPolicy.EditorLoaded' $loaded
     if(-not $loaded){throw 'Tracking policy editor fixture did not load.'}

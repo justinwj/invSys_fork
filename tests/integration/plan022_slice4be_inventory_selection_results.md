@@ -67,7 +67,8 @@ All closed normally with declared preservation and clear delayed native audits.
 
 ## Remaining
 
-UOM creation, Create Table/Upload and owning Add/Edit/Delete outcomes remain
-separate Inventory coverage. Wider D18,
+UOM prompt recording is now qualified in the separate
+[catalog46 increment](plan022_slice4be_inventory_uom_recording_results.md).
+Create Table/Upload and owning Add/Edit/Delete outcomes remain separate Inventory coverage. Wider D18,
 conformant live/full-chain fixtures, comprehensive early B0 and final visible
 acceptance remain; previous gates retain their documented candidate scope.
