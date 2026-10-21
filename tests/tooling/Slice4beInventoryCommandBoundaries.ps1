@@ -128,9 +128,27 @@ function Compare-InventoryRevisionPointer([byte[]]$Before,[byte[]]$After) {
     [pscustomobject]@{Parsed=$true;ChangedFields=$changed.ToArray()}
 }
 
+# MS-XLSB BrtBeginList fixed64-byte prefix. Names, comments, values and hashes
+# remain private; this reports changed field labels, never semantic acceptance.
+# https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/79c53348-6103-431a-810e-3609c491963b
+function Compare-InventoryListPrefix([byte[]]$Before,[byte[]]$After) {
+    if($null -eq $Before -or $null -eq $After -or $Before.Length -lt 64 -or $After.Length -lt 64){
+        return [pscustomobject]@{FixedPrefixAvailable=$false;ChangedFields=@();TailChangedOrUnavailable=$true}
+    }
+    $names=@('FirstRow','LastRow','FirstColumn','LastColumn','TableType','TableId','HeaderRows','TotalRows','Flags',
+        'HeaderFormat','DataFormat','TotalFormat','BorderFormat','HeaderBorderFormat','TotalBorderFormat','ConnectionId')
+    $changed=@()
+    for($i=0;$i -lt $names.Count;$i++){
+        if([BitConverter]::ToUInt32($Before,4*$i) -ne [BitConverter]::ToUInt32($After,4*$i)){$changed+=$names[$i]}
+    }
+    $tailSame=$Before.Length -eq $After.Length
+    for($i=64;$tailSame -and $i -lt $Before.Length;$i++){$tailSame=$Before[$i] -eq $After[$i]}
+    [pscustomobject]@{FixedPrefixAvailable=$true;ChangedFields=$changed;TailChangedOrUnavailable=(-not $tailSame)}
+}
+
 function Compare-InventoryConfigBinaryRecords($Before,$After) {
     if($null -eq $Before -or $null -eq $After -or -not $Before.Parsed -or -not $After.Parsed){return [pscustomobject]@{Parsed=$false}}
-    $types=@{};$viewFields=@{};$revisionFields=@{};$headersSame=$true;$unknownView=$false;$unknownRevision=$false
+    $types=@{};$viewFields=@{};$revisionFields=@{};$headersSame=$true;$unknownView=$false;$unknownRevision=$false;$listChanges=@()
     foreach($key in @($Before.Records.Keys)+@($After.Records.Keys)|Select-Object -Unique){
         if(-not $Before.Records.ContainsKey($key) -or -not $After.Records.ContainsKey($key)){
             $type=[int]($key -split ':')[0];$types[$type]=$true;$headersSame=$false
@@ -141,6 +159,7 @@ function Compare-InventoryConfigBinaryRecords($Before,$After) {
         if($a.HeaderHash -cne $b.HeaderHash){$headersSame=$false}
         if($a.Hash -ceq $b.Hash){continue}
         $types[[int]$a.Type]=$true
+        if($a.Type -eq 343){$listChanges+=Compare-InventoryListPrefix $a.Data $b.Data}
         if($a.Type -eq 3073){
             $revision=Compare-InventoryRevisionPointer $a.Data $b.Data
             if(-not $revision.Parsed){$unknownRevision=$true}
@@ -154,7 +173,7 @@ function Compare-InventoryConfigBinaryRecords($Before,$After) {
             if($a.Data[28] -ne $b.Data[28]){$viewFields['ViewFlags']=$true;if(($a.Data[28] -bxor $b.Data[28]) -band 128){$unknownView=$true}}
         }
     }
-    [pscustomobject]@{Parsed=$true;BeforeRecordCount=$Before.Records.Keys.Count;AfterRecordCount=$After.Records.Keys.Count;RecordOrderPreserved=($Before.Sequence -ceq $After.Sequence);RecordHeadersPreserved=$headersSame;ChangedRecordTypes=@($types.Keys|Sort-Object);ChangedBookViewFields=@($viewFields.Keys|Sort-Object);UnknownBookViewChange=$unknownView;ChangedRevisionPointerFields=@($revisionFields.Keys|Sort-Object);UnknownRevisionPointerChange=$unknownRevision;AllWorkbookSemanticsProven=$false}
+    [pscustomobject]@{Parsed=$true;BeforeRecordCount=$Before.Records.Keys.Count;AfterRecordCount=$After.Records.Keys.Count;RecordOrderPreserved=($Before.Sequence -ceq $After.Sequence);RecordHeadersPreserved=$headersSame;ChangedRecordTypes=@($types.Keys|Sort-Object);ChangedBookViewFields=@($viewFields.Keys|Sort-Object);UnknownBookViewChange=$unknownView;ChangedRevisionPointerFields=@($revisionFields.Keys|Sort-Object);UnknownRevisionPointerChange=$unknownRevision;ListPrefixChanges=$listChanges;AllWorkbookSemanticsProven=$false}
 }
 
 function Get-InventoryConfigDiagnosticSnapshot($Fixture) {
@@ -266,7 +285,7 @@ function Write-InventoryConfigDiagnosticComparison($Before,$After,[string]$Case,
     if($Before.PSObject.Properties['PartRecords'] -and $After.PSObject.Properties['PartRecords']){
         $script:InventoryConfigLastComparison|Add-Member -NotePropertyName AdditionalBinaryParts -NotePropertyValue @(Compare-InventoryConfigPartRecords $Before.PartRecords $After.PartRecords)
     }
-    $script:InventoryConfigLastComparison|ConvertTo-Json -Depth 6 -Compress|Add-Content (Join-Path $reportRoot 'inventory-config-diagnosis.jsonl')
+    $script:InventoryConfigLastComparison|ConvertTo-Json -Depth 8 -Compress|Add-Content (Join-Path $reportRoot 'inventory-config-diagnosis.jsonl')
 }
 
 function Test-InventoryConfigDiagnosticPreservation {

@@ -94,7 +94,7 @@ Check-ConfigVector 'Redaction.NoPayloadValuesOrHashes' ($json -notmatch 'CANARY|
 $allowed = @('Parsed','BeforeRecordCount','AfterRecordCount','RecordOrderPreserved',
     'RecordHeadersPreserved','ChangedRecordTypes','ChangedBookViewFields',
     'UnknownBookViewChange','AllWorkbookSemanticsProven','ChangedRevisionPointerFields',
-    'UnknownRevisionPointerChange')
+    'UnknownRevisionPointerChange','ListPrefixChanges')
 $labels = @('xrevidLastSaved','documentId','CoauthVersionLast','CoauthVersionMax','uidLastSave')
 $safeShape = $true
 foreach ($observation in $observations) {
@@ -121,5 +121,16 @@ Check-ConfigVector 'Parts.MissingSideUnclassified' ($missingPart.Count -eq 1 -an
 $partsJson=(@($parts)+@($missingPart))|ConvertTo-Json -Depth 6 -Compress
 Check-ConfigVector 'Parts.Redacted' ($partsJson -notmatch 'CANARY|xl/|"(?:Data|Hash|HeaderHash|Payload|Path)"\s*:')
 Check-ConfigVector 'Parts.NoAcceptanceClaim' ($partsJson -notmatch '"(?:CauseEstablished|Accepted)"\s*:')
+$listBase=[byte[]]::new(80);[Text.Encoding]::UTF8.GetBytes('LIST-CANARY').CopyTo($listBase,64)
+$listChanged=[byte[]]$listBase.Clone();$listChanged[36]=1
+$list=Compare-InventoryConfigBinaryRecords (Record-Vector $listBase 343) (Record-Vector $listChanged 343)
+Check-ConfigVector 'List.FixedHeaderFormatField' ($list.ListPrefixChanges.Count -eq 1 -and ($list.ListPrefixChanges[0].ChangedFields -join '|') -ceq 'HeaderFormat' -and -not $list.ListPrefixChanges[0].TailChangedOrUnavailable)
+$listChanged[64]=0
+$listTail=Compare-InventoryListPrefix $listBase $listChanged
+Check-ConfigVector 'List.TailRemainsUnclassified' $listTail.TailChangedOrUnavailable
+$listShort=Compare-InventoryListPrefix ([byte[]](1)) $listChanged
+Check-ConfigVector 'List.TruncatedPrefixUnavailable' (-not $listShort.FixedPrefixAvailable -and $listShort.TailChangedOrUnavailable)
+$listJson=@($list,$listTail,$listShort)|ConvertTo-Json -Depth 8 -Compress
+Check-ConfigVector 'List.Redacted' ($listJson -notmatch 'CANARY|"(?:Data|Hash|HeaderHash|Payload|Path)"\s*:')
 Write-Output ('CONFIG_BINARY_DIAGNOSTIC passed={0} failed={1} total={2}' -f ($script:checked-$script:failed),$script:failed,$script:checked)
 if ($script:failed) { exit 1 }
