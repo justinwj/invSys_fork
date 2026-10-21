@@ -1,5 +1,11 @@
 # Slice 4be remaining acceptance checklist
 
+**2026-10-21 recording80/80 qualified:** unchanged current packages pass the
+shared lifecycle/published-read gate with two reviewed captures, normal preserved
+closure and clear delayed native audit. See the recording record for exact scope.
+Settings202/smoke86/layout stand. Receiving B0, Inventory observation/guide coverage
+and conformant live/full-chain/visible acceptance remain open.
+
 **2026-10-21 Settings202/202 qualified:** the unchanged current candidate passes
 all distinct Settings checks, with ten reviewed captures, normal preserved closure
 and a clear delayed native audit. See the Settings record for exact evidence and
