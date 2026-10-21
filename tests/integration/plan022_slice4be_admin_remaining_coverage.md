@@ -1,5 +1,14 @@
 # Slice4be remaining Admin coverage
 
+**Current packaged checkpoint, 2026-10-21 01:30Z:** product `a9faab9c` candidate
+passes five compiles/cold start, retained Inventory cohorts, smoke86/86 and
+Production layout18 geometry/five window checks with six reviewed captures.
+Normal closure, preservation and delayed audits qualify; see the Inventory record.
+Inventory recording/guide coverage remains open and no Inventory ControlId or
+replay adapter has been added. Current B0/shared, fixture-conformant live/full-chain
+and visible release acceptance remain required. Historical findings below retain
+their dated scopes; 4be-A is incomplete.
+
 **Current Inventory checkpoint, 2026-10-20:** D8-INV-01/D8-INV-EDIT-01 authority,
 ownership and receipt hardening has qualified focused source-overlay results,
 including ownership 66/66, binding 263/263, phases 81/81, result-save 100 distinct

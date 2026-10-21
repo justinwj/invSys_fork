@@ -1,5 +1,12 @@
 # Slice 4be remaining acceptance checklist
 
+**2026-10-21 layout qualified:** current candidate passes 18 geometry checks and
+five native-window checks; all six Run List/Settings captures reviewed. Normal
+closure, settings/report/package preservation and delayed native audit qualify.
+Smoke86/86 stands. Exact references are in the Inventory record. Next: Inventory
+recording/guide coverage and remaining B0/shared/conformant live/full-chain/visible
+gates. 4be-A remains incomplete.
+
 **2026-10-21 packaged smoke GREEN:**86/86 exact prior IDs/order pass with the
 Admin-generated, signed-in Inventory fixture. Both native exits are normal;
 settings/reports/five packages and Config/Auth/Inventory bytes are preserved;
