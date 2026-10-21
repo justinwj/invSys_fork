@@ -233,6 +233,26 @@ function Get-InventoryConfigDiagnosticSnapshot($Fixture) {
     [pscustomobject]@{Cells=$cells;Shapes=($shapes -join "`n");Parts=$parts;Semantics=$semantics;BinaryRecords=$binaryRecords;PartRecords=$partRecords;CoreProperties=$coreProperties;FileHash=$beforeHash;ReadOnlyProof=($memoryPreserved -and $beforeHash -ceq (Get-AdminInventoryEntryHash $path))}
 }
 
+function Get-InventoryHeaderFormatReference($Table,$Styles) {
+    # Memory-only lookup. Never serialize this result: its hash is private.
+    $unavailable=[pscustomobject]@{Kind='Unavailable';Hash=''}
+    if($null -eq $Table -or -not $Table.Parsed -or -not $Table.Records.ContainsKey('343:1')){return $unavailable}
+    $data=$Table.Records['343:1'].Data
+    if($data.Length -lt 64){return $unavailable}
+    $index=[BitConverter]::ToUInt32($data,36)
+    if($index -eq [uint32]::MaxValue){return [pscustomobject]@{Kind='None';Hash=''}}
+    if($null -eq $Styles -or -not $Styles.Parsed){return $unavailable}
+    $key='507:'+([uint64]$index+1).ToString()
+    if(-not $Styles.Records.ContainsKey($key)){return $unavailable}
+    [pscustomobject]@{Kind='Indexed';Hash=$Styles.Records[$key].Hash}
+}
+
+function Compare-InventoryHeaderFormatReferences($Before,$After,$BeforeStyles,$AfterStyles) {
+    $left=Get-InventoryHeaderFormatReference $Before $BeforeStyles
+    $right=Get-InventoryHeaderFormatReference $After $AfterStyles
+    [pscustomobject]@{BeforeKind=$left.Kind;AfterKind=$right.Kind;ExactFormatBytesEqual=($left.Kind -ceq 'Indexed' -and $right.Kind -ceq 'Indexed' -and $left.Hash -ceq $right.Hash)}
+}
+
 function Compare-InventoryConfigPartRecords($Before,$After) {
     foreach($key in @($Before.Keys)+@($After.Keys)|Sort-Object -Unique){
         # Export only fixed categories and the existing redacted record comparison.
@@ -240,9 +260,13 @@ function Compare-InventoryConfigPartRecords($Before,$After) {
         # predicate consumes this diagnostic evidence.
         if($key -cnotmatch '^xl/(worksheets/sheet[0-9]+|tables/table[0-9]+|styles)\.bin$'){continue}
         $comparison=Compare-InventoryConfigBinaryRecords $Before[$key] $After[$key]
-        if($comparison.Parsed -and $comparison.ChangedRecordTypes.Count -eq 0 -and $comparison.RecordOrderPreserved){continue}
+        if($comparison.Parsed -and $comparison.ChangedRecordTypes.Count -eq 0 -and $comparison.RecordOrderPreserved -and $comparison.RecordHeadersPreserved){continue}
         $category=if($key -clike 'xl/worksheets/*'){'Worksheet'}elseif($key -clike 'xl/tables/*'){'Table'}else{'Styles'}
-        [pscustomobject]@{Category=$category;Comparison=$comparison}
+        $result=[pscustomobject]@{Category=$category;Comparison=$comparison}
+        if($category -ceq 'Table'){
+            $result|Add-Member -NotePropertyName HeaderFormatReference -NotePropertyValue (Compare-InventoryHeaderFormatReferences $Before[$key] $After[$key] $Before['xl/styles.bin'] $After['xl/styles.bin'])
+        }
+        $result
     }
 }
 

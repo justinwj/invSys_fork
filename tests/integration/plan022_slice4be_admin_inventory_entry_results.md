@@ -1,5 +1,59 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+## Config diagnosis — worksheet recording,2026-10-21
+
+Product remains catalog46 `validation-inventory-uom-02` from `bd438789`; the
+catalog47 draft is not built. Controller paths below are under main
+`reports/runtime/`; each run pins and preserves the five package hashes.
+
+- Expanded worksheet attempt: controller
+  `inventory-worksheet-evidence-recording/red-9627fe790ca544509b986217023d9aa4`,
+  worker `slice4be-admin-inventory-entry/17184532fae7486aa3acfd6f44d9d8ba`, loaded
+  tests at `55d89c41`. Normal and failed-save Upload preserve Auth bytes and
+  table cells/shapes, but change Config bytes beyond the established metadata
+  classifier. Reopened retry preserves Inventory/Config/Auth bytes. The queue
+  failure probe misses local staging and invalidates completion of that cohort;
+  corrected coverage is in `41915975`. Native cleanup eventually completes
+  unassisted15:31:18Z; preservation and delayed audit pass.
+- Isolated normal comparison: controller
+  `inventory-worksheet-config-diagnostic/red-161946cc11954732878ae8836b435d42`,
+  worker `slice4be-admin-inventory-entry/bea18691278b4d9e80c5065456661223`, reports
+  21 PASS/18 FAIL. Its diagnostic source was uncommitted at launch and subsequently
+  included in `41915975`; exact test-commit-based acceptance is not claimed.
+  Auth and diagnostic reads preserve bytes; Config changes within three observed
+  Receiving/Shipping/Production inbox-setup saves. Table cells/shapes remain equal.
+  Additional binary differences include style records505/507, table343/347 and
+  worksheet0/7/60. No exception or unknown caller/window is hidden. Closure and
+  preservation pass15:34:47Z; delayed audit15:35:48Z is clear.
+- Controlled formatting comparison, tests `41915975`: controller
+  `inventory-worksheet-noformat-diagnostic/red-23fc1cc0b5fe482b896fd77755e0c8db`,
+  worker `slice4be-admin-inventory-entry/587471f2d0ac4a1a89fda708a0e2cab9`, reports
+  21 PASS/18 FAIL. Only the existing EnsureStationInbox call's formatting argument
+  is suppressed in the unsaved test package. Worksheet/style differences disappear,
+  while two table343 records still differ; only one of three observed saves changes
+  bytes. Auth/table cells/shapes/read extraction remain preserved. Closure and
+  preservation pass15:39:14Z; delayed audit15:40:13Z is clear. This is causal
+  diagnostic evidence, not product GREEN or authorization to change formatting.
+
+- Field comparison, tests `3ca37b0f`: controller
+  `inventory-worksheet-noformat-diagnostic/red-088395f263a94862a75e5495a535e9d6`,
+  worker `slice4be-admin-inventory-entry/2cfe3654659145c195c798da38d50d20`, again
+  reports21/18. Both remaining table343 changes are HeaderFormat references only;
+  their string tails and other fixed fields are unchanged. Auth/cells/shapes/read
+  preservation pass. Unassisted closure/settings/package preservation15:43:17Z
+  and delayed audit15:43:37Z pass.
+
+**Unresolved:** whether those old/new header references designate identical format
+bytes. The strict Config classifier is unchanged. A further memory-only reference
+comparison has33/33 synthetic redaction checks; its runtime comparison is pending.
+No product correction or acceptance follows from the field labels alone. This
+diagnosis does not close older cohorts' evidence gaps or accept4be-A.
+
+The record labels follow Microsoft's
+[MS-XLSB record table](https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/30e2eaae-0b1e-4e8e-a465-e1ce5575868d).
+Exact worksheet recording/cleanup exclusions are in
+`plan022_slice4be_inventory_worksheet_recording_results.md`.
+
 **Packaged Production layout qualified, 2026-10-21 01:30Z:** unchanged candidate
 `validation-inventory-receipts-01` passes all 18 size/page geometry checks and five
 native-window checks. All six Run List/Settings screenshots were reviewed: labels,

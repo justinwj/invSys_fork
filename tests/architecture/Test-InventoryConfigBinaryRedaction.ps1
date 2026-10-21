@@ -132,5 +132,19 @@ $listShort=Compare-InventoryListPrefix ([byte[]](1)) $listChanged
 Check-ConfigVector 'List.TruncatedPrefixUnavailable' (-not $listShort.FixedPrefixAvailable -and $listShort.TailChangedOrUnavailable)
 $listJson=@($list,$listTail,$listShort)|ConvertTo-Json -Depth 8 -Compress
 Check-ConfigVector 'List.Redacted' ($listJson -notmatch 'CANARY|"(?:Data|Hash|HeaderHash|Payload|Path)"\s*:')
+$tableA=[byte[]]$listBase.Clone();$tableB=[byte[]]$listBase.Clone();$tableB[36]=1
+$styles=[pscustomobject]@{Parsed=$true;Records=@{'507:1'=[pscustomobject]@{Hash='PRIVATE-HASH-CANARY'};'507:2'=[pscustomobject]@{Hash='PRIVATE-HASH-CANARY'}}}
+$equivalent=Compare-InventoryHeaderFormatReferences (Record-Vector $tableA 343) (Record-Vector $tableB 343) $styles $styles
+Check-ConfigVector 'HeaderReference.ExactEquivalentBytes' $equivalent.ExactFormatBytesEqual
+$styles.Records['507:2'].Hash='DIFFERENT-HASH-CANARY'
+$different=Compare-InventoryHeaderFormatReferences (Record-Vector $tableA 343) (Record-Vector $tableB 343) $styles $styles
+Check-ConfigVector 'HeaderReference.DifferentBytesRefused' (-not $different.ExactFormatBytesEqual)
+[Array]::Copy([BitConverter]::GetBytes([uint32]::MaxValue),0,$tableB,36,4)
+$none=Compare-InventoryHeaderFormatReferences (Record-Vector $tableA 343) (Record-Vector $tableB 343) $styles $styles
+Check-ConfigVector 'HeaderReference.NoneIsNotEquivalence' ($none.AfterKind -ceq 'None' -and -not $none.ExactFormatBytesEqual)
+$missingStyle=Compare-InventoryHeaderFormatReferences (Record-Vector $tableA 343) (Record-Vector $tableA 343) $null $styles
+Check-ConfigVector 'HeaderReference.MissingStyleUnclassified' ($missingStyle.BeforeKind -ceq 'Unavailable' -and -not $missingStyle.ExactFormatBytesEqual)
+$referenceJson=@($equivalent,$different,$none,$missingStyle)|ConvertTo-Json -Depth 4 -Compress
+Check-ConfigVector 'HeaderReference.Redacted' ($referenceJson -notmatch 'CANARY|"Hash"\s*:')
 Write-Output ('CONFIG_BINARY_DIAGNOSTIC passed={0} failed={1} total={2}' -f ($script:checked-$script:failed),$script:failed,$script:checked)
 if ($script:failed) { exit 1 }
