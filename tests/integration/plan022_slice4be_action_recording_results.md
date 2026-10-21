@@ -1,5 +1,21 @@
 # Slice 4be.4 recording lifecycle
 
+## Current Inventory candidate regression
+
+Last verified2026-10-21 01:43Z. Unchanged product `a9faab9c` candidate
+`validation-inventory-receipts-01` passes80/80 distinct lifecycle/published-read
+checks with two reviewed captures. Policy gating, real Start/Stop/Cancel, distinct
+occurrences, immutable history, incomplete closure and storage-failure honesty pass.
+Controller `inventory-shared-gates/recording-0b1173d7d816435b954daa19b1b7c955`,
+worker `slice4be-viewer-published-read/33c90095f8504ae5bd4dddbd0ecc8889`.
+Normal exit0 at01:43:29.489Z, restored settings, five packages and509 tooling files
+preserved; delayed audit at01:43:54.988Z has zero Excel events/read errors. The
+worker owned fixture cleanup and reported no cleanup exception; the controller's
+parent-owned-removal flag is inapplicable here. Fresh cursor proof/desktop checks
+pass. Earlier trial112 raw evidence is absent on this PC, so exact cross-run ordered
+comparison is not claimed. This is the existing shared gate, not new Inventory
+control coverage, guide-conclusion acceptance or completed4be-A.
+
 ## Current recording02 regression qualified
 
 Last verified2026-10-15 Pacific. Unchanged source1c9bff87/recording02 passes80/80
