@@ -1,5 +1,13 @@
 # Slice 4be remaining acceptance checklist
 
+**Recovery checkpoint, 2026-10-21 00:40Z:** the pending smoke controller below is
+now closed after user-authorized termination of its stalled Excel process.
+Settings/reports are restored, five packages preserved, all helpers stopped and
+the delayed recovery audit is clear. This is assisted cleanup, not acceptance.
+Partial smoke is 70 PASS / 4 FAIL; restart checks were not run. Next: diagnose the
+four Inventory helper failures and native lifetime before a fresh guarded smoke
+attempt. See the Inventory record; layout and later gates remain open.
+
 **Current checkpoint, 2026-10-20:** approved D8-INV-EDIT-01 draft product
 `a9faab9c` has qualified ownership 66/66, binding/mutation 263/263, receipt phases 81/81,
 result-save 100 distinct checks and canonical-save 147 distinct checks. Every
