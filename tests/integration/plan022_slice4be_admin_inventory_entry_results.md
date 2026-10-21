@@ -43,11 +43,23 @@ catalog47 draft is not built. Controller paths below are under main
   preservation pass. Unassisted closure/settings/package preservation15:43:17Z
   and delayed audit15:43:37Z pass.
 
-**Unresolved:** whether those old/new header references designate identical format
-bytes. The strict Config classifier is unchanged. A further memory-only reference
-comparison has33/33 synthetic redaction checks; its runtime comparison is pending.
-No product correction or acceptance follows from the field labels alone. This
-diagnosis does not close older cohorts' evidence gaps or accept4be-A.
+- Reference comparison, tests `30b13465`: controller
+  `inventory-worksheet-noformat-diagnostic/red-68f0a73039494193a1620add4207b516`,
+  worker `slice4be-admin-inventory-entry/b82deb2afac24cec871a349b4e7952f2`, reports
+  21/18. Both old/new HeaderFormat references are indexed and resolve to identical
+  format-record bytes. The other fixed fields/string tails stay equal. Auth,
+  table cells/shapes and read-only extraction remain preserved. Closure/settings/
+  packages pass15:48:17Z; delayed audit15:48:37Z is clear. The comparison emits
+  only kinds/equality, never indices, payloads or hashes; synthetic guards33/33 pass.
+
+**Diagnosis:** inbox preparation applies Config presentation formatting; removing
+that call in the diagnostic eliminates worksheet/style changes. Remaining table
+reference renumbering in that diagnostic is byte-equivalent formatting. The strict
+acceptance classifier is unchanged and still fails these runs. Architecture
+D8-INV-CONFIG-01 proposes nonformatting Inventory inbox preparation and awaits
+approval; no product implementation or GREEN is claimed. Future classification
+must independently prove every changed part and retain unknown-change refusal.
+This diagnosis does not close older cohorts' evidence gaps or accept4be-A.
 
 The record labels follow Microsoft's
 [MS-XLSB record table](https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/30e2eaae-0b1e-4e8e-a465-e1ce5575868d).

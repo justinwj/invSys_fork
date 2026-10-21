@@ -1,8 +1,17 @@
 # Slice4be-A Inventory worksheet recording
 
 Architecture4.11 D18's Inventory worksheet observation refinement, Plan022 and
-Controls1.715 govern catalog47/201. **Implementation and qualification are in
+Controls1.716 govern catalog47/201. **Implementation and qualification are in
 progress; neither this increment nor4be-A is accepted.**
+
+Last verified2026-10-21 15:49Z: Excel is closed; settings/packages are preserved and
+the latest delayed audit is clear. No desktop stop condition occurred. The revised
+user rule allowed shutdown diagnosis without treating an unrelated error5 as lock.
+**D8-INV-CONFIG-01 now needs approval** before changing Inventory inbox preparation's
+Config formatting. Current source changes this session are tests/diagnostics only.
+The complete cohort-bound Config artifact is in
+`plan022_slice4be_admin_inventory_entry_results.md`, including test-only suppression,
+remaining byte-equivalent header references and explicit nonacceptance.
 
 The actual Create Table and Upload form handlers retain their captured operator
 and Core authority. Owners expose fixed outcomes separately from operator prose.
@@ -105,7 +114,8 @@ Unexplained changes still fail. This does not change or normalize Config writes.
 The independent diagnostic classifier/redaction guards pass12/12,13/13 and18/18.
 The expanded proof adds reopened retry and an exception at the actual queue-write
 boundary. A queue-write attempt is Unknown until the owner confirms submission.
-That expanded cohort has not run. Its Evidence group selects normal Upload,
+The first attempt is excluded above; the corrected two-boundary fault remains unrun.
+Its Evidence group selects normal Upload,
 result-save failure/reopened retry, and an exception immediately before the
 existing queue write. The full cohort also preserves the policy/refusal cases.
 
@@ -125,7 +135,8 @@ the final field-helper extraction and is not the current comparison.
 
 ## Remaining qualification
 
-Finish focused RED/GREEN and the current Config diagnosis, then compile/package,
+After D8-INV-CONFIG-01 approval, protect its presentation contract through actual
+handler RED/GREEN; complete corrected queue/retry RED and recording GREEN, then compile/package,
 partial/multiple-event and catalog-only EDIT coverage, independent guide conclusions,
 retained authority/receipt/mutation regressions, static limits and visible evidence.
 The existing guide editor's available-outcome list must be tested for PARTIAL.
