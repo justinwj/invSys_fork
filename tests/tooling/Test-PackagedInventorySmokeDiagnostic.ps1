@@ -7,11 +7,13 @@ param(
     [switch]$Surfaces,
     [switch]$Domains,
     [switch]$Components,
-    [switch]$Startup
+    [switch]$Startup,
+    [switch]$FullInitial
 )
 # Diagnostic only: no acceptance or product RED claim. All probes are unsaved.
 # Record counts/flags, never context handles, identities or source field values.
 $ErrorActionPreference='Stop'; Set-StrictMode -Version Latest
+if(@(@($LoadOnly,$Surfaces,$Domains,$Components,$Startup,$FullInitial)|Where-Object {[bool]$_}).Count -gt 1){throw 'Choose one diagnostic group; use FullInitial for the exact combined order.'}
 $repo=(Resolve-Path -LiteralPath $RepoRoot).Path
 $deployPath=(Resolve-Path -LiteralPath (Join-Path $repo $DeployRoot)).Path
 if(Get-Process EXCEL -ErrorAction SilentlyContinue){throw 'Close Excel before this isolated diagnostic.'}
@@ -44,15 +46,26 @@ try {
     $excel=New-Object -ComObject Excel.Application
     $excel.Visible=$false; $excel.DisplayAlerts=$false; $excel.AutomationSecurity=1
     $openOrder=@('invSys.Core.xlam','invSys.Inventory.Domain.xlam','invSys.Designs.Domain.xlam','invSys.Operations.xlam','invSys.Admin.xlam')
-    if($Startup){
+    if($Startup -or $FullInitial){
         $source=[IO.File]::ReadAllText((Join-Path $repo 'tools/validate_phase6_packaged_xlams.ps1'))
         $start=$source.IndexOf('    $sentinelWb = $excel.Workbooks.Add()', [StringComparison]::Ordinal)
         $end=$source.IndexOf('    $componentSpecs = @(', [StringComparison]::Ordinal)
+        if($FullInitial){
+            $end=$source.IndexOf('    Close-PackagedValidationSession -Excel $excel -Phase "Initial"', [StringComparison]::Ordinal)
+            $specAssignment=@($ast.FindAll({param($node) $node -is [Management.Automation.Language.AssignmentStatementAst] -and $node.Left.Extent.Text -ceq '$validationSpecs'},$true))
+            if($specAssignment.Count -ne 1){throw 'Validation specifications are ambiguous.'}
+            . ([scriptblock]::Create($specAssignment[0].Extent.Text))
+        }
         if($start -lt 0 -or $end -le $start){throw 'Startup diagnostic boundaries changed.'}
         $targetWorkbooks=[Collections.Generic.List[object]]::new()
         $openedWorkbooks=[Collections.Generic.List[object]]::new()
         $workbookMap=$packages
-        . ([scriptblock]::Create($source.Substring($start,$end-$start)))
+        $body=$source.Substring($start,$end-$start)
+        # The maintained validator may now end its action scope before cleanup.
+        if($FullInitial -and $source.Contains('# Finish the action scope before releasing this host.')){
+            $body=$body.Substring(0,$body.LastIndexOf('    }', [StringComparison]::Ordinal))
+        }
+        & ([scriptblock]::Create($body))
     }else{
         foreach($name in $openOrder){
             Assert-PackagedDesktop
@@ -106,7 +119,7 @@ try {
             Add-ResultRow -Rows $resultRows -Check ($spec.File+'.'+$spec.Component) -Passed ($presence -ceq 'OK')
         }
     }
-    if(-not $LoadOnly -and -not $Surfaces -and -not $Domains -and -not $Components -and -not $Startup){
+    if(-not $LoadOnly -and -not $Surfaces -and -not $Domains -and -not $Components -and -not $Startup -and -not $FullInitial){
         $project=$packages['invSys.Core.xlam'].VBProject
         $probe=$project.VBComponents.Add(1); $probe.Name='TestSmokeAuthority'
         $probe.CodeModule.AddFromString(@'
@@ -159,7 +172,7 @@ End Function
         $closed=-not [bool](Get-Process EXCEL -ErrorAction SilentlyContinue)
         $failed=@($resultRows|Where-Object {-not $_.Passed}).Count
         $resultRows.ToArray()|Select-Object Check,Passed|ConvertTo-Json -Depth 5|Set-Content -LiteralPath (Join-Path $closureRoot 'checks.json')
-        [pscustomobject]@{StartUTC=$started.ToString('o');EndUTC=[DateTimeOffset]::UtcNow.ToString('o');LoadOnly=[bool]$LoadOnly;Surfaces=[bool]$Surfaces;Domains=[bool]$Domains;Components=[bool]$Components;Startup=[bool]$Startup;Completed=$completed;NormalClosure=$normalClosure;ExcelClosed=$closed;SettingsRestored=$restored;PackagesPreserved=$preserved;Passed=$resultRows.Count-$failed;Failed=$failed;Acceptance=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $closureRoot 'closure.json')
+        [pscustomobject]@{StartUTC=$started.ToString('o');EndUTC=[DateTimeOffset]::UtcNow.ToString('o');LoadOnly=[bool]$LoadOnly;Surfaces=[bool]$Surfaces;Domains=[bool]$Domains;Components=[bool]$Components;Startup=[bool]$Startup;FullInitial=[bool]$FullInitial;Completed=$completed;NormalClosure=$normalClosure;ExcelClosed=$closed;SettingsRestored=$restored;PackagesPreserved=$preserved;Passed=$resultRows.Count-$failed;Failed=$failed;Acceptance=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $closureRoot 'closure.json')
         if(-not($restored -and $preserved -and $closed)){throw 'Diagnostic preservation or closure failed.'}
     }
 }

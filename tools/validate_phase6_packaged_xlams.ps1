@@ -444,6 +444,10 @@ try {
     $excel.EnableEvents = $true
     $excel.AutomationSecurity = 1
 
+    # Finish the action scope before releasing this host. PowerShell's live
+    # execution scope otherwise retains temporary COM references after Quit.
+    # The shared result/workbook collections survive for closure and restart.
+    & {
     Assert-PackagedDesktop
 
     $sentinelWb = $excel.Workbooks.Add()
@@ -882,6 +886,7 @@ try {
         catch {
             if ($script:PackagedDesktopStopped) { throw }
         }
+    }
     }
     Close-PackagedValidationSession -Excel $excel -Phase "Initial"
     foreach ($targetWb in $targetWorkbooks) {
