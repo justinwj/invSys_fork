@@ -26,7 +26,7 @@ Public Function BeforeQueue(ByVal planned As String) As Boolean
     Dim fso As Object, a As String, b As String
     If mMode = "" Then Exit Function
     mQueueReached = True: mPlanned = planned
-    BeforeQueue = (mMode = "QueueFailure" Or mMode = "InterveningEntity" Or mMode = "InterveningCatalog")
+    BeforeQueue = (mMode = "QueueFailure" Or mMode Like "Intervening*")
     a = modTrainingWire.FileSha256(mSource): b = modTrainingWire.FileSha256(mHost)
     Set fso = CreateObject("Scripting.FileSystemObject")
     fso.CopyFile mSource, mCopy & ".xlsb", False
@@ -99,12 +99,17 @@ Public Function CreateOtherEntity(ByVal warehouse As String, ByVal sku As String
     End If
     CreateOtherEntity = True
 End Function
-Public Function ChangeLaterCatalog(ByVal warehouse As String, ByVal sku As String) As Boolean
-    Dim report As String, custom As Object
+Public Function ChangeLaterCatalog(ByVal warehouse As String, ByVal sku As String, Optional ByVal mode As String = "InterveningCatalog") As Boolean
+    Dim report As String, custom As Object, location As String
     Set custom = CreateObject("Scripting.Dictionary")
     custom.Add "USER NOTE", "Owned later custom field"
+    location = "CLEARVIEW"
+    If mode = "InterveningLocation" Then location = "OWNED-OTHER"
+    If mode = "InterveningQuantityMode" Then
+        custom.Add "TRACK_QTY", "FALSE": custom.Add "ITEM_KIND", "UTILITY"
+    End If
     ChangeLaterCatalog = modAdmin.UpdateInventoryItemCatalogForWarehouse(warehouse, sku, _
-        "Owned later catalog item", "LB", "CLEARVIEW", , , , , , , custom, report, "", "config-admin", "S1")
+        "Owned later catalog item", "LB", location, , , , , , , custom, report, "", "config-admin", "S1")
 End Function
 '@)
     $packages['invSys.Inventory.Domain.xlam'].VBProject.VBComponents.Item('modInventoryApply').CodeModule.AddFromString(@'
@@ -195,7 +200,7 @@ function Test-InventoryEditCreation($Fixture,$Other) {
     @('ITEM_CODE,ITEM,UOM,LOCATION,QTY,CONDITION','DEMO-CREATE-BASE,Creation baseline,LB,CLEARVIEW,3,GOOD')|Set-Content $csv -Encoding ASCII
     if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareExactQuantityFixture' @($Fixture.Warehouse,$csv))){throw 'Owning seed unavailable; not RED.'}
     $source=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
-    $safety=@('BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity','InterveningCatalog')
+    $safety=@('BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity','InterveningCatalog','InterveningLocation','InterveningQuantityMode')
     $cases=@('Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog')+$safety
     if($AdminInventoryEditCreationCase -eq 'Safety'){$cases=$safety}
     elseif($AdminInventoryEditCreationCase -ne 'All'){$cases=@($AdminInventoryEditCreationCase)}
@@ -284,7 +289,7 @@ function Test-InventoryEditCreation($Fixture,$Other) {
             $preResult=Get-InventoryEditSavedResult ($prefix+'.xlsx')
             Check ($id+'.CatalogReceiptAndOperatorSavedBeforeQueue') ($facts[1] -ceq 'True' -and (Test-InventoryEditBinding $pre $preResult $Fixture $sku) -and $pre.Receipts[0].Event -ceq $receipt.Event -and $pre.Receipts[0].Key -ceq $receipt.Key -and $pre.Log.Count -eq 0)
             }
-            if($case -in @('QueueFailure','ApplyFailure','InterveningEntity','InterveningCatalog')){
+            if($case -in @('QueueFailure','ApplyFailure') -or $case -like 'Intervening*'){
                 Check ($id+'.CreationNotAppliedOrReportedImported') ($after.EntityQuantities.Count -eq $before.EntityQuantities.Count -and $after.LogRows -eq $before.LogRows -and $saved.Status -cne 'IMPORTED')
                 Check ($id+'.ExpectedQueueAndApplicationBoundary') ($(if($case -ne 'ApplyFailure'){$queued -eq ''}else{$queued -ceq $receipt.Event -and $facts[2] -ceq 'True'}))
             }elseif(-not $saveMode){
@@ -302,8 +307,8 @@ function Test-InventoryEditCreation($Fixture,$Other) {
                 if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCatalogCompletion.CreateOtherEntity' @($Fixture.Warehouse,$sku,$false))){throw 'Owning intervening creation unavailable; not RED.'}
                 Set-InventoryConfigPresentation $Fixture
             }
-            if($case -eq 'InterveningCatalog'){
-                if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCatalogCompletion.ChangeLaterCatalog' @($Fixture.Warehouse,$sku))){throw 'Owning later catalog update unavailable; not RED.'}
+            if($case -in @('InterveningCatalog','InterveningLocation','InterveningQuantityMode')){
+                if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCatalogCompletion.ChangeLaterCatalog' @($Fixture.Warehouse,$sku,$case))){throw 'Owning later catalog update unavailable; not RED.'}
             }
             $priorRetry=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $hostBook=$excel.Workbooks.Open($hostPath,0,$false)
@@ -312,7 +317,7 @@ function Test-InventoryEditCreation($Fixture,$Other) {
             $retried=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $savedRetry=Get-InventoryCreationSavedResult $hostBook ($case+'-retry')
             $proof=Read-InventoryEditReceiptCopy $source $sku $savedRetry.Command
-            if($case -eq 'InterveningEntity'){
+            if($case -in @('InterveningEntity','InterveningLocation','InterveningQuantityMode')){
                 Check ($id+'.InterveningEntityRefusedWithoutReplacement') ($retried.FileHash -ceq $priorRetry.FileHash -and $savedRetry.Status -cne 'IMPORTED' -and $savedRetry.Command -ceq $saved.Command -and $proof.Receipts.Count -eq 1 -and $proof.Receipts[0].Event -ceq $receipt.Event -and $proof.Receipts[0].Key -ceq $receipt.Key)
                 Check ($id+'.SavedCatalogPartialDisclosed') ($savedRetry.Text -match '(?i)catalog.*receipt.*saved' -and $savedRetry.Text -match '(?i)unconfirmed')
                 continue
