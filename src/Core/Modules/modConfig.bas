@@ -364,6 +364,7 @@ Private Function EnsureStationInboxCore(ByVal warehouseId As String, ByVal stati
     Dim openedInbox As Boolean
     Dim configChanged As Boolean
     Dim authority As String, source As Variant, target As WarehouseTarget
+    Dim priorEvents As Boolean, priorSecurity As Long, suppressEvents As Boolean
 
     If Not formatSurface Then
         If Not modInventoryCommands.CheckForm(interactiveContext, report) Then Exit Function
@@ -376,13 +377,15 @@ Private Function EnsureStationInboxCore(ByVal warehouseId As String, ByVal stati
         If Len(Dir$(configWorkbookPath)) = 0 Then Exit Function
         authority = modAuthUserCommands.CaptureContext()
         If authority = "" Then Exit Function
+        priorEvents = Application.EnableEvents: priorSecurity = Application.AutomationSecurity
+        suppressEvents = True: Application.EnableEvents = False: Application.AutomationSecurity = 3
     End If
 
     resolvedWh = ResolveSeedWarehouseIdConfig(warehouseId, vbNullString)
     resolvedSt = ResolveSeedStationIdConfig(stationId)
 
     Set wbCfg = ResolveConfigWorkbookForSetup(configWorkbookPath, resolvedWh, resolvedSt, report, openedConfig)
-    If wbCfg Is Nothing Then Exit Function
+    If wbCfg Is Nothing Then GoTo CleanExit
     If formatSurface Then
         If Not EnsureConfigSchema(wbCfg, resolvedWh, resolvedSt, report) Then GoTo CleanExit
     Else
@@ -481,6 +484,9 @@ CleanExit:
         On Error Resume Next
         wbCfg.Close SaveChanges:=False
         On Error GoTo 0
+    End If
+    If suppressEvents Then
+        Application.EnableEvents = priorEvents: Application.AutomationSecurity = priorSecurity
     End If
     Exit Function
 
