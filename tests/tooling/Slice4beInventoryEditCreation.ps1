@@ -4,10 +4,12 @@
 . (Join-Path $PSScriptRoot 'Slice4beInventoryWorksheetResults.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beInventoryEditReceipts.ps1')
 . (Join-Path $PSScriptRoot 'Slice4beInventoryEditBindings.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beInventoryEditCanonicalSave.ps1')
 function Install-InventoryEditCreationProbe {
     Install-InventoryConfigPreservationProbe
     Install-InventoryWorksheetResultProbe
     Install-InventoryEditBindingsProbe
+    Install-InventoryEditCanonicalSaveProbe
     $project=$packages['invSys.Core.xlam'].VBProject
     $probe=$project.VBComponents.Add(1);$probe.Name='TestInventoryEditCreation'
     $probe.CodeModule.AddFromString(@'
@@ -24,7 +26,7 @@ Public Function BeforeQueue(ByVal planned As String) As Boolean
     Dim fso As Object, a As String, b As String
     If mMode = "" Then Exit Function
     mQueueReached = True: mPlanned = planned
-    BeforeQueue = (mMode = "QueueFailure")
+    BeforeQueue = (mMode = "QueueFailure" Or mMode = "InterveningEntity")
     a = modTrainingWire.FileSha256(mSource): b = modTrainingWire.FileSha256(mHost)
     Set fso = CreateObject("Scripting.FileSystemObject")
     fso.CopyFile mSource, mCopy & ".xlsb", False
@@ -86,6 +88,17 @@ Public Function ConfigureCreationCase(ByVal host As String, ByVal tableName As S
         Next lo
     Next ws
 End Function
+Public Function CreateOtherEntity(ByVal warehouse As String, ByVal sku As String, ByVal retire As Boolean) As Boolean
+    Dim report As String, count As Long, eventId As String
+    If Not modAdminInventoryCreate.CompleteCatalogItem(warehouse, "S1", "config-admin", sku, _
+        "Synthetic catalog-only fixture", "LB", "CLEARVIEW", 2, "Owned intervening creation", report) Then Exit Function
+    If retire Then
+        If Not modInventoryRetirementCommands.RetireActiveEntities(warehouse, "S1", "config-admin", sku, _
+            "Owned retired history", count, eventId, report) Then Exit Function
+        If count <> 1 Then Exit Function
+    End If
+    CreateOtherEntity = True
+End Function
 '@)
     $packages['invSys.Inventory.Domain.xlam'].VBProject.VBComponents.Item('modInventoryApply').CodeModule.AddFromString(@'
 Public Function TestRetiredCatalogFixture(ByVal bookName As String, ByVal sku As String) As Boolean
@@ -98,9 +111,9 @@ Public Function TestRetiredCatalogFixture(ByVal bookName As String, ByVal sku As
 End Function
 '@)
 }
-function Invoke-InventoryCreationUpload($Fixture,$HostBook,[string]$Id) {
+function Invoke-InventoryCreationUpload($Fixture,$HostBook,[string]$Id,[string]$AuthorityCase='Authorized') {
     $diagnosis=Start-InventoryEditConfigDiagnosis $Fixture
-    [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($HostBook.Name,'Upload','Authorized','ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
+    [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($HostBook.Name,'Upload',$AuthorityCase,'ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
     $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
     $ready=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[2] -ceq '1' -and $facts[3] -ceq 'True'
     Check ($Id+'.ActualCapturedUploadReached') $ready
@@ -175,8 +188,10 @@ function Test-InventoryEditCreation($Fixture,$Other) {
     @('ITEM_CODE,ITEM,UOM,LOCATION,QTY,CONDITION','DEMO-CREATE-BASE,Creation baseline,LB,CLEARVIEW,3,GOOD')|Set-Content $csv -Encoding ASCII
     if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareExactQuantityFixture' @($Fixture.Warehouse,$csv))){throw 'Owning seed unavailable; not RED.'}
     $source=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
-    $cases=@('Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog')
-    if($AdminInventoryEditCreationCase -ne 'All'){$cases=@($AdminInventoryEditCreationCase)}
+    $safety=@('BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity')
+    $cases=@('Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog')+$safety
+    if($AdminInventoryEditCreationCase -eq 'Safety'){$cases=$safety}
+    elseif($AdminInventoryEditCreationCase -ne 'All'){$cases=@($AdminInventoryEditCreationCase)}
     foreach($case in $cases){
         SelectTarget $Fixture
         [void](Run 'invSys.Core.xlam' 'TestInventoryEditCreation.Arm' @('','','',''))
@@ -187,6 +202,9 @@ function Test-InventoryEditCreation($Fixture,$Other) {
             if($case -eq 'RetiredCatalog' -and -not [bool](Run 'invSys.Inventory.Domain.xlam' 'modInventoryApply.TestRetiredCatalogFixture' @($book.Name,$sku))){throw 'Retired catalog fixture unavailable; not RED.'}
             $book.Save()
         }finally{$book.Close($false)}
+        if($case -eq 'RetiredHistory'){
+            if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCatalogCompletion.CreateOtherEntity' @($Fixture.Warehouse,$sku,$true))){throw 'Owning retired-history fixture unavailable; not RED.'}
+        }
         $hostBook=$excel.Workbooks.Add();$hostPath=Join-Path $runRoot ('edit-creation-'+$case+'.xlsx');$hostBook.SaveAs($hostPath,51)
         try{
             if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareBoundaryTable' @($hostBook.Name))){throw 'Operator fixture unavailable; not RED.'}
@@ -198,17 +216,20 @@ function Test-InventoryEditCreation($Fixture,$Other) {
             $before=Get-AdminInventoryEntryFacts $Fixture -Persisted;$beforeHash=Get-AdminInventoryEntryHash $source
             $prefix=Join-Path $runRoot ('creation-before-queue-'+$case)
             [void](Run 'invSys.Core.xlam' 'TestInventoryEditCreation.Arm' @($case,$source,$hostPath,$prefix))
+            $saveMode=if($case -like '*CatalogSaveThrows'){$case}else{''}
+            [void](Run $script:InventoryEditSaveProbePackage 'TestInventoryEditSave.Arm' @($saveMode,$source,$hostPath,($prefix+'-canonical')))
             $resultMode=switch($case){'ResultSaveFailure'{'SaveThrows'} 'AuthorityLost'{'PreflightAuthorityLost'} default {'Creation'}}
             [void](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Arm' @($resultMode,$hostBook.Name))
             [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.SetSelection' @($Other.Root,$sku))
-            Invoke-InventoryCreationUpload $Fixture $hostBook $id
+            $authorityCase=if($case -in @('ReplacementSession','OtherWarehouseAdmin')){$case}else{'Authorized'}
+            Invoke-InventoryCreationUpload $Fixture $hostBook $id $authorityCase
             $after=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $saved=Get-InventoryCreationSavedResult $hostBook ($case+'-saved')
             $snapshot=Read-InventoryEditReceiptCopy $source $sku $saved.Command
             Test-InventoryConfigPresentation $Fixture $id
             Check ($id+'.ReadOnlyInspection') ($saved.Preserved -and $snapshot.Preserved)
             Check ($id+'.UnknownOperatorColumnPreserved') ([string]$extra.DataBodyRange.Cells.Item(1,1).Value2 -ceq 'Retained creation extension')
-            if($case -in @('AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog')){
+            if($case -in @('AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog','ReplacementSession','OtherWarehouseAdmin','RetiredHistory')){
                 Check ($id+'.WholeSelectionRefusedWithoutCanonicalWrite') ($beforeHash -ceq (Get-AdminInventoryEntryHash $source) -and $saved.Status -cne 'IMPORTED')
                 if($case -eq 'AuthorityLost'){
                     $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Facts')).Split('|')
@@ -216,12 +237,32 @@ function Test-InventoryEditCreation($Fixture,$Other) {
                 }
                 continue
             }
+            if($saveMode){
+                $saveFacts=([string](Run $script:InventoryEditSaveProbePackage 'TestInventoryEditSave.Facts')).Split('|')
+                $observed=$saveFacts.Count -eq 6 -and $saveFacts[0] -ceq 'True' -and $saveFacts[1] -ceq 'True'
+                Check ($id+'.ActualCanonicalSaveBoundaryReached') $observed
+                $queueFacts=([string](Run 'invSys.Core.xlam' 'TestInventoryEditCreation.Facts')).Split('|')
+                Check ($id+'.NoCreationAfterUnconfirmedSave') ($queueFacts[0] -ceq 'False' -and $after.LogRows -eq $before.LogRows -and $after.EntityQuantities.Count -eq $before.EntityQuantities.Count -and $saved.Status -cne 'IMPORTED')
+                if(-not $observed){continue}
+                Check ($id+'.SaveUncertaintyDisclosed') ([bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.CanonicalSaveUnconfirmedForTest'))
+                if($case -eq 'BeforeCatalogSaveThrows'){
+                    Check ($id+'.UnsavedCatalogAndReceiptPreserved') ($beforeHash -ceq (Get-AdminInventoryEntryHash $source) -and $snapshot.Receipts.Count -eq 0)
+                    $originalCommand=$saved.Command
+                    $hostBook.Close($false);$hostBook=$excel.Workbooks.Open($hostPath,0,$false)
+                    SelectTarget $Fixture
+                    [void](Run $script:InventoryEditSaveProbePackage 'TestInventoryEditSave.Arm' @('',$source,$hostPath,''))
+                    Invoke-InventoryCreationUpload $Fixture $hostBook ($id+'.ReopenedWithoutReceipt')
+                    $retryResult=Get-InventoryCreationSavedResult $hostBook ($case+'-retry')
+                    Check ($id+'.MissingBoundIdentityRefusedWithoutRegeneration') ($originalCommand -ne '' -and $retryResult.Command -ceq $originalCommand -and $beforeHash -ceq (Get-AdminInventoryEntryHash $source) -and $retryResult.Status -cne 'IMPORTED')
+                    continue
+                }
+            }
             $bound=Test-InventoryEditBinding $snapshot $saved $Fixture $sku
             Check ($id+'.BoundCreateReceiptSaved') ($bound -and $snapshot.Receipts[0].Intent -ceq 'CREATE')
             Check ($id+'.OneCatalogApplication') ([regex]::Matches($snapshot.History,'Config preservation completion').Count -eq 1)
             Check ($id+'.CanonicalCustomFieldPreserved') ($snapshot.Custom -ceq 'Retained creation extension')
             $facts=([string](Run 'invSys.Core.xlam' 'TestInventoryEditCreation.Facts')).Split('|')
-            Check ($id+'.QueueBoundaryReached') ($facts[0] -ceq 'True')
+            if(-not $saveMode){Check ($id+'.QueueBoundaryReached') ($facts[0] -ceq 'True')}
             if(-not $bound){
                 # The required owning output is absent. Never fabricate receipts or
                 # claim dependent corruption/retry checks were executed.
@@ -230,22 +271,29 @@ function Test-InventoryEditCreation($Fixture,$Other) {
             }
             $receipt=$snapshot.Receipts[0];$planned=[string](Run 'invSys.Core.xlam' 'TestInventoryEditCreation.PlannedForOwnedTest')
             $queued=[string](Run 'invSys.Core.xlam' 'TestInventoryEditCreation.QueuedForOwnedTest')
-            Check ($id+'.ImmutableDistinctPlannedIdentities') ($receipt.Event -ne '' -and $receipt.Key -ne '' -and $receipt.Event -cne $receipt.Key -and $receipt.Command -cne $receipt.Event -and $receipt.Command -cne $receipt.Key -and $planned -ceq $receipt.Event)
+            Check ($id+'.ImmutableDistinctPlannedIdentities') ($receipt.Event -ne '' -and $receipt.Key -ne '' -and $receipt.Event -cne $receipt.Key -and $receipt.Command -cne $receipt.Event -and $receipt.Command -cne $receipt.Key -and ($saveMode -or $planned -ceq $receipt.Event))
+            if(-not $saveMode){
             $pre=Read-InventoryEditReceiptCopy ($prefix+'.xlsb') $sku $saved.Command
             $preResult=Get-InventoryEditSavedResult ($prefix+'.xlsx')
             Check ($id+'.CatalogReceiptAndOperatorSavedBeforeQueue') ($facts[1] -ceq 'True' -and (Test-InventoryEditBinding $pre $preResult $Fixture $sku) -and $pre.Receipts[0].Event -ceq $receipt.Event -and $pre.Receipts[0].Key -ceq $receipt.Key -and $pre.Log.Count -eq 0)
-            if($case -in @('QueueFailure','ApplyFailure')){
+            }
+            if($case -in @('QueueFailure','ApplyFailure','InterveningEntity')){
                 Check ($id+'.CreationNotAppliedOrReportedImported') ($after.EntityQuantities.Count -eq $before.EntityQuantities.Count -and $after.LogRows -eq $before.LogRows -and $saved.Status -cne 'IMPORTED')
-                Check ($id+'.ExpectedQueueAndApplicationBoundary') ($(if($case -eq 'QueueFailure'){$queued -eq ''}else{$queued -ceq $receipt.Event -and $facts[2] -ceq 'True'}))
-            }else{
+                Check ($id+'.ExpectedQueueAndApplicationBoundary') ($(if($case -ne 'ApplyFailure'){$queued -eq ''}else{$queued -ceq $receipt.Event -and $facts[2] -ceq 'True'}))
+            }elseif(-not $saveMode){
                 Check ($id+'.ExactFreshCreationApplied') ((Test-InventoryExactAppliedEffect $snapshot $receipt.Event $receipt.Key 7) -and $after.EntityQuantities.Count -eq $before.EntityQuantities.Count+1 -and $after.EntityQuantities[$receipt.Key] -eq 7)
                 Check ($id+'.ExpectedOperatorSaveOutcome') ($(if($case -eq 'Success'){$saved.Status -ceq 'IMPORTED'}else{$saved.Status -cne 'IMPORTED'}))
             }
             $hostBook.Close($false);$hostBook=$null
             SelectTarget $Fixture
             [void](Run 'invSys.Core.xlam' 'TestInventoryEditCreation.Arm' @('','','',''))
+            [void](Run $script:InventoryEditSaveProbePackage 'TestInventoryEditSave.Arm' @('',$source,$hostPath,''))
             if($case -in @('Success','ResultSaveFailure')){
                 if(-not [bool](Run 'invSys.Core.xlam' 'TestInventoryEditCreation.LaterQuantity' @($Fixture.Warehouse,$sku))){throw 'Owning later quantity unavailable; not RED.'}
+            }
+            if($case -eq 'InterveningEntity'){
+                if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCatalogCompletion.CreateOtherEntity' @($Fixture.Warehouse,$sku,$false))){throw 'Owning intervening creation unavailable; not RED.'}
+                Set-InventoryConfigPresentation $Fixture
             }
             $priorRetry=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $hostBook=$excel.Workbooks.Open($hostPath,0,$false)
@@ -254,7 +302,12 @@ function Test-InventoryEditCreation($Fixture,$Other) {
             $retried=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $savedRetry=Get-InventoryCreationSavedResult $hostBook ($case+'-retry')
             $proof=Read-InventoryEditReceiptCopy $source $sku $savedRetry.Command
-            $expectedEvents=if($case -in @('QueueFailure','ApplyFailure')){1}else{0}
+            if($case -eq 'InterveningEntity'){
+                Check ($id+'.InterveningEntityRefusedWithoutReplacement') ($retried.FileHash -ceq $priorRetry.FileHash -and $savedRetry.Status -cne 'IMPORTED' -and $savedRetry.Command -ceq $saved.Command -and $proof.Receipts.Count -eq 1 -and $proof.Receipts[0].Event -ceq $receipt.Event -and $proof.Receipts[0].Key -ceq $receipt.Key)
+                Check ($id+'.SavedCatalogPartialDisclosed') ($savedRetry.Text -match '(?i)catalog.*receipt.*saved' -and $savedRetry.Text -match '(?i)unconfirmed')
+                continue
+            }
+            $expectedEvents=if($case -in @('QueueFailure','ApplyFailure','AfterCatalogSaveThrows')){1}else{0}
             $expectedQty=if($expectedEvents){7}else{9}
             Check ($id+'.RetryRetainsCommandEventAndKey') ($savedRetry.Command -ceq $saved.Command -and $proof.Receipts.Count -eq 1 -and $proof.Receipts[0].Event -ceq $receipt.Event -and $proof.Receipts[0].Key -ceq $receipt.Key)
             Check ($id+'.RetryExactApplicationWithoutDuplication') ((Test-InventoryExactAppliedEffect $proof $receipt.Event $receipt.Key 7) -and $retried.LogRows -eq $priorRetry.LogRows+$expectedEvents -and $retried.AppliedRows -eq $priorRetry.AppliedRows+$expectedEvents -and $retried.EntityQuantities[$receipt.Key] -eq $expectedQty)
