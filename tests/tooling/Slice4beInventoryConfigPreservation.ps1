@@ -19,6 +19,29 @@ Public Function PrepareCatalogEditTable(ByVal host As String, ByVal tableName As
         Next lo
     Next ws
 End Function
+Public Function PrepareMissingDefault(ByVal bookName As String) As Boolean
+    Dim book As Workbook, sheet As Worksheet, table As ListObject, column As ListColumn
+    Dim custom As ListColumn
+    Set book = Application.Workbooks(bookName)
+    For Each sheet In book.Worksheets
+        For Each table In sheet.ListObjects
+            If table.Name = "tblWarehouseConfig" Then
+                If table.ListRows.Count <> 1 Then Exit Function
+                For Each column In table.ListColumns
+                    If column.Name = "USER CONFIG NOTE" Then Set custom = column
+                Next column
+                If custom Is Nothing Then
+                    Set custom = table.ListColumns.Add
+                    custom.Name = "USER CONFIG NOTE"
+                End If
+                custom.DataBodyRange.Cells(1, 1).Value2 = "Retained Config extension"
+                table.ListColumns("Timezone").DataBodyRange.Cells(1, 1).ClearContents
+                PrepareMissingDefault = True
+                Exit Function
+            End If
+        Next table
+    Next sheet
+End Function
 '@)
 }
 
@@ -50,10 +73,12 @@ function Test-InventoryConfigPreservation($Fixture,$Other) {
     $csv=Join-Path $runRoot 'config-preservation-fixture.csv'
     @('ITEM_CODE,ITEM,UOM,LOCATION,QTY,CONDITION','DEMO-CONFIG-BASE,Config baseline,LB,CLEARVIEW,3,GOOD')|Set-Content $csv -Encoding ASCII
     if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareExactQuantityFixture' @($Fixture.Warehouse,$csv))){throw 'Owning seed fixture unavailable; not RED.'}
+    $missingDefault=$AdminInventoryConfigPreservationCase -ceq 'MissingDefault'
     foreach($case in @('ModalAdd','WorksheetAdd','ModalCatalogEdit','WorksheetCatalogEdit')){
-        if($AdminInventoryConfigPreservationCase -ne 'All' -and $case -cne $AdminInventoryConfigPreservationCase){continue}
+        if(-not $missingDefault -and $AdminInventoryConfigPreservationCase -ne 'All' -and $case -cne $AdminInventoryConfigPreservationCase){continue}
         SelectTarget $Fixture
         $id='InventoryConfigPreservation.'+$case
+        if($missingDefault){$id+='MissingDefault'}
         $edit=$case -like '*Edit'
         $worksheet=$case -like 'Worksheet*'
         $sku='DEMO-CATALOG-COMPLETION-'+$case.ToUpperInvariant()
@@ -81,6 +106,14 @@ function Test-InventoryConfigPreservation($Fixture,$Other) {
                 $hostBook.Save()
             }
             Set-InventoryConfigPresentation $Fixture
+            if($missingDefault){
+                # Only this run's disposable Config is changed, before observation.
+                $configBook=$excel.Workbooks.Open($Fixture.Config,0,$false)
+                try{
+                    if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCatalogCompletion.PrepareMissingDefault' @($configBook.Name))){throw 'Missing-default fixture unavailable; not RED.'}
+                    $configBook.Save()
+                }finally{$configBook.Close($false);[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($configBook);$configBook=$null}
+            }
             $configBefore=Get-InventoryConfigDiagnosticSnapshot $Fixture
             $before=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $auth=Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))
@@ -111,12 +144,25 @@ function Test-InventoryConfigPreservation($Fixture,$Other) {
             $saveFacts=([string](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Facts')).Split('|')
             if($saveFacts.Count -ne 3){throw 'Config save observer unavailable.'}
             $configAfter=Get-InventoryConfigDiagnosticSnapshot $Fixture
-            Check ($id+'.NoUnnecessaryConfigSave') ([int]$saveFacts[0] -eq 0)
-            Check ($id+'.ConfigBytesPreserved') ($configBefore.FileHash -ceq $configAfter.FileHash)
+            if($missingDefault){
+                $headers=@($configBefore.Cells.Keys|Where-Object {$_ -clike 'tblWarehouseConfig|1|*' -and $configBefore.Cells[$_] -ceq 'System.String|Timezone'})
+                if($headers.Count -ne 1){throw 'Timezone observation unavailable; not RED.'}
+                $expectedCell=$headers[0].Replace('|1|','|2|')
+                $changes=@(@($configBefore.Cells.Keys)+@($configAfter.Cells.Keys)|Select-Object -Unique|Where-Object {
+                    -not $configBefore.Cells.ContainsKey($_) -or -not $configAfter.Cells.ContainsKey($_) -or $configBefore.Cells[$_] -cne $configAfter.Cells[$_]
+                })
+                Check ($id+'.OnlyMissingDefaultPersisted') ($changes.Count -eq 1 -and $changes[0] -ceq $expectedCell -and $configBefore.Cells[$expectedCell] -ceq '<EMPTY>' -and $configAfter.Cells[$expectedCell] -ceq 'System.String|UTC')
+                Check ($id+'.ConfigShapeAndUnknownColumnPreserved') ($configBefore.Shapes -ceq $configAfter.Shapes -and @($configAfter.Cells.Values|Where-Object {$_ -ceq 'System.String|Retained Config extension'}).Count -eq 1)
+                Check ($id+'.OneNecessaryConfigSave') ([int]$saveFacts[0] -eq 1 -and [int]$saveFacts[1] -eq 1 -and [int]$saveFacts[2] -eq 0)
+            }else{
+                Check ($id+'.NoUnnecessaryConfigSave') ([int]$saveFacts[0] -eq 0)
+                Check ($id+'.ConfigBytesPreserved') ($configBefore.FileHash -ceq $configAfter.FileHash)
+            }
             Test-InventoryConfigPresentation $Fixture $id
             Check ($id+'.AuthBytesPreserved') ($auth -ceq (Get-AdminInventoryEntryHash (Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb'))))
             $savePhase=[pscustomobject]@{Calls=[int]$saveFacts[0];ByteChangesDuringSave=[int]$saveFacts[1];UnavailableHashComparisons=[int]$saveFacts[2];Procedure='modConfig.SaveConfigWorkbookIfWritable'}
-            Write-InventoryConfigDiagnosticComparison $configBefore $configAfter $case $savePhase
+            $diagnosticCase=if($missingDefault){$case+'MissingDefault'}else{$case}
+            Write-InventoryConfigDiagnosticComparison $configBefore $configAfter $diagnosticCase $savePhase
         } finally {$hostBook.Close($false)}
     }
     Test-InventoryConfigDiagnosticPreservation

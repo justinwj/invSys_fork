@@ -82,7 +82,8 @@ finishes assertions **53 PASS / 4 FAIL**. Exact queued event/key identities rema
 but both later-catalog preservation checks fail, as do post-application catalog
 preservation on reopened retry and refusal of a changed counting-mode effect.
 All five instrumented packages compile; actual captured Upload supplies the events.
-Cleanup is pending.
+Closure completes unassisted at19:59:02Z with settings and packages preserved;
+the delayed audit at19:59:34Z finds zero Excel faults and no remaining Excel.
 
 Sourcef38d0370 enforces D8-INV-EDIT-01/02's quantity-only phase in Domain: an exact
 existing private CREATE receipt binds source, payload, event, key and target before
@@ -90,8 +91,15 @@ application; its saved catalog phase is not reapplied. Current canonical catalog
 state must still support positive counted first-entity creation. Ordinary CREATE
 callers retain their existing path. No new payload field, store, permission,
 control or architecture decision is introduced. Five retained source guards pass
-36/36; the next packaged build/GREEN and wider gates remain. No promotion or4be-A
-acceptance is claimed.
+36/36. Static evidence `reports/runtime/inventory-edit-creation-static-02` records
+391 components/6742 procedures/146183 lines, Run9/unresolved45 and191 duplicate
+body candidates (baseline194), with no growth in the27 oversized baseline modules.
+Candidate `deploy/validation-inventory-config-02`, source27a05408/productf38d0370,
+builds and cold compiles all five packages. Evidence
+`reports/runtime/inventory-config-build-02` confirms unassisted closure20:00:44Z,
+preserved sources/frozen packages/settings and a zero delayed native audit20:01:04Z.
+Fresh bounded cursor movement/restoration passes before combined packaged GREEN.
+GREEN and wider gates remain; no promotion or4be-A acceptance is claimed.
 
 ## Config preservation resume — 2026-11-03
 

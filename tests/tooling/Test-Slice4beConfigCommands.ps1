@@ -142,7 +142,7 @@ param(
     [switch]$AdminInventoryConfigPreservationOnly,
     [switch]$AdminInventoryEditCreationOnly,
     [ValidateSet('All','Safety','InterveningInputs','QueuedInputs','QueuedLocation','QueuedQuantityMode','RetainedReceipts','Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog','BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity','InterveningCatalog','InterveningLocation','InterveningQuantityMode')][string]$AdminInventoryEditCreationCase='All',
-    [ValidateSet('All','ModalAdd','WorksheetAdd','ModalCatalogEdit','WorksheetCatalogEdit')][string]$AdminInventoryConfigPreservationCase='All',
+    [ValidateSet('All','MissingDefault','ModalAdd','WorksheetAdd','ModalCatalogEdit','WorksheetCatalogEdit')][string]$AdminInventoryConfigPreservationCase='All',
     [switch]$AdminInventoryRecordingOnly,
     [switch]$AdminInventoryGuideOnly,
     [switch]$AdminInventoryWorkbookBindingOnly,
