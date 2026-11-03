@@ -59,7 +59,21 @@ Config saves, but the quantity payload overwrites a later catalog edit. This is
 behavioral RED for quantity-only retry. The source correction removes old catalog
 fields from that payload; its GREEN remains pending. Related location/counting-mode
 cases already exist and gain a focused `InterveningInputs` selector for their RED.
-Focused-run cleanup is pending. No promotion or4be-A acceptance is claimed.
+That run closes unassisted at19:14:41Z with preservation; delayed audit19:15:01Z
+finds zero Excel faults. Its finalizer wait is139.688s, after Quit and explicit
+release returned.
+
+Candidate01 with tests80059cb0, controller
+`reports/runtime/inventory-edit-creation/red-4f35394b295c4d77991938237e347f36`, worker
+`reports/runtime/slice4be-admin-inventory-entry/f880437461fd44c8acd15c23a7b0bb29`,
+finishes assertions **56 PASS / 4 FAIL**. Both actual reopened Uploads fail safe
+refusal and saved-catalog partial reporting after a location/counting-mode change.
+Core92ec422c adds pending-plan checks and requires the eight known creation fields;
+its GREEN remains pending. Cleanup is still in the finalizer wait at this checkpoint.
+Testsfc8a6c3f add headless processing of genuinely queued Upload events after later
+catalog/location or counting-mode changes. This protects the quantity-only phase
+at the Domain boundary; that diagnostic is not yet run. No promotion or4be-A
+acceptance is claimed.
 
 ## Config preservation resume — 2026-11-03
 
