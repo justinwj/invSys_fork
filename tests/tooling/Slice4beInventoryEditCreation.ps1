@@ -11,6 +11,7 @@ function Install-InventoryEditCreationProbe {
     Install-InventoryEditBindingsProbe
     Install-InventoryEditCanonicalSaveProbe
     Install-InventoryEditReceiptProbe
+    Install-InventoryCreationNoticeProbe
     $project=$packages['invSys.Core.xlam'].VBProject
     $probe=$project.VBComponents.Add(1);$probe.Name='TestInventoryEditCreation'
     $probe.CodeModule.AddFromString(@'
@@ -131,15 +132,50 @@ End Function
 }
 function Invoke-InventoryCreationUpload($Fixture,$HostBook,[string]$Id,[string]$AuthorityCase='Authorized') {
     $diagnosis=Start-InventoryEditConfigDiagnosis $Fixture
+    [void](Run 'invSys.Admin.xlam' 'TestInventoryCatalogCompletion.ResetTrackingNotices')
     [void](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Execute' @($HostBook.Name,'Upload',$AuthorityCase,'ModalReturn',$Fixture.Root,$Fixture.Warehouse,$Fixture.Secret))
     $facts=([string](Run 'invSys.Admin.xlam' 'TestInventoryCommands.Facts')).Split('|')
     $ready=$facts.Count -eq 5 -and $facts[0] -ceq 'True' -and $facts[2] -ceq '1' -and $facts[3] -ceq 'True'
     Check ($Id+'.ActualCapturedUploadReached') $ready
     if(-not $ready){throw 'Actual Upload unavailable; not RED.'}
+    $notices=([string](Run 'invSys.Admin.xlam' 'TestInventoryCatalogCompletion.TrackingNoticeFacts')).Split('|')
+    if($notices.Count -ne 3){throw 'Tracking notice observer unavailable; not RED.'}
+    if($Id -ceq 'InventoryEditCreation.AuthorityLost'){
+        Check ($Id+'.StaleActionTrackingNoticeObserved') ([int]$notices[0] -ge 1 -and $notices[1] -ceq 'True' -and $notices[2] -ceq 'False')
+    }elseif($AuthorityCase -in @('ReplacementSession','OtherWarehouseAdmin')){
+        Check ($Id+'.ChangedAuthorityTrackingNoticeObserved') ([int]$notices[0] -ge 1 -and $notices[2] -ceq 'False')
+    }elseif([int]$notices[0] -gt 0){
+        Check ($Id+'.UnexpectedTrackingWarning') $false
+    }
     Complete-InventoryEditConfigDiagnosis $Fixture $diagnosis $Id
     Check ($Id+'.ConfigBytesPreserved') ($diagnosis.Config.FileHash -ceq (Get-AdminInventoryEntryHash $Fixture.Config))
     $saves=([string](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Facts')).Split('|')
     Check ($Id+'.NoConfigSave') ([int]$saves[0] -eq 0)
+}
+function Install-InventoryCreationNoticeProbe {
+    $admin=$packages['invSys.Admin.xlam'].VBProject
+    $probe=$admin.VBComponents.Item('TestInventoryCatalogCompletion').CodeModule
+    $probe.InsertLines($probe.CountOfDeclarationLines+1,'Private mTrackingNotices As Long, mStaleActionNotice As Boolean, mUnexpectedNotice As Boolean')
+    $probe.AddFromString(@'
+Public Sub ResetTrackingNotices()
+    mTrackingNotices = 0: mStaleActionNotice = False: mUnexpectedNotice = False
+End Sub
+Public Sub ObserveTrackingNotice(ByVal text As String, ByVal buttons As VbMsgBoxStyle, ByVal title As String)
+    mTrackingNotices = mTrackingNotices + 1
+    If Trim$(text) = "Tracking unavailable: the action context is no longer current." Then mStaleActionNotice = True
+    If Left$(text, Len("Tracking unavailable: ")) <> "Tracking unavailable: " Or buttons <> vbExclamation Or title <> "invSys Admin" Then mUnexpectedNotice = True
+End Sub
+Public Function TrackingNoticeFacts() As String
+    TrackingNoticeFacts = CStr(mTrackingNotices) & "|" & CStr(mStaleActionNotice) & "|" & CStr(mUnexpectedNotice)
+End Function
+'@)
+    $admin.VBComponents.Item('cProvisioningActivity').CodeModule.AddFromString(@'
+Private Function MsgBox(ByVal Prompt As String, Optional ByVal Buttons As VbMsgBoxStyle = vbOKOnly, _
+        Optional ByVal Title As String = "") As VbMsgBoxResult
+    TestInventoryCatalogCompletion.ObserveTrackingNotice Prompt, Buttons, Title
+    MsgBox = vbOK
+End Function
+'@)
 }
 function Get-InventoryCreationSavedResult($Book,[string]$Label) {
     $copy=Join-Path $runRoot ($Label+'.xlsx');Copy-Item -LiteralPath $Book.FullName -Destination $copy
