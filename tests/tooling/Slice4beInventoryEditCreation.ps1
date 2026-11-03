@@ -10,6 +10,7 @@ function Install-InventoryEditCreationProbe {
     Install-InventoryWorksheetResultProbe
     Install-InventoryEditBindingsProbe
     Install-InventoryEditCanonicalSaveProbe
+    Install-InventoryEditReceiptProbe
     $project=$packages['invSys.Core.xlam'].VBProject
     $probe=$project.VBComponents.Add(1);$probe.Name='TestInventoryEditCreation'
     $probe.CodeModule.AddFromString(@'
@@ -199,6 +200,10 @@ function Test-InventoryEditCreation($Fixture,$Other) {
     $csv=Join-Path $runRoot 'edit-creation-baseline.csv'
     @('ITEM_CODE,ITEM,UOM,LOCATION,QTY,CONDITION','DEMO-CREATE-BASE,Creation baseline,LB,CLEARVIEW,3,GOOD')|Set-Content $csv -Encoding ASCII
     if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareExactQuantityFixture' @($Fixture.Warehouse,$csv))){throw 'Owning seed unavailable; not RED.'}
+    if($AdminInventoryEditCreationCase -eq 'RetainedReceipts'){
+        Test-InventoryEditReceiptPhases $Fixture $Other 'Phase'
+        return
+    }
     $source=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
     $safety=@('BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity','InterveningCatalog','InterveningLocation','InterveningQuantityMode')
     $cases=@('Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog')+$safety
@@ -334,4 +339,7 @@ function Test-InventoryEditCreation($Fixture,$Other) {
         }finally{if($null -ne $hostBook){$hostBook.Close($false)}}
     }
     Test-InventoryConfigDiagnosticPreservation
+    if($AdminInventoryEditCreationCase -eq 'All'){
+        Test-InventoryEditReceiptPhases $Fixture $Other 'Phase'
+    }
 }
