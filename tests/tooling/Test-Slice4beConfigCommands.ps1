@@ -140,6 +140,7 @@ param(
     [switch]$AdminAggregationOnly,
     [switch]$AdminInventoryEntryOnly,
     [switch]$AdminInventoryConfigPreservationOnly,
+    [ValidateSet('All','ModalAdd','WorksheetAdd','ModalCatalogEdit','WorksheetCatalogEdit')][string]$AdminInventoryConfigPreservationCase='All',
     [switch]$AdminInventoryRecordingOnly,
     [switch]$AdminInventoryGuideOnly,
     [switch]$AdminInventoryWorkbookBindingOnly,

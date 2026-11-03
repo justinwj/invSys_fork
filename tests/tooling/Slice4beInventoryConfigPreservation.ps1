@@ -2,6 +2,24 @@
 . (Join-Path $PSScriptRoot 'Slice4beInventoryCatalogCompletion.ps1')
 function Install-InventoryConfigPreservationProbe {
     Install-InventoryCatalogCompletionProbe
+    $packages['invSys.Admin.xlam'].VBProject.VBComponents.Item('TestInventoryCatalogCompletion').CodeModule.AddFromString(@'
+Public Function PrepareCatalogEditTable(ByVal host As String, ByVal tableName As String, ByVal sku As String) As Boolean
+    Dim wb As Workbook, ws As Worksheet, lo As ListObject
+    Set wb = Application.Workbooks(host)
+    For Each ws In wb.Worksheets
+        For Each lo In ws.ListObjects
+            If lo.Name = tableName And lo.Name Like "invSys_Inventory_*" Then
+                lo.ListColumns("Action").DataBodyRange.Cells(1, 1).Value2 = "EDIT"
+                lo.ListColumns("Item Code").DataBodyRange.Cells(1, 1).Value2 = sku
+                lo.ListColumns("Quantity").DataBodyRange.Cells(1, 1).Value2 = 7#
+                lo.ListColumns("Edit Reason").DataBodyRange.Cells(1, 1).Value2 = "Config preservation completion"
+                PrepareCatalogEditTable = (lo.ListColumns("Quantity").DataBodyRange.Cells(1, 1).Value2 = 7#)
+                Exit Function
+            End If
+        Next lo
+    Next ws
+End Function
+'@)
 }
 
 function Set-InventoryConfigPresentation($Fixture) {
@@ -33,6 +51,7 @@ function Test-InventoryConfigPreservation($Fixture,$Other) {
     @('ITEM_CODE,ITEM,UOM,LOCATION,QTY,CONDITION','DEMO-CONFIG-BASE,Config baseline,LB,CLEARVIEW,3,GOOD')|Set-Content $csv -Encoding ASCII
     if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareExactQuantityFixture' @($Fixture.Warehouse,$csv))){throw 'Owning seed fixture unavailable; not RED.'}
     foreach($case in @('ModalAdd','WorksheetAdd','ModalCatalogEdit','WorksheetCatalogEdit')){
+        if($AdminInventoryConfigPreservationCase -ne 'All' -and $case -cne $AdminInventoryConfigPreservationCase){continue}
         SelectTarget $Fixture
         $id='InventoryConfigPreservation.'+$case
         $edit=$case -like '*Edit'
@@ -54,10 +73,9 @@ function Test-InventoryConfigPreservation($Fixture,$Other) {
                 if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareBoundaryTable' @($hostBook.Name))){throw 'Worksheet fixture unavailable; not RED.'}
                 $table=@($hostBook.Worksheets|ForEach-Object {$_.ListObjects}|Where-Object {$_.Name -like 'invSys_Inventory_*'})[0]
                 if($edit){
-                    # Excel Value2 expects a floating-point numeric VARIANT, not Int32.
-                    foreach($pair in @{Action='EDIT';'Item Code'=$sku;'Quantity'=7.0;'Edit Reason'='Config preservation completion'}.GetEnumerator()){
-                        $table.ListColumns.Item($pair.Key).DataBodyRange.Cells.Item(1,1).Value2=$pair.Value
-                    }
+                    # Keep mixed string/numeric fixture writes inside VBA; PowerShell's
+                    # cached COM setter binding casts numeric Value2 assignments to String.
+                    if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCatalogCompletion.PrepareCatalogEditTable' @($hostBook.Name,$table.Name,$sku))){throw 'Catalog EDIT fixture unavailable; not RED.'}
                 }
                 $extra=$table.ListColumns.Add();$extra.Name='USER NOTE';$extra.DataBodyRange.Cells.Item(1,1).Value2='Preserved extension'
                 $hostBook.Save()
