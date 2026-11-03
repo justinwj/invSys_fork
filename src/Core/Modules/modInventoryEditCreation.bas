@@ -46,8 +46,33 @@ Public Function PendingUnchanged(ByVal context As String, ByVal receipt As Varia
     If book Is Nothing Then Exit Function
     If Not book.Saved Then Exit Function
     If Not Eligible(book, CStr(receipt(4)), CStr(receipt(8))) Then Exit Function
+    If Not CatalogQuantityUnchanged(book, receipt) Then Exit Function
     Set book = Nothing: Set owner = Nothing
     PendingUnchanged = modInventoryCommands.CheckForm(context, report)
+Invalid:
+End Function
+
+Private Function CatalogQuantityUnchanged(ByVal book As Workbook, ByVal receipt As Variant) As Boolean
+    Dim table As ListObject, fields As Object, item As Object, row As Long
+    Dim payload As String, report As String, category As String
+    On Error GoTo Invalid
+    payload = CStr(receipt(11))
+    Set item = modRoleEventJson.ParseJsonObjectRole(Mid$(payload, 2, Len(payload) - 2), report)
+    If item Is Nothing Then Exit Function
+    Set table = modExecutionTarget.Table(book, "tblSkuCatalog")
+    Set fields = modAggregationSources.RequiredColumns(table, Array("SKU", "LOCATION", "TRACK_QTY", "ITEM_KIND", "CATEGORY"))
+    If fields Is Nothing Then Exit Function
+    For row = 1 To table.ListRows.Count
+        If CStr(table.DataBodyRange.Cells(row, fields("SKU")).Value2) = CStr(receipt(4)) Then
+            If CStr(table.DataBodyRange.Cells(row, fields("LOCATION")).Value2) <> CStr(item("Location")) Then Exit Function
+            If UCase$(Trim$(CStr(table.DataBodyRange.Cells(row, fields("TRACK_QTY")).Value2))) <> "TRUE" Then Exit Function
+            If UCase$(Trim$(CStr(table.DataBodyRange.Cells(row, fields("ITEM_KIND")).Value2))) <> "INVENTORY" Then Exit Function
+            category = UCase$(Trim$(CStr(table.DataBodyRange.Cells(row, fields("CATEGORY")).Value2)))
+            If category = "UTILITY" Or category = "SERVICE" Then Exit Function
+            CatalogQuantityUnchanged = True
+            Exit Function
+        End If
+    Next row
 Invalid:
 End Function
 
@@ -63,13 +88,16 @@ Public Function Payload(ByVal submitted As cInventoryEditRow, ByVal systemKey As
 End Function
 
 Public Function ValidPayload(ByVal receipt As Variant) As Boolean
-    Dim item As Object, report As String, payload As String
+    Dim item As Object, report As String, payload As String, name As Variant
     On Error GoTo Invalid
     payload = CStr(receipt(11))
     If Left$(payload, 1) <> "[" Or Right$(payload, 1) <> "]" Then Exit Function
     Set item = modRoleEventJson.ParseJsonObjectRole(Mid$(payload, 2, Len(payload) - 2), report)
     If item Is Nothing Then Exit Function
     If item.Count <> 8 Then Exit Function
+    For Each name In Array("System_Key", "SKU", "Qty", "Location", "Condition", "AttributesJson", "Note", "IoType")
+        If Not item.Exists(CStr(name)) Then Exit Function
+    Next name
     If "[" & modRoleEventJson.DictionaryToJson(item) & "]" <> payload Then Exit Function
     If CStr(item("System_Key")) <> receipt(8) Or CStr(item("SKU")) <> receipt(4) Then Exit Function
     If CDbl(item("Qty")) <> CDbl(receipt(10)) Or CStr(item("IoType")) <> "CREATE" Then Exit Function
