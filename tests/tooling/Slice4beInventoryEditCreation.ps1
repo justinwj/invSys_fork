@@ -26,7 +26,7 @@ Public Function BeforeQueue(ByVal planned As String) As Boolean
     Dim fso As Object, a As String, b As String
     If mMode = "" Then Exit Function
     mQueueReached = True: mPlanned = planned
-    BeforeQueue = (mMode = "QueueFailure" Or mMode = "InterveningEntity")
+    BeforeQueue = (mMode = "QueueFailure" Or mMode = "InterveningEntity" Or mMode = "InterveningCatalog")
     a = modTrainingWire.FileSha256(mSource): b = modTrainingWire.FileSha256(mHost)
     Set fso = CreateObject("Scripting.FileSystemObject")
     fso.CopyFile mSource, mCopy & ".xlsb", False
@@ -98,6 +98,13 @@ Public Function CreateOtherEntity(ByVal warehouse As String, ByVal sku As String
         If count <> 1 Then Exit Function
     End If
     CreateOtherEntity = True
+End Function
+Public Function ChangeLaterCatalog(ByVal warehouse As String, ByVal sku As String) As Boolean
+    Dim report As String, custom As Object
+    Set custom = CreateObject("Scripting.Dictionary")
+    custom.Add "USER NOTE", "Owned later custom field"
+    ChangeLaterCatalog = modAdmin.UpdateInventoryItemCatalogForWarehouse(warehouse, sku, _
+        "Owned later catalog item", "LB", "CLEARVIEW", , , , , , , custom, report, "", "config-admin", "S1")
 End Function
 '@)
     $packages['invSys.Inventory.Domain.xlam'].VBProject.VBComponents.Item('modInventoryApply').CodeModule.AddFromString(@'
@@ -188,7 +195,7 @@ function Test-InventoryEditCreation($Fixture,$Other) {
     @('ITEM_CODE,ITEM,UOM,LOCATION,QTY,CONDITION','DEMO-CREATE-BASE,Creation baseline,LB,CLEARVIEW,3,GOOD')|Set-Content $csv -Encoding ASCII
     if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareExactQuantityFixture' @($Fixture.Warehouse,$csv))){throw 'Owning seed unavailable; not RED.'}
     $source=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
-    $safety=@('BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity')
+    $safety=@('BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity','InterveningCatalog')
     $cases=@('Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog')+$safety
     if($AdminInventoryEditCreationCase -eq 'Safety'){$cases=$safety}
     elseif($AdminInventoryEditCreationCase -ne 'All'){$cases=@($AdminInventoryEditCreationCase)}
@@ -277,7 +284,7 @@ function Test-InventoryEditCreation($Fixture,$Other) {
             $preResult=Get-InventoryEditSavedResult ($prefix+'.xlsx')
             Check ($id+'.CatalogReceiptAndOperatorSavedBeforeQueue') ($facts[1] -ceq 'True' -and (Test-InventoryEditBinding $pre $preResult $Fixture $sku) -and $pre.Receipts[0].Event -ceq $receipt.Event -and $pre.Receipts[0].Key -ceq $receipt.Key -and $pre.Log.Count -eq 0)
             }
-            if($case -in @('QueueFailure','ApplyFailure','InterveningEntity')){
+            if($case -in @('QueueFailure','ApplyFailure','InterveningEntity','InterveningCatalog')){
                 Check ($id+'.CreationNotAppliedOrReportedImported') ($after.EntityQuantities.Count -eq $before.EntityQuantities.Count -and $after.LogRows -eq $before.LogRows -and $saved.Status -cne 'IMPORTED')
                 Check ($id+'.ExpectedQueueAndApplicationBoundary') ($(if($case -ne 'ApplyFailure'){$queued -eq ''}else{$queued -ceq $receipt.Event -and $facts[2] -ceq 'True'}))
             }elseif(-not $saveMode){
@@ -295,6 +302,9 @@ function Test-InventoryEditCreation($Fixture,$Other) {
                 if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCatalogCompletion.CreateOtherEntity' @($Fixture.Warehouse,$sku,$false))){throw 'Owning intervening creation unavailable; not RED.'}
                 Set-InventoryConfigPresentation $Fixture
             }
+            if($case -eq 'InterveningCatalog'){
+                if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCatalogCompletion.ChangeLaterCatalog' @($Fixture.Warehouse,$sku))){throw 'Owning later catalog update unavailable; not RED.'}
+            }
             $priorRetry=Get-AdminInventoryEntryFacts $Fixture -Persisted
             $hostBook=$excel.Workbooks.Open($hostPath,0,$false)
             [void](Run 'invSys.Admin.xlam' 'TestInventoryWorksheetResult.Arm' @('CreationRetry',$hostBook.Name))
@@ -307,11 +317,14 @@ function Test-InventoryEditCreation($Fixture,$Other) {
                 Check ($id+'.SavedCatalogPartialDisclosed') ($savedRetry.Text -match '(?i)catalog.*receipt.*saved' -and $savedRetry.Text -match '(?i)unconfirmed')
                 continue
             }
-            $expectedEvents=if($case -in @('QueueFailure','ApplyFailure','AfterCatalogSaveThrows')){1}else{0}
+            $expectedEvents=if($case -in @('QueueFailure','ApplyFailure','AfterCatalogSaveThrows','InterveningCatalog')){1}else{0}
             $expectedQty=if($expectedEvents){7}else{9}
             Check ($id+'.RetryRetainsCommandEventAndKey') ($savedRetry.Command -ceq $saved.Command -and $proof.Receipts.Count -eq 1 -and $proof.Receipts[0].Event -ceq $receipt.Event -and $proof.Receipts[0].Key -ceq $receipt.Key)
             Check ($id+'.RetryExactApplicationWithoutDuplication') ((Test-InventoryExactAppliedEffect $proof $receipt.Event $receipt.Key 7) -and $retried.LogRows -eq $priorRetry.LogRows+$expectedEvents -and $retried.AppliedRows -eq $priorRetry.AppliedRows+$expectedEvents -and $retried.EntityQuantities[$receipt.Key] -eq $expectedQty)
             Check ($id+'.RetryImportedAndOneCatalogApplication') ($savedRetry.Status -ceq 'IMPORTED' -and [regex]::Matches($proof.History,'Config preservation completion').Count -eq 1)
+            if($case -eq 'InterveningCatalog'){
+                Check ($id+'.QuantityRetryPreservesLaterCatalogAndCustomEdits') ($proof.Item -ceq 'Owned later catalog item' -and $proof.Custom -ceq 'Owned later custom field')
+            }
             if($case -eq 'Success'){Test-InventoryCreationIdentityLoss $Fixture $hostBook $sku $savedRetry}
         }finally{if($null -ne $hostBook){$hostBook.Close($false)}}
     }
