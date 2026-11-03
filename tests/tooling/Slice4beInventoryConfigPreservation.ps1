@@ -73,8 +73,8 @@ function Test-InventoryConfigPreservation($Fixture,$Other) {
                 if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareBoundaryTable' @($hostBook.Name))){throw 'Worksheet fixture unavailable; not RED.'}
                 $table=@($hostBook.Worksheets|ForEach-Object {$_.ListObjects}|Where-Object {$_.Name -like 'invSys_Inventory_*'})[0]
                 if($edit){
-                    # Keep mixed string/numeric fixture writes inside VBA; PowerShell's
-                    # cached COM setter binding casts numeric Value2 assignments to String.
+                    # Keep mixed string/numeric fixture writes inside VBA to avoid the
+                    # observed PowerShell COM numeric-to-String assignment failure.
                     if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCatalogCompletion.PrepareCatalogEditTable' @($hostBook.Name,$table.Name,$sku))){throw 'Catalog EDIT fixture unavailable; not RED.'}
                 }
                 $extra=$table.ListColumns.Add();$extra.Name='USER NOTE';$extra.DataBodyRange.Cells.Item(1,1).Value2='Preserved extension'

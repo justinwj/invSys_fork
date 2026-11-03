@@ -1,5 +1,56 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+## Config preservation resume — 2026-11-03
+
+D8-INV-CONFIG-01 is approved, including interactive catalog-only completion.
+Product remains the unchanged `validation-inventory-receipts-01` package set
+(build source `47d2ac5c`, product `a9faab9c`). The partial Core implementation is
+not built. Controllers below are under main `reports/runtime/inventory-config-preservation/`;
+workers are under `reports/runtime/slice4be-admin-inventory-entry/`.
+
+| Controller / worker | Test source | Result and exclusion |
+|---|---|---|
+| `red-25a2015cb8e04cdfbcb6710cd11f1b19` / `aef2144f957b43449647bf5d974c08ce` | `99e06ae9` plus the numeric fixture correction and observer compatibility later committed in `5c294dd9` | 11 PASS / 4 FAIL. Modal Add independently saves its exact entity but fails zero Config saves, byte preservation and header-font preservation. Worksheet preparation fails with HRESULT `0x800A9C68`; that failure is not behavioral RED. |
+| `red-52c50108aabc46d18b4a7ed884b100b0` / `890f3b16fc184fa0bde866ffea45dca8` | `5c294dd9` (same contents at launch) | 26 PASS / 10 FAIL. Modal Add, worksheet ADD and modal catalog-only Edit each reproduce the three Config failures while exact business results pass. Worksheet catalog-only EDIT stops before dispatch on a Double-to-String COM assignment exception; not behavioral RED for that path. |
+
+Both cohorts compile all five instrumented packages, restore settings, preserve
+package hashes and close Excel unassisted. Closures are17:32:59Z and17:39:17Z;
+delayed native audits through17:39:53Z find zero Excel faults. The first fixture
+HRESULT did not recur in the second cohort; its cause remains unresolved.
+Changing Int32 to Double did not fix the worksheet EDIT fixture. Test commit
+`6610aaa1` moves its mixed-type staging assignments into a typed VBA helper and
+adds case selection; it changes no product behavior.
+
+**Config diagnosis:** the three completed cases observe three Config saves,
+one per inbox role, with unchanged table cells/shapes, preserved Auth bytes and
+read-only diagnostic extraction. Header-font changes directly violate the
+approved presentation contract. Earlier controlled formatting comparisons below
+establish the formatting cause; the resumed strict binary classifier still reports
+unresolved additional differences, so these cohorts do not establish blanket
+serialization equivalence. No product GREEN or 4be-A acceptance is claimed.
+
+**Typed fixture result:** test `6610aaa1`, controller
+`red-0c4172f29fc344e087e744598a62c6d3`, worker
+`165f2955f75f4f2c838789b8ca9b4227`, selects only WorksheetCatalogEdit and completes
+**16 PASS / 3 FAIL**. All five instrumented packages compile and the actual
+Upload handler/captured owner are reached. ExactEntityAndQuantitySaved,
+ExactCatalogItemCompleted and ImportedStatus fail; Config bytes/presentation,
+Auth bytes, the unknown operator column and diagnostic reads are preserved.
+Closure17:42:19Z restores settings, preserves packages and closes Excel unassisted;
+the delayed native audit reports zero Excel faults. No Config-formatting RED is
+claimed for this refused completion.
+
+Source confirms a routing mismatch: interactive
+`modAdmin.ApplyInventoryWorksheetRecordForWarehouse` exits through Core
+`modInventoryEditCommands.Execute`, whose `modInventoryEditPlan.Build` requires
+`ResolveSingleEntity`. Zero managed entities cannot reach Admin
+`CompleteCatalogItem`. The planner is unchanged from the frozen product; later
+recording edits do not explain this refusal. Architecture D8-INV-CONFIG-01 explicitly
+requires this worksheet completion but describes the superseded Admin route.
+Proposed D8-INV-EDIT-02 resolves the named routing/receipt contract, retaining the
+existing authority and durable retry rules. Approval is pending; no product edits
+beyond the previously preserved partial Core draft, no build and no GREEN follow.
+
 ## Config diagnosis — worksheet recording,2026-10-21
 
 Product remains catalog46 `validation-inventory-uom-02` from `bd438789`; the
