@@ -139,7 +139,7 @@ function Get-InventoryEditRows($Table) {
 function Read-InventoryEditReceiptCopy([string]$Path,[string]$Sku,[string]$Command='') {
     $hash=Get-AdminInventoryEntryHash $Path
     $book=$excel.Workbooks.Open($Path,0,$true)
-    $result=[pscustomobject]@{CatalogMatches=0;Item='';Reason='';History='';Custom='';Receipts=@();Applied=@();AppliedRecords=@();Log=@();Preserved=$false}
+    $result=[pscustomobject]@{CatalogMatches=0;Item='';Reason='';History='';Custom='';Location='';TrackQty='';ItemKind='';Receipts=@();Applied=@();AppliedRecords=@();Log=@();Preserved=$false}
     try{
         foreach($sheet in $book.Worksheets){foreach($table in $sheet.ListObjects){
             if($table.Name -notin @('tblSkuCatalog','tblAppliedEvents','tblInventoryLog','tblInventoryEditReceipts')){continue}
@@ -151,6 +151,9 @@ function Read-InventoryEditReceiptCopy([string]$Path,[string]$Sku,[string]$Comma
                     $result.Reason=Get-InventoryEditCell $row $table 'LAST_EDIT_REASON'
                     $result.History=Get-InventoryEditCell $row $table 'EDIT_HISTORY'
                     $result.Custom=Get-InventoryEditCell $row $table 'USER NOTE'
+                    $result.Location=Get-InventoryEditCell $row $table 'LOCATION'
+                    $result.TrackQty=Get-InventoryEditCell $row $table 'TRACK_QTY'
+                    $result.ItemKind=Get-InventoryEditCell $row $table 'ITEM_KIND'
                 }}
             }elseif($table.Name -ieq 'tblAppliedEvents'){
                 foreach($row in $rows){

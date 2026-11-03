@@ -38,7 +38,7 @@ Public Sub AfterQueue(ByVal eventId As String, ByVal succeeded As Boolean)
     If mMode <> "" And succeeded Then mQueued = eventId
 End Sub
 Public Function BlockBatch(ByVal eventId As String) As Boolean
-    If mMode = "ApplyFailure" And mQueued <> "" And mQueued = eventId Then
+    If (mMode = "ApplyFailure" Or mMode Like "Queued*") And mQueued <> "" And mQueued = eventId Then
         mBatchBlocked = True: BlockBatch = True
     End If
 End Function
@@ -55,6 +55,11 @@ Public Function LaterQuantity(ByVal warehouse As String, ByVal sku As String) As
     Dim report As String
     LaterQuantity = modInventoryQuantityCommands.SetSingleEntityQuantity( _
         warehouse, "S1", "config-admin", sku, 9, "Owned later quantity", report)
+End Function
+Public Function ApplyQueued(ByVal warehouse As String, ByVal eventId As String) As Boolean
+    Dim report As String, processed As Long, applied As Boolean
+    processed = modProcessor.RunBatch(warehouse, 0, report, eventId, applied, True)
+    ApplyQueued = applied
 End Function
 '@)
     $owner=$project.VBComponents.Item('modRoleEventWriter').CodeModule
@@ -206,9 +211,11 @@ function Test-InventoryEditCreation($Fixture,$Other) {
     }
     $source=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
     $safety=@('BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity','InterveningCatalog','InterveningLocation','InterveningQuantityMode')
-    $cases=@('Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog')+$safety
+    $queuedCases=@('QueuedLocation','QueuedQuantityMode')
+    $cases=@('Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog')+$safety+$queuedCases
     if($AdminInventoryEditCreationCase -eq 'Safety'){$cases=$safety}
     elseif($AdminInventoryEditCreationCase -eq 'InterveningInputs'){$cases=@('InterveningLocation','InterveningQuantityMode')}
+    elseif($AdminInventoryEditCreationCase -eq 'QueuedInputs'){$cases=$queuedCases}
     elseif($AdminInventoryEditCreationCase -ne 'All'){$cases=@($AdminInventoryEditCreationCase)}
     foreach($case in $cases){
         SelectTarget $Fixture
@@ -295,9 +302,9 @@ function Test-InventoryEditCreation($Fixture,$Other) {
             $preResult=Get-InventoryEditSavedResult ($prefix+'.xlsx')
             Check ($id+'.CatalogReceiptAndOperatorSavedBeforeQueue') ($facts[1] -ceq 'True' -and (Test-InventoryEditBinding $pre $preResult $Fixture $sku) -and $pre.Receipts[0].Event -ceq $receipt.Event -and $pre.Receipts[0].Key -ceq $receipt.Key -and $pre.Log.Count -eq 0)
             }
-            if($case -in @('QueueFailure','ApplyFailure') -or $case -like 'Intervening*'){
+            if($case -in @('QueueFailure','ApplyFailure') -or $case -like 'Intervening*' -or $case -like 'Queued*'){
                 Check ($id+'.CreationNotAppliedOrReportedImported') ($after.EntityQuantities.Count -eq $before.EntityQuantities.Count -and $after.LogRows -eq $before.LogRows -and $saved.Status -cne 'IMPORTED')
-                Check ($id+'.ExpectedQueueAndApplicationBoundary') ($(if($case -ne 'ApplyFailure'){$queued -eq ''}else{$queued -ceq $receipt.Event -and $facts[2] -ceq 'True'}))
+                Check ($id+'.ExpectedQueueAndApplicationBoundary') ($(if($case -eq 'ApplyFailure' -or $case -like 'Queued*'){$queued -ceq $receipt.Event -and $facts[2] -ceq 'True'}else{$queued -eq ''}))
             }elseif(-not $saveMode){
                 Check ($id+'.ExactFreshCreationApplied') ((Test-InventoryExactAppliedEffect $snapshot $receipt.Event $receipt.Key 7) -and $after.EntityQuantities.Count -eq $before.EntityQuantities.Count+1 -and $after.EntityQuantities[$receipt.Key] -eq 7)
                 Check ($id+'.ExpectedOperatorSaveOutcome') ($(if($case -eq 'Success'){$saved.Status -ceq 'IMPORTED'}else{$saved.Status -cne 'IMPORTED'}))
@@ -306,6 +313,26 @@ function Test-InventoryEditCreation($Fixture,$Other) {
             SelectTarget $Fixture
             [void](Run 'invSys.Core.xlam' 'TestInventoryEditCreation.Arm' @('','','',''))
             [void](Run $script:InventoryEditSaveProbePackage 'TestInventoryEditSave.Arm' @('',$source,$hostPath,''))
+            if($case -like 'Queued*'){
+                $change=if($case -eq 'QueuedLocation'){'InterveningLocation'}else{'InterveningQuantityMode'}
+                if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCatalogCompletion.ChangeLaterCatalog' @($Fixture.Warehouse,$sku,$change))){throw 'Owning post-queue catalog update unavailable; not RED.'}
+                $priorApply=Read-InventoryEditReceiptCopy $source $sku $saved.Command
+                $applied=[bool](Run 'invSys.Core.xlam' 'TestInventoryEditCreation.ApplyQueued' @($Fixture.Warehouse,$receipt.Event))
+                $proof=Read-InventoryEditReceiptCopy $source $sku $saved.Command
+                Check ($id+'.HeadlessApplicationPreservesLaterCatalog') ($proof.Item -ceq $priorApply.Item -and $proof.Custom -ceq $priorApply.Custom -and $proof.Location -ceq $priorApply.Location -and $proof.TrackQty -ceq $priorApply.TrackQty -and $proof.ItemKind -ceq $priorApply.ItemKind)
+                Check ($id+'.HeadlessApplicationRetainsReceiptIdentities') ($proof.Receipts.Count -eq 1 -and $proof.Receipts[0].Command -ceq $receipt.Command -and $proof.Receipts[0].Event -ceq $receipt.Event -and $proof.Receipts[0].Key -ceq $receipt.Key)
+                if($case -eq 'QueuedQuantityMode'){
+                    Check ($id+'.ChangedCountingModeCannotApplyDifferentEffect') (-not $applied -and $proof.Log.Count -eq 0 -and @($proof.AppliedRecords|Where-Object Event -CEQ $receipt.Event).Count -eq 0)
+                }else{
+                    Check ($id+'.HeadlessExactCreationApplied') ($applied -and (Test-InventoryExactAppliedEffect $proof $receipt.Event $receipt.Key 7))
+                    $hostBook=$excel.Workbooks.Open($hostPath,0,$false)
+                    Invoke-InventoryCreationUpload $Fixture $hostBook ($id+'.ReopenedAfterHeadlessApply')
+                    $savedRetry=Get-InventoryCreationSavedResult $hostBook ($case+'-retry')
+                    $retried=Read-InventoryEditReceiptCopy $source $sku $savedRetry.Command
+                    Check ($id+'.ImportedRetryDoesNotReapplyEitherPhase') ($savedRetry.Status -ceq 'IMPORTED' -and $savedRetry.Command -ceq $saved.Command -and $retried.Log.Count -eq 1 -and $retried.Item -ceq $priorApply.Item -and $retried.Location -ceq $priorApply.Location -and $retried.Custom -ceq $priorApply.Custom)
+                }
+                continue
+            }
             if($case -in @('Success','ResultSaveFailure')){
                 if(-not [bool](Run 'invSys.Core.xlam' 'TestInventoryEditCreation.LaterQuantity' @($Fixture.Warehouse,$sku))){throw 'Owning later quantity unavailable; not RED.'}
             }
