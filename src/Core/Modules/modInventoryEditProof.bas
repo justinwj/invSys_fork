@@ -55,6 +55,7 @@ Public Function QuantityApplied(ByVal context As String, ByVal receipt As Varian
     ' Do not add a second mutable success flag or write a receipt after sign-out.
     Dim path As String, hash As String, copy As String, book As Workbook, table As ListObject
     Dim fields As Object, row As Long, events As Long, lines As Long, delta As Variant
+    Dim expectedType As String, item As Object
     On Error GoTo Failed
     applied = False
     If CStr(receipt(7)) = "" Then
@@ -62,7 +63,15 @@ Public Function QuantityApplied(ByVal context As String, ByVal receipt As Varian
         QuantityApplied = modInventoryCommands.CheckForm(context, report): applied = QuantityApplied
         Exit Function
     End If
-    If CStr(receipt(12)) <> "ADJUST" Or CStr(receipt(8)) = "" Then GoTo Failed
+    If CStr(receipt(8)) = "" Then GoTo Failed
+    Select Case CStr(receipt(12))
+        Case "ADJUST": expectedType = "ADMIN_INVENTORY_ADJUST"
+        Case "CREATE"
+            expectedType = "INVENTORY_CREATE"
+            If Not modInventoryEditCreation.ValidPayload(receipt) Then GoTo Failed
+            Set item = modRoleEventJson.ParseJsonObjectRole(Mid$(CStr(receipt(11)), 2, Len(CStr(receipt(11))) - 2), report)
+        Case Else: GoTo Failed
+    End Select
     If Not IsNumeric(receipt(9)) Or Not IsNumeric(receipt(10)) Then GoTo Failed
     path = modInventoryCommands.SourceInventoryPath(context)
     If path = "" Or modAggregationFiles.Dirty(path) Then GoTo Failed
@@ -82,11 +91,17 @@ Public Function QuantityApplied(ByVal context As String, ByVal receipt As Varian
     If events > 1 Then GoTo Failed
     Set table = modExecutionTarget.Table(book, "tblInventoryLog")
     Set fields = modAggregationSources.RequiredColumns(table, _
-        Array("EventID", "System_Key", "SKU", "QtyDelta", "WarehouseId", "StationId", "UserId"))
+        Array("EventID", "System_Key", "SKU", "QtyDelta", "WarehouseId", "StationId", "UserId", "EventType"))
     If fields Is Nothing Then GoTo Failed
+    If CStr(receipt(12)) = "CREATE" Then
+        Set fields = modAggregationSources.RequiredColumns(table, Array("EventID", "System_Key", "SKU", _
+            "QtyDelta", "WarehouseId", "StationId", "UserId", "EventType", "Location", "Condition", "AttributesJson"))
+        If fields Is Nothing Then GoTo Failed
+    End If
     For row = 1 To table.ListRows.Count
         If CStr(table.DataBodyRange.Cells(row, fields("EventID")).Value2) = receipt(7) Then
             lines = lines + 1
+            If CStr(table.DataBodyRange.Cells(row, fields("EventType")).Value2) <> expectedType Then GoTo Failed
             If CStr(table.DataBodyRange.Cells(row, fields("System_Key")).Value2) <> receipt(8) Then GoTo Failed
             If CStr(table.DataBodyRange.Cells(row, fields("SKU")).Value2) <> receipt(4) Then GoTo Failed
             If CStr(table.DataBodyRange.Cells(row, fields("WarehouseId")).Value2) <> receipt(1) Then GoTo Failed
@@ -95,6 +110,11 @@ Public Function QuantityApplied(ByVal context As String, ByVal receipt As Varian
             delta = table.DataBodyRange.Cells(row, fields("QtyDelta")).Value2
             If Not IsNumeric(delta) Then GoTo Failed
             If Abs(CDbl(delta) - (CDbl(receipt(10)) - CDbl(receipt(9)))) > 0.0000001 Then GoTo Failed
+            If CStr(receipt(12)) = "CREATE" Then
+                If CStr(table.DataBodyRange.Cells(row, fields("Location")).Value2) <> CStr(item("Location")) Then GoTo Failed
+                If CStr(table.DataBodyRange.Cells(row, fields("Condition")).Value2) <> CStr(item("Condition")) Then GoTo Failed
+                If CStr(table.DataBodyRange.Cells(row, fields("AttributesJson")).Value2) <> CStr(item("AttributesJson")) Then GoTo Failed
+            End If
         End If
     Next row
     If lines <> events Then GoTo Failed

@@ -324,7 +324,7 @@ Public Function PreflightInventoryWorksheetTable(ByVal lo As ListObject, _
             ElseIf interactiveContext <> "" And _
                     UCase$(modInventoryItemFields.InventoryWorksheetText(lo, rowIndex, HDR_ACTION)) = "EDIT" Then
                 rowError = "": editReference = ""
-                If Not modInventoryEditCommands.Prepare(interactiveContext, rowIndex, editReference, rowError) Then
+                If Not modAdminInventoryCreate.PrepareWorksheetEdit(interactiveContext, rowIndex, editReference, rowError) Then
                     If errors <> "" Then errors = errors & vbCrLf
                     errors = errors & "Row " & CStr(rowIndex) & ": " & rowError
                 End If
@@ -673,7 +673,7 @@ Private Function ValidateInventoryWorksheetRow(ByVal lo As ListObject, _
         If Not modAdmin.ValidateWorksheetCreateReceipt(record, interactiveContext, receiptEvent, rowError) Then Exit Function
     End If
     If actionName = "EDIT" And interactiveContext <> "" Then
-        If Not modInventoryEditCommands.Prepare(interactiveContext, rowIndex, editReference, rowError) Then Exit Function
+        If Not modAdminInventoryCreate.PrepareWorksheetEdit(interactiveContext, rowIndex, editReference, rowError) Then Exit Function
         record("EditReference") = editReference
     End If
     ValidateInventoryWorksheetRow = True

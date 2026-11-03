@@ -45,12 +45,14 @@ End Function
 ' A prepared reference is saved by the existing operator result boundary.
 ' Its presence alone does not prove application.
 Public Function Prepare(ByVal context As String, ByVal row As Long, _
-        ByRef reference As String, ByRef report As String) As Boolean
+        ByRef reference As String, ByRef report As String, _
+        Optional ByVal creationKey As String = "", Optional ByRef needsCreationKey As Boolean = False) As Boolean
     Dim submitted As cInventoryEditRow, command As String, eventId As String
     Dim receipt As Variant, catalog As Variant, found As Boolean, applied As Boolean, entry As Object
-    Dim existing As String, preparedSaved As Boolean, prior As Object
+    Dim existing As String, preparedSaved As Boolean, prior As Object, key As Variant, priorReceipt As Variant
     On Error GoTo Refused
     reference = ""
+    needsCreationKey = False
     Set submitted = New cInventoryEditRow
     If Not submitted.Read(context, row, report) Then Exit Function
     existing = submitted.ResultText
@@ -74,10 +76,33 @@ Public Function Prepare(ByVal context As String, ByVal row As Long, _
         If submitted.Imported And Not applied Then GoTo Refused
     Else
         If submitted.Imported Then GoTo Refused
-        If Not modInventoryEditPlan.Build(context, submitted, command, eventId, receipt, catalog, report) Then Exit Function
+        ' An unsaved CREATE plan can continue only in its original captured
+        ' command. A reopened row without its durable identity must refuse.
+        If Not mPrepared Is Nothing Then
+            If mPrepared.Exists(context & "|" & command) Then
+                Set prior = mPrepared(context & "|" & command): priorReceipt = prior("Receipt")
+                If CStr(priorReceipt(12)) = "CREATE" Then creationKey = CStr(priorReceipt(8))
+            End If
+        End If
+        If Not modInventoryEditPlan.Build(context, submitted, command, eventId, receipt, catalog, report, creationKey, needsCreationKey) Then
+            If needsCreationKey And modInventoryEditWire.ReferenceField(existing, "Command:") <> "" Then
+                needsCreationKey = False: GoTo Refused
+            End If
+            Exit Function
+        End If
         If modInventoryEditWire.ReferenceField(existing, "Command:") <> "" Then
             If Not modInventoryEditPlan.Matches(submitted, existing, receipt) Then GoTo Refused
         End If
+    End If
+    If CStr(receipt(12)) = "CREATE" And Not mPrepared Is Nothing Then
+        For Each key In mPrepared.Keys
+            If Left$(CStr(key), Len(context) + 1) = context & "|" Then
+                Set prior = mPrepared(key): priorReceipt = prior("Receipt")
+                If CLng(prior("Row")) <> row And CStr(priorReceipt(12)) = "CREATE" Then
+                    If StrComp(CStr(priorReceipt(4)), CStr(receipt(4)), vbTextCompare) = 0 Then GoTo Refused
+                End If
+            End If
+        Next key
     End If
     ' Preparation covers the whole selection before its first canonical write.
     ' Completed receipts need only read-only proof, even when the source is open.
@@ -139,9 +164,7 @@ Public Function Execute(ByVal context As String, ByVal row As Long, ByRef report
                         Optional ByRef observedEvent As String = "") As Boolean
     Dim reference As String, command As String, entry As Object, receipt As Variant, catalog As Variant
     Dim names As Variant, values As Variant, headers As Variant, i As Long, result As Variant
-    Dim found As Boolean, savedReceipt As Variant, applied As Boolean, queued As Boolean, payload As String
-    Dim eventId As String, batchReport As String, processed As Long
-    Dim attempted As Boolean, submitted As Boolean
+    Dim found As Boolean, savedReceipt As Variant, applied As Boolean
     On Error GoTo Failed
     observedEvent = ""
     If Not Prepare(context, row, reference, report) Then Exit Function
@@ -170,43 +193,12 @@ Public Function Execute(ByVal context As String, ByVal row As Long, ByRef report
         entry("Saved") = True
     End If
     If Not modInventoryEditProof.QuantityApplied(context, receipt, applied, report) Then GoTo Failed
-    If applied And CStr(receipt(12)) = "ADJUST" Then observedEvent = CStr(receipt(7)) & vbTab & "Submitted"
+    If applied And CStr(receipt(7)) <> "" Then observedEvent = CStr(receipt(7)) & vbTab & "Submitted"
     If Not applied Then
-        If Not modInventoryEditPlan.PendingEntityUnchanged(context, receipt) Then
-            report = "The original pending quantity plan changed. No adjustment was resubmitted."
-            GoTo Failed
-        End If
-        eventId = CStr(receipt(7))
-        If Not modInventoryCreateReceipts.ReadPendingAdjustment(context, eventId, queued, payload, report) Then GoTo Failed
-        If queued And payload <> CStr(receipt(11)) Then GoTo Failed
-        If queued Then observedEvent = eventId & vbTab & "Submitted"
-        If Not modInventoryCommands.SelectSku(context, CStr(receipt(4)), report) Then GoTo Failed
-        If Not modInventoryCommands.BeginQuantity(context, CStr(receipt(8)), CDbl(receipt(10)), report) Then GoTo Failed
-        If Not queued Then
-            If Not modInventoryCommands.CheckForm(context, report) Then GoTo Failed
-            If Not PendingWriteAvailable(context, report) Then GoTo Failed
-            submitted = modRoleEventWriter.QueueAdminInventoryAdjustEvent(CStr(receipt(1)), CStr(receipt(2)), _
-                CStr(receipt(3)), CStr(receipt(11)), "Admin set inventory quantity. Reason: " & CStr(entry("Reason")), _
-                0, eventId, report, "", attempted)
-            If submitted Then
-                observedEvent = eventId & vbTab & "Submitted"
-            ElseIf attempted Then
-                observedEvent = eventId & vbTab & "Unknown"
-            End If
-            If Not submitted Then GoTo Failed
-            If eventId <> CStr(receipt(7)) Then GoTo Failed
-        End If
-        If Not modInventoryCommands.CheckForm(context, report) Then GoTo Failed
-        If Not PendingWriteAvailable(context, report) Then GoTo Failed
-        If Not modInventoryCommands.BeginQuantitySave(context, report) Then GoTo Failed
-        processed = modProcessor.RunBatch(CStr(receipt(1)), 0, batchReport, eventId, applied, True)
-        If Not applied Then GoTo Failed
-        If Not modInventoryCommands.ConfirmQuantity(context, eventId, report) Then GoTo Failed
-        If Not modInventoryEditProof.QuantityApplied(context, receipt, applied, report) Then GoTo Failed
-        If Not applied Then GoTo Failed
+        If Not modInventoryEditQuantity.ApplyPending(context, receipt, CStr(entry("Reason")), observedEvent, report) Then GoTo Failed
     End If
     report = "Catalog changes and the EDIT receipt are confirmed saved." & vbCrLf
-    If CStr(receipt(12)) = "ADJUST" Then
+    If CStr(receipt(12)) = "ADJUST" Or CStr(receipt(12)) = "CREATE" Then
         report = report & "The original quantity event is confirmed applied."
     ElseIf CStr(receipt(12)) = "NOOP" Then
         report = report & "Quantity matched the target; no quantity event was needed."
@@ -245,20 +237,7 @@ Refused:
 End Function
 
 Private Function PendingWriteAvailable(ByVal context As String, ByRef report As String) As Boolean
-    Dim path As String, book As Workbook
-    On Error GoTo Refused
-    path = modInventoryCommands.SourceInventoryPath(context)
-    If path = "" Then GoTo Refused
-    For Each book In Application.Workbooks
-        If modAggregationFiles.SameFile(book.FullName, path) Then
-            report = "Close the Inventory workbook before uploading pending EDIT changes."
-            Exit Function
-        End If
-    Next book
-    PendingWriteAvailable = True
-    Exit Function
-Refused:
-    report = "The pending EDIT source could not be confirmed."
+    PendingWriteAvailable = modInventoryEditQuantity.WriteAvailable(context, report)
 End Function
 
 Public Sub ReleaseContext(ByVal context As String)

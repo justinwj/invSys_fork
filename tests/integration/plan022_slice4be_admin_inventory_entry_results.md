@@ -1,5 +1,44 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+## Approved worksheet completion implementation — 2026-11-03
+
+User chat approval authorizes D8-INV-EDIT-02; the linked GitHub review recommends
+approval but is not itself approval. Architecture4.11/Plan022/Controls1.720 record
+the decision. The original increment deadline remains22:14:05Z.
+
+Expanded test `a9316318` runs against unchanged
+`deploy/validation-inventory-receipts-01` (build47d2ac5c/producta9faab9c): controller
+`reports/runtime/inventory-edit-creation/red-ea97035f3c2742f185c2167e7c57cc0c`, worker
+`reports/runtime/slice4be-admin-inventory-entry/e46798089aeb4ea7bf6eea1fb31d5a0e`.
+It finishes **98 PASS / 17 FAIL**. All eight cases reach actual captured Upload;
+all five instrumented packages compile. Four positive/failure cases each lack the
+required CREATE receipt, catalog history/custom-field application and queue entry
+(16 failures). The later authority-yield checkpoint is unreachable after this
+preflight refusal (one failure), not evidence of an unauthorized write. Zero
+quantity, duplicate rows and retired catalog selections refuse without canonical
+changes. All eight read-only extractions and Config/Auth/unknown-column checks pass.
+Refusal-path Config preservation is not CREATE-path formatting GREEN.
+
+No bound receipt was fabricated: dependent applied/reopened/identity-loss checks
+are explicitly not executed on this baseline. Follow-up tests6c4780bd/a194686b
+add canonical-save uncertainty, replaced sessions/warehouses, retired history,
+intervening entities and preservation of later catalog/custom edits. Those deeper
+checks remain candidate gates. c1e9286c adds fixed shutdown timestamps only,
+including a separate finalizer-wait boundary; teardown policy is unchanged.
+
+Initial source draft retains Admin key generation and extends the private receipt
+with CREATE, saved event/key proof and quantity-only retry. Config-preserving
+inbox preparation keeps shared/automation callers on their original path. Nine
+Config path helpers move without body changes to keep the large module from
+growing. Static draft evidence:391 components/6737 procedures, Run9/unresolved45,
+duplicates191 (previous194); no baseline oversized-module growth. Five retained
+source guards pass36/36 with explicit RepoRoot. These are source checks, not
+packaged acceptance. Source review identifies a pending test-first correction:
+the preliminary CREATE payload must not overwrite later catalog edits on retry.
+
+At this checkpoint, baseline cleanup/native audit and the first candidate build
+are pending. No product GREEN, promotion or4be-A acceptance is claimed.
+
 ## Config preservation resume — 2026-11-03
 
 D8-INV-CONFIG-01 is approved, including interactive catalog-only completion.

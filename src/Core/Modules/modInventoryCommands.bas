@@ -312,6 +312,25 @@ Refused:
     Expire key, report
 End Function
 
+' Only interactive creation/completion opts into Config-preserving preparation.
+' Every role retains the captured session and exact Config ownership boundary.
+Public Function PrepareCreationInboxes(ByVal key As String, ByRef report As String) As Boolean
+    Dim entry As Object, role As Variant, inbox As String
+    On Error GoTo Refused
+    If Not CheckForm(key, report) Then Exit Function
+    Set entry = mForms.Item(key)
+    For Each role In Array("RECEIVE", "SHIP", "PRODUCTION")
+        If Not CheckForm(key, report) Then Exit Function
+        If Not modConfig.EnsureStationInboxWithoutFormatting(CStr(entry("Warehouse")), CStr(entry("Station")), _
+            CStr(role), CStr(entry("Config")), inbox, report, key) Then Exit Function
+        If Not CheckForm(key, report) Then Exit Function
+    Next role
+    PrepareCreationInboxes = True
+    Exit Function
+Refused:
+    report = "Captured inventory inbox preparation is unconfirmed."
+End Function
+
 Public Function BeginCreateSave(ByVal key As String, ByRef report As String) As Boolean
     BeginCreateSave = BeginResultSave(key, PHASE_CREATE, report)
 End Function

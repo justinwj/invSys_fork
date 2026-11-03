@@ -150,7 +150,7 @@ End Function
 
 Private Function ReadInbox(ByVal context As String, ByVal warehouse As String, ByVal station As String, _
         ByVal user As String, ByVal eventId As String, ByRef chosen As Object, ByRef report As String, _
-        Optional ByVal eventType As String = "INVENTORY_CREATE") As Boolean
+        Optional ByVal eventType As String = "INVENTORY_CREATE", Optional ByVal pendingOnly As Boolean = False) As Boolean
     Dim path As String, hash As String, book As Workbook, copy As String, table As ListObject
     Dim fields As Object, row As Long, record As Object, name As Variant
     On Error GoTo Failed
@@ -165,7 +165,7 @@ Private Function ReadInbox(ByVal context As String, ByVal warehouse As String, B
     Set fields = modAggregationSources.RequiredColumns(table, _
         Array("EventID", "EventType", "WarehouseId", "StationId", "UserId", "PayloadJson"))
     If fields Is Nothing Then GoTo Failed
-    If eventType = "ADMIN_INVENTORY_ADJUST" Then
+    If eventType = "ADMIN_INVENTORY_ADJUST" Or pendingOnly Then
         Set fields = modAggregationSources.RequiredColumns(table, _
             Array("EventID", "EventType", "WarehouseId", "StationId", "UserId", "PayloadJson", "Status"))
         If fields Is Nothing Then GoTo Failed
@@ -173,8 +173,10 @@ Private Function ReadInbox(ByVal context As String, ByVal warehouse As String, B
     For row = 1 To table.ListRows.Count
         Set record = CreateObject("Scripting.Dictionary")
         For Each name In fields.Keys: record.Add CStr(name), CStr(table.DataBodyRange.Cells(row, fields(name)).Value2): Next name
-        If CStr(record("EventID")) = eventId And eventType = "ADMIN_INVENTORY_ADJUST" Then
-            If CStr(record("Status")) <> "NEW" Then GoTo Failed
+        If CStr(record("EventID")) = eventId Then
+            If eventType = "ADMIN_INVENTORY_ADJUST" Or pendingOnly Then
+                If CStr(record("Status")) <> "NEW" Then GoTo Failed
+            End If
         End If
         Consider record, warehouse, station, user, eventId, chosen, eventType
     Next row
@@ -191,18 +193,28 @@ End Function
 ' adjustment not applied. Queue presence establishes pending work, not success.
 Public Function ReadPendingAdjustment(ByVal context As String, ByVal eventId As String, _
         ByRef found As Boolean, ByRef payload As String, ByRef report As String) As Boolean
+    ReadPendingAdjustment = ReadPending(context, eventId, found, payload, report, "ADMIN_INVENTORY_ADJUST")
+End Function
+
+Public Function ReadPendingCreation(ByVal context As String, ByVal eventId As String, _
+        ByRef found As Boolean, ByRef payload As String, ByRef report As String) As Boolean
+    ReadPendingCreation = ReadPending(context, eventId, found, payload, report, "INVENTORY_CREATE")
+End Function
+
+Private Function ReadPending(ByVal context As String, ByVal eventId As String, _
+        ByRef found As Boolean, ByRef payload As String, ByRef report As String, ByVal eventType As String) As Boolean
     Dim source As Variant, chosen As Object
     On Error GoTo Failed
     found = False: payload = ""
     source = modInventoryCommands.SourceValues(context)
     If Not IsArray(source) Or eventId = "" Then GoTo Failed
     If Not ReadStaging(context, CStr(source(0)), CStr(source(1)), CStr(source(2)), _
-        eventId, chosen, report, "ADMIN_INVENTORY_ADJUST") Then GoTo Failed
+        eventId, chosen, report, eventType) Then GoTo Failed
     If Not ReadInbox(context, CStr(source(0)), CStr(source(1)), CStr(source(2)), _
-        eventId, chosen, report, "ADMIN_INVENTORY_ADJUST") Then GoTo Failed
+        eventId, chosen, report, eventType, True) Then GoTo Failed
     found = Not chosen Is Nothing
     If found Then payload = CStr(chosen("PayloadJson"))
-    ReadPendingAdjustment = modInventoryCommands.CheckForm(context, report)
+    ReadPending = modInventoryCommands.CheckForm(context, report)
     Exit Function
 Failed:
     report = "The exact pending EDIT event could not be verified. No new event was queued."

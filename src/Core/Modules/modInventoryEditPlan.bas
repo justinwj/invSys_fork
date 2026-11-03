@@ -4,13 +4,15 @@ Option Private Module
 
 Public Function Build(ByVal context As String, ByVal submitted As cInventoryEditRow, _
         ByVal command As String, ByVal eventId As String, ByRef receipt As Variant, _
-        ByRef catalogPlan As Variant, ByRef report As String) As Boolean
+        ByRef catalogPlan As Variant, ByRef report As String, _
+        Optional ByVal creationKey As String = "", Optional ByRef needsCreationKey As Boolean = False) As Boolean
     Dim owner As cSnapshotInventorySource, book As Workbook, table As ListObject
     Dim fields As Object, state As Object, column As ListColumn, row As Long, selected As Long
     Dim headers() As String, names As Variant, values As Variant, custom As Variant, history As String
     Dim entity As Variant, delta As Double, payload As String, intent As String
     Dim items As New Collection, item As Object, source As Variant, i As Long
     On Error GoTo Invalid
+    needsCreationKey = False
     If Not modInventoryCommands.CheckForm(context, report) Then Exit Function
     source = submitted.Source
     Set owner = New cSnapshotInventorySource
@@ -49,6 +51,17 @@ Public Function Build(ByVal context As String, ByVal submitted As cInventoryEdit
     Next i
     intent = "NONE": entity = Array("", "", "", "", "")
     If submitted.HasQuantity Then
+        If modInventoryEditCreation.Eligible(book, submitted.SubmittedText("ITEMCODE"), creationKey) Then
+            If submitted.TargetQuantity <= 0 Then GoTo Invalid
+            If creationKey = "" Then needsCreationKey = True: report = "": Exit Function
+            If Not modTrainingWire.ValidId(LCase$(creationKey)) Then GoTo Invalid
+            entity = Array(creationKey, "0", submitted.SubmittedText("DEFAULTLOCATION"), "GOOD", "")
+            state.Add "ENTITY", "ABSENT"
+            intent = "CREATE"
+            If eventId = "" Then eventId = UCase$(modSystemIdentity.NewId())
+            payload = modInventoryEditCreation.Payload(submitted, creationKey)
+        Else
+        If creationKey <> "" Then GoTo Invalid
         entity = modInventoryQuantityCommands.ResolveSingleEntity(CStr(source(0)), submitted.SubmittedText("ITEMCODE"), report)
         If Not IsArray(entity) Then GoTo Invalid
         state.Add "ENTITY", Join(entity, vbNullChar)
@@ -65,8 +78,9 @@ Public Function Build(ByVal context As String, ByVal submitted As cInventoryEdit
             items.Add item
             payload = modRoleEventWriter.BuildPayloadJsonFromCollection(items)
         End If
+        End If
     End If
-    If intent <> "ADJUST" And eventId <> "" Then GoTo Invalid
+    If intent <> "ADJUST" And intent <> "CREATE" And eventId <> "" Then GoTo Invalid
     receipt = Array(command, CStr(source(0)), CStr(source(1)), CStr(source(2)), submitted.SubmittedText("ITEMCODE"), _
         submitted.InputHash, modInventoryEditWire.HashFields(state.Keys, state.Items), _
         eventId, CStr(entity(0)), CStr(entity(1)), "", payload, intent, "SAVED", "")
@@ -120,6 +134,12 @@ Public Function ValidReceipt(ByVal receipt As Variant) As Boolean
                 If Not modTrainingWire.ValidId(LCase$(CStr(receipt(7)))) Or CStr(receipt(11)) = "" Then Exit Function
                 If Abs(CDbl(receipt(9)) - CDbl(receipt(10))) < 0.0000001 Then Exit Function
             End If
+        Case "CREATE"
+            If Not modTrainingWire.ValidId(LCase$(CStr(receipt(7)))) Then Exit Function
+            If Not modTrainingWire.ValidId(LCase$(CStr(receipt(8)))) Then Exit Function
+            If Not IsNumeric(receipt(9)) Or Not IsNumeric(receipt(10)) Then Exit Function
+            If CDbl(receipt(9)) <> 0 Or CDbl(receipt(10)) <= 0 Then Exit Function
+            If Not modInventoryEditCreation.ValidPayload(receipt) Then Exit Function
         Case Else: Exit Function
     End Select
     ValidReceipt = True

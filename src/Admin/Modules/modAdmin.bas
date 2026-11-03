@@ -714,12 +714,12 @@ Public Function AddInventoryItemForWarehouse(ByVal warehouseId As String, _
                 eventIdOut, receiptFound, receiptKey, receiptPayload, receiptApplied, report) Then Exit Function
     End If
     If Not receiptApplied Then
-    If Not EnsureDemoStationInboxes(warehouseId, stationId, inboxReport) Then
-        report = inboxReport
-        Exit Function
+        If interactiveContext <> "" Then
+            If Not modInventoryCommands.PrepareCreationInboxes(interactiveContext, report) Then Exit Function
+        ElseIf Not EnsureDemoStationInboxes(warehouseId, stationId, inboxReport) Then
+            report = inboxReport: Exit Function
+        End If
     End If
-    End If
-
     If interactiveContext <> "" Then
         If Not modInventoryCommands.CheckForm(interactiveContext, report) Then Exit Function
     End If
