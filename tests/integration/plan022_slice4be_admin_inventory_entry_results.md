@@ -110,6 +110,29 @@ and canonical-data preservation. These supplement the named owning-caller matrix
 they do not replace it. PowerShell parsing and diff checks pass. No product change
 accompanies these test additions (983d7c3c,81d418d7,cf11c5f3).
 
+Candidate02 combined run, tests27a05408, controller
+`reports/runtime/inventory-edit-creation/green-7a879d5cf8a941ccb8695faed591c8ab`, worker
+`reports/runtime/slice4be-admin-inventory-entry/141e7806f8014df5893b12822372d99a`,
+prints **158 PASS** through Success, six identity-loss mutations, QueueFailure,
+ApplyFailure and ResultSaveFailure, including reopened retries. It is intentionally
+cancelled at the next guarded call boundary to preserve the original deadline;
+the resulting stale-monitor harness exception is cancellation, not product RED
+or a desktop failure. The full cohort remains incomplete.
+
+AuthorityLost reaches the real cProvisioningActivity tracking warning and waits
+for acknowledgement. Fresh cursor movement/restoration passes. The exact owned
+warning is acknowledged, then Quit returns20:51:47Z and finalizers begin20:51:48Z;
+closure/native audit remain pending. No process termination occurs. Test9f2bb64c
+adds the existing Create/Tester notice-observer pattern and asserts the warning;
+it does not suppress production wording or establish authority-case acceptance.
+
+Focused `QuantityPhase` selects the five previously failing cases. Their prior
+reports contain140 unique checks:131 PASS to retain and9 FAIL to correct. Its
+packaged result remains pending. Opt-in harness timing198d291e records fixed macro
+names and Started/Ready/Finished times, with no arguments or return payloads;
+PowerShell parsing and a four-record metadata check pass. The current interrupted
+run did not use this timing. No D13 behavioral RED is claimed for timing metadata.
+
 ## Config preservation resume — 2026-11-03
 
 D8-INV-CONFIG-01 is approved, including interactive catalog-only completion.
