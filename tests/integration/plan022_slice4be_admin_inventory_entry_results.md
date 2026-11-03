@@ -101,6 +101,15 @@ preserved sources/frozen packages/settings and a zero delayed native audit20:01:
 Fresh bounded cursor movement/restoration passes before combined packaged GREEN.
 GREEN and wider gates remain; no promotion or4be-A acceptance is claimed.
 
+Additional Config test selectors are prepared, not yet executed: `MissingDefault`
+uses all four actual Add/Edit handlers to restore a missing Timezone default with
+one necessary save, preserved Config extensions and presentation; `RetainedShared`
+exercises the original shared entry and both automation wrappers for all three
+roles, checking formatting, save behavior, schemas, destination/value consistency
+and canonical-data preservation. These supplement the named owning-caller matrix;
+they do not replace it. PowerShell parsing and diff checks pass. No product change
+accompanies these test additions (983d7c3c,81d418d7,cf11c5f3).
+
 ## Config preservation resume — 2026-11-03
 
 D8-INV-CONFIG-01 is approved, including interactive catalog-only completion.
