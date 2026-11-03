@@ -122,7 +122,18 @@ or a desktop failure. The full cohort remains incomplete.
 AuthorityLost reaches the real cProvisioningActivity tracking warning and waits
 for acknowledgement. Fresh cursor movement/restoration passes. The exact owned
 warning is acknowledged, then Quit returns20:51:47Z and finalizers begin20:51:48Z;
-closure/native audit remain pending. No process termination occurs. Test9f2bb64c
+closure/native audit remain pending. Native process inspection at21:06Z reports
+exit code0 but an unsignaled handle (WAIT_TIMEOUT258); this does not prove exit.
+Termination of the exact owned Excel process fails with Win32 error5. The isolated
+worker is terminated at21:07:20Z after Quit/release, while the parent controller
+retains its in-memory settings snapshot and waits for Excel. This is assisted
+development cleanup, not release qualification. A separate bounded cursor check
+passes exact movement/restoration with the active input desktop and no error5;
+the process-cleanup error is not a verified input failure. Finalizer waiting is
+observed, but the continuing Excel process after worker termination leaves the
+underlying shutdown cause unresolved. Ignored controller evidence:
+`assisted-teardown.json`, `assisted-worker-teardown.json`; cursor evidence:
+`reports/runtime/cleanup-cursor-20261103.json`. Test9f2bb64c
 adds the existing Create/Tester notice-observer pattern and asserts the warning;
 it does not suppress production wording or establish authority-case acceptance.
 
