@@ -1,5 +1,6 @@
 # D8-INV-CONFIG-01: actual packaged actions and independent persisted Config reads.
 . (Join-Path $PSScriptRoot 'Slice4beInventoryCatalogCompletion.ps1')
+. (Join-Path $PSScriptRoot 'Slice4beInventoryConfigRetained.ps1')
 function Install-InventoryConfigPreservationProbe {
     Install-InventoryCatalogCompletionProbe
     $packages['invSys.Admin.xlam'].VBProject.VBComponents.Item('TestInventoryCatalogCompletion').CodeModule.AddFromString(@'
@@ -43,6 +44,7 @@ Public Function PrepareMissingDefault(ByVal bookName As String) As Boolean
     Next sheet
 End Function
 '@)
+    Install-InventoryConfigRetainedProbe
 }
 
 function Set-InventoryConfigPresentation($Fixture) {
@@ -73,6 +75,10 @@ function Test-InventoryConfigPreservation($Fixture,$Other) {
     $csv=Join-Path $runRoot 'config-preservation-fixture.csv'
     @('ITEM_CODE,ITEM,UOM,LOCATION,QTY,CONDITION','DEMO-CONFIG-BASE,Config baseline,LB,CLEARVIEW,3,GOOD')|Set-Content $csv -Encoding ASCII
     if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareExactQuantityFixture' @($Fixture.Warehouse,$csv))){throw 'Owning seed fixture unavailable; not RED.'}
+    if($AdminInventoryConfigPreservationCase -ceq 'RetainedShared'){
+        Test-InventoryConfigRetainedShared $Fixture
+        return
+    }
     $missingDefault=$AdminInventoryConfigPreservationCase -ceq 'MissingDefault'
     foreach($case in @('ModalAdd','WorksheetAdd','ModalCatalogEdit','WorksheetCatalogEdit')){
         if(-not $missingDefault -and $AdminInventoryConfigPreservationCase -ne 'All' -and $case -cne $AdminInventoryConfigPreservationCase){continue}
