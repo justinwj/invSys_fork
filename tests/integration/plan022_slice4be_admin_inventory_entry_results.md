@@ -137,6 +137,18 @@ underlying shutdown cause unresolved. Ignored controller evidence:
 adds the existing Create/Tester notice-observer pattern and asserts the warning;
 it does not suppress production wording or establish authority-case acceptance.
 
+User-authorized recovery at21:22Z attaches to the exact live cleanup controller
+and preserves its original seven-key/seven-value settings snapshot using Windows
+CurrentUser DPAPI outside the repositories, with access restricted to that user
+and SYSTEM. In-memory comparison verifies the encrypted round trip; an independent
+process verifies decryption, registry scope and the restoration-helper hash.
+No settings values are logged or committed. Registry restoration has not run:
+Excel still remains. Ignored `settings-recovery.json` records fixed verification
+facts; `reports/runtime/restore-cleanup-settings.ps1` validates by default and
+requires explicit `-Apply`, no Excel process and successful readback to restore.
+The debugger is detached. This recovery work changes no product contract and
+provides no release qualification; native cleanup and focused GREEN remain open.
+
 Focused `QuantityPhase` selects the five previously failing cases. Their prior
 reports contain140 unique checks:131 PASS to retain and9 FAIL to correct. Its
 packaged result remains pending. Opt-in harness timing198d291e records fixed macro
