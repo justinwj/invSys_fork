@@ -141,7 +141,7 @@ param(
     [switch]$AdminInventoryEntryOnly,
     [switch]$AdminInventoryConfigPreservationOnly,
     [switch]$AdminInventoryEditCreationOnly,
-    [ValidateSet('All','Safety','RetainedReceipts','Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog','BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity','InterveningCatalog','InterveningLocation','InterveningQuantityMode')][string]$AdminInventoryEditCreationCase='All',
+    [ValidateSet('All','Safety','InterveningInputs','RetainedReceipts','Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog','BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity','InterveningCatalog','InterveningLocation','InterveningQuantityMode')][string]$AdminInventoryEditCreationCase='All',
     [ValidateSet('All','ModalAdd','WorksheetAdd','ModalCatalogEdit','WorksheetCatalogEdit')][string]$AdminInventoryConfigPreservationCase='All',
     [switch]$AdminInventoryRecordingOnly,
     [switch]$AdminInventoryGuideOnly,

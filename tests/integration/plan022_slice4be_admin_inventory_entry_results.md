@@ -38,9 +38,28 @@ the preliminary CREATE payload must not overwrite later catalog edits on retry.
 
 Baseline closure completes unassisted at19:03:20Z; settings and frozen packages
 are preserved. The delayed audit at19:03:40Z finds zero Excel fault events and
-no Excel process. Fresh bounded cursor movement/restoration passes. The first
-candidate build is in progress; no product GREEN, promotion or4be-A acceptance
-is claimed.
+no Excel process. Fresh bounded cursor movement/restoration passes.
+
+Candidate `deploy/validation-inventory-config-01`, source28c8ad2f, builds and cold
+compiles all five packages. Evidence is in the implementation worktree's
+`reports/runtime/inventory-config-build-01`; build and compile close unassisted,
+preserve sources/frozen packages/settings and pass delayed zero native audits.
+The first focused run (`red-8ffcd4ce61894e8abb603cdc439a691e`) stops at a Config
+save-observer seam mismatch:0/1 is a harness exception, not behavioral RED. It
+closes normally with preservation and a zero delayed audit. Test fea86900 observes
+both new save sites without changing their conditions or product behavior.
+
+The corrected focused run uses controller
+`reports/runtime/inventory-edit-creation/red-447fe7313967463ba38527c692135d8d`, worker
+`reports/runtime/slice4be-admin-inventory-entry/51965112c33646198e69aa2e83b92267`.
+All five instrumented compiles and actual captured Upload pass. It records
+**34 PASS / 1 FAIL**: the original CREATE receipt/event/key survive reopened retry,
+exact creation applies once, and Config bytes/presentation survive with zero
+Config saves, but the quantity payload overwrites a later catalog edit. This is
+behavioral RED for quantity-only retry. The source correction removes old catalog
+fields from that payload; its GREEN remains pending. Related location/counting-mode
+cases already exist and gain a focused `InterveningInputs` selector for their RED.
+Focused-run cleanup is pending. No promotion or4be-A acceptance is claimed.
 
 ## Config preservation resume — 2026-11-03
 

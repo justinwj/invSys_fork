@@ -52,14 +52,14 @@ Invalid:
 End Function
 
 Public Function Payload(ByVal submitted As cInventoryEditRow, ByVal systemKey As String) As String
-    Dim names As Variant, values As Variant, note As String
+    Dim item As Object, items As New Collection, note As String
     note = "Admin completed catalog-only inventory item. Reason: " & submitted.SubmittedText("EDITREASON")
-    names = Array("ITEM_CODE", "ITEM", "UOM", "LOCATION", "TOTAL INV", "QtyAvailable", "Reason")
-    values = Array(submitted.SubmittedText("ITEMCODE"), submitted.SubmittedText("ITEMNAME"), _
-        submitted.SubmittedText("UOM"), submitted.SubmittedText("DEFAULTLOCATION"), _
-        submitted.TargetQuantity, submitted.TargetQuantity, submitted.SubmittedText("EDITREASON"))
-    Payload = modInventoryCreateWire.BuildPayload(systemKey, submitted.SubmittedText("ITEMCODE"), _
-        submitted.TargetQuantity, submitted.SubmittedText("DEFAULTLOCATION"), "GOOD", "", note, names, values)
+    ' The catalog phase was saved already. Quantity retry must not carry its
+    ' old names, custom fields or other catalog values back into the Domain.
+    Set item = modRoleEventWriter.CreateInventoryEntityPayloadItem(systemKey, submitted.SubmittedText("ITEMCODE"), _
+        submitted.TargetQuantity, submitted.SubmittedText("DEFAULTLOCATION"), "GOOD", "", note)
+    items.Add item
+    Payload = modRoleEventWriter.BuildPayloadJsonFromCollection(items)
 End Function
 
 Public Function ValidPayload(ByVal receipt As Variant) As Boolean
@@ -69,11 +69,12 @@ Public Function ValidPayload(ByVal receipt As Variant) As Boolean
     If Left$(payload, 1) <> "[" Or Right$(payload, 1) <> "]" Then Exit Function
     Set item = modRoleEventJson.ParseJsonObjectRole(Mid$(payload, 2, Len(payload) - 2), report)
     If item Is Nothing Then Exit Function
+    If item.Count <> 8 Then Exit Function
     If "[" & modRoleEventJson.DictionaryToJson(item) & "]" <> payload Then Exit Function
     If CStr(item("System_Key")) <> receipt(8) Or CStr(item("SKU")) <> receipt(4) Then Exit Function
     If CDbl(item("Qty")) <> CDbl(receipt(10)) Or CStr(item("IoType")) <> "CREATE" Then Exit Function
     If CStr(item("Condition")) <> "GOOD" Or CStr(item("AttributesJson")) <> "" Then Exit Function
-    If Trim$(CStr(item("Reason"))) = "" Then Exit Function
+    If Trim$(CStr(item("Note"))) = "" Then Exit Function
     ValidPayload = True
 Invalid:
 End Function

@@ -208,6 +208,7 @@ function Test-InventoryEditCreation($Fixture,$Other) {
     $safety=@('BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity','InterveningCatalog','InterveningLocation','InterveningQuantityMode')
     $cases=@('Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog')+$safety
     if($AdminInventoryEditCreationCase -eq 'Safety'){$cases=$safety}
+    elseif($AdminInventoryEditCreationCase -eq 'InterveningInputs'){$cases=@('InterveningLocation','InterveningQuantityMode')}
     elseif($AdminInventoryEditCreationCase -ne 'All'){$cases=@($AdminInventoryEditCreationCase)}
     foreach($case in $cases){
         SelectTarget $Fixture
