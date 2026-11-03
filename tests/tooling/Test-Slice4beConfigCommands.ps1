@@ -140,6 +140,7 @@ param(
     [switch]$AdminAggregationOnly,
     [switch]$AdminInventoryEntryOnly,
     [switch]$AdminInventoryConfigPreservationOnly,
+    [switch]$TraceInventoryCallsForTest,
     [switch]$AdminInventoryEditCreationOnly,
     [ValidateSet('All','Safety','InterveningInputs','QueuedInputs','QueuedLocation','QueuedQuantityMode','RetainedReceipts','Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog','BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity','InterveningCatalog','InterveningLocation','InterveningQuantityMode')][string]$AdminInventoryEditCreationCase='All',
     [ValidateSet('All','MissingDefault','RetainedShared','ModalAdd','WorksheetAdd','ModalCatalogEdit','WorksheetCatalogEdit')][string]$AdminInventoryConfigPreservationCase='All',
@@ -937,6 +938,8 @@ if($AdminInventoryUomRecordingOnly -and (-not $AdminInventoryRecordingOnly -or $
 if($AdminInventoryWorksheetRecordingOnly -and (-not $AdminInventoryRecordingOnly -or $AdminInventorySelectionsOnly -or $AdminInventoryWorkbookBindingOnly -or $AdminInventoryUomRecordingOnly -or $AdminInventoryGuideOnly)){throw 'Inventory worksheet recording requires its isolated gate.'}
 if($AdminInventoryWorksheetRecordingGroup -ne 'All' -and -not $AdminInventoryWorksheetRecordingOnly){throw 'Worksheet recording group requires its isolated gate.'}
 if($AdminInventoryWorksheetRecordingGroup -eq 'UploadNoFormat' -and $Phase -ne 'RED'){throw 'Formatting suppression is a RED-only causal diagnostic, not product GREEN.'}
+if($TraceInventoryCallsForTest -and -not $AdminInventoryEntryOnly){throw 'Inventory call timing requires an Inventory fixture.'}
+if($TraceInventoryCallsForTest){. (Join-Path $PSScriptRoot 'Slice4beInventoryCallTiming.ps1')}
 if($AdminInventoryEditCreationOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryConfigPreservationOnly -or $AdminInventoryRecordingOnly -or $AdminInventoryWorksheetResultsOnly -or $AdminInventorySourceOverlayForTest)){throw 'EDIT creation requires its isolated packaged Inventory gate.'}
 if($AdminInventoryConfigPreservationOnly -and (-not $AdminInventoryEntryOnly -or $AdminInventoryRecordingOnly -or $AdminInventorySourceOverlayForTest)){throw 'Config preservation requires its isolated packaged Inventory gate.'}
 if($AdminInventoryEntryOnly){
@@ -1433,9 +1436,16 @@ function Run([string]$Package,[string]$Macro,[object[]]$Values=@()) {
         }
         Write-GuideResourceMark ('Before|'+$resourceBoundary)
     }
+    $inventoryCallWatch=$null;$inventoryCallId='';$inventoryCallReturned=$false
+    if($TraceInventoryCallsForTest){
+        $inventoryCallId=[guid]::NewGuid().ToString('N')
+        $inventoryCallWatch=[Diagnostics.Stopwatch]::StartNew()
+        Write-InventoryCallTiming $inventoryCallId $Macro 'Started' 0 $false
+    }
     try {
     $name="'$Package'!$Macro"
     if($WaitForExcelReadyForTest){Wait-ExcelReadyForTest $Macro}
+    if($null -ne $inventoryCallWatch){Write-InventoryCallTiming $inventoryCallId $Macro 'Ready' $inventoryCallWatch.ElapsedMilliseconds $false}
     if($TraceGuideViewCallsForTest){Write-GuideResourceMark ('Ready|'+$resourceBoundary)}
     $attemptLimit=1
     $retryLog='readonly-count-retries.jsonl'
@@ -1472,6 +1482,7 @@ function Run([string]$Package,[string]$Macro,[object[]]$Values=@()) {
         [pscustomobject]@{Attempt=$attempt;Recovered=$true;Macro=$Macro;Form=$Values[0];Action=$Values[2]}|
             ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot $retryLog)
     }
+    $inventoryCallReturned=$true
     return
     } catch {
         Write-Host ('Packaged call failed: '+$Macro+'; argument count='+$Values.Count)
@@ -1509,6 +1520,7 @@ function Run([string]$Package,[string]$Macro,[object[]]$Values=@()) {
     }
     }
     } finally {
+        if($null -ne $inventoryCallWatch){Write-InventoryCallTiming $inventoryCallId $Macro 'Finished' $inventoryCallWatch.ElapsedMilliseconds $inventoryCallReturned}
         if($TraceGuideResourcesForTest){Write-GuideResourceMark ('After|'+$resourceBoundary)}
     }
 }
