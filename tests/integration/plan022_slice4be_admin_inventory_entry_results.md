@@ -36,8 +36,11 @@ source guards pass36/36 with explicit RepoRoot. These are source checks, not
 packaged acceptance. Source review identifies a pending test-first correction:
 the preliminary CREATE payload must not overwrite later catalog edits on retry.
 
-At this checkpoint, baseline cleanup/native audit and the first candidate build
-are pending. No product GREEN, promotion or4be-A acceptance is claimed.
+Baseline closure completes unassisted at19:03:20Z; settings and frozen packages
+are preserved. The delayed audit at19:03:40Z finds zero Excel fault events and
+no Excel process. Fresh bounded cursor movement/restoration passes. The first
+candidate build is in progress; no product GREEN, promotion or4be-A acceptance
+is claimed.
 
 ## Config preservation resume — 2026-11-03
 

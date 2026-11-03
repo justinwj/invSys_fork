@@ -387,11 +387,19 @@ End Function
     if($config.Lines(1,$config.CountOfLines) -match '(?im)^Private Function EnsureStationInboxCore\('){$inboxProcedure='EnsureStationInboxCore'}
     $start=$config.ProcStartLine($inboxProcedure,0);$count=$config.ProcCountLines($inboxProcedure,0)
     $body=$config.Lines($start,$count)
-    $pattern='(?im)^[\t ]*If (Not wbCfg Is Nothing|formatSurface Or configChanged) Then SaveConfigWorkbookIfWritable wbCfg[\t ]*\r?$'
-    if([regex]::Matches($body,$pattern).Count -ne 1){throw 'Config inbox save call-site observation unavailable.'}
-    $condition=if($inboxProcedure -ceq 'EnsureStationInbox'){'Not wbCfg Is Nothing'}else{'formatSurface Or configChanged'}
-    $replacement=@(('    If '+$condition+' Then'),'        TestInventoryConfigSave.SetInboxPhase eventType','        SaveConfigWorkbookIfWritable wbCfg','        TestInventoryConfigSave.SetInboxPhase ""','    End If') -join "`r`n"
-    $body=[regex]::Replace($body,$pattern,$replacement)
+    $pattern='(?im)^(?<indent>[\t ]*)(?:If (?<condition>Not wbCfg Is Nothing|formatSurface) Then )?SaveConfigWorkbookIfWritable wbCfg[\t ]*\r?$'
+    $expected=if($inboxProcedure -ceq 'EnsureStationInbox'){1}else{2}
+    if([regex]::Matches($body,$pattern).Count -ne $expected){throw 'Config inbox save call-site observation unavailable.'}
+    $body=[regex]::Replace($body,$pattern,[Text.RegularExpressions.MatchEvaluator]{param($match)
+        $indent=$match.Groups['indent'].Value;$condition=$match.Groups['condition'].Value
+        $lines=@();$inner=$indent
+        if($condition){$lines+=($indent+'If '+$condition+' Then');$inner+='    '}
+        $lines+=($inner+'TestInventoryConfigSave.SetInboxPhase NormalizeRoleToEventTypeConfig(roleDefault)')
+        $lines+=($inner+'SaveConfigWorkbookIfWritable wbCfg')
+        $lines+=($inner+'TestInventoryConfigSave.SetInboxPhase ""')
+        if($condition){$lines+=($indent+'End If')}
+        $lines -join "`r`n"
+    })
     $config.DeleteLines($start,$count);$config.InsertLines($start,$body)
     $project=$packages['invSys.Admin.xlam'].VBProject
     $probe=$project.VBComponents.Add(1);$probe.Name='TestInventoryCommands'
