@@ -142,7 +142,7 @@ param(
     [switch]$AdminInventoryConfigPreservationOnly,
     [switch]$TraceInventoryCallsForTest,
     [switch]$AdminInventoryEditCreationOnly,
-    [ValidateSet('All','Safety','InterveningInputs','QueuedInputs','QueuedLocation','QueuedQuantityMode','RetainedReceipts','Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog','BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity','InterveningCatalog','InterveningLocation','InterveningQuantityMode')][string]$AdminInventoryEditCreationCase='All',
+    [ValidateSet('All','Safety','QuantityPhase','InterveningInputs','QueuedInputs','QueuedLocation','QueuedQuantityMode','RetainedReceipts','Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog','BeforeCatalogSaveThrows','AfterCatalogSaveThrows','ReplacementSession','OtherWarehouseAdmin','RetiredHistory','InterveningEntity','InterveningCatalog','InterveningLocation','InterveningQuantityMode')][string]$AdminInventoryEditCreationCase='All',
     [ValidateSet('All','MissingDefault','RetainedShared','ModalAdd','WorksheetAdd','ModalCatalogEdit','WorksheetCatalogEdit')][string]$AdminInventoryConfigPreservationCase='All',
     [switch]$AdminInventoryRecordingOnly,
     [switch]$AdminInventoryGuideOnly,

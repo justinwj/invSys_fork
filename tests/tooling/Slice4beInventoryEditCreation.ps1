@@ -214,6 +214,7 @@ function Test-InventoryEditCreation($Fixture,$Other) {
     $queuedCases=@('QueuedLocation','QueuedQuantityMode')
     $cases=@('Success','QueueFailure','ApplyFailure','ResultSaveFailure','AuthorityLost','ZeroQuantity','DuplicateRows','RetiredCatalog')+$safety+$queuedCases
     if($AdminInventoryEditCreationCase -eq 'Safety'){$cases=$safety}
+    elseif($AdminInventoryEditCreationCase -eq 'QuantityPhase'){$cases=@('InterveningCatalog','InterveningLocation','InterveningQuantityMode')+$queuedCases}
     elseif($AdminInventoryEditCreationCase -eq 'InterveningInputs'){$cases=@('InterveningLocation','InterveningQuantityMode')}
     elseif($AdminInventoryEditCreationCase -eq 'QueuedInputs'){$cases=$queuedCases}
     elseif($AdminInventoryEditCreationCase -ne 'All'){$cases=@($AdminInventoryEditCreationCase)}
