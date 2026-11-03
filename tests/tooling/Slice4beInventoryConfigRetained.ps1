@@ -18,13 +18,19 @@ End Function
 }
 
 function Test-InventoryConfigRetainedShared($Fixture) {
-    $paths=@{}
+    $paths=@{};$inboxValues=@{}
+    $required=@('EventID','ParentEventId','UndoOfEventId','EventType','CreatedAtUTC','WarehouseId','StationId',
+        'UserId','MigrationSourceId','System_Key','SKU','Qty','Location','Condition','AttributesJson',
+        'DesignId','DesignVersion','Note','PayloadJson','Status','RetryCount','ErrorCode','ErrorMessage','FailedAtUTC')
     foreach($entry in @('Shared','Automation','Packed')){
         foreach($role in @('RECEIVE','SHIP','PRODUCTION')){
             $id='InventoryConfigRetained.'+$entry+'.'+$role
             SelectTarget $Fixture
             Set-InventoryConfigPresentation $Fixture
             $before=Get-InventoryConfigDiagnosticSnapshot $Fixture
+            $inventoryPath=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Data.Inventory.xlsb')
+            $authPath=Join-Path $Fixture.Root ($Fixture.Warehouse+'.invSys.Auth.xlsb')
+            $inventoryHash=Get-AdminInventoryEntryHash $inventoryPath;$authHash=Get-AdminInventoryEntryHash $authPath
             [void](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Reset')
             $arguments=@($Fixture.Warehouse,'S1',$role,$Fixture.Config)
             $macro=switch($entry){
@@ -48,6 +54,7 @@ function Test-InventoryConfigRetainedShared($Fixture) {
                 -not $before.Cells.ContainsKey($_) -or -not $after.Cells.ContainsKey($_) -or $before.Cells[$_] -cne $after.Cells[$_]
             })
             Check ($id+'.ConfigValuesAndShapePreserved') ($changes.Count -eq 0 -and $before.Shapes -ceq $after.Shapes)
+            Check ($id+'.InventoryAndAuthBytesPreserved') ($inventoryHash -ceq (Get-AdminInventoryEntryHash $inventoryPath) -and $authHash -ceq (Get-AdminInventoryEntryHash $authPath))
             $saveFacts=([string](Run 'invSys.Core.xlam' 'TestInventoryConfigSave.Facts')).Split('|')
             Check ($id+'.RetainedConfigSave') ($saveFacts.Count -eq 3 -and [int]$saveFacts[0] -eq 1 -and [int]$saveFacts[2] -eq 0)
             $book=$excel.Workbooks.Open($Fixture.Config,0,$true)
@@ -63,12 +70,22 @@ function Test-InventoryConfigRetainedShared($Fixture) {
             }
             Check ($id+'.InspectionPreservedConfigBytes') ($after.ReadOnlyProof -and $after.FileHash -ceq (Get-AdminInventoryEntryHash $Fixture.Config))
             $inboxHash=Get-AdminInventoryEntryHash $path
-            $book=$excel.Workbooks.Open($path,0,$true);$table=$null
+            $book=$excel.Workbooks.Open($path,0,$true);$table=$null;$range=$null
             try{
                 $name=switch($role){'RECEIVE'{'tblInboxReceive'} 'SHIP'{'tblInboxShip'} 'PRODUCTION'{'tblInboxProd'}}
                 $table=Table $book $name
                 Check ($id+'.ExpectedInboxTable') ($null -ne $table)
+                if($null -ne $table){
+                    $range=$table.Range;$values=$range.Value2;$headers=@()
+                    for($columnIndex=1;$columnIndex -le $values.GetLength(1);$columnIndex++){$headers+=[string]$values.GetValue(1,$columnIndex)}
+                    Check ($id+'.RequiredInboxSchema') (@($required|Where-Object {$_ -cnotin $headers}).Count -eq 0 -and 'ROW' -cnotin $headers)
+                    # Complete row values stay in memory; only comparisons leave here.
+                    $serialized=[Management.Automation.PSSerializer]::Serialize($values)
+                    if($entry -ceq 'Shared'){$inboxValues[$role]=$serialized}
+                    Check ($id+'.SameInboxValuesAcrossEntries') ($inboxValues.ContainsKey($role) -and $inboxValues[$role] -ceq $serialized)
+                }
             }finally{
+                if($null -ne $range){[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($range)}
                 if($null -ne $table){[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($table)}
                 $book.Close($false);[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($book)
             }
