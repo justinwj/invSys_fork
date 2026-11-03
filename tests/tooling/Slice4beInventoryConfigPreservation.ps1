@@ -54,7 +54,8 @@ function Test-InventoryConfigPreservation($Fixture,$Other) {
                 if(-not [bool](Run 'invSys.Admin.xlam' 'TestInventoryCommands.PrepareBoundaryTable' @($hostBook.Name))){throw 'Worksheet fixture unavailable; not RED.'}
                 $table=@($hostBook.Worksheets|ForEach-Object {$_.ListObjects}|Where-Object {$_.Name -like 'invSys_Inventory_*'})[0]
                 if($edit){
-                    foreach($pair in @{Action='EDIT';'Item Code'=$sku;'Quantity'=7;'Edit Reason'='Config preservation completion'}.GetEnumerator()){
+                    # Excel Value2 expects a floating-point numeric VARIANT, not Int32.
+                    foreach($pair in @{Action='EDIT';'Item Code'=$sku;'Quantity'=7.0;'Edit Reason'='Config preservation completion'}.GetEnumerator()){
                         $table.ListColumns.Item($pair.Key).DataBodyRange.Cells.Item(1,1).Value2=$pair.Value
                     }
                 }

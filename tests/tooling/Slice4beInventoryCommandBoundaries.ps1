@@ -383,11 +383,14 @@ End Function
     if([regex]::Matches($saveBody,[regex]::Escape($saveLine)).Count -ne 1){throw 'Config save observation boundary changed; not product RED.'}
     $saveBody=$saveBody.Replace($saveLine,('    TestInventoryConfigSave.BeforeSave wb'+"`r`n"+$saveLine+"`r`n"+'    TestInventoryConfigSave.AfterSave wb'))
     $config.DeleteLines($start,$count);$config.InsertLines($start,$saveBody)
-    $start=$config.ProcStartLine('EnsureStationInbox',0);$count=$config.ProcCountLines('EnsureStationInbox',0)
+    $inboxProcedure='EnsureStationInbox'
+    if($config.Lines(1,$config.CountOfLines) -match '(?im)^Private Function EnsureStationInboxCore\('){$inboxProcedure='EnsureStationInboxCore'}
+    $start=$config.ProcStartLine($inboxProcedure,0);$count=$config.ProcCountLines($inboxProcedure,0)
     $body=$config.Lines($start,$count)
-    $pattern='(?im)^[\t ]*If Not wbCfg Is Nothing Then SaveConfigWorkbookIfWritable wbCfg[\t ]*\r?$'
+    $pattern='(?im)^[\t ]*If (Not wbCfg Is Nothing|formatSurface Or configChanged) Then SaveConfigWorkbookIfWritable wbCfg[\t ]*\r?$'
     if([regex]::Matches($body,$pattern).Count -ne 1){throw 'Config inbox save call-site observation unavailable.'}
-    $replacement=@('    If Not wbCfg Is Nothing Then','        TestInventoryConfigSave.SetInboxPhase eventType','        SaveConfigWorkbookIfWritable wbCfg','        TestInventoryConfigSave.SetInboxPhase ""','    End If') -join "`r`n"
+    $condition=if($inboxProcedure -ceq 'EnsureStationInbox'){'Not wbCfg Is Nothing'}else{'formatSurface Or configChanged'}
+    $replacement=@(('    If '+$condition+' Then'),'        TestInventoryConfigSave.SetInboxPhase eventType','        SaveConfigWorkbookIfWritable wbCfg','        TestInventoryConfigSave.SetInboxPhase ""','    End If') -join "`r`n"
     $body=[regex]::Replace($body,$pattern,$replacement)
     $config.DeleteLines($start,$count);$config.InsertLines($start,$body)
     $project=$packages['invSys.Admin.xlam'].VBProject
@@ -417,29 +420,45 @@ End Function
 Public Function PrepareBoundaryTable(ByVal host As String) As Boolean
     Dim name As String, report As String, wb As Workbook, lo As ListObject, ws As Worksheet
     Dim context As String, created As Boolean
+    Dim phase As String, failureNumber As Long
+    On Error GoTo FixtureFailed
+    phase = "ResolveHost"
     Set wb = Application.Workbooks(host)
+    phase = "ActivateHost"
     wb.Activate
+    phase = "CaptureAuthority"
     context = modInventoryCommands.Capture(wb.Name)
     If context = "" Then Exit Function
+    phase = "CreateTable"
     created = modAdminInventoryWorksheet.CreateInventoryWorksheetTable(wb, name, report, context)
+    phase = "ReleaseAuthority"
     modInventoryCommands.Release context
     If Not created Then Exit Function
+    phase = "FindTable"
     For Each ws In wb.Worksheets
         For Each lo In ws.ListObjects
             If lo.Name = name Then
+                phase = "PopulateFixture"
                 lo.ListColumns("Action").DataBodyRange.Cells(1, 1).Value2 = "ADD"
                 lo.ListColumns("Item Name").DataBodyRange.Cells(1, 1).Value2 = "Zero worksheet fixture"
                 lo.ListColumns("UOM").DataBodyRange.Cells(1, 1).Value2 = "LB"
                 lo.ListColumns("Qty Mode").DataBodyRange.Cells(1, 1).Value2 = "COUNTED"
                 lo.ListColumns("Quantity").DataBodyRange.Cells(1, 1).Value2 = 0
                 lo.ListColumns("Default Location").DataBodyRange.Cells(1, 1).Value2 = "CLEARVIEW"
+                phase = "SaveFixture"
                 wb.Save
+                phase = "SelectFixture"
                 lo.DataBodyRange.Cells(1, 1).Select
                 PrepareBoundaryTable = True
                 Exit Function
             End If
         Next lo
     Next ws
+    Exit Function
+FixtureFailed:
+    failureNumber = Err.Number
+    Err.Raise vbObjectError + 2199, "PrepareBoundaryTable", _
+        "Fixture phase " & phase & "; error " & CStr(failureNumber)
 End Function
 Public Sub SetSelection(ByVal otherRoot As String, ByVal sku As String)
     mOtherRoot = otherRoot: mSku = sku
