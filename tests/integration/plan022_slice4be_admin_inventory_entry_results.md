@@ -149,6 +149,18 @@ requires explicit `-Apply`, no Excel process and successful readback to restore.
 The debugger is detached. This recovery work changes no product contract and
 provides no release qualification; native cleanup and focused GREEN remain open.
 
+After the user-approved Windows restart, recovery completes at23:05Z (3:05 PM
+Pacific). Boot-time comparison confirms the restart; no Excel process remains.
+Explicit recovery restores all seven original keys/seven values and verifies
+readback. All five candidate package hashes match their saved pins. The available
+Application1000/1001/1002 audit finds zero Excel fault events from the test start
+through recovery. Evidence: the controller's `recovered-settings-restoration.json`
+and `restart-recovery-closure.json`. This closes the environment recovery blocker,
+not the interrupted test: it remains assisted/restart cleanup, not unassisted
+release closure or full GREEN. No product tests run after restart; the user ends
+the workday and hands off. Do not reapply the historical settings snapshot after
+new work or user configuration changes.
+
 Focused `QuantityPhase` selects the five previously failing cases. Their prior
 reports contain140 unique checks:131 PASS to retain and9 FAIL to correct. Its
 packaged result remains pending. Opt-in harness timing198d291e records fixed macro
