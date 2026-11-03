@@ -996,7 +996,7 @@ function Complete-ResultEvidence([string]$ReportPath,[scriptblock]$Cleanup) {
     finally { $results | ConvertTo-Json | Set-Content -Encoding UTF8 -LiteralPath $ReportPath }
 }
 function Write-InventoryShutdownTrace([string]$Stage) {
-    if($AdminInventorySourceOverlayForTest -or $AdminInventoryWorksheetRecordingOnly){
+    if($AdminInventorySourceOverlayForTest -or $AdminInventoryWorksheetRecordingOnly -or $AdminInventoryEditCreationOnly){
         [pscustomobject]@{UTC=[DateTimeOffset]::UtcNow.ToString('o');Stage=$Stage}|
             ConvertTo-Json -Compress|Add-Content (Join-Path $reportRoot 'inventory-shutdown.jsonl')
     }
@@ -3050,7 +3050,9 @@ finally {
         if($hasSettingsHostEvidence){Write-SettingsHostEvidence 'FinalReleaseReturned' $false}
     }
     Write-InventoryShutdownTrace 'BeforeGarbageCollection'
-    [GC]::Collect(); [GC]::WaitForPendingFinalizers()
+    [GC]::Collect()
+    Write-InventoryShutdownTrace 'AfterCollectBeforeFinalizers'
+    [GC]::WaitForPendingFinalizers()
     Write-InventoryShutdownTrace 'AfterGarbageCollection'
     if(Test-Path -LiteralPath $settingsRoot) {
         foreach($key in @(Get-Item -LiteralPath $settingsRoot) + @(Get-ChildItem -LiteralPath $settingsRoot -Recurse)) {
