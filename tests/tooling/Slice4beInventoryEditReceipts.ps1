@@ -175,6 +175,9 @@ function Read-InventoryEditReceiptCopy([string]$Path,[string]$Sku,[string]$Comma
                             Station=(Get-InventoryEditCell $row $table 'StationId')
                             User=(Get-InventoryEditCell $row $table 'UserId')
                             Event=(Get-InventoryEditCell $row $table 'PlannedEventId')
+                            Key=(Get-InventoryEditCell $row $table 'System_Key')
+                            Intent=(Get-InventoryEditCell $row $table 'QuantityIntent')
+                            Binding=(Get-InventoryEditCell $row $table 'BindingHash')
                         }
                     }
                 }
