@@ -69,10 +69,28 @@ Candidate01 with tests80059cb0, controller
 finishes assertions **56 PASS / 4 FAIL**. Both actual reopened Uploads fail safe
 refusal and saved-catalog partial reporting after a location/counting-mode change.
 Core92ec422c adds pending-plan checks and requires the eight known creation fields;
-its GREEN remains pending. Cleanup is still in the finalizer wait at this checkpoint.
+its GREEN remains pending. Closure completes unassisted at19:41:22Z with settings
+and packages preserved; delayed audit19:41:42Z finds zero faults. Finalizers take
+824.305s. A guarded assisted-close attempt stops before any termination because
+the finalizer stage had already completed; no assisted teardown occurred.
+
 Testsfc8a6c3f add headless processing of genuinely queued Upload events after later
-catalog/location or counting-mode changes. This protects the quantity-only phase
-at the Domain boundary; that diagnostic is not yet run. No promotion or4be-A
+catalog/location or counting-mode changes. Candidate01, controller
+`reports/runtime/inventory-edit-creation/red-4b26543e938e45e68e0707f636af4a2d`, worker
+`reports/runtime/slice4be-admin-inventory-entry/b7eebd7b612f43ca8c684acc0a2ce028`,
+finishes assertions **53 PASS / 4 FAIL**. Exact queued event/key identities remain,
+but both later-catalog preservation checks fail, as do post-application catalog
+preservation on reopened retry and refusal of a changed counting-mode effect.
+All five instrumented packages compile; actual captured Upload supplies the events.
+Cleanup is pending.
+
+Sourcef38d0370 enforces D8-INV-EDIT-01/02's quantity-only phase in Domain: an exact
+existing private CREATE receipt binds source, payload, event, key and target before
+application; its saved catalog phase is not reapplied. Current canonical catalog
+state must still support positive counted first-entity creation. Ordinary CREATE
+callers retain their existing path. No new payload field, store, permission,
+control or architecture decision is introduced. Five retained source guards pass
+36/36; the next packaged build/GREEN and wider gates remain. No promotion or4be-A
 acceptance is claimed.
 
 ## Config preservation resume — 2026-11-03
