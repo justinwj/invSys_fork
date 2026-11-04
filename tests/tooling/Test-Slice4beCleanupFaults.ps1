@@ -99,7 +99,7 @@ function Invoke-Fixture([string]$Name,[int]$BookCount,[int]$FailedBook,[bool]$Qu
     Assert-Fixture ($Name+'.NoExceptionContentLeak') (($output -join "`n") -notmatch 'SYNTHETIC_PRIVATE|private\\fixture')
     $json=$results.ToArray()|ConvertTo-Json -Depth 4
     $decoded=@()
-    if($json){$decoded=@($json|ConvertFrom-Json)}
+    if($json){$decoded=$json|ConvertFrom-Json}
     $failed=@($decoded|Where-Object {-not $_.Passed}).Count
     Assert-Fixture ($Name+'.FailureSurvivesReportSerialization') ($failed -eq $expectedChecks.Count)
     $observations.Add([pscustomobject]@{
