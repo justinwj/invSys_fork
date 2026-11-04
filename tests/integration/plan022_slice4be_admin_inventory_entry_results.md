@@ -1,5 +1,76 @@
 # Slice4be-A Add/Edit Inventory entry audit
 
+## Perplexity source-only preflight and JSON timestamp tooling repair (2026-11-03 Pacific)
+
+Handoff 216 was the entry point. This increment does not resume or accept the
+packaged Inventory GREEN result, does not complete 4be-A, and does not resolve
+the shutdown cause. No VBA, XLAM, architecture, Plan, or Controls changes were
+made. The unchanged implementation baseline was
+`2c9c3b775b737484243a3a5780dc97a269436091`.
+
+### Tooling defect and bounded correction
+
+The full static scanner failed on PowerShell 7.6.9 because `ConvertFrom-Json`
+materialized an ISO timestamp as a date object. Its schema validator requires
+a JSON string, but the reader had changed the representation before validation.
+The same defect was reproduced in `validate-json-contract.ps1`.
+
+Both JSON readers now request `-DateKind String` when that parameter is
+available (PowerShell 7.5+). Windows PowerShell 5.1 keeps its existing read path.
+No schema, type-validation, format-validation, or constant-validation rule was
+weakened. This is a tooling compatibility correction, not a product-contract
+amendment.
+
+`tests/tooling/Test-JsonLiteralTypes.ps1` exercises the production reader
+functions, preserving UTC text, offset/fractional text, nested timestamp
+strings, and other JSON types. It also checks standalone validator acceptance
+and rejection. It writes synthetic fixtures only beneath ignored
+`reports/runtime/json-literal-types/`.
+
+### Executed evidence
+
+- New regression on PowerShell 7.6.9: RED **5 PASS / 7 FAIL**, then GREEN
+  **12 PASS / 0 FAIL**.
+- New regression on X1 Windows PowerShell 5.1.26100.9711: **12 PASS / 0 FAIL**.
+- Existing `Test-Slice0ToolContracts.ps1 -Mode Static`: **10 PASS / 0 FAIL**
+  on each host, including all four deterministic-output checks.
+- Existing Inventory source guards (4ah, 4ai, 4ak, 4al, 4am): **36 PASS** on
+  the X1. These are source checks, not packaged behavioral acceptance.
+- Existing `test_inventory_primitive_boundaries.py`: **4 PASS** on the
+  isolated source snapshot.
+- Forty Inventory-named PowerShell tooling files parsed without syntax errors
+  on Windows before this tooling change; the new regression itself executed
+  successfully on both hosts.
+- Full scan completed on PowerShell 7.6.9: **6 packages, 391 components,
+  6,742 procedures, 146,183 source lines, 9 literal and 45 unresolved
+  Application.Run sites, 19 retired ROW warnings**. Generated reports remain
+  diagnostic/review-only; they are not Excel-runtime proof.
+
+The source snapshot came from the clean local implementation checkout, not a
+replacement remote checkout. Archive SHA-256:
+`968679271b4a7466df34bff74595cfea814138185f7878893883a6eb7026b0ec`.
+It includes source, tooling, tests, and three authoritative text specifications;
+no workbooks, credentials, or Windows settings were included.
+
+### Runtime boundary and next action
+
+Selected workspace access permits local file work and Git. Commands execute
+as `PerplexitySandbox`, not the interactive Windows user, and a full local
+static invocation hit the desktop executor's 120-second limit without
+producing reports. Do not run the existing long-lived Excel controller under
+that identity or treat its settings/desktop observations as the user's.
+
+Excel remained closed. All five candidate XLAM hashes matched the original
+GREEN package pins at preflight. The retained QuantityPhase baseline contains
+152 rows with 140 unique checks: **131 prior PASS / 9 RED**, with no conflicting
+duplicate outcomes. The next product gate is still the fresh monitored
+QuantityPhase run in the correct interactive Windows context, then the broader
+Inventory slice if that gate passes. Do not rerun already-complete RED work.
+
+Local source-scan evidence is under
+`reports/runtime/perplexity-inventory-preflight-20261104/`; the date in that
+directory is UTC, while this entry uses the X1's Pacific date.
+
 ## Approved worksheet completion implementation — 2026-11-03
 
 User chat approval authorizes D8-INV-EDIT-02; the linked GitHub review recommends
